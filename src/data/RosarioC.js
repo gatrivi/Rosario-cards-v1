@@ -910,5 +910,5 @@ let santo_rosario_catolico = {
       "Intercesión poderosa de María",
       "Paz interior y consuelo espiritual"
     ]
-  }
+  }}
 export default santo_rosario_catolico;
