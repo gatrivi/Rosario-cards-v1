@@ -1,21 +1,24 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import "./App.css";
+import ViewPrayers from "./components/ViewPrayers";
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+        <img id="logo" src={logo} className="App-logo" alt="logo" />
+        <ViewPrayers />
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          Por la señal de la Santa Cruz, de nuestros enemigos líbranos Señor
+          Dios nuestro{" "}
         </p>
         <a
           className="App-link"
-          href="https://reactjs.org"
+          href="https://www.vatican.va/special/rosary/index_rosary_sp.htm"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          Aprende el Rosario
         </a>
       </header>
     </div>
