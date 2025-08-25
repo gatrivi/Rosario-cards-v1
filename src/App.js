@@ -1,13 +1,19 @@
 import logo from "./logo.svg";
 import "./App.css";
-import ViewPrayers from "./components/ViewPrayers";
+import { rosario } from "./data/rosario";
 
+import ViewPrayers from "./components/ViewPrayers";
+import PrayerButtons from "./components/PrayerButtons";
 function App() {
   return (
-    <div className="App">
+    <div
+      className="app"
+      style={{ display: "flex", flexDirection: "column", height: "100vh" }}
+    >
       <header className="App-header">
         <img id="logo" src={logo} className="App-logo" alt="logo" />
         <ViewPrayers />
+        <PrayerButtons />
         <p>
           Por la señal de la Santa Cruz, de nuestros enemigos líbranos Señor
           Dios nuestro{" "}

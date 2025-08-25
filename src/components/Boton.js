@@ -1,9 +1,9 @@
 import React from "react";
 
-function Boton(id, alias, estado) {
+function Boton(identificacion, texto, estilo) {
   return (
-    <button id={id} estilo={estado}>
-      {alias}
+    <button id={identificacion} estilo={estilo}>
+      {texto}
     </button>
   );
 }
