@@ -1,10 +1,12 @@
 import logo from "./logo.svg";
 import "./App.css";
-import { rosario } from "./data/rosario";
-
+import Rosario from "./data/Rosario";
+import { useState } from "react";
 import ViewPrayers from "./components/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons";
 function App() {
+  const [prayer, setPrayer] = useState(Rosario);
+
   return (
     <div
       className="app"
@@ -12,21 +14,9 @@ function App() {
     >
       <header className="App-header">
         <img id="logo" src={logo} className="App-logo" alt="logo" />
-        <ViewPrayers />
-        <PrayerButtons />
-        <p>
-          Por la señal de la Santa Cruz, de nuestros enemigos líbranos Señor
-          Dios nuestro{" "}
-        </p>
-        <a
-          className="App-link"
-          href="https://www.vatican.va/special/rosary/index_rosary_sp.htm"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Aprende el Rosario
-        </a>
-      </header>
+      </header>{" "}
+      <ViewPrayers prayer={prayer} />
+      <PrayerButtons prayers={Rosario} setPrayer={setPrayer} />
     </div>
   );
 }

@@ -1,0 +1,131 @@
+const Rosario = [
+  {
+    title: "Señal de la Cruz",
+    text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+  },
+  {
+    title: "Acto de Contrición",
+    text: "Yo confieso ante Dios todopoderoso y ante vosotros, hermanos, que he pecado mucho de pensamiento, palabra, obra y omisión. Por mi culpa, por mi culpa, por mi gran culpa. Por eso ruego a Santa María, siempre Virgen, a los ángeles, a los santos y a vosotros, hermanos, que intercedáis por mí ante Dios, nuestro Señor. Amén.",
+  },
+  {
+    title: "Credo",
+    text: "Creo en Dios, Padre todopoderoso, Creador del cielo y de la tierra. Creo en Jesucristo, su único Hijo, nuestro Señor, que fue concebido por obra y gracia del Espíritu Santo, nació de Santa María Virgen, padeció bajo el poder de Poncio Pilato, fue crucificado, muerto y sepultado, descendió a los infiernos, al tercer día resucitó de entre los muertos, subió a los cielos y está sentado a la derecha de Dios, Padre todopoderoso. Desde allí ha de venir a juzgar a vivos y muertos. Creo en el Espíritu Santo, la santa Iglesia católica, la comunión de los santos, el perdón de los pecados, la resurrección de la carne y la vida eterna. Amén.",
+  },
+  {
+    title: "Padre Nuestro",
+    text: "Padre nuestro, que estás en el cielo, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
+  },
+  {
+    title: "Ave María",
+    text: "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén.",
+  },
+  {
+    title: "Gloria",
+    text: "Gloria al Padre, y al Hijo, y al Espíritu Santo. Como era en el principio, ahora y siempre, por los siglos de los siglos. Amén.",
+  },
+  {
+    title: "Oración de Fátima",
+    text: "Oh Jesús mío, perdona nuestros pecados, líbranos del fuego del infierno, lleva al cielo a todas las almas, especialmente a las más necesitadas de tu misericordia.",
+  },
+  {
+    title: "Primer Misterio Gozoso: La Anunciación del Ángel a María",
+    text: "El arcángel Gabriel anuncia a María que será la Madre del Salvador\n\nCitas Escriturísticas:\nLucas 1:28: Y entrando el ángel en donde ella estaba, dijo: ¡Salve, muy favorecida! El Señor es contigo; bendita tú entre las mujeres.\nLucas 1:38: Entonces María dijo: He aquí la sierva del Señor; hágase conmigo conforme a tu palabra.\nIsaías 7:14: Por tanto, el Señor mismo os dará señal: He aquí que la virgen concebirá, y dará a luz un hijo, y llamará su nombre Emanuel.",
+  },
+  {
+    title: "Segundo Misterio Gozoso: La Visitación de María a su prima Isabel",
+    text: "María visita a su prima Isabel, quien reconoce en ella a la Madre del Señor\n\nCitas Escriturísticas:\nLucas 1:42-43: Y exclamó a gran voz, y dijo: Bendita tú entre las mujeres, y bendito el fruto de tu vientre. ¿Por qué se me concede esto a mí, que la madre de mi Señor venga a mí?\nLucas 1:46-47: Entonces María dijo: Engrandece mi alma al Señor; Y mi espíritu se regocija en Dios mi Salvador.\nLucas 1:41: Y aconteció que cuando oyó Isabel la salutación de María, la criatura saltó en su vientre; e Isabel fue llena del Espíritu Santo.",
+  },
+  {
+    title: "Tercer Misterio Gozoso: El Nacimiento de Jesús en Belén",
+    text: "El Verbo se hace carne y nace de la Virgen María en Belén\n\nCitas Escriturísticas:\nJuan 1:14: Y aquel Verbo fue hecho carne, y habitó entre nosotros (y vimos su gloria, gloria como del unigénito del Padre), lleno de gracia y de verdad.\nLucas 2:7: Y dio a luz a su hijo primogénito, y lo envolvió en pañales, y lo acostó en un pesebre, porque no había lugar para ellos en el mesón.\nLucas 2:10-11: Pero el ángel les dijo: No temáis; porque he aquí os doy nuevas de gran gozo, que será para todo el pueblo: que os ha nacido hoy, en la ciudad de David, un Salvador, que es CRISTO el Señor.",
+  },
+  {
+    title:
+      "Cuarto Misterio Gozoso: La Presentación del Niño Jesús en el Templo",
+    text: "María y José presentan al Niño Jesús en el Templo, donde es reconocido por Simeón y Ana\n\nCitas Escriturísticas:\nLucas 2:29-30: Ahora, Señor, despides a tu siervo en paz, Conforme a tu palabra; Porque han visto mis ojos tu salvación.\nLucas 2:34-35: Y los bendijo Simeón, y dijo a su madre María: He aquí, éste está puesto para caída y para levantamiento de muchos en Israel, y para señal que será contradicha; y una espada traspasará tu misma alma.\nLevítico 12:6-8: Y cuando los días de su purificación fueren cumplidos, por hijo o por hija, traerá un cordero de un año para holocausto, y un palomino o una tórtola para expiación.",
+  },
+  {
+    title:
+      "Quinto Misterio Gozoso: El Niño Jesús perdido y hallado en el Templo",
+    text: "Jesús, a los doce años, se queda en el Templo enseñando a los doctores\n\nCitas Escriturísticas:\nLucas 2:46-47: Y aconteció que tres días después le hallaron en el templo, sentado en medio de los doctores de la ley, oyéndoles y preguntándoles. Y todos los que le oían, se maravillaban de su inteligencia y de sus respuestas.\nLucas 2:49: Entonces él les dijo: ¿Por qué me buscabais? ¿No sabíais que en los negocios de mi Padre me es necesario estar?\nLucas 2:52: Y Jesús crecía en sabiduría y en estatura, y en gracia para con Dios y los hombres.",
+  },
+  {
+    title: "Primer Misterio Doloroso: La Oración de Jesús en el Huerto",
+    text: "Jesús ora en Getsemaní con gran angustia, sudando sangre\n\nCitas Escriturísticas:\nLucas 22:42: Diciendo: Padre, si quieres, pasa de mí esta copa; pero no se haga mi voluntad, sino la tuya.\nLucas 22:44: Y estando en agonía, oraba más intensamente; y era su sudor como grandes gotas de sangre que caían hasta la tierra.\nMateo 26:38: Entonces Jesús les dijo: Mi alma está muy triste, hasta la muerte; quedaos aquí, y velad conmigo.",
+  },
+  {
+    title: "Segundo Misterio Doloroso: La Flagelación del Señor",
+    text: "Jesús es azotado por orden de Pilato\n\nCitas Escriturísticas:\nMateo 27:26: Entonces les soltó a Barrabás; y habiendo azotado a Jesús, le entregó para ser crucificado.\nIsaías 53:5: Mas él herido fue por nuestras rebeliones, molido por nuestros pecados; el castigo de nuestra paz fue sobre él, y por su llaga fuimos nosotros curados.\n1 Pedro 2:24: Quien llevó él mismo nuestros pecados en su cuerpo sobre el madero, para que nosotros, estando muertos a los pecados, vivamos a la justicia; y por cuya herida fuisteis sanados.",
+  },
+  {
+    title: "Tercer Misterio Doloroso: La Coronación de Espinas",
+    text: "Los soldados coronan a Jesús con espinas y se burlan de Él como Rey\n\nCitas Escriturísticas:\nMateo 27:29: Y pusieron sobre su cabeza una corona tejida de espinas, y una caña en su mano derecha; e hincando la rodilla delante de él, le escarnecían, diciendo: ¡Salve, Rey de los judíos!\nJuan 19:5: Y salió Jesús, llevando la corona de espinas y el manto de púrpura. Y Pilato les dijo: ¡He aquí el hombre!\nIsaías 52:14: Como se asombraron de ti muchos, de tal manera fue desfigurado de los hombres su parecer, y su hermosura más que la de los hijos de los hombres.",
+  },
+  {
+    title: "Cuarto Misterio Doloroso: Jesús con la Cruz a cuestas",
+    text: "Jesús carga la cruz camino al Calvario\n\nCitas Escriturísticas:\nJuan 19:17: Y él, cargando su cruz, salió al lugar llamado de la Calavera, y en hebreo, Gólgota.\nLucas 23:26: Y llevándole, tomaron a cierto Simón de Cirene, que venía del campo, y le pusieron encima la cruz para que la llevase tras Jesús.\nMateo 16:24: Entonces Jesús dijo a sus discípulos: Si alguno quiere venir en pos de mí, niéguese a sí mismo, y tome su cruz, y sígame.",
+  },
+  {
+    title: "Quinto Misterio Doloroso: La Crucifixión y Muerte de Nuestro Señor",
+    text: "Jesús muere en la cruz para salvarnos del pecado\n\nCitas Escriturísticas:\nJuan 19:30: Cuando Jesús hubo tomado el vinagre, dijo: Consumado es. Y habiendo inclinado la cabeza, entregó el espíritu.\nLucas 23:46: Entonces Jesús, clamando a gran voz, dijo: Padre, en tus manos encomiendo mi espíritu. Y habiendo dicho esto, expiró.\nIsaías 53:7: Angustiado él, y afligido, no abrió su boca; como cordero fue llevado al matadero; y como oveja delante de sus trasquiladores, enmudeció, y no abrió su boca.",
+  },
+  {
+    title: "Primer Misterio Glorioso: La Resurrección del Señor",
+    text: "Jesús resucita de entre los muertos al tercer día, venciendo la muerte\n\nCitas Escriturísticas:\nMateo 28:6: No está aquí, pues ha resucitado, como dijo. Venid, ved el lugar donde fue puesto el Señor.\n1 Corintios 15:20: Mas ahora Cristo ha resucitado de los muertos; primicias de los que durmieron es hecho.\nRomanos 6:9: Sabiendo que Cristo, habiendo resucitado de los muertos, ya no muere; la muerte no se enseñorea más de él.",
+  },
+  {
+    title: "Segundo Misterio Glorioso: La Ascensión del Señor",
+    text: "Jesús asciende a los cielos delante de sus discípulos\n\nCitas Escriturísticas:\nHechos 1:9: Y habiendo dicho estas cosas, viéndolo ellos, fue alzado, y le recibió una nube que le ocultó de sus ojos.\nMarcos 16:19: Y el Señor, después que les habló, fue recibido arriba en el cielo, y se sentó a la diestra de Dios.\nEfesios 4:10: El que descendió, es el mismo que también subió por encima de todos los cielos para llenarlo todo.",
+  },
+  {
+    title: "Tercer Misterio Glorioso: La Venida del Espíritu Santo",
+    text: "El Espíritu Santo desciende sobre los Apóstoles y María en Pentecostés\n\nCitas Escriturísticas:\nHechos 2:4: Y fueron todos llenos del Espíritu Santo, y comenzaron a hablar en otras lenguas, según el Espíritu les daba que hablasen.\nJuan 14:26: Mas el Consolador, el Espíritu Santo, a quien el Padre enviará en mi nombre, él os enseñará todas las cosas, y os recordará todo lo que yo os he dicho.\nHechos 1:8: Pero recibiréis poder, cuando haya venido sobre vosotros el Espíritu Santo, y me seréis testigos en Jerusalén, en toda Judea, en Samaria, y hasta lo último de la tierra.",
+  },
+  {
+    title: "Cuarto Misterio Glorioso: La Asunción de María Santísima",
+    text: "María es elevada en cuerpo y alma a la gloria celestial\n\nCitas Escriturísticas:\nApocalipsis 12:1: Apareció en el cielo una gran señal: una mujer vestida del sol, con la luna debajo de sus pies, y sobre su cabeza una corona de doce estrellas.\nLucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\nCantares 2:10: Mi amado habló, y me dijo: Levántate, oh amiga mía, hermosa mía, y ven.",
+  },
+  {
+    title:
+      "Quinto Misterio Glorioso: La Coronación de María como Reina del Cielo y de la Tierra",
+    text: "María es coronada Reina del universo junto a su Hijo\n\nCitas Escriturísticas:\nApocalipsis 12:1: Apareció en el cielo una gran señal: una mujer vestida del sol, con la luna debajo de sus pies, y sobre su cabeza una corona de doce estrellas.\nSalmo 45:9: Está la reina a tu diestra con oro de Ofir.\nJeremías 13:18: Di al rey y a la reina: Humillaos, sentaos en tierra; porque la corona de vuestra gloria caerá de vuestras cabezas.",
+  },
+  {
+    title: "Primer Misterio Luminoso: El Bautismo de Jesús en el Jordán",
+    text: "Jesús es bautizado por Juan y se revela como el Hijo amado del Padre\n\nCitas Escriturísticas:\nMateo 3:17: Y hubo una voz de los cielos, que decía: Este es mi Hijo amado, en quien tengo complacencia.\nMarcos 1:10-11: Y luego, cuando subía del agua, vio abrirse los cielos, y al Espíritu como paloma que descendía sobre él. Y vino una voz de los cielos que decía: Tú eres mi Hijo amado; en ti tengo complacencia.\nJuan 1:34: Y yo le vi, y he dado testimonio de que éste es el Hijo de Dios.",
+  },
+  {
+    title: "Segundo Misterio Luminoso: Las Bodas de Caná",
+    text: "Jesús realiza su primer milagro a petición de su Madre\n\nCitas Escriturísticas:\nJuan 2:5: Su madre dijo a los que servían: Haced todo lo que él os dijere.\nJuan 2:11: Este principio de señales hizo Jesús en Caná de Galilea, y manifestó su gloria; y sus discípulos creyeron en él.\nJuan 2:3-4: Y faltando el vino, la madre de Jesús le dijo: No tienen vino. Jesús le dijo: ¿Qué tienes conmigo, mujer? Aún no ha venido mi hora.",
+  },
+  {
+    title: "Tercer Misterio Luminoso: El Anuncio del Reino de Dios",
+    text: "Jesús predica el Reino de los Cielos y llama a la conversión\n\nCitas Escriturísticas:\nMarcos 1:15: Diciendo: El tiempo se ha cumplido, y el reino de Dios se ha acercado; arrepentíos, y creed en el evangelio.\nMateo 5:3: Bienaventurados los pobres en espíritu, porque de ellos es el reino de los cielos.\nLucas 4:43: Pero él les dijo: Es necesario que también a otras ciudades anuncie el evangelio del reino de Dios; porque para esto he sido enviado.",
+  },
+  {
+    title: "Cuarto Misterio Luminoso: La Transfiguración",
+    text: "Jesús se transfigura ante Pedro, Santiago y Juan en el monte\n\nCitas Escriturísticas:\nMateo 17:2: Y se transfiguró delante de ellos, y resplandeció su rostro como el sol, y sus vestidos se hicieron blancos como la luz.\nMateo 17:5: Mientras él aún hablaba, una nube de luz los cubrió; y he aquí una voz desde la nube, que decía: Este es mi Hijo amado, en quien tengo complacencia; a él oíd.\n2 Pedro 1:17-18: Pues cuando él recibió de Dios Padre honra y gloria, le fue enviada desde la magnífica gloria una voz que decía: Este es mi Hijo amado, en el cual tengo complacencia. Y nosotros oímos esta voz enviada del cielo, cuando estábamos con él en el monte santo.",
+  },
+  {
+    title: "Quinto Misterio Luminoso: La Institución de la Eucaristía",
+    text: "Jesús instituye la Sagrada Eucaristía en la Última Cena\n\nCitas Escriturísticas:\nMateo 26:26: Y mientras comían, tomó Jesús el pan, y bendijo, y lo partió, y dio a sus discípulos, y dijo: Tomad, comed; esto es mi cuerpo.\n1 Corintios 11:24-25: Y habiendo dado gracias, lo partió, y dijo: Tomad, comed; esto es mi cuerpo que por vosotros es partido; haced esto en memoria de mí. Asimismo tomó también la copa, después de haber cenado, diciendo: Esta copa es el nuevo pacto en mi sangre; haced esto todas las veces que la bebiereis, en memoria de mí.\nJuan 6:51: Yo soy el pan vivo que descendió del cielo; si alguno comiere de este pan, vivirá para siempre; y el pan que yo daré es mi carne, la cual yo daré por la vida del mundo.",
+  },
+  {
+    title: "Letanía Lauretana",
+    text: "Señor, ten piedad: Señor, ten piedad\nCristo, ten piedad: Cristo, ten piedad\nSeñor, ten piedad: Señor, ten piedad\nCristo, óyenos: Cristo, óyenos\nCristo, escúchanos: Cristo, escúchanos\nDios Padre celestial: Ten piedad de nosotros\nDios Hijo, Redentor del mundo: Ten piedad de nosotros\nDios Espíritu Santo: Ten piedad de nosotros\nSantísima Trinidad, un solo Dios: Ten piedad de nosotros\nSanta María: Ruega por nosotros\nSanta Madre de Dios: Ruega por nosotros\nSanta Virgen de las vírgenes: Ruega por nosotros\nMadre de Cristo: Ruega por nosotros\nMadre de la divina gracia: Ruega por nosotros\nMadre purísima: Ruega por nosotros\nMadre castísima: Ruega por nosotros\nMadre siempre virgen: Ruega por nosotros\nMadre inmaculada: Ruega por nosotros\nMadre sin mancilla: Ruega por nosotros\nMadre amable: Ruega por nosotros\nMadre admirable: Ruega por nosotros\nMadre del buen consejo: Ruega por nosotros\nMadre del Creador: Ruega por nosotros\nMadre del Salvador: Ruega por nosotros\nVirgen prudentísima: Ruega por nosotros\nVirgen venerable: Ruega por nosotros\nVirgen digna de alabanza: Ruega por nosotros\nVirgen poderosa: Ruega por nosotros\nVirgen clemente: Ruega por nosotros\nVirgen fiel: Ruega por nosotros\nEspejo de justicia: Ruega por nosotros\nTrono de la sabiduría: Ruega por nosotros\nCausa de nuestra alegría: Ruega por nosotros\nVaso espiritual: Ruega por nosotros\nVaso digno de honor: Ruega por nosotros\nVaso insigne de devoción: Ruega por nosotros\nRosa mística: Ruega por nosotros\nTorre de David: Ruega por nosotros\nTorre de marfil: Ruega por nosotros\nCasa de oro: Ruega por nosotros\nArca de la alianza: Ruega por nosotros\nPuerta del cielo: Ruega por nosotros\nEstrella de la mañana: Ruega por nosotros\nSalud de los enfermos: Ruega por nosotros\nRefugio de los pecadores: Ruega por nosotros\nConsoladora de los afligidos: Ruega por nosotros\nAuxilio de los cristianos: Ruega por nosotros\nReina de los Ángeles: Ruega por nosotros\nReina de los Patriarcas: Ruega por nosotros\nReina de los Profetas: Ruega por nosotros\nReina de los Apóstoles: Ruega por nosotros\nReina de los Mártires: Ruega por nosotros\nReina de los Confesores: Ruega por nosotros\nReina de las Vírgenes: Ruega por nosotros\nReina de todos los Santos: Ruega por nosotros\nReina concebida sin pecado original: Ruega por nosotros\nReina asunta a los cielos: Ruega por nosotros\nReina del Santísimo Rosario: Ruega por nosotros\nReina de la familia: Ruega por nosotros\nReina de la paz: Ruega por nosotros\nCordero de Dios, que quitas el pecado del mundo: Perdónanos, Señor\nCordero de Dios, que quitas el pecado del mundo: Escúchanos, Señor\nCordero de Dios, que quitas el pecado del mundo: Ten piedad de nosotros\nRuega por nosotros, Santa Madre de Dios: Para que seamos dignos de las promesas de Nuestro Señor Jesucristo\n\nOremos: Te rogamos nos concedas, Señor Dios nuestro, gozar de continua salud de alma y cuerpo, y por la gloriosa intercesión de la bienaventurada siempre Virgen María, vernos libres de las tristezas presentes y disfrutar de las alegrías eternas. Por Cristo nuestro Señor. Amén.",
+  },
+  {
+    title: "Salve",
+    text: "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra; Dios te salve. A Ti clamamos los desterrados hijos de Eva; a Ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos; y después de este destierro muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clemente, oh piadosa, oh dulce Virgen María! Ruega por nosotros, Santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.",
+  },
+  {
+    title: "Oración por el Papa",
+    text: "Oh Dios, que has puesto la sede de Pedro como fundamento de la unidad de la Iglesia, concede al Papa Francisco, tu siervo, ser para todos los fieles principio y fundamento visible de la fe y de la comunión. Por Jesucristo, nuestro Señor. Amén.",
+  },
+  {
+    title: "Señal de la Cruz Final",
+    text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+  },
+];
+
+export default Rosario;

@@ -1,31 +1,36 @@
-let rosario = {
+const RosarioDS = {
   oraciones_iniciales: {
     senal_de_la_cruz:
       "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
     acto_de_contrition:
       "Yo confieso ante Dios todopoderoso y ante vosotros, hermanos, que he pecado mucho de pensamiento, palabra, obra y omisión. Por mi culpa, por mi culpa, por mi gran culpa. Por eso ruego a Santa María, siempre Virgen, a los ángeles, a los santos y a vosotros, hermanos, que intercedáis por mí ante Dios, nuestro Señor. Amén.",
-    credo: {
-      _8_Padre:
-        "Creo en Dios, Padre todopoderoso, Creador del cielo y de la tierra.",
-      _7_Hijo: {
-        _10: "Creo en Jesucristo, su único Hijo, nuestro Señor, ",
-        _9: "que fue concebido por obra y gracia del Espíritu Santo, ",
-        _8: "nació de Santa María Virgen, ",
-        _7: "padeció bajo el poder de Poncio Pilato, ",
-        _6: "fue crucificado, muerto y sepultado, ",
-        _5: "descendió a los infiernos, ",
-        _4: "al tercer día resucitó de entre los muertos, ",
-        _3: "subió a los cielos ",
-        _2: "y está sentado a la derecha de Dios, Padre todopoderoso. ",
-        _1: "Desde allí ha de venir a juzgar a vivos y muertos.",
+    credo: [
+      {
+        key: "padre",
+        text: "Creo en Dios, Padre todopoderoso, Creador del cielo y de la tierra.",
       },
-      _6_Espiritu_Santo: "Creo en el Espíritu Santo,",
-      _5_Iglesia: "la santa Iglesia católica,",
-      _4_Comunion: " la comunión de los santos,",
-      _3_Perdon: " el perdón de los pecados,",
-      _2_Resurreccion: "la resurrección de la carne",
-      _1_Vida: "y la vida eterna. Amén.",
-    },
+      {
+        key: "hijo",
+        parts: [
+          "Creo en Jesucristo, su único Hijo, nuestro Señor, ",
+          "que fue concebido por obra y gracia del Espíritu Santo, ",
+          "nació de Santa María Virgen, ",
+          "padeció bajo el poder de Poncio Pilato, ",
+          "fue crucificado, muerto y sepultado, ",
+          "descendió a los infiernos, ",
+          "al tercer día resucitó de entre los muertos, ",
+          "subió a los cielos ",
+          "y está sentado a la derecha de Dios, Padre todopoderoso. ",
+          "Desde allí ha de venir a juzgar a vivos y muertos.",
+        ],
+      },
+      { key: "espiritu_santo", text: "Creo en el Espíritu Santo," },
+      { key: "iglesia", text: "la santa Iglesia católica," },
+      { key: "comunion", text: " la comunión de los santos," },
+      { key: "perdon", text: " el perdón de los pecados," },
+      { key: "resurreccion", text: "la resurrección de la carne" },
+      { key: "vida", text: "y la vida eterna. Amén." },
+    ],
     padre_nuestro:
       "Padre nuestro, que estás en el cielo, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
     avemaria:
@@ -36,8 +41,8 @@ let rosario = {
       "Oh Jesús mío, perdona nuestros pecados, líbranos del fuego del infierno, lleva al cielo a todas las almas, especialmente a las más necesitadas de tu misericordia.",
   },
   misterios: {
-    misteriosGozosos: {
-      primerMisterio: {
+    misteriosGozosos: [
+      {
         titulo: "La Anunciación del Ángel a María",
         descripcion:
           "El arcángel Gabriel anuncia a María que será la Madre del Salvador",
@@ -60,7 +65,7 @@ let rosario = {
           },
         ],
       },
-      segundoMisterio: {
+      {
         titulo: "La Visitación de María a su prima Isabel",
         descripcion:
           "María visita a su prima Isabel, quien reconoce en ella a la Madre del Señor",
@@ -83,7 +88,7 @@ let rosario = {
           },
         ],
       },
-      tercerMisterio: {
+      {
         titulo: "El Nacimiento de Jesús en Belén",
         descripcion:
           "El Verbo se hace carne y nace de la Virgen María en Belén",
@@ -106,7 +111,7 @@ let rosario = {
           },
         ],
       },
-      cuartoMisterio: {
+      {
         titulo: "La Presentación del Niño Jesús en el Templo",
         descripcion:
           "María y José presentan al Niño Jesús en el Templo, donde es reconocido por Simeón y Ana",
@@ -129,7 +134,7 @@ let rosario = {
           },
         ],
       },
-      quintoMisterio: {
+      {
         titulo: "El Niño Jesús perdido y hallado en el Templo",
         descripcion:
           "Jesús, a los doce años, se queda en el Templo enseñando a los doctores",
@@ -152,9 +157,9 @@ let rosario = {
           },
         ],
       },
-    },
-    misteriosDolorosos: {
-      primerMisterio: {
+    ],
+    misteriosDolorosos: [
+      {
         titulo: "La Oración de Jesús en el Huerto",
         descripcion: "Jesús ora en Getsemaní con gran angustia, sudando sangre",
         imagen: "",
@@ -176,7 +181,7 @@ let rosario = {
           },
         ],
       },
-      segundoMisterio: {
+      {
         titulo: "La Flagelación del Señor",
         descripcion: "Jesús es azotado por orden de Pilato",
         imagen: "",
@@ -198,7 +203,7 @@ let rosario = {
           },
         ],
       },
-      tercerMisterio: {
+      {
         titulo: "La Coronación de Espinas",
         descripcion:
           "Los soldados coronan a Jesús con espinas y se burlan de Él como Rey",
@@ -221,7 +226,7 @@ let rosario = {
           },
         ],
       },
-      cuartoMisterio: {
+      {
         titulo: "Jesús con la Cruz a cuestas",
         descripcion: "Jesús carga la cruz camino al Calvario",
         imagen: "",
@@ -243,7 +248,7 @@ let rosario = {
           },
         ],
       },
-      quintoMisterio: {
+      {
         titulo: "La Crucifixión y Muerte de Nuestro Señor",
         descripcion: "Jesús muere en la cruz para salvarnos del pecado",
         imagen: "",
@@ -265,9 +270,9 @@ let rosario = {
           },
         ],
       },
-    },
-    misteriosGloriosos: {
-      primerMisterio: {
+    ],
+    misteriosGloriosos: [
+      {
         titulo: "La Resurrección del Señor",
         descripcion:
           "Jesús resucita de entre los muertos al tercer día, venciendo la muerte",
@@ -290,7 +295,7 @@ let rosario = {
           },
         ],
       },
-      segundoMisterio: {
+      {
         titulo: "La Ascensión del Señor",
         descripcion: "Jesús asciende a los cielos delante de sus discípulos",
         imagen: "",
@@ -312,7 +317,7 @@ let rosario = {
           },
         ],
       },
-      tercerMisterio: {
+      {
         titulo: "La Venida del Espíritu Santo",
         descripcion:
           "El Espíritu Santo desciende sobre los Apóstoles y María en Pentecostés",
@@ -335,7 +340,7 @@ let rosario = {
           },
         ],
       },
-      cuartoMisterio: {
+      {
         titulo: "La Asunción de María Santísima",
         descripcion: "María es elevada en cuerpo y alma a la gloria celestial",
         imagen: "",
@@ -357,7 +362,7 @@ let rosario = {
           },
         ],
       },
-      quintoMisterio: {
+      {
         titulo: "La Coronación de María como Reina del Cielo y de la Tierra",
         descripcion: "María es coronada Reina del universo junto a su Hijo",
         imagen: "",
@@ -378,9 +383,9 @@ let rosario = {
           },
         ],
       },
-    },
-    misteriosLuminosos: {
-      primerMisterio: {
+    ],
+    misteriosLuminosos: [
+      {
         titulo: "El Bautismo de Jesús en el Jordán",
         descripcion:
           "Jesús es bautizado por Juan y se revela como el Hijo amado del Padre",
@@ -403,7 +408,7 @@ let rosario = {
           },
         ],
       },
-      segundoMisterio: {
+      {
         titulo: "Las Bodas de Caná",
         descripcion: "Jesús realiza su primer milagro a petición de su Madre",
         imagen: "",
@@ -425,7 +430,7 @@ let rosario = {
           },
         ],
       },
-      tercerMisterio: {
+      {
         titulo: "El Anuncio del Reino de Dios",
         descripcion:
           "Jesús predica el Reino de los Cielos y llama a la conversión",
@@ -448,7 +453,7 @@ let rosario = {
           },
         ],
       },
-      cuartoMisterio: {
+      {
         titulo: "La Transfiguración",
         descripcion:
           "Jesús se transfigura ante Pedro, Santiago y Juan en el monte",
@@ -471,7 +476,7 @@ let rosario = {
           },
         ],
       },
-      quintoMisterio: {
+      {
         titulo: "La Institución de la Eucaristía",
         descripcion: "Jesús instituye la Sagrada Eucaristía en la Última Cena",
         imagen: "",
@@ -493,289 +498,186 @@ let rosario = {
           },
         ],
       },
-    },
+    ],
   },
   oraciones_finales: {
     litaniaLauretana: {
-      invocacionesIniciales: {
-        verso001: {
-          invocacion: "Señor, ten piedad",
-          respuesta: "Señor, ten piedad",
-        },
-        verso002: {
-          invocacion: "Cristo, ten piedad",
-          respuesta: "Cristo, ten piedad",
-        },
-        verso003: {
-          invocacion: "Señor, ten piedad",
-          respuesta: "Señor, ten piedad",
-        },
-        verso004: {
-          invocacion: "Cristo, óyenos",
-          respuesta: "Cristo, óyenos",
-        },
-        verso005: {
-          invocacion: "Cristo, escúchanos",
-          respuesta: "Cristo, escúchanos",
-        },
-        verso006: {
+      invocacionesIniciales: [
+        { invocacion: "Señor, ten piedad", respuesta: "Señor, ten piedad" },
+        { invocacion: "Cristo, ten piedad", respuesta: "Cristo, ten piedad" },
+        { invocacion: "Señor, ten piedad", respuesta: "Señor, ten piedad" },
+        { invocacion: "Cristo, óyenos", respuesta: "Cristo, óyenos" },
+        { invocacion: "Cristo, escúchanos", respuesta: "Cristo, escúchanos" },
+        {
           invocacion: "Dios Padre celestial",
           respuesta: "Ten piedad de nosotros",
         },
-        verso007: {
+        {
           invocacion: "Dios Hijo, Redentor del mundo",
           respuesta: "Ten piedad de nosotros",
         },
-        verso008: {
+        {
           invocacion: "Dios Espíritu Santo",
           respuesta: "Ten piedad de nosotros",
         },
-        verso009: {
+        {
           invocacion: "Santísima Trinidad, un solo Dios",
           respuesta: "Ten piedad de nosotros",
         },
-      },
-      invocacionesMarianasBasicas: {
-        verso010: {
-          invocacion: "Santa María",
-          respuesta: "Ruega por nosotros",
-        },
-        verso011: {
-          invocacion: "Santa Madre de Dios",
-          respuesta: "Ruega por nosotros",
-        },
-        verso012: {
+      ],
+      invocacionesMarianasBasicas: [
+        { invocacion: "Santa María", respuesta: "Ruega por nosotros" },
+        { invocacion: "Santa Madre de Dios", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Santa Virgen de las vírgenes",
           respuesta: "Ruega por nosotros",
         },
-      },
-      titulosMaternales: {
-        verso013: {
-          invocacion: "Madre de Cristo",
-          respuesta: "Ruega por nosotros",
-        },
-        verso014: {
+      ],
+      titulosMaternales: [
+        { invocacion: "Madre de Cristo", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Madre de la divina gracia",
           respuesta: "Ruega por nosotros",
         },
-        verso015: {
-          invocacion: "Madre purísima",
-          respuesta: "Ruega por nosotros",
-        },
-        verso016: {
-          invocacion: "Madre castísima",
-          respuesta: "Ruega por nosotros",
-        },
-        verso017: {
-          invocacion: "Madre siempre virgen",
-          respuesta: "Ruega por nosotros",
-        },
-        verso018: {
-          invocacion: "Madre inmaculada",
-          respuesta: "Ruega por nosotros",
-        },
-        verso019: {
-          invocacion: "Madre sin mancilla",
-          respuesta: "Ruega por nosotros",
-        },
-        verso020: {
-          invocacion: "Madre amable",
-          respuesta: "Ruega por nosotros",
-        },
-        verso021: {
-          invocacion: "Madre admirable",
-          respuesta: "Ruega por nosotros",
-        },
-        verso022: {
+        { invocacion: "Madre purísima", respuesta: "Ruega por nosotros" },
+        { invocacion: "Madre castísima", respuesta: "Ruega por nosotros" },
+        { invocacion: "Madre siempre virgen", respuesta: "Ruega por nosotros" },
+        { invocacion: "Madre inmaculada", respuesta: "Ruega por nosotros" },
+        { invocacion: "Madre sin mancilla", respuesta: "Ruega por nosotros" },
+        { invocacion: "Madre amable", respuesta: "Ruega por nosotros" },
+        { invocacion: "Madre admirable", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Madre del buen consejo",
           respuesta: "Ruega por nosotros",
         },
-        verso023: {
-          invocacion: "Madre del Creador",
-          respuesta: "Ruega por nosotros",
-        },
-        verso024: {
-          invocacion: "Madre del Salvador",
-          respuesta: "Ruega por nosotros",
-        },
-      },
-      titulosVirginales: {
-        verso025: {
-          invocacion: "Virgen prudentísima",
-          respuesta: "Ruega por nosotros",
-        },
-        verso026: {
-          invocacion: "Virgen venerable",
-          respuesta: "Ruega por nosotros",
-        },
-        verso027: {
+        { invocacion: "Madre del Creador", respuesta: "Ruega por nosotros" },
+        { invocacion: "Madre del Salvador", respuesta: "Ruega por nosotros" },
+      ],
+      titulosVirginales: [
+        { invocacion: "Virgen prudentísima", respuesta: "Ruega por nosotros" },
+        { invocacion: "Virgen venerable", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Virgen digna de alabanza",
           respuesta: "Ruega por nosotros",
         },
-        verso028: {
-          invocacion: "Virgen poderosa",
-          respuesta: "Ruega por nosotros",
-        },
-        verso029: {
-          invocacion: "Virgen clemente",
-          respuesta: "Ruega por nosotros",
-        },
-        verso030: {
-          invocacion: "Virgen fiel",
-          respuesta: "Ruega por nosotros",
-        },
-      },
-      simbolosMarianosClasicos: {
-        verso031: {
-          invocacion: "Espejo de justicia",
-          respuesta: "Ruega por nosotros",
-        },
-        verso032: {
+        { invocacion: "Virgen poderosa", respuesta: "Ruega por nosotros" },
+        { invocacion: "Virgen clemente", respuesta: "Ruega por nosotros" },
+        { invocacion: "Virgen fiel", respuesta: "Ruega por nosotros" },
+      ],
+      simbolosMarianosClasicos: [
+        { invocacion: "Espejo de justicia", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Trono de la sabiduría",
           respuesta: "Ruega por nosotros",
         },
-        verso033: {
+        {
           invocacion: "Causa de nuestra alegría",
           respuesta: "Ruega por nosotros",
         },
-        verso034: {
-          invocacion: "Vaso espiritual",
-          respuesta: "Ruega por nosotros",
-        },
-        verso035: {
-          invocacion: "Vaso digno de honor",
-          respuesta: "Ruega por nosotros",
-        },
-        verso036: {
+        { invocacion: "Vaso espiritual", respuesta: "Ruega por nosotros" },
+        { invocacion: "Vaso digno de honor", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Vaso insigne de devoción",
           respuesta: "Ruega por nosotros",
         },
-        verso037: {
-          invocacion: "Rosa mística",
-          respuesta: "Ruega por nosotros",
-        },
-        verso038: {
-          invocacion: "Torre de David",
-          respuesta: "Ruega por nosotros",
-        },
-        verso039: {
-          invocacion: "Torre de marfil",
-          respuesta: "Ruega por nosotros",
-        },
-        verso040: {
-          invocacion: "Casa de oro",
-          respuesta: "Ruega por nosotros",
-        },
-        verso041: {
-          invocacion: "Arca de la alianza",
-          respuesta: "Ruega por nosotros",
-        },
-        verso042: {
-          invocacion: "Puerta del cielo",
-          respuesta: "Ruega por nosotros",
-        },
-        verso043: {
+        { invocacion: "Rosa mística", respuesta: "Ruega por nosotros" },
+        { invocacion: "Torre de David", respuesta: "Ruega por nosotros" },
+        { invocacion: "Torre de marfil", respuesta: "Ruega por nosotros" },
+        { invocacion: "Casa de oro", respuesta: "Ruega por nosotros" },
+        { invocacion: "Arca de la alianza", respuesta: "Ruega por nosotros" },
+        { invocacion: "Puerta del cielo", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Estrella de la mañana",
           respuesta: "Ruega por nosotros",
         },
-      },
-      titulosSaludRefugio: {
-        verso044: {
+      ],
+      titulosSaludRefugio: [
+        {
           invocacion: "Salud de los enfermos",
           respuesta: "Ruega por nosotros",
         },
-        verso045: {
+        {
           invocacion: "Refugio de los pecadores",
           respuesta: "Ruega por nosotros",
         },
-        verso046: {
+        {
           invocacion: "Consoladora de los afligidos",
           respuesta: "Ruega por nosotros",
         },
-        verso047: {
+        {
           invocacion: "Auxilio de los cristianos",
           respuesta: "Ruega por nosotros",
         },
-      },
-      titulosRegios: {
-        verso048: {
-          invocacion: "Reina de los Ángeles",
-          respuesta: "Ruega por nosotros",
-        },
-        verso049: {
+      ],
+      titulosRegios: [
+        { invocacion: "Reina de los Ángeles", respuesta: "Ruega por nosotros" },
+        {
           invocacion: "Reina de los Patriarcas",
           respuesta: "Ruega por nosotros",
         },
-        verso050: {
+        {
           invocacion: "Reina de los Profetas",
           respuesta: "Ruega por nosotros",
         },
-        verso051: {
+        {
           invocacion: "Reina de los Apóstoles",
           respuesta: "Ruega por nosotros",
         },
-        verso052: {
+        {
           invocacion: "Reina de los Mártires",
           respuesta: "Ruega por nosotros",
         },
-        verso053: {
+        {
           invocacion: "Reina de los Confesores",
           respuesta: "Ruega por nosotros",
         },
-        verso054: {
+        {
           invocacion: "Reina de las Vírgenes",
           respuesta: "Ruega por nosotros",
         },
-        verso055: {
+        {
           invocacion: "Reina de todos los Santos",
           respuesta: "Ruega por nosotros",
         },
-        verso056: {
+        {
           invocacion: "Reina concebida sin pecado original",
           respuesta: "Ruega por nosotros",
         },
-        verso057: {
+        {
           invocacion: "Reina asunta a los cielos",
           respuesta: "Ruega por nosotros",
         },
-        verso058: {
+        {
           invocacion: "Reina del Santísimo Rosario",
           respuesta: "Ruega por nosotros",
         },
-        verso059: {
-          invocacion: "Reina de la familia",
-          respuesta: "Ruega por nosotros",
-        },
-        verso060: {
-          invocacion: "Reina de la paz",
-          respuesta: "Ruega por nosotros",
-        },
-      },
-      oracionFinal: {
-        verso061: {
+        { invocacion: "Reina de la familia", respuesta: "Ruega por nosotros" },
+        { invocacion: "Reina de la paz", respuesta: "Ruega por nosotros" },
+      ],
+      oracionFinal: [
+        {
           invocacion: "Cordero de Dios, que quitas el pecado del mundo",
           respuesta: "Perdónanos, Señor",
         },
-        verso062: {
+        {
           invocacion: "Cordero de Dios, que quitas el pecado del mundo",
           respuesta: "Escúchanos, Señor",
         },
-        verso063: {
+        {
           invocacion: "Cordero de Dios, que quitas el pecado del mundo",
           respuesta: "Ten piedad de nosotros",
         },
-        verso064: {
+        {
           invocacion: "Ruega por nosotros, Santa Madre de Dios",
           respuesta:
             "Para que seamos dignos de las promesas de Nuestro Señor Jesucristo",
         },
-      },
+      ],
       oremos: {
         texto:
           "Te rogamos nos concedas, Señor Dios nuestro, gozar de continua salud de alma y cuerpo, y por la gloriosa intercesión de la bienaventurada siempre Virgen María, vernos libres de las tristezas presentes y disfrutar de las alegrías eternas. Por Cristo nuestro Señor. Amén.",
       },
     },
-
     salve:
       "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra; Dios te salve. A Ti clamamos los desterrados hijos de Eva; a Ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos; y después de este destierro muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clemente, oh piadosa, oh dulce Virgen María! Ruega por nosotros, Santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.",
     oracion_por_el_papa:
@@ -785,189 +687,4 @@ let rosario = {
   },
 };
 
-/* 
-    gloriosos: [
-      {
-        nombre: "La Resurrección del Señor",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre: "La Ascensión del Señor",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre: "La Venida del Espíritu Santo",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre: "La Asunción de Nuestra Señora a los Cielos",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre:
-          "La Coronación de la Santísima Virgen como Reina del Cielo y Tierra",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-    ],
-    luminosos: [
-      {
-        nombre: "El Bautismo de Jesús en el Jordán",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre: "Las Bodas de Caná",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre: "El Anuncio del Reino de Dios",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre: "La Transfiguración del Señor",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-      {
-        nombre: "La Institución de la Eucaristía",
-        padre_nuestro: "...",
-        avemarias: [
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-          "...",
-        ],
-        gloria: "...",
-        oracion_fatima: "...",
-      },
-    ], */
+export default RosarioDS;
