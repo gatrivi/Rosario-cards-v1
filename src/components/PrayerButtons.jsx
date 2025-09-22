@@ -1,4 +1,10 @@
-function PrayerButtons() {
+function PrayerButtons({ prayers, setPrayer }) {
+  function makeAcronym(str) {
+    return str
+      .split(/\s+/) // Split by whitespace
+      .map((word) => word[0]?.toUpperCase()) // Get first letter of each word, uppercase
+      .join(""); // Join letters
+  }
   return (
     <div
       className="button-grid"
@@ -9,7 +15,17 @@ function PrayerButtons() {
         gap: "10px",
         padding: "10px",
       }}
-    ></div>
+    >
+      {!prayers || prayers.length === 0 ? (
+        <div>Loading...</div>
+      ) : (
+        prayers.map((prayer, index) => (
+          <button onClick={() => setPrayer(prayer.text)} key={index}>
+            {makeAcronym(prayer.title)}
+          </button>
+        ))
+      )}
+    </div>
   );
 }
 export default PrayerButtons;

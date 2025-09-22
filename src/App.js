@@ -5,7 +5,7 @@ import { useState } from "react";
 import ViewPrayers from "./components/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons";
 function App() {
-  const [prayer, setPrayer] = useState(Rosario);
+  const [prayer, setPrayer] = useState("Selecciona una oración");
 
   return (
     <div

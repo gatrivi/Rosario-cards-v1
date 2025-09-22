@@ -1,15 +1,20 @@
 import React from "react";
 import Boton from "./Boton";
 
-function ViewPrayers() {
+function ViewPrayers({ prayer }) {
+  console.log(" prayer prop in ViewPrayers:", prayer);
   return (
     <div className="top-section" style={{ display: "flex", height: "60vh" }}>
       <div
         className="page left"
-        style={{ flex: 1, border: "1px solid #ccc", padding: "10px" }}
+        style={{
+          flex: 1,
+          border: "1px solid #ccc",
+          overflow: "scroll",
+          padding: "10px",
+        }}
       >
-        {/* Dynamic prayer text */}
-        <p>El rezo va aquí...</p>
+        <p> {prayer}</p>
       </div>
       <div
         className="page right"
