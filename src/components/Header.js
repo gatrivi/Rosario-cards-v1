@@ -5,7 +5,6 @@ function Header({ logo }) {
   return (
     <header
       style={{
-        backgroundColor: "#f0f0f0",
         padding: "10px",
         textAlign: "center",
         borderBottom: "1px solid #ccc",

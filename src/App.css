@@ -2,3 +2,64 @@ img#logo {
   height: 30px;
   width: 20px;
 }
+/* Define CSS variables for light and dark themes */
+:root {
+  --background: #f5dbc2;
+  --text-color: #333333;
+  --surface: #f5f5f5;
+  --primary: ##f5dbc2;
+  --secondary: #6c757d;
+  --accent: #28a745;
+}
+
+/* Dark mode styles */
+.dark {
+  --background: #1a1a1a;
+  --text-color: #e0e0e0;
+  --surface: #2c2c2c;
+  --primary: #8c5218;
+  --secondary: #a0a0a0;
+  --accent: #50c878;
+}
+
+/* Apply variables to elements */
+body {
+  background-color: var(--background);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Common components */
+.container {
+  background-color: var(--surface);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+button {
+  background-color: var(--primary);
+  color: var(--text-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--accent);
+}
+
+/* Toggle switch for dark mode */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
