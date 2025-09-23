@@ -72,12 +72,12 @@ button {
 @media (max-width: 600px) {
   .button-container {
     gap: 4px; /* Reduce gap for smaller screens */
-    padding: 4px;
+    padding: 2px;
   }
 
   .button {
     font-size: 10px; /* Smaller font for very small screens */
-    padding: 6px;
+    padding: 2px;
   }
 }
 
