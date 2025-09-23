@@ -3,7 +3,8 @@ function PrayerButtons({ prayers, setPrayer }) {
     return str
       .split(/\s+/) // Split by whitespace
       .map((word) => word[0]?.toUpperCase()) // Get first letter of each word, uppercase
-      .join(""); // Join letters
+      .join("") // Join letters
+      .slice(0, 5);
   }
   return (
     <div
