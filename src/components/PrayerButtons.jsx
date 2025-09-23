@@ -1,3 +1,4 @@
+import ThemeToggle from "./ThemeToggle";
 function PrayerButtons({ prayers, setPrayer }) {
   function makeAcronym(str) {
     return str
@@ -10,11 +11,11 @@ function PrayerButtons({ prayers, setPrayer }) {
     <div
       className="button-grid"
       style={{
-        height: "40vh",
+        height: "38vh",
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "10px",
-        padding: "10px",
+        gap: "1px",
+        padding: "1px",
       }}
     >
       {!prayers || prayers.length === 0 ? (
@@ -26,6 +27,8 @@ function PrayerButtons({ prayers, setPrayer }) {
           </button>
         ))
       )}
+
+      <ThemeToggle />
     </div>
   );
 }

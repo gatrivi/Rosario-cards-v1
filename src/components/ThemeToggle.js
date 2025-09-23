@@ -23,10 +23,10 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors"
+      className=" rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors"
       aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {darkMode ? <FaLightbulb size={20} /> : <FaMoon size={20} />}
+      {darkMode ? <FaLightbulb size={15} /> : <FaMoon size={15} />}
     </button>
   );
 };

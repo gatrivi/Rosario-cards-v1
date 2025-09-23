@@ -13,7 +13,7 @@ function App() {
       className="app"
       style={{ display: "flex", flexDirection: "column", height: "100vh" }}
     >
-      <Header logo={logo} style={{ minHeight: "10px" }} />
+      <Header logo={logo} style={{ height: "4vh" }} />
       <ViewPrayers prayer={prayer} />
       <PrayerButtons prayers={Rosario} setPrayer={setPrayer} />
     </div>

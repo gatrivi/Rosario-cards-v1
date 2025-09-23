@@ -38,7 +38,19 @@ body {
   padding: 20px;
   border-radius: 8px;
 }
-
+.button-grid {
+  position: fixed;
+  bottom: 0;
+  height: 40vh; /* Bottom 40% of viewport height */
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns */
+  gap: 8px; /* Space between buttons */
+  padding: 8px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Scroll if content overflows */
+  background: #f0f0f0; /* Optional: background for visibility */
+}
 button {
   background-color: var(--primary);
   color: var(--text-color);
@@ -47,6 +59,26 @@ button {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  min-height: 44px; /* Touch-friendly height */
+  padding: 8px;
+  font-size: 12px; /* Small font for short text */
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+/* Media query for smaller screens */
+@media (max-width: 600px) {
+  .button-container {
+    gap: 4px; /* Reduce gap for smaller screens */
+    padding: 4px;
+  }
+
+  .button {
+    font-size: 10px; /* Smaller font for very small screens */
+    padding: 6px;
+  }
 }
 
 button:hover {

@@ -1,11 +1,9 @@
 import React from "react";
 
-import ThemeToggle from "./ThemeToggle";
 function Header({ logo }) {
   return (
     <header
       style={{
-        padding: "10px",
         textAlign: "center",
         borderBottom: "1px solid #ccc",
       }}
@@ -16,9 +14,8 @@ function Header({ logo }) {
         src={logo}
         className="App-logo"
         alt="logo"
-        style={{ height: "20px" }}
+        style={{ height: "4vh" }}
       />
-      <ThemeToggle />
     </header>
   );
 }

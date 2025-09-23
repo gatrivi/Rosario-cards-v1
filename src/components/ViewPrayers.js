@@ -4,7 +4,7 @@ import Boton from "./Boton";
 function ViewPrayers({ prayer }) {
   console.log(" prayer prop in ViewPrayers:", prayer);
   return (
-    <div className="top-section" style={{ display: "flex", height: "60vh" }}>
+    <div className="top-section" style={{ display: "flex", height: "58vh" }}>
       <div
         className="page left"
         style={{
