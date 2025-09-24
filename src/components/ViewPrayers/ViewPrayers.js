@@ -1,6 +1,6 @@
 import React from "react";
 import Boton from "../Boton/Boton";
-
+import AveMaria from "../../data/assets/img/avemarialat.png";
 function ViewPrayers({ prayer }) {
   console.log(" prayer prop in ViewPrayers:", prayer);
   return (
@@ -21,7 +21,7 @@ function ViewPrayers({ prayer }) {
         style={{ flex: 1, border: "1px solid #ccc", padding: "10px" }}
       >
         <img
-          src=".src\data\assets\img\avemarialat.png"
+          src={AveMaria}
           alt={`${prayer.name} illustration`}
           style={{ width: "50vw", height: "60vh", objectFit: "cover" }}
         />

@@ -105,7 +105,9 @@ function PrayerButtons({ prayers, setPrayer }) {
           </button>
         ))
       )}
-
+      <button style={{ visibility: "hidden" }}>──────────</button>
+      <ThemeToggle />
+      <button disabled>Oraciones de la década:</button>
       {/* Botones de oraciones de la década (siempre visibles) */}
       {!prayers.decada || prayers.decada.length === 0 ? (
         <div>Loading...</div>
@@ -120,8 +122,6 @@ function PrayerButtons({ prayers, setPrayer }) {
           </button>
         ))
       )}
-
-      <ThemeToggle />
     </div>
   );
 }
