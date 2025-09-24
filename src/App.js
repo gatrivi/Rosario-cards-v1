@@ -3,9 +3,9 @@ import logo from "./logo.svg";
 
 import Rosario from "./data/Rosario";
 import { useState } from "react";
-import ViewPrayers from "./components/ViewPrayers";
-import PrayerButtons from "./components/PrayerButtons";
-import Header from "./components/Header";
+import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
+import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
+import Header from "./components/common/Header";
 function App() {
   const [prayer, setPrayer] = useState("Selecciona una oración");
   return (

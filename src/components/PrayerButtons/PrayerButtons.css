@@ -1,0 +1,29 @@
+.button-grid {
+  position: fixed;
+  bottom: 0;
+  height: 38vh; /* Bottom 40% of viewport height */
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns */
+  gap: 8px; /* Space between buttons */
+  padding: 8px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Scroll if content overflows */
+}
+button {
+  background-color: var(--primary);
+  color: var(--text-color);
+  border: none;
+  padding: 4px 4px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  min-height: 44px; /* Touch-friendly height */
+  padding: 8px;
+  font-size: 12px; /* Small font for short text */
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
