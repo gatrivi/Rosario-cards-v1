@@ -1,3 +1,19 @@
+@font-face {
+  font-family: "Cloister Black"; /* Name your custom font */
+  src: url("./data/fonts/CloisterBlack.ttf") format("truetype"); /* Add other formats if you have them */
+  font-weight: normal;
+  font-style: normal;
+}
+.page-left {
+  font-family: "Cloister Black", serif; /* Use the custom font */
+  font-size: 1.2rem;
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: var(--background); /* Light beige background */
+  color: var(--text-color); /* Dark brown text */
+  overflow-y: auto; /* Enable vertical scrolling if content overflows */
+}
 img#logo {
   height: 30px;
   width: 20px;

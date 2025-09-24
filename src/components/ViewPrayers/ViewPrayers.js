@@ -6,7 +6,7 @@ function ViewPrayers({ prayer }) {
   return (
     <div className="top-section" style={{ display: "flex", height: "58vh" }}>
       <div
-        className="page left"
+        className="page-left"
         style={{
           flex: 1,
           border: "1px solid #ccc",
