@@ -21,9 +21,9 @@ function ViewPrayers({ prayer }) {
         style={{ flex: 1, border: "1px solid #ccc", padding: "10px" }}
       >
         <img
-          src="path/to/image.jpg"
-          alt="Imagen"
-          style={{ width: "100%", height: "100%" }}
+          src=".src\data\assets\img\avemarialat.png"
+          alt={`${prayer.name} illustration`}
+          style={{ width: "50vw", height: "60vh", objectFit: "cover" }}
         />
       </div>
     </div>

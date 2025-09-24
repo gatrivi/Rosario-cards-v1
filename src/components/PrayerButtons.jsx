@@ -1,5 +1,31 @@
 import ThemeToggle from "./ThemeToggle";
+import { useState, useEffect } from "react";
 function PrayerButtons({ prayers, setPrayer }) {
+  // Estado para controlar si mostramos apertura o cierre
+  const [showOpening, setShowOpening] = useState(true);
+  // Estado para el grupo de misterios actual
+
+  const getDefaultMysteries = () => {
+    const today = new Date().getDay(); // 0: Domingo, 1: Lunes, ..., 6: Sábado
+    switch (today) {
+      case 1: // Lunes
+      case 6: // Sábado
+        return "gozosos";
+      case 2: // Martes
+      case 5: // Viernes
+        return "dolorosos";
+      case 3: // Miércoles
+      case 0: // Domingo
+        return "gloriosos";
+      case 4: // Jueves
+        return "luminosos";
+      default:
+        return "gozosos"; // Fallback
+    }
+  };
+  const [currentMysteries, setCurrentMysteries] = useState(
+    getDefaultMysteries()
+  );
   function makeAcronym(str) {
     return str
       .split(/\s+/) // Split by whitespace
@@ -7,6 +33,11 @@ function PrayerButtons({ prayers, setPrayer }) {
       .join("") // Join letters
       .slice(0, 5);
   }
+  // Lista de tipos de misterios para el selector
+  const mysteryTypes = ["gozosos", "dolorosos", "gloriosos", "luminosos"];
+
+  // Oraciones a mostrar (apertura o cierre)
+  const currentPrayers = showOpening ? prayers.apertura : prayers.cierre;
   return (
     <div
       className="button-grid"
@@ -18,15 +49,102 @@ function PrayerButtons({ prayers, setPrayer }) {
         padding: "1px",
       }}
     >
-      {!prayers || prayers.length === 0 ? (
-        <div>Loading...</div>
-      ) : (
-        prayers.map((prayer, index) => (
-          <button onClick={() => setPrayer(prayer.text)} key={index}>
-            {makeAcronym(prayer.title)}
+      {/* Botón para alternar apertura/cierre */}
+      <button
+        onClick={() => setShowOpening(!showOpening)}
+        style={{ fontWeight: "bold", padding: "10px" }}
+      >
+        {showOpening ? "Mostrar Cierre" : "Mostrar Apertura"}
+      </button>
+
+      {/* Selector de misterios */}
+      <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+        {mysteryTypes.map((type) => (
+          <button
+            key={type}
+            onClick={() => setCurrentMysteries(type)}
+            style={{
+              backgroundColor: currentMysteries === type ? "#4CAF50" : "#ccc",
+              padding: "8px",
+              borderRadius: "5px",
+            }}
+          >
+            {type.charAt(0).toUpperCase() + type.slice(1)}
           </button>
-        ))
-      )}
+        ))}
+      </div>
+
+      {/* Botones de oraciones de apertura/cierre */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "5px",
+          marginBottom: "10px",
+        }}
+      >
+        {!currentPrayers || currentPrayers.length === 0 ? (
+          <div>Loading...</div>
+        ) : (
+          currentPrayers.map((prayer, index) => (
+            <button
+              onClick={() => setPrayer(prayer.text)}
+              key={index}
+              style={{ padding: "8px" }}
+            >
+              {makeAcronym(prayer.title)}
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* Botones de misterios */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "5px",
+          marginBottom: "10px",
+        }}
+      >
+        {!prayers.mysteries[currentMysteries] ||
+        prayers.mysteries[currentMysteries].length === 0 ? (
+          <div>Loading...</div>
+        ) : (
+          prayers.mysteries[currentMysteries].map((prayer, index) => (
+            <button
+              onClick={() => setPrayer(prayer.text)}
+              key={index}
+              style={{ padding: "8px" }}
+            >
+              {makeAcronym(prayer.title)}
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* Botones de oraciones de la década (siempre visibles) */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "5px",
+        }}
+      >
+        {!prayers.decadePrayers || prayers.decadePrayers.length === 0 ? (
+          <div>Loading...</div>
+        ) : (
+          prayers.decadePrayers.map((prayer, index) => (
+            <button
+              onClick={() => setPrayer(prayer.text)}
+              key={index}
+              style={{ padding: "8px", backgroundColor: "#f0f0f0" }}
+            >
+              {makeAcronym(prayer.title)}
+            </button>
+          ))
+        )}
+      </div>
 
       <ThemeToggle />
     </div>
