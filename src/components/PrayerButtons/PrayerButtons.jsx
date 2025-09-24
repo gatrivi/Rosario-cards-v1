@@ -50,77 +50,6 @@ function PrayerButtons({ prayers, setPrayer }) {
         padding: "1px",
       }}
     >
-      {/* Botones de oraciones de apertura/cierre */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "5px",
-          marginBottom: "10px",
-        }}
-      >
-        {!currentPrayers || currentPrayers.length === 0 ? (
-          <div>Loading...</div>
-        ) : (
-          currentPrayers.map((prayer, index) => (
-            <button
-              onClick={() => setPrayer(prayer.text)}
-              key={index}
-              style={{ padding: "8px" }}
-            >
-              {makeAcronym(prayer.title)}
-            </button>
-          ))
-        )}
-      </div>
-
-      {/* Botones de misterios */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "5px",
-          marginBottom: "10px",
-        }}
-      >
-        {!prayers.mysteries[currentMysteries] ||
-        prayers.mysteries[currentMysteries].length === 0 ? (
-          <div>Loading...</div>
-        ) : (
-          prayers.mysteries[currentMysteries].map((prayer, index) => (
-            <button
-              onClick={() => setPrayer(prayer.text)}
-              key={index}
-              style={{ padding: "8px" }}
-            >
-              {makeAcronym(prayer.title)}
-            </button>
-          ))
-        )}
-      </div>
-
-      {/* Botones de oraciones de la década (siempre visibles) */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "5px",
-        }}
-      >
-        {!prayers.decada || prayers.decada.length === 0 ? (
-          <div>Loading...</div>
-        ) : (
-          prayers.decada.map((prayer, index) => (
-            <button
-              onClick={() => setPrayer(prayer.text)}
-              key={index}
-              style={{ padding: "8px" }}
-            >
-              {makeAcronym(prayer.title)}
-            </button>
-          ))
-        )}
-      </div>
       {/* Botón para alternar apertura/cierre */}
       <button
         onClick={() => setShowOpening(!showOpening)}
@@ -129,22 +58,69 @@ function PrayerButtons({ prayers, setPrayer }) {
         {showOpening ? "Oraciones de Apertura:" : "Oraciones de Cierre:"}
       </button>
 
-      {/* Selector de misterios */}
-      <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-        {mysteryTypes.map((type) => (
+      {/* Botones de oraciones de apertura/cierre */}
+
+      {!currentPrayers || currentPrayers.length === 0 ? (
+        <div>Loading...</div>
+      ) : (
+        currentPrayers.map((prayer, index) => (
           <button
-            key={type}
-            onClick={() => setCurrentMysteries(type)}
-            style={{
-              backgroundColor: currentMysteries === type ? "#4CAF50" : "#ccc",
-              padding: "8px",
-              borderRadius: "5px",
-            }}
+            onClick={() => setPrayer(prayer.text)}
+            key={index}
+            style={{ padding: "8px" }}
           >
-            {type.charAt(0).toUpperCase() + type.slice(1)}
+            {makeAcronym(prayer.title)}
           </button>
-        ))}
-      </div>
+        ))
+      )}
+
+      {/* Selector de misterios */}
+      {mysteryTypes.map((type) => (
+        <button
+          key={type}
+          onClick={() => setCurrentMysteries(type)}
+          style={{
+            backgroundColor: currentMysteries === type ? "#4CAF50" : "#ccc",
+            padding: "8px",
+            borderRadius: "5px",
+          }}
+        >
+          {type.charAt(0).toUpperCase() + type.slice(1)}
+        </button>
+      ))}
+
+      {/* Botones de misterios */}
+
+      {!prayers.mysteries[currentMysteries] ||
+      prayers.mysteries[currentMysteries].length === 0 ? (
+        <div>Loading...</div>
+      ) : (
+        prayers.mysteries[currentMysteries].map((prayer, index) => (
+          <button
+            onClick={() => setPrayer(prayer.text)}
+            key={index}
+            style={{ padding: "8px" }}
+          >
+            {makeAcronym(prayer.title)}
+          </button>
+        ))
+      )}
+
+      {/* Botones de oraciones de la década (siempre visibles) */}
+      {!prayers.decada || prayers.decada.length === 0 ? (
+        <div>Loading...</div>
+      ) : (
+        prayers.decada.map((prayer, index) => (
+          <button
+            onClick={() => setPrayer(prayer.text)}
+            key={index}
+            style={{ padding: "8px" }}
+          >
+            {makeAcronym(prayer.title)}
+          </button>
+        ))
+      )}
+
       <ThemeToggle />
     </div>
   );

@@ -134,11 +134,7 @@ const Rosario = {
     },
     {
       title: "Oración por el Papa",
-      text: "Oh Dios, que has puesto la sede de Pedro como fundamento de la unidad de la Iglesia, concede al Papa Francisco, tu siervo, ser para todos los fieles principio y fundamento visible de la fe y de la comunión. Por Jesucristo, nuestro Señor. Amén.",
-    },
-    {
-      title: "Señal de la Cruz Final",
-      text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+      text: "Oh Dios, que has puesto la sede de Pedro como fundamento de la unidad de la Iglesia, concede al Papa Francisco, tu siervo, ser para todos los fieles principio y fundamento visible de la fe y de la comunión. Por Jesucristo, nuestro Señor. Amén. En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
     },
   ],
 };
