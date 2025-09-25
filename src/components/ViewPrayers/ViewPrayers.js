@@ -23,7 +23,12 @@ function ViewPrayers({ prayer }) {
         <img
           src={AveMaria}
           alt={`${prayer.name} illustration`}
-          style={{ width: "50vw", height: "60vh", objectFit: "cover" }}
+          style={{
+            width: "50vw",
+            height: "60vh",
+            objectFit: "contain",
+            borderRadius: "8px",
+          }}
         />
       </div>
     </div>
