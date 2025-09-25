@@ -1,3 +1,11 @@
+* {
+  transition: all 0.2s ease-in-out;
+}
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
 @font-face {
   font-family: "Cloister Black"; /* Name your custom font */
   src: url("./data/fonts/CloisterBlack.ttf") format("truetype"); /* Add other formats if you have them */
@@ -30,12 +38,12 @@ img#logo {
 
 /* Dark mode styles */
 .dark {
-  --background: #1a1a1a;
-  --text-color: #e0e0e0;
+  --background: #222222;
+  --text-color: #bbbbbb;
   --surface: #2c2c2c;
-  --primary: #8c5218;
-  --secondary: #a0a0a0;
-  --accent: #50c878;
+  --primary: #1a1a1a;
+  --secondary: #1a1a1a;
+  --accent: #555555;
 }
 
 /* Apply variables to elements */

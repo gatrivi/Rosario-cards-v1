@@ -80,7 +80,7 @@ function PrayerButtons({ prayers, setPrayer }) {
           key={type}
           onClick={() => setCurrentMysteries(type)}
           style={{
-            backgroundColor: currentMysteries === type ? "#4CAF50" : "#ccc",
+            backgroundColor: currentMysteries === type ? "#777777" : "#555555",
             padding: "8px",
             borderRadius: "5px",
           }}

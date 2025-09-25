@@ -19,11 +19,8 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease;
   min-height: 44px; /* Touch-friendly height */
-  padding: 8px;
   font-size: 12px; /* Small font for short text */
   text-align: center;
-  border: 1px solid #ccc;
   border-radius: 4px;
-  cursor: pointer;
   text-transform: uppercase;
 }
