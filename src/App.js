@@ -10,7 +10,9 @@ function App() {
   const [prayer, setPrayer] = useState("Selecciona una oración");
   const [count, setCount] = useState(0);
   const handleCountClick = () => {
-    setCount(count + 1);
+    if (count < 10) {
+      setCount(count + 1);
+    }
   };
 
   const handleResetClick = () => {
