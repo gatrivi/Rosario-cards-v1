@@ -9,16 +9,15 @@ function ViewPrayers({ prayer, count }) {
         className="page-left"
         style={{
           flex: 1,
-          border: "1px solid #ccc",
           overflow: "scroll",
           padding: "4px",
         }}
       >
-        <p>
+        <p style={{ whiteSpace: "pre-wrap" }}>
           {count} {prayer}
         </p>
       </div>
-      <div className="page right" style={{ flex: 1, border: "1px solid #ccc" }}>
+      <div className="page right" style={{ flex: 1 }}>
         <img
           src={AveMaria}
           alt={`${prayer.name} illustration`}

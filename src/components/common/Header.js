@@ -5,7 +5,6 @@ function Header({ logo }) {
     <header
       style={{
         textAlign: "center",
-        borderBottom: "1px solid #ccc",
       }}
       className="App-header"
     >

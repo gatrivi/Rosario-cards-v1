@@ -1,5 +1,5 @@
 import "./App.css";
-import logo from "./logo.svg";
+import logo from "./logo.png";
 
 import Rosario from "./data/Rosario";
 import { useState } from "react";
