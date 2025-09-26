@@ -105,7 +105,7 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
       ) : (
         prayers.decada.map((prayer, index) => (
           <button
-            onClick={() => handlePrayerAndCount(prayer.text)}
+            onClick={() => handlePrayerAndCount(prayer.text, prayer.img)}
             key={index}
             style={{ padding: "4px" }}
           >
@@ -127,11 +127,11 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
       {/* Botones de oraciones de apertura/cierre */}
 
       {!currentPrayers || currentPrayers.length === 0 ? (
-        <div>Loading...</div>
+        <div>Cargando Oraciones Iniciales o de Cierre...</div>
       ) : (
         currentPrayers.map((prayer, index) => (
           <button
-            onClick={() => setPrayer(prayer.text)}
+            onClick={() => handlePrayerAndCount(prayer.text, prayer.img)}
             key={index}
             style={{ padding: "4px" }}
           >

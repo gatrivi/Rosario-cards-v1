@@ -22,6 +22,25 @@
   color: var(--text-color); /* Dark brown text */
   overflow-y: auto; /* Enable vertical scrolling if content overflows */
 }
+.page-right {
+  overflow: hidden; /* CRITICAL: Clips the zoomed part */
+  cursor: zoom-in; /* Provides visual feedback to the user */
+}
+.page-right img {
+  width: 100%;
+  height: 100%;
+  /* Ensures the image covers the container without distortion */
+  object-fit: cover;
+  /* CRITICAL: Makes the zoom smooth */
+  transition: transform 0.3s ease-in-out;
+  /* Start at a normal scale */
+  transform: scale(1);
+}
+.page-right img:hover {
+  /* Zoom in when hovered */
+  transform: scale(1.6);
+}
+
 img#logo {
   height: 30px;
   width: 20px;

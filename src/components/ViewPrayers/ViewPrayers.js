@@ -31,12 +31,13 @@ function ViewPrayers({ prayer, count, prayerImg }) {
           {count} {prayer}
         </p>
       </div>
-      <div className="page right" style={{ flex: 1 }}>
+      <div className="page-right" style={{ flex: 1 }}>
         <img
+          className="prayer-image"
           src={finalImageUrl}
           alt={`${prayer.name} illustration`}
           style={{
-            width: "44vw",
+            width: "47vw",
             height: "56vh",
             objectFit: "contain",
             borderRadius: "8px",

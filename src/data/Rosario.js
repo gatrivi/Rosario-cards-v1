@@ -2,6 +2,7 @@ const Rosario = {
   apertura: [
     {
       title: "Señal de la Cruz",
+      img: "/gallery-images/misterios/francisco_de_asis_2.jpg",
       text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
     },
     {
@@ -10,24 +11,29 @@ const Rosario = {
     },
     {
       title: "Credo",
+      img: "/gallery-images/misterios/latin-credo.jpeg",
       text: "Creo en Dios, Padre todopoderoso, Creador del cielo y de la tierra. Creo en Jesucristo, su único Hijo, nuestro Señor, que fue concebido por obra y gracia del Espíritu Santo, nació de Santa María Virgen, padeció bajo el poder de Poncio Pilato, fue crucificado, muerto y sepultado, descendió a los infiernos, al tercer día resucitó de entre los muertos, subió a los cielos y está sentado a la derecha de Dios, Padre todopoderoso. Desde allí ha de venir a juzgar a vivos y muertos. Creo en el Espíritu Santo, la santa Iglesia católica, la comunión de los santos, el perdón de los pecados, la resurrección de la carne y la vida eterna. Amén.",
     },
   ],
   decada: [
     {
       title: "Padre Nuestro",
+      img: "/gallery-images/misterios/latin-pater-noster.jpg",
       text: "Padre nuestro, que estás en el cielo, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
     },
     {
       title: "Ave María",
+      img: "/gallery-images/misterios/latin-ave-maria.jpg",
       text: "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén.",
     },
     {
       title: "Gloria",
+      img: "/gallery-images/misterios/latin-gloria.jpg",
       text: "Gloria al Padre, y al Hijo, y al Espíritu Santo. Como era en el principio, ahora y siempre, por los siglos de los siglos. Amén.",
     },
     {
       title: "Oración de Fátima",
+      img: "/gallery-images/misterios/Encounters in the cathedral of Raleigh.jpg",
       text: "Oh Jesús mío, perdona nuestros pecados, líbranos del fuego del infierno, lleva al cielo a todas las almas, especialmente a las más necesitadas de tu misericordia.",
     },
   ],
