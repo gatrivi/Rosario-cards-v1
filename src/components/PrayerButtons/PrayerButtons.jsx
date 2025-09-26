@@ -1,11 +1,15 @@
 import ThemeToggle from "../common/ThemeToggle";
 import "./PrayerButtons.css";
 import { useState, useEffect } from "react";
-function PrayerButtons({ prayers, setPrayer }) {
+function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
   // Estado para controlar si mostramos apertura o cierre
   const [showOpening, setShowOpening] = useState(true);
   // Estado para el grupo de misterios actual
 
+  const handlePrayerAndCount = (prayerText) => {
+    setPrayer(prayerText);
+    countUp();
+  };
   const getDefaultMysteries = () => {
     const today = new Date().getDay(); // 0: Domingo, 1: Lunes, ..., 6: Sábado
     switch (today) {
@@ -81,7 +85,7 @@ function PrayerButtons({ prayers, setPrayer }) {
           </button>
         ))
       )}
-      <button style={{ visibility: "hidden" }}>──────────</button>
+      <button onClick={reset}>Reset</button>
       <ThemeToggle />
       <button disabled>Oraciones de la década:</button>
       {/* Botones de oraciones de la década (siempre visibles) */}
@@ -90,7 +94,7 @@ function PrayerButtons({ prayers, setPrayer }) {
       ) : (
         prayers.decada.map((prayer, index) => (
           <button
-            onClick={() => setPrayer(prayer.text)}
+            onClick={() => countUp(prayer.text)}
             key={index}
             style={{ padding: "4px" }}
           >
