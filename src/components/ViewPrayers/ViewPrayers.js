@@ -11,7 +11,7 @@ function ViewPrayers({ prayer }) {
           flex: 1,
           border: "1px solid #ccc",
           overflow: "scroll",
-          padding: "10px",
+          padding: "4px",
         }}
       >
         <p> {prayer}</p>

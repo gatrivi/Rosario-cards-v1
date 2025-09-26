@@ -6,7 +6,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* 4 columns */
   gap: 8px; /* Space between buttons */
-  padding: 8px;
+  padding: 4px;
   box-sizing: border-box;
   overflow-y: auto; /* Scroll if content overflows */
 }

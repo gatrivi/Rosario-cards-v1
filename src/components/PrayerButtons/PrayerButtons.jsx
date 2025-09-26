@@ -28,11 +28,11 @@ function PrayerButtons({ prayers, setPrayer }) {
     getDefaultMysteries()
   );
   function makeAcronym(str) {
-    return str
-      .split(/\s+/) // Split by whitespace
+    return str;
+    /*   .split(/\s+/) // Split by whitespace
       .map((word) => word[0]?.toUpperCase()) // Get first letter of each word, uppercase
       .join("") // Join letters
-      .slice(0, 5);
+      .slice(0, 5); */
   }
   // Lista de tipos de misterios para el selector
   const mysteryTypes = ["gozosos", "dolorosos", "gloriosos", "luminosos"];
@@ -50,30 +50,6 @@ function PrayerButtons({ prayers, setPrayer }) {
         padding: "1px",
       }}
     >
-      {/* Botón para alternar apertura/cierre */}
-      <button
-        onClick={() => setShowOpening(!showOpening)}
-        style={{ fontWeight: "bold", padding: "10px" }}
-      >
-        {showOpening ? "Oraciones de Apertura:" : "Oraciones de Cierre:"}
-      </button>
-
-      {/* Botones de oraciones de apertura/cierre */}
-
-      {!currentPrayers || currentPrayers.length === 0 ? (
-        <div>Loading...</div>
-      ) : (
-        currentPrayers.map((prayer, index) => (
-          <button
-            onClick={() => setPrayer(prayer.text)}
-            key={index}
-            style={{ padding: "8px" }}
-          >
-            {makeAcronym(prayer.title)}
-          </button>
-        ))
-      )}
-
       {/* Selector de misterios */}
       {mysteryTypes.map((type) => (
         <button
@@ -99,7 +75,7 @@ function PrayerButtons({ prayers, setPrayer }) {
           <button
             onClick={() => setPrayer(prayer.text)}
             key={index}
-            style={{ padding: "8px" }}
+            style={{ padding: "4px" }}
           >
             {makeAcronym(prayer.title)}
           </button>
@@ -116,7 +92,34 @@ function PrayerButtons({ prayers, setPrayer }) {
           <button
             onClick={() => setPrayer(prayer.text)}
             key={index}
-            style={{ padding: "8px" }}
+            style={{ padding: "4px" }}
+          >
+            {makeAcronym(prayer.title)}
+          </button>
+        ))
+      )}
+      {/* Botón para alternar apertura/cierre */}
+      <button
+        onClick={() => setShowOpening(!showOpening)}
+        style={{
+          fontWeight: "bold",
+          backgroundColor: "#555555",
+          padding: "4x",
+        }}
+      >
+        {showOpening ? "Oraciones de Apertura:" : "Oraciones de Cierre:"}
+      </button>
+
+      {/* Botones de oraciones de apertura/cierre */}
+
+      {!currentPrayers || currentPrayers.length === 0 ? (
+        <div>Loading...</div>
+      ) : (
+        currentPrayers.map((prayer, index) => (
+          <button
+            onClick={() => setPrayer(prayer.text)}
+            key={index}
+            style={{ padding: "4px" }}
           >
             {makeAcronym(prayer.title)}
           </button>
