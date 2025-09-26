@@ -8,7 +8,14 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
 
   const handlePrayerAndCount = (prayerText) => {
     setPrayer(prayerText);
-    countUp();
+    if (
+      prayerText ==
+      "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
+    ) {
+      countUp();
+    } else {
+      reset();
+    }
   };
   const getDefaultMysteries = () => {
     const today = new Date().getDay(); // 0: Domingo, 1: Lunes, ..., 6: Sábado
@@ -73,7 +80,7 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
 
       {!prayers.mysteries[currentMysteries] ||
       prayers.mysteries[currentMysteries].length === 0 ? (
-        <div>Loading...</div>
+        <div>Cargando Misterios...</div>
       ) : (
         prayers.mysteries[currentMysteries].map((prayer, index) => (
           <button
@@ -90,11 +97,11 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
       <button disabled>Oraciones de la década:</button>
       {/* Botones de oraciones de la década (siempre visibles) */}
       {!prayers.decada || prayers.decada.length === 0 ? (
-        <div>Loading...</div>
+        <div>Cargando Oraciones de la Decada...</div>
       ) : (
         prayers.decada.map((prayer, index) => (
           <button
-            onClick={() => countUp(prayer.text)}
+            onClick={() => handlePrayerAndCount(prayer.text)}
             key={index}
             style={{ padding: "4px" }}
           >
