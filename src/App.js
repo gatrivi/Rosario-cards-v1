@@ -8,13 +8,14 @@ import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
 function App() {
   const [prayer, setPrayer] = useState("Selecciona una oración");
+  const [prayerImg, setPrayerImg] = useState("");
   const [count, setCount] = useState(0);
   const handleCountClick = () => {
     if (count < 10) {
       setCount(count + 1);
     }
   };
-
+  console.log("setPrayerImg in App:", setPrayerImg);
   const handleResetClick = () => {
     setCount(0);
   };
@@ -25,12 +26,13 @@ function App() {
       style={{ display: "flex", flexDirection: "column", height: "100vh" }}
     >
       <Header logo={logo} style={{ height: "4vh" }} />
-      <ViewPrayers count={count} prayer={prayer} />
+      <ViewPrayers count={count} prayerImg={prayerImg} prayer={prayer} />
       <PrayerButtons
         prayers={Rosario}
         countUp={handleCountClick}
         reset={handleResetClick}
         setPrayer={setPrayer}
+        setPrayerImg={setPrayerImg}
       />
     </div>
   );

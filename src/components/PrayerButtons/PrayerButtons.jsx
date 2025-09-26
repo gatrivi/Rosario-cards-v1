@@ -1,13 +1,15 @@
 import ThemeToggle from "../common/ThemeToggle";
 import "./PrayerButtons.css";
 import { useState, useEffect } from "react";
-function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
+function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
   // Estado para controlar si mostramos apertura o cierre
   const [showOpening, setShowOpening] = useState(true);
   // Estado para el grupo de misterios actual
 
-  const handlePrayerAndCount = (prayerText) => {
+  const handlePrayerAndCount = (prayerText, prayerImg) => {
     setPrayer(prayerText);
+    setPrayerImg(prayerImg);
+
     if (
       prayerText ==
       "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
@@ -86,7 +88,7 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
       ) : (
         prayers.mysteries[currentMysteries].map((prayer, index) => (
           <button
-            onClick={() => setPrayer(prayer.text)}
+            onClick={() => handlePrayerAndCount(prayer.text, prayer.img)}
             key={index}
             style={{ padding: "4px" }}
           >
