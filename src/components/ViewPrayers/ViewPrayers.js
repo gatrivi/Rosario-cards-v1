@@ -1,8 +1,12 @@
 import React from "react";
 import Boton from "../Boton/Boton";
 import AveMaria from "../../data/assets/img/Theotokos.jpg";
+import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
 function ViewPrayers({ prayer, count }) {
   console.log(" prayer prop in ViewPrayers:", prayer);
+
+  const currentTheme = localStorage.getItem("theme");
+
   return (
     <div className="top-section" style={{ display: "flex", height: "58vh" }}>
       <div
@@ -19,7 +23,7 @@ function ViewPrayers({ prayer, count }) {
       </div>
       <div className="page right" style={{ flex: 1 }}>
         <img
-          src={AveMaria}
+          src={currentTheme === "dark" ? AveMaria : AveMariaD}
           alt={`${prayer.name} illustration`}
           style={{
             width: "44vw",

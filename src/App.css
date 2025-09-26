@@ -8,7 +8,7 @@
 }
 @font-face {
   font-family: "Cloister Black"; /* Name your custom font */
-  src: url("./data/fonts/CloisterBlack.ttf") format("truetype"); /* Add other formats if you have them */
+  src: url("./data/fonts/Remingtoned.ttf") format("truetype"); /* Add other formats if you have them */
   font-weight: normal;
   font-style: normal;
 }
@@ -28,12 +28,12 @@ img#logo {
 }
 /* Define CSS variables for light and dark themes */
 :root {
-  --background: #f5dbc2;
-  --text-color: #333333;
+  --background: #fffce9;
+  --text-color: #362f27;
   --surface: #f5f5f5;
   --primary: ##f5dbc2;
-  --secondary: #6c757d;
-  --accent: #28a745;
+  --secondary: #a6a296;
+  --accent: #f5f5f5;
 }
 
 /* Dark mode styles */
@@ -45,7 +45,16 @@ img#logo {
   --secondary: #1a1a1a;
   --accent: #555555;
 }
+button {
+  font-family: "Cloister Black", serif; /* Use the custom font */
+}
+.button-active {
+  background-color: var(--primary);
+}
 
+.button-inactive {
+  background-color: var(--secondary);
+}
 /* Apply variables to elements */
 body {
   background-color: var(--background);

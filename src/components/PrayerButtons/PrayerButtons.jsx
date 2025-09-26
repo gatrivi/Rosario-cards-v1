@@ -66,8 +66,10 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
         <button
           key={type}
           onClick={() => setCurrentMysteries(type)}
+          className={`button-base ${
+            currentMysteries === type ? "button-active" : "button-inactive"
+          }`}
           style={{
-            backgroundColor: currentMysteries === type ? "#777777" : "#555555",
             padding: "8px",
             borderRadius: "5px",
           }}
@@ -112,9 +114,8 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp }) {
       {/* Botón para alternar apertura/cierre */}
       <button
         onClick={() => setShowOpening(!showOpening)}
+        className="button-inactive"
         style={{
-          fontWeight: "bold",
-          backgroundColor: "#555555",
           padding: "4x",
         }}
       >
