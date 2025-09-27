@@ -58,7 +58,7 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
       style={{
         height: "38vh",
         display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
+        gridTemplateColumns: "repeat(8, 1fr)",
         gap: "1px",
         padding: "1px",
       }}
