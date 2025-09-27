@@ -29,6 +29,43 @@ const Bead = ({ position, onMove }) => {
 
     bead.addEventListener("mousedown", handleMouseDown);
     return () => bead.removeEventListener("mousedown", handleMouseDown);
+
+    {
+      /* Mobile support */
+    }
+    const handleTouchStart = (e) => {
+      e.preventDefault();
+      isDragging = true;
+      offset.x = e.touches[0].clientX - bead.getBoundingClientRect().left;
+      offset.y = e.touches[0].clientY - bead.getBoundingClientRect().top;
+      document.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      document.addEventListener("touchend", handleTouchEnd);
+    };
+
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      if (isDragging) {
+        onMove({
+          x: e.touches[0].clientX - offset.x,
+          y: e.touches[0].clientY - offset.y,
+        });
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isDragging = false;
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+
+    bead.addEventListener("touchstart", handleTouchStart, { passive: false });
+    return () => bead.removeEventListener("touchstart", handleTouchStart);
+
+    {
+      /* closing useEffect */
+    }
   }, [onMove]);
   return (
     <div
@@ -39,7 +76,8 @@ const Bead = ({ position, onMove }) => {
         top: `${position.y}px`,
         width: "22px",
         height: "22px",
-        backgroundColor: "coral",
+        border: "1px solid chocolate",
+        backgroundColor: "linear-gradient(coral, chocolate)",
         borderRadius: "50%",
         cursor: "grab",
       }}
