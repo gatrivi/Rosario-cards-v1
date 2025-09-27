@@ -1,70 +1,47 @@
-# Getting Started with Create React App
+🕊️ Rosario en la Nube
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Una aplicación diseñada para rezar y aprender el Santo Rosario de forma profunda y sin distracciones.
 
-## Available Scripts
+✨ Filosofía y Misión
 
-In the project directory, you can run:
+Wsta app prioriza la contemplación y el recogimiento. Nace de la necesidad de tener una herramienta que:
 
-### `npm start`
+    Funcione completamente en local (Modo Avión), permitiendo la oración sin la interrupción de notificaciones, ideal para el recogimiento.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+    Pone el foco en la belleza del arte cristiano como alimento para el alma.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+    Ofrece los Misterios del Rosario en español, cubriendo una necesidad que la versión gratuita de otras apps (como Hallow) no satisface.
 
-### `npm test`
+💻 Características Principales
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Recursos Visuales y Textuales
 
-### `npm run build`
+    Arte Cristiano Antiguo: Cada rezo está ilustrado con imágenes de arte sacro de las tradiciones Romana (Católica) y Ortodoxa.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    Textos Históricos: Incluye visualizaciones de textos medievales con los rezos en Latín y las típicas decoraciones góticas, añadiendo un elemento de tradición y belleza histórica.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    Sencilla Botonera: Una interfaz simple con cada rezo, mostrando el texto de la plegaria junto a su imagen.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    Modo Noche (Dark Mode): Esencial para el recogimiento. Si bien la luz de una vela es rica, la luz de una pantalla no lo es, por lo que el modo noche ayuda a evitar la fatiga visual en la penumbra.
 
-### `npm run eject`
+Experiencia Única
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+    Rosario de Cuentas Interactiva: Esta es la feature más destacada. Permite mover las cuentas digitalmente, ofreciendo un soporte corporal (además de estar de rodillas, si se desea) y ayudando a llevar la cuenta de las decenas.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+        Guía para Principiantes: Al tocar una cuenta, se muestra el rezo que corresponde en ese momento. Esto evita confusiones en la secuencia de los 30 rezos distintos que pueden darse en algunas variaciones.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+🚀 Futuras Implementaciones
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+    Audios y Locuciones: Se añadirán audios para que el usuario pueda rezar sin tener que mirar la pantalla constantemente.
 
-## Learn More
+    Recordatorios de Hábito: Funcionalidad para ayudar a construir un hábito diario de oración.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+    Colección de Arte: Ampliación de las obras de arte disponibles.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    Libro de Cantos y Liturgia: Incorporación de una colección de cantos y otros rezos litúrgicos (Romanos y Ortodoxos). La rica tradición de ambos ritos puede ser intimidante al comienzo, y esta sección servirá como una guía accesible.
 
-### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-### Analyzing the Bundle Size
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+    Aclaracion>
+    La IA reescribio el texto para claridad en markdown.
