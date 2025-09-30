@@ -80,6 +80,7 @@ const Bead = ({ position, onMove }) => {
         backgroundColor: "linear-gradient(coral, chocolate)",
         borderRadius: "50%",
         cursor: "grab",
+        userSelect: "none", // Evita selección de texto
       }}
     />
   );

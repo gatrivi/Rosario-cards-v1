@@ -13,10 +13,10 @@ function ViewPrayers({ prayer, count, prayerImg }) {
     baseImageUrl = AveMariaD;
   }
   const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
-  console.log("finalImageUrl:", finalImageUrl);
   console.log("prayerImg prop in ViewPrayers:", prayerImg);
-  console.log("currentTheme:", currentTheme);
   console.log("baseImageUrl:", baseImageUrl);
+  console.log("currentTheme:", currentTheme);
+  console.log("finalImageUrl:", finalImageUrl);
   return (
     <div className="top-section" style={{ display: "flex", height: "58vh" }}>
       <div

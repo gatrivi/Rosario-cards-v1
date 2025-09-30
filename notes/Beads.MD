@@ -187,14 +187,14 @@ Ahora atamos dos beads: Mover una afecta a la otra vía "hilo" (distancia fija).
       y1={beads[0].y + 25}
       x2={beads[1].x + 25}
       y2={beads[1].y + 25}
-      stroke="black"
+      stroke="coral"
     />
   </svg>
   ```
 
   - 2.2.1. Centro: +25 asume bead de 50px.
 
-  2.3. **Movimiento Vinculado** ⚙️
+    2.3. **Movimiento Vinculado** ⚙️
 
 - Al mover una, calcula dirección y mueve la otra para mantener distancia (e.g., 100px).
 - En `handleMove`: Después de actualizar la movida, ajusta la otra.
@@ -321,7 +321,7 @@ import Draggable from 'react-draggable';
   - 5.3.1. Varia pitch/volume: `sound.rate(1 + speed/10)`.
   - 5.3.2. Para bonus: Secuencia con múltiples sounds basados en colision data.
 
-  5.4. **Optimizaciones Finales** 💡
+    5.4. **Optimizaciones Finales** 💡
 
 - **Performance**: Usa `useMemo` para cálculos pesados, throttle RAF.
 - **Mobile**: Testea en real device; añade `touch-action: none`.
