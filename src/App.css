@@ -57,12 +57,12 @@ img#logo {
 
 /* Dark mode styles */
 .dark {
-  --background: #222222;
+  --background: #1e1802;
   --text-color: #bbbbbb;
   --surface: #2c2c2c;
   --primary: #1a1a1a;
-  --secondary: #1a1a1a;
-  --accent: #555555;
+  --secondary: #1e1802;
+  --accent: #4c4c42;
 }
 button {
   font-family: "Cloister Black", serif; /* Use the custom font */

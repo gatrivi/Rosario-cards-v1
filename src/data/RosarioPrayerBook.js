@@ -371,12 +371,15 @@ const RosarioPrayerBook = {
     {
       id: "AC",
       title: "Acto de Contrición",
+      img: "/gallery-images/misterios/contricion.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/contricion.jpg",
       text: "Yo confieso ante Dios todopoderoso y ante vosotros, hermanos, que he pecado mucho de pensamiento, palabra, obra y omisión. Por mi culpa, por mi culpa, por mi gran culpa. Por eso ruego a Santa María, siempre Virgen, a los ángeles, a los santos y a vosotros, hermanos, que intercedáis por mí ante Dios, nuestro Señor. Amén.",
     },
     {
       id: "C",
       title: "Credo",
       img: "/gallery-images/misterios/latin-credo.jpeg",
+      imgmo: "/gallery-images/misterios/modooscuro/credo.webp",
       text: "Creo en Dios, Padre todopoderoso, Creador del cielo y de la tierra. Creo en Jesucristo, su único Hijo, nuestro Señor, que fue concebido por obra y gracia del Espíritu Santo, nació de Santa María Virgen, padeció bajo el poder de Poncio Pilato, fue crucificado, muerto y sepultado, descendió a los infiernos, al tercer día resucitó de entre los muertos, subió a los cielos y está sentado a la derecha de Dios, Padre todopoderoso. Desde allí ha de venir a juzgar a vivos y muertos. Creo en el Espíritu Santo, la santa Iglesia católica, la comunión de los santos, el perdón de los pecados, la resurrección de la carne y la vida eterna. Amén.",
     },
   ],
@@ -385,24 +388,28 @@ const RosarioPrayerBook = {
       id: "P",
       title: "Padre Nuestro",
       img: "/gallery-images/misterios/latin-pater-noster.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/padre-nuestro.jpg",
       text: "Padre nuestro, que estás en el cielo, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
     },
     {
       id: "A",
       title: "Ave María",
       img: "/gallery-images/misterios/latin-ave-maria.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/ave-maria.jpg",
       text: "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén.",
     },
     {
       id: "G",
       title: "Gloria",
       img: "/gallery-images/misterios/latin-gloria.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/gloria.webp",
       text: "Gloria al Padre, y al Hijo, y al Espíritu Santo. Como era en el principio, ahora y siempre, por los siglos de los siglos. Amén.",
     },
     {
       id: "F",
       title: "Oración de Fátima",
       img: "/gallery-images/misterios/Encounters in the cathedral of Raleigh.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/roseLimaJuarez-870x1250.jpg",
       text: "Oh Jesús mío, perdona nuestros pecados, líbranos del fuego del infierno, lleva al cielo a todas las almas, especialmente a las más necesitadas de tu misericordia.",
     },
   ],
@@ -499,6 +506,7 @@ const RosarioPrayerBook = {
         num: 1,
         title: "MG1: La Resurrección del Señor",
         img: "/gallery-images/misterios/misteriogloria1.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogloria1.webp",
 
         text: "Jesús resucita de entre los muertos al tercer día, venciendo la muerte\nl\nCitas Escriturísticas:\n\nMateo 28:6: No está aquí, pues ha resucitado, como dijo. Venid, ved el lugar donde fue puesto el Señor.\n1 Corintios 15:20: Mas ahora Cristo ha resucitado de los muertos; primicias de los que durmieron es hecho.\nRomanos 6:9: Sabiendo que Cristo, habiendo resucitado de los muertos, ya no muere; la muerte no se enseñorea más de él.",
       },
@@ -508,6 +516,7 @@ const RosarioPrayerBook = {
         title: "MG2: La Ascensión del Señor",
         img: "/gallery-images/misterios/misteriogloria2.jpg",
 
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogloria2.webp",
         text: "Jesús asciende a los cielos delante de sus discípulos\nl\nCitas Escriturísticas:\n\nHechos 1:9: Y habiendo dicho estas cosas, viéndolo ellos, fue alzado, y le recibió una nube que le ocultó de sus ojos.\nMarcos 16:19: Y el Señor, después que les habló, fue recibido arriba en el cielo, y se sentó a la diestra de Dios.\nEfesios 4:10: El que descendió, es el mismo que también subió por encima de todos los cielos para llenarlo todo.",
       },
       {
@@ -516,6 +525,7 @@ const RosarioPrayerBook = {
         title: "MG3: La Venida del Espíritu Santo",
         img: "/gallery-images/misterios/misteriogloria3.jpg",
 
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogloria3.webp",
         text: "El Espíritu Santo desciende sobre los Apóstoles y María en Pentecostés\nl\nCitas Escriturísticas:\n\nHechos 2:4: Y fueron todos llenos del Espíritu Santo, y comenzaron a hablar en otras lenguas, según el Espíritu les daba que hablasen.\nJuan 14:26: Mas el Consolador, el Espíritu Santo, a quien el Padre enviará en mi nombre, él os enseñará todas las cosas, y os recordará todo lo que yo os he dicho.\nHechos 1:8: Pero recibiréis poder, cuando haya venido sobre vosotros el Espíritu Santo, y me seréis testigos en Jerusalén, en toda Judea, en Samaria, y hasta lo último de la tierra.",
       },
       {
@@ -523,6 +533,7 @@ const RosarioPrayerBook = {
         num: 4,
         title: "MG4: La Asunción de María Santísima",
         img: "/gallery-images/misterios/misteriogloria4.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogloria4.webp",
         text: "María es elevada en cuerpo y alma a la gloria celestiall\nCitas Escriturísticas:\n\n\nLucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\n¡Levántate, amada mía, hermosa mía, y vente! Porque, mira, ha pasado ya el invierno, han cesado las lluvias y se han ido. (...) Muéstrame tu semblante, déjame oír tu voz; porque tu voz es dulce, y bello tu semblante.\nLucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\nCantares 2:10: Mi amado habló, y me dijo: Levántate, oh amiga mía, hermosa mía, y ven.",
       },
       {
@@ -531,6 +542,7 @@ const RosarioPrayerBook = {
         title:
           "MG5: La Coronación de María como Reina del Cielo y de la Tierra",
         img: "/gallery-images/misterios/misteriogloria5.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogloria5.webp",
         text: "María es coronada Reina del universo junto a su Hijo\nl\nCitas Escriturísticas:\n\nApocalipsis 12:1: Apareció en el cielo una gran señal: una mujer vestida del sol, con la luna debajo de sus pies, y sobre su cabeza una corona de doce estrellas.\nSalmo 45:9: Está la reina a tu diestra con oro de Ofir.\nJeremías 13:18: Di al rey y a la reina: Humillaos, sentaos en tierra; porque la corona de vuestra gloria caerá de vuestras cabezas.",
       },
     ],
@@ -580,12 +592,16 @@ const RosarioPrayerBook = {
     },
     {
       id: "S",
-      title: "Salve",
+      title: "Salve Regina",
+      img: "/gallery-images/misterios/salve-regina.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/salve-regina.jpg",
       text: "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra; Dios te salve. A Ti clamamos los desterrados hijos de Eva; a Ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos; y después de este destierro muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clemente, oh piadosa, oh dulce Virgen María! Ruega por nosotros, Santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.",
     },
     {
       id: "Papa",
       title: "Oración por el Papa",
+      img: "/gallery-images/misterios/ezekielv.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/papa.jpg",
       text: "Oh Dios, que has puesto la sede de Pedro como fundamento de la unidad de la Iglesia, concede al Papa Francisco, tu siervo, ser para todos los fieles principio y fundamento visible de la fe y de la comunión. Por Jesucristo, nuestro Señor. Amén. En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
     },
   ],

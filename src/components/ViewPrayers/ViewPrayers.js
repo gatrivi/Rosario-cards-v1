@@ -30,7 +30,9 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
         }}
       >
         <p style={{ whiteSpace: "pre-wrap" }}>
-          {count} {prayer}
+          {" "}
+          {count}
+          {prayer}
         </p>
       </div>
       <div className="page-right" style={{ flex: 1 }}>

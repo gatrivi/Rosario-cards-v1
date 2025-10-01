@@ -16,7 +16,10 @@ function PrayerButtons({
 
   const handlePrayerAndCount = (prayerText, prayerImg) => {
     setPrayer(prayerText);
-    setPrayerImg(prayerImg);
+    if (prayerImg.imgmo && localStorage.getItem("theme") === "dark")
+      return setPrayerImg(prayerImg.imgmo);
+    if (localStorage.getItem("theme") === "light")
+      return setPrayerImg(prayerImg.img);
 
     if (
       prayerText ==
@@ -76,7 +79,7 @@ function PrayerButtons({
       ) : (
         prayers.mysteries[currentMystery].map((prayer, index) => (
           <button
-            onClick={() => handlePrayerAndCount(prayer.text, prayer.img)}
+            onClick={() => handlePrayerAndCount(prayer.text, prayer)}
             key={index}
             style={{ padding: "4px" }}
           >
@@ -93,7 +96,7 @@ function PrayerButtons({
       ) : (
         prayers.decada.map((prayer, index) => (
           <button
-            onClick={() => handlePrayerAndCount(prayer.text, prayer.img)}
+            onClick={() => handlePrayerAndCount(prayer.text, prayer)}
             key={index}
             style={{ padding: "4px" }}
           >
@@ -119,7 +122,7 @@ function PrayerButtons({
       ) : (
         currentPrayers.map((prayer, index) => (
           <button
-            onClick={() => handlePrayerAndCount(prayer.text, prayer.img)}
+            onClick={() => handlePrayerAndCount(prayer.text, prayer)}
             key={index}
             style={{ padding: "4px" }}
           >
