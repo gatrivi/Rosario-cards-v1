@@ -1,4 +1,4 @@
-const Rosario = {
+const RosarioPrayerBook = {
   RGo: [
     "SC",
     "AC",
@@ -493,6 +493,7 @@ const Rosario = {
       },
     ],
     gloriosos: [
+      "/gallery-images/misterios/modooscuro/misteriogloria0.jpg",
       {
         id: "MG1",
         num: 1,
@@ -590,4 +591,4 @@ const Rosario = {
   ],
 };
 
-export default Rosario;
+export default RosarioPrayerBook;

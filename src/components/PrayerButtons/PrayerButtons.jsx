@@ -1,7 +1,15 @@
 import ThemeToggle from "../common/ThemeToggle";
 import "./PrayerButtons.css";
 import { useState, useEffect } from "react";
-function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
+function PrayerButtons({
+  prayers,
+  setPrayer,
+  reset,
+  countUp,
+  setPrayerImg,
+  currentMystery,
+  setcurrentMystery,
+}) {
   // Estado para controlar si mostramos apertura o cierre
   const [showOpening, setShowOpening] = useState(true);
   // Estado para el grupo de misterios actual
@@ -19,27 +27,7 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
       reset();
     }
   };
-  const getDefaultMysteries = () => {
-    const today = new Date().getDay(); // 0: Domingo, 1: Lunes, ..., 6: Sábado
-    switch (today) {
-      case 1: // Lunes
-      case 6: // Sábado
-        return "gozosos";
-      case 2: // Martes
-      case 5: // Viernes
-        return "dolorosos";
-      case 3: // Miércoles
-      case 0: // Domingo
-        return "gloriosos";
-      case 4: // Jueves
-        return "luminosos";
-      default:
-        return "gozosos"; // Fallback
-    }
-  };
-  const [currentMysteries, setCurrentMysteries] = useState(
-    getDefaultMysteries()
-  );
+
   function makeAcronym(str) {
     return str;
     /*   .split(/\s+/) // Split by whitespace
@@ -67,9 +55,9 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
       {mysteryTypes.map((type) => (
         <button
           key={type}
-          onClick={() => setCurrentMysteries(type)}
+          onClick={() => setcurrentMystery(type)}
           className={`button-base ${
-            currentMysteries === type ? "button-active" : "button-inactive"
+            currentMystery === type ? "button-active" : "button-inactive"
           }`}
           style={{
             padding: "8px",
@@ -82,11 +70,11 @@ function PrayerButtons({ prayers, setPrayer, reset, countUp, setPrayerImg }) {
 
       {/* Botones de misterios */}
 
-      {!prayers.mysteries[currentMysteries] ||
-      prayers.mysteries[currentMysteries].length === 0 ? (
+      {!prayers.mysteries[currentMystery] ||
+      prayers.mysteries[currentMystery].length === 0 ? (
         <div>Cargando Misterios...</div>
       ) : (
-        prayers.mysteries[currentMysteries].map((prayer, index) => (
+        prayers.mysteries[currentMystery].map((prayer, index) => (
           <button
             onClick={() => handlePrayerAndCount(prayer.text, prayer.img)}
             key={index}

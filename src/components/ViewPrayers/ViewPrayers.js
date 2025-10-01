@@ -2,17 +2,19 @@ import React from "react";
 import Boton from "../Boton/Boton";
 import AveMaria from "../../data/assets/img/Theotokos.jpg";
 import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
-function ViewPrayers({ prayer, count, prayerImg }) {
+function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
   console.log(" prayer prop in ViewPrayers:", prayer);
-
-  const currentTheme = localStorage.getItem("theme");
   let baseImageUrl;
+  const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
+  const currentTheme = localStorage.getItem("theme");
+  console.log("currentMystery in ViewPrayers:", currentMystery);
   if (currentTheme === "dark") {
-    baseImageUrl = AveMaria;
+    if (currentMystery === "gloriosos") {
+      baseImageUrl = "/gallery-images/misterios/modooscuro/misteriogloria0.jpg";
+    }
   } else {
     baseImageUrl = AveMariaD;
   }
-  const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
   console.log("prayerImg prop in ViewPrayers:", prayerImg);
   console.log("baseImageUrl:", baseImageUrl);
   console.log("currentTheme:", currentTheme);

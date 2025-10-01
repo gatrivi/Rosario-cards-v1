@@ -1,8 +1,8 @@
 import "./App.css";
 import logo from "./logo.png";
-
-import Rosario from "./data/Rosario";
-import { useState } from "react";
+import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
+import RosarioPrayerBook from "./data/RosarioPrayerBook";
+import { useState, useEffect } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
@@ -11,7 +11,17 @@ function App() {
   const [prayer, setPrayer] = useState(
     "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
   );
-  const [prayerImg, setPrayerImg] = useState("");
+  const [currentMystery, setcurrentMystery] = useState(getDefaultMystery);
+
+  console.log("currentMystery in App:", currentMystery);
+  console.log(
+    "Rosario[currentMystery][0] in App:",
+    RosarioPrayerBook.mysteries[currentMystery][0]
+  );
+
+  const [prayerImg, setPrayerImg] = useState(
+    RosarioPrayerBook.mysteries[currentMystery][0]
+  );
   const [count, setCount] = useState(0);
   const [position, setPosition] = useState({ x: 100, y: 100 });
   const [beads, setBeads] = useState([
@@ -46,7 +56,7 @@ function App() {
       setCount(count + 1);
     }
   };
-  console.log("setPrayerImg in App:", setPrayerImg);
+  console.log("PrayerImg in App:", prayerImg);
   const handleResetClick = () => {
     setCount(0);
   };
@@ -86,13 +96,20 @@ function App() {
         />
       </svg>
       <Header logo={logo} style={{ height: "4vh" }} />
-      <ViewPrayers count={count} prayerImg={prayerImg} prayer={prayer} />
+      <ViewPrayers
+        count={count}
+        prayerImg={prayerImg}
+        prayer={prayer}
+        currentMystery={currentMystery}
+      />
       <PrayerButtons
-        prayers={Rosario}
+        prayers={RosarioPrayerBook}
         countUp={handleCountClick}
         reset={handleResetClick}
         setPrayer={setPrayer}
         setPrayerImg={setPrayerImg}
+        currentMystery={currentMystery}
+        setcurrentMystery={setcurrentMystery}
       />
     </div>
   );
