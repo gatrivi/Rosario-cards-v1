@@ -29,14 +29,14 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
           padding: "4px",
         }}
       >
-        <p style={{ whiteSpace: "pre-wrap" }}>
+        <span style={{ color: "gold" }}>
           {" "}
           {prayer ===
           "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
-            ? "Selecciona una oración"
+            ? count
             : ""}
-          {prayer}
-        </p>
+        </span>
+        <p>{prayer}</p>
       </div>
       <div className="page-right" style={{ flex: 1 }}>
         <img
