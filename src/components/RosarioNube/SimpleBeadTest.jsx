@@ -115,6 +115,29 @@ const SimpleBeadTest = () => {
     render.mouse = mouse;
     console.log("✅ SimpleBeadTest: Mouse controls added");
 
+    // Add touch support for mobile devices
+    const canvas = render.canvas;
+    const handleTouch = (e) => {
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (touch) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseEvent = {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          pageX: touch.pageX,
+          pageY: touch.pageY,
+        };
+        // Update Matter.js mouse position to match touch
+        mouse.position.x = touch.clientX - rect.left;
+        mouse.position.y = touch.clientY - rect.top;
+      }
+    };
+
+    canvas.addEventListener("touchstart", handleTouch, { passive: false });
+    canvas.addEventListener("touchmove", handleTouch, { passive: false });
+    canvas.addEventListener("touchend", handleTouch, { passive: false });
+    console.log("✅ SimpleBeadTest: Touch controls added");
+
     // Run the engine and renderer
     Matter.Engine.run(engine);
     Matter.Render.run(render);
@@ -126,6 +149,9 @@ const SimpleBeadTest = () => {
     // Cleanup function
     return () => {
       console.log("🧹 SimpleBeadTest: Cleaning up...");
+      canvas.removeEventListener("touchstart", handleTouch);
+      canvas.removeEventListener("touchmove", handleTouch);
+      canvas.removeEventListener("touchend", handleTouch);
       Matter.Render.stop(render);
       Matter.Engine.clear(engine);
       if (render.canvas) {

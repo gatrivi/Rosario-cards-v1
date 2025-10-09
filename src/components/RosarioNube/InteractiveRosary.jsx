@@ -332,6 +332,33 @@ const InteractiveRosary = ({
     // Keep mouse in sync with rendering for accurate interaction
     render.mouse = mouse;
 
+    // Add touch support for mobile devices
+    const canvas = render.canvas;
+    const handleTouch = (e) => {
+      e.preventDefault(); // Prevent default touch behavior
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (touch) {
+        const rect = canvas.getBoundingClientRect();
+        // Update Matter.js mouse position to match touch
+        mouse.position.x = touch.clientX - rect.left;
+        mouse.position.y = touch.clientY - rect.top;
+        
+        // Simulate mouse button state for touch
+        if (e.type === "touchstart") {
+          mouse.button = 0; // Left button pressed
+          mouseConstraint.mouse.button = 0;
+        } else if (e.type === "touchend") {
+          mouse.button = -1; // No button pressed
+          mouseConstraint.mouse.button = -1;
+        }
+      }
+    };
+
+    canvas.addEventListener("touchstart", handleTouch, { passive: false });
+    canvas.addEventListener("touchmove", handleTouch, { passive: false });
+    canvas.addEventListener("touchend", handleTouch, { passive: false });
+    console.log("✅ InteractiveRosary: Touch controls added");
+
     // Start the physics simulation and rendering loop
     Matter.Engine.run(engine);
     Matter.Render.run(render);
@@ -343,6 +370,9 @@ const InteractiveRosary = ({
     // Cleanup function to prevent memory leaks
     return () => {
       console.log("🧹 InteractiveRosary: Cleaning up physics engine...");
+      canvas.removeEventListener("touchstart", handleTouch);
+      canvas.removeEventListener("touchmove", handleTouch);
+      canvas.removeEventListener("touchend", handleTouch);
       Matter.Render.stop(render);
       Matter.Engine.clear(engine);
       render.canvas.remove();

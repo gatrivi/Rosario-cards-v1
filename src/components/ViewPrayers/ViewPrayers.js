@@ -32,34 +32,51 @@ function ViewPrayers({
   const currentTheme = localStorage.getItem("theme");
 
   /**
-   * Count Hail Marys based on actual prayer sequence
-   * This function analyzes the rosary sequence to count how many "A" entries
-   * (Ave Maria/Hail Mary) have been reached up to the current prayer index
+   * Count Hail Marys based on decade positions
+   * 
+   * Hail Marys are grouped in:
+   * - 3 initial Hail Marys (indices 4-6)
+   * - 5 decades of 10 Hail Marys each (indices 11-20, 25-34, 39-48, 53-62, 67-76)
+   * 
+   * This function uses the position of first and last Hail Mary of each decade
+   * to calculate the count efficiently without iterating through all prayers.
    * 
    * @returns {number} Number of Hail Marys prayed so far
    */
   const getHailMaryCount = () => {
     if (!prayers) return 0;
 
-    const mysteryToArray = {
-      gozosos: "RGo",
-      dolorosos: "RDo",
-      gloriosos: "RGl",
-      luminosos: "RL",
-    };
+    // Define Hail Mary ranges for each section
+    // Each entry: start index, end index, and total count in that section
+    const hailMaryRanges = [
+      { start: 4, end: 6, count: 3 },      // Initial 3 Hail Marys
+      { start: 11, end: 20, count: 10 },   // Decade 1
+      { start: 25, end: 34, count: 10 },   // Decade 2
+      { start: 39, end: 48, count: 10 },   // Decade 3
+      { start: 53, end: 62, count: 10 },   // Decade 4
+      { start: 67, end: 76, count: 10 },   // Decade 5
+    ];
 
-    const rosarySequence = prayers[mysteryToArray[currentMystery]] || [];
-    let count = 0;
-
-    // Count "A" entries (Ave Maria/Hail Mary) up to current prayer index
-    // This provides an accurate count of Hail Marys prayed so far
-    for (let i = 0; i <= currentPrayerIndex && i < rosarySequence.length; i++) {
-      if (rosarySequence[i] === "A") {
-        count++;
+    let totalCount = 0;
+    
+    // Find the current position in the ranges and calculate count
+    for (const range of hailMaryRanges) {
+      if (currentPrayerIndex < range.start) {
+        // Haven't reached this range yet, stop counting
+        break;
+      } else if (currentPrayerIndex >= range.start && currentPrayerIndex <= range.end) {
+        // Currently in this range
+        // Count how many Hail Marys have been said in this range
+        const positionInRange = currentPrayerIndex - range.start;
+        totalCount += positionInRange + 1; // +1 because we include the current position
+        break;
+      } else {
+        // Completed this range, add all Hail Marys from it
+        totalCount += range.count;
       }
     }
 
-    return count;
+    return totalCount;
   };
 
   const hailMaryCount = getHailMaryCount();
