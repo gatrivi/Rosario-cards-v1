@@ -3,14 +3,14 @@ import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
 
 /**
  * ViewPrayers Component
- * 
+ *
  * Displays the current prayer text and image with Hail Mary counter
  * Provides a clean, focused interface for prayer reading with:
  * - Prayer text display with proper formatting
  * - Prayer image display with theme support
  * - Hail Mary counter based on actual prayer sequence
  * - Responsive layout for different screen sizes
- * 
+ *
  * @param {string} prayer - Current prayer text to display
  * @param {number} count - Manual counter for Hail Marys (legacy)
  * @param {string} prayerImg - URL of the current prayer image
@@ -27,16 +27,14 @@ function ViewPrayers({
   prayers,
   showCounters = true,
 }) {
-  let baseImageUrl;
-  const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
   const currentTheme = localStorage.getItem("theme");
 
   /**
-   * Count Hail Marys based on actual prayer sequence
-   * This function analyzes the rosary sequence to count how many "A" entries
-   * (Ave Maria/Hail Mary) have been reached up to the current prayer index
-   * 
-   * @returns {number} Number of Hail Marys prayed so far
+   * Count Hail Marys based on current decade position
+   * This function calculates which decade the user is in and counts the Hail Marys
+   * within that decade up to the current prayer position
+   *
+   * @returns {number} Number of Hail Marys in current decade (1-10)
    */
   const getHailMaryCount = () => {
     if (!prayers) return 0;
@@ -49,11 +47,39 @@ function ViewPrayers({
     };
 
     const rosarySequence = prayers[mysteryToArray[currentMystery]] || [];
-    let count = 0;
 
-    // Count "A" entries (Ave Maria/Hail Mary) up to current prayer index
-    // This provides an accurate count of Hail Marys prayed so far
-    for (let i = 0; i <= currentPrayerIndex && i < rosarySequence.length; i++) {
+    // Define decade starting positions (after each mystery prayer)
+    // Each decade starts with "P" (Our Father) followed by 10 "A" (Hail Marys)
+    const decadeStarts = [];
+    for (let i = 0; i < rosarySequence.length; i++) {
+      // Look for mystery prayers (MGo1, MGo2, etc.) to find decade starts
+      if (rosarySequence[i] && rosarySequence[i].startsWith("M")) {
+        // The next "P" after a mystery marks the start of a decade
+        for (let j = i + 1; j < rosarySequence.length; j++) {
+          if (rosarySequence[j] === "P") {
+            decadeStarts.push(j);
+            break;
+          }
+        }
+      }
+    }
+
+    // Find which decade we're currently in
+    let currentDecadeStart = 0; // Default to opening prayers
+    for (let i = decadeStarts.length - 1; i >= 0; i--) {
+      if (currentPrayerIndex >= decadeStarts[i]) {
+        currentDecadeStart = decadeStarts[i];
+        break;
+      }
+    }
+
+    // Count Hail Marys from the decade start to current position
+    let count = 0;
+    for (
+      let i = currentDecadeStart;
+      i <= currentPrayerIndex && i < rosarySequence.length;
+      i++
+    ) {
       if (rosarySequence[i] === "A") {
         count++;
       }
@@ -63,9 +89,13 @@ function ViewPrayers({
   };
 
   const hailMaryCount = getHailMaryCount();
+  console.log(
+    `📿 ViewPrayers: currentPrayerIndex=${currentPrayerIndex}, hailMaryCount=${hailMaryCount}, currentMystery=${currentMystery}`
+  );
 
   // Set base image URL based on theme and mystery type
   // Dark theme uses special images for certain mysteries
+  let baseImageUrl;
   if (currentTheme === "dark") {
     if (currentMystery === "gloriosos") {
       baseImageUrl = "/gallery-images/misterios/modooscuro/misteriogloria0.jpg";
@@ -73,6 +103,7 @@ function ViewPrayers({
   } else {
     baseImageUrl = AveMariaD;
   }
+  const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
   return (
     <div
       className="top-section prayer-content-overlay"

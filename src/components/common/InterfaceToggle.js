@@ -2,30 +2,26 @@ import React, { useState } from "react";
 
 /**
  * InterfaceToggle Component
- * 
+ *
  * Provides a toggle button to hide/show rosary and counters for a clean, distraction-free interface
  * Perfect for users who want to focus solely on prayer without visual distractions
- * 
+ *
  * Features:
  * - Toggle between full interface and clean prayer mode
  * - Visual indicator of current mode
  * - Smooth transitions between states
  * - Accessible design with proper ARIA labels
- * 
+ *
  * @param {boolean} showRosary - Whether to show the interactive rosary
- * @param {boolean} showBackupRosary - Whether to show the backup rosary
  * @param {boolean} showCounters - Whether to show prayer counters
  * @param {function} onToggleRosary - Callback to toggle rosary visibility
- * @param {function} onToggleBackupRosary - Callback to toggle backup rosary visibility
  * @param {function} onToggleCounters - Callback to toggle counters visibility
  * @param {string} className - Additional CSS classes for styling
  */
 const InterfaceToggle = ({
   showRosary = true,
-  showBackupRosary = true,
   showCounters = true,
   onToggleRosary,
-  onToggleBackupRosary,
   onToggleCounters,
   className = "",
 }) => {
@@ -48,15 +44,6 @@ const InterfaceToggle = ({
   };
 
   /**
-   * Handle individual toggle for backup rosary visibility
-   */
-  const handleBackupRosaryToggle = () => {
-    if (onToggleBackupRosary) {
-      onToggleBackupRosary();
-    }
-  };
-
-  /**
    * Handle individual toggle for counters visibility
    */
   const handleCountersToggle = () => {
@@ -69,14 +56,16 @@ const InterfaceToggle = ({
    * Toggle all interface elements at once
    */
   const handleToggleAll = () => {
-    const allVisible = showRosary && showBackupRosary && showCounters;
+    const allVisible = showRosary && showCounters;
     if (onToggleRosary) onToggleRosary(!allVisible);
-    if (onToggleBackupRosary) onToggleBackupRosary(!allVisible);
     if (onToggleCounters) onToggleCounters(!allVisible);
   };
 
   return (
-    <div className={`interface-toggle ${className}`} style={{ position: "fixed", top: "10px", left: "10px", zIndex: 2000 }}>
+    <div
+      className={`interface-toggle ${className}`}
+      style={{ position: "fixed", top: "10px", left: "10px", zIndex: 2 }}
+    >
       {/* Main toggle button */}
       <button
         onClick={toggleExpanded}
@@ -119,7 +108,13 @@ const InterfaceToggle = ({
             border: "1px solid #FFD700",
           }}
         >
-          <div style={{ marginBottom: "10px", fontWeight: "bold", color: "#FFD700" }}>
+          <div
+            style={{
+              marginBottom: "10px",
+              fontWeight: "bold",
+              color: "#FFD700",
+            }}
+          >
             Interface Controls
           </div>
 
@@ -130,7 +125,7 @@ const InterfaceToggle = ({
               width: "100%",
               padding: "8px",
               marginBottom: "10px",
-              background: showRosary && showBackupRosary && showCounters ? "#FF6B6B" : "#4ECDC4",
+              background: showRosary && showCounters ? "#FF6B6B" : "#4ECDC4",
               color: "white",
               border: "none",
               borderRadius: "5px",
@@ -138,13 +133,19 @@ const InterfaceToggle = ({
               fontWeight: "bold",
             }}
           >
-            {showRosary && showBackupRosary && showCounters ? "Hide All" : "Show All"}
+            {showRosary && showCounters ? "Hide All" : "Show All"}
           </button>
 
           {/* Individual toggles */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {/* Interactive Rosary Toggle */}
-            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="checkbox"
                 checked={showRosary}
@@ -154,19 +155,14 @@ const InterfaceToggle = ({
               <span>📿 Interactive Rosary</span>
             </label>
 
-            {/* Backup Rosary Toggle */}
-            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-              <input
-                type="checkbox"
-                checked={showBackupRosary}
-                onChange={handleBackupRosaryToggle}
-                style={{ marginRight: "8px" }}
-              />
-              <span>🔴 Backup Rosary</span>
-            </label>
-
             {/* Counters Toggle */}
-            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="checkbox"
                 checked={showCounters}
@@ -178,14 +174,16 @@ const InterfaceToggle = ({
           </div>
 
           {/* Help text */}
-          <div style={{ 
-            marginTop: "10px", 
-            fontSize: "12px", 
-            color: "#ccc", 
-            fontStyle: "italic",
-            borderTop: "1px solid #333",
-            paddingTop: "8px"
-          }}>
+          <div
+            style={{
+              marginTop: "10px",
+              fontSize: "12px",
+              color: "#ccc",
+              fontStyle: "italic",
+              borderTop: "1px solid #333",
+              paddingTop: "8px",
+            }}
+          >
             💡 Hide elements for distraction-free prayer
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 
 /**
  * useRosaryState Hook
- * 
+ *
  * Custom hook for managing rosary state and prayer navigation
  * Provides functionality for:
  * - Tracking current prayer index in the rosary sequence
@@ -10,7 +10,7 @@ import { useState, useCallback, useEffect } from "react";
  * - Jumping to specific prayers by ID
  * - Managing mystery-specific prayer sequences
  * - Calculating current mystery number based on prayer position
- * 
+ *
  * @param {object} prayers - Prayer data object containing all prayer sequences
  * @param {string} currentMystery - Current mystery type (gozosos, dolorosos, gloriosos, luminosos)
  * @returns {object} Object containing state and handler functions
@@ -23,7 +23,7 @@ export const useRosaryState = (prayers, currentMystery) => {
   /**
    * Get the rosary sequence based on current mystery type
    * Maps mystery types to their corresponding prayer sequences
-   * 
+   *
    * @returns {array} Array of prayer IDs in the correct rosary sequence
    */
   const getRosarySequence = useCallback(() => {
@@ -39,7 +39,7 @@ export const useRosaryState = (prayers, currentMystery) => {
   /**
    * Get prayer object by ID from any section of the prayer book
    * Searches through all prayer sections to find the matching prayer
-   * 
+   *
    * @param {string} id - Prayer ID to search for
    * @returns {object|null} Prayer object if found, null otherwise
    */
@@ -71,24 +71,29 @@ export const useRosaryState = (prayers, currentMystery) => {
   /**
    * Handle bead click from interactive rosary
    * Updates the current prayer index and returns prayer data for display
-   * 
+   *
    * @param {number} prayerIndex - Index of the clicked bead in rosary sequence
    * @param {string} prayerId - ID of the prayer associated with the bead
    * @returns {object|null} Prayer data object or null if not found
    */
   const handleBeadClick = useCallback(
     (prayerIndex, prayerId) => {
+      console.log(
+        `🎯 handleBeadClick: prayerIndex=${prayerIndex}, prayerId=${prayerId}`
+      );
       setCurrentPrayerIndex(prayerIndex);
       setHighlightedBead(prayerIndex);
 
       const prayer = getPrayerById(prayerId);
       if (prayer) {
+        console.log(`✅ handleBeadClick: Found prayer for ${prayerId}`);
         return {
           prayer: prayer.text,
           prayerImg: prayer.img || prayer.imgmo, // Use dark mode image if available
           prayerIndex: prayerIndex,
         };
       }
+      console.log(`❌ handleBeadClick: No prayer found for ${prayerId}`);
       return null;
     },
     [getPrayerById]
@@ -97,7 +102,7 @@ export const useRosaryState = (prayers, currentMystery) => {
   /**
    * Jump to specific prayer by ID
    * Finds the prayer in the current rosary sequence and updates the index
-   * 
+   *
    * @param {string} prayerId - ID of the prayer to jump to
    * @returns {number} New prayer index or current index if not found
    */
@@ -118,7 +123,7 @@ export const useRosaryState = (prayers, currentMystery) => {
   /**
    * Get current mystery number based on prayer index
    * Calculates which mystery (1-5) the user is currently praying based on position
-   * 
+   *
    * @returns {number} Current mystery number (1-5)
    */
   const getCurrentMysteryNumber = useCallback(() => {
@@ -157,14 +162,11 @@ export const useRosaryState = (prayers, currentMystery) => {
 
   // Return all state and handler functions for use in components
   return {
-    currentPrayerIndex,        // Current position in rosary sequence
-    highlightedBead,          // Currently highlighted bead index
-    handleBeadClick,          // Function to handle bead clicks
-    jumpToPrayer,             // Function to jump to specific prayer
-    getCurrentMysteryNumber,  // Function to get current mystery number
-    getRosarySequence,        // Function to get current rosary sequence
+    currentPrayerIndex, // Current position in rosary sequence
+    highlightedBead, // Currently highlighted bead index
+    handleBeadClick, // Function to handle bead clicks
+    jumpToPrayer, // Function to jump to specific prayer
+    getCurrentMysteryNumber, // Function to get current mystery number
+    getRosarySequence, // Function to get current rosary sequence
   };
 };
-
-
-
