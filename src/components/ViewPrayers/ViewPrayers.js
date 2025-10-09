@@ -1,13 +1,43 @@
 import React from "react";
-import Boton from "../Boton/Boton";
-import AveMaria from "../../data/assets/img/Theotokos.jpg";
 import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
-function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
-  console.log(" prayer prop in ViewPrayers:", prayer);
+function ViewPrayers({
+  prayer,
+  count,
+  prayerImg,
+  currentMystery,
+  currentPrayerIndex,
+  prayers,
+}) {
   let baseImageUrl;
   const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
   const currentTheme = localStorage.getItem("theme");
-  console.log("currentMystery in ViewPrayers:", currentMystery);
+
+  // Count Hail Marys based on actual prayer sequence
+  const getHailMaryCount = () => {
+    if (!prayers) return 0;
+
+    const mysteryToArray = {
+      gozosos: "RGo",
+      dolorosos: "RDo",
+      gloriosos: "RGl",
+      luminosos: "RL",
+    };
+
+    const rosarySequence = prayers[mysteryToArray[currentMystery]] || [];
+    let count = 0;
+
+    // Count "A" entries (Ave Maria/Hail Mary) up to current prayer index
+    for (let i = 0; i <= currentPrayerIndex && i < rosarySequence.length; i++) {
+      if (rosarySequence[i] === "A") {
+        count++;
+      }
+    }
+
+    return count;
+  };
+
+  const hailMaryCount = getHailMaryCount();
+
   if (currentTheme === "dark") {
     if (currentMystery === "gloriosos") {
       baseImageUrl = "/gallery-images/misterios/modooscuro/misteriogloria0.jpg";
@@ -15,12 +45,20 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
   } else {
     baseImageUrl = AveMariaD;
   }
-  console.log("prayerImg prop in ViewPrayers:", prayerImg);
-  console.log("baseImageUrl:", baseImageUrl);
-  console.log("currentTheme:", currentTheme);
-  console.log("finalImageUrl:", finalImageUrl);
   return (
-    <div className="top-section" style={{ display: "flex", height: "58vh" }}>
+    <div
+      className="top-section prayer-content-overlay"
+      style={{
+        display: "flex",
+        height: "58vh",
+        background: "rgba(255, 255, 255, 0.1)", // More transparent
+        backdropFilter: "blur(0.5px)", // Less blur
+        borderRadius: "8px",
+        margin: "10px",
+        padding: "10px",
+        pointerEvents: "none", // Allow clicks to pass through
+      }}
+    >
       <div
         className="page-left"
         style={{
@@ -29,12 +67,8 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
           padding: "4px",
         }}
       >
-        <span style={{ color: "gold" }}>
-          {" "}
-          {prayer ===
-          "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
-            ? count
-            : ""}
+        <span style={{ color: "gold", fontSize: "18px", fontWeight: "bold" }}>
+          📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
         </span>
         <p>{prayer}</p>
       </div>

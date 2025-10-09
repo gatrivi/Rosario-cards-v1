@@ -2,63 +2,46 @@ import "./App.css";
 import logo from "./logo.png";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
-import Bead from "./components/RosarioNube/Bead";
+import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
+import BackupRosary from "./components/RosarioNube/BackupRosary";
+import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
   const [prayer, setPrayer] = useState(
     "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
   );
   const [currentMystery, setcurrentMystery] = useState(getDefaultMystery);
-
-  console.log("currentMystery in App:", currentMystery);
-  console.log(
-    "Rosario[currentMystery][0] in App:",
-    RosarioPrayerBook.mysteries[currentMystery][0]
-  );
-
   const [prayerImg, setPrayerImg] = useState(
     RosarioPrayerBook.mysteries[currentMystery][0]
   );
   const [count, setCount] = useState(0);
-  const [position, setPosition] = useState({ x: 100, y: 100 });
-  const [beads, setBeads] = useState([
-    { id: 1, x: 100, y: 100 },
-    { id: 2, x: 200, y: 100 },
-  ]);
 
-  const handleMove = (id, newPos) => {
-    setBeads((prev) => {
-      let updated = prev.map((b) => (b.id === id ? { ...b, ...newPos } : b));
-      const [b1, b2] = updated;
-      const dx = b2.x - b1.x;
-      const dy = b2.y - b1.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const targetDist = 100; // Longitud hilo
-      if (dist > targetDist) {
-        const ratio = targetDist / dist;
-        if (id === 1) {
-          // Mueve b2 hacia b1
-          b2.x = b1.x + dx * ratio;
-          b2.y = b1.y + dy * ratio;
-        } else {
-          b1.x = b2.x - dx * ratio;
-          b1.y = b2.y - dy * ratio;
-        }
-      }
-      return [b1, b2];
-    });
-  };
+  // Use the rosary state hook
+  const { currentPrayerIndex, handleBeadClick, jumpToPrayer } = useRosaryState(
+    RosarioPrayerBook,
+    currentMystery
+  );
+
   const handleCountClick = () => {
     if (count < 10) {
       setCount(count + 1);
     }
   };
-  console.log("PrayerImg in App:", prayerImg);
+
   const handleResetClick = () => {
     setCount(0);
+  };
+
+  // Handle bead click from rosary
+  const onBeadClick = (prayerIndex, prayerId) => {
+    const result = handleBeadClick(prayerIndex, prayerId);
+    if (result) {
+      setPrayer(result.prayer);
+      setPrayerImg(result.prayerImg);
+    }
   };
 
   return (
@@ -66,42 +49,60 @@ function App() {
       className="app"
       style={{ display: "flex", flexDirection: "column", height: "100vh" }}
     >
-      {" "}
-      <>
-        {beads.map((b) => (
-          <Bead
-            key={b.id}
-            id={b.id}
-            position={{ x: b.x, y: b.y }}
-            onMove={(pos) => handleMove(b.id, pos)}
-          />
-        ))}
-      </>{" "}
-      <svg
+      <Header logo={logo} style={{ height: "4vh" }} />
+
+      {/* Main content area with rosary */}
+      <div
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
+          display: "flex",
+          flex: 1,
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        <line
-          x1={beads[0].x + 11}
-          y1={beads[0].y + 11}
-          x2={beads[1].x + 11}
-          y2={beads[1].y + 11}
-          stroke="coral"
-        />
-      </svg>
-      <Header logo={logo} style={{ height: "4vh" }} />
-      <ViewPrayers
-        count={count}
-        prayerImg={prayerImg}
-        prayer={prayer}
-        currentMystery={currentMystery}
-      />
+        {/* Interactive Rosary - Make it more visible */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 3,
+            pointerEvents: "auto",
+          }}
+        >
+          <InteractiveRosary
+            currentMystery={currentMystery}
+            currentPrayerIndex={currentPrayerIndex}
+            onBeadClick={onBeadClick}
+            prayers={RosarioPrayerBook}
+            className="rosary-container"
+          />
+        </div>
+
+        {/* Prayer content overlay - Make it semi-transparent */}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1, // Lower z-index to allow rosary to be visible
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            pointerEvents: "none", // Allow clicks to pass through to rosary
+          }}
+        >
+          <ViewPrayers
+            count={count}
+            prayerImg={prayerImg}
+            prayer={prayer}
+            currentMystery={currentMystery}
+            currentPrayerIndex={currentPrayerIndex}
+            prayers={RosarioPrayerBook}
+          />
+        </div>
+      </div>
+
       <PrayerButtons
         prayers={RosarioPrayerBook}
         countUp={handleCountClick}
@@ -110,6 +111,17 @@ function App() {
         setPrayerImg={setPrayerImg}
         currentMystery={currentMystery}
         setcurrentMystery={setcurrentMystery}
+        jumpToPrayer={jumpToPrayer}
+        currentPrayerIndex={currentPrayerIndex}
+      />
+
+      {/* Backup Rosary - Always visible around screen edges */}
+      <BackupRosary
+        currentPrayerIndex={currentPrayerIndex}
+        currentMystery={currentMystery}
+        onBeadClick={onBeadClick}
+        totalPrayers={57}
+        prayers={RosarioPrayerBook}
       />
     </div>
   );

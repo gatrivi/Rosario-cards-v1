@@ -1,5 +1,7 @@
 THESE ARE REALLY GOOD >
 
+https://commons.wikimedia.org/wiki/Category:Bible_illustrations_by_Heinrich_Hofmann
+
 https://www.cervantesvirtual.com/buscador/?q=Letan%C3%ADa+de+la+Sant%C3%ADsima+Virgen
 `
 https://ourladyofgracerosaries.ca/?s=visual+rosary

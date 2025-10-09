@@ -1,0 +1,44 @@
+.interactive-rosary {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.rosary-container {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.interactive-rosary canvas {
+  width: 100% !important;
+  height: 100% !important;
+  cursor: grab;
+}
+
+.interactive-rosary canvas:active {
+  cursor: grabbing;
+}
+
+/* Ensure the rosary is visible but doesn't interfere with prayer content */
+.app {
+  position: relative;
+}
+
+/* Make prayer content semi-transparent when rosary is active */
+.prayer-content-overlay {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(2px);
+  border-radius: 8px;
+  margin: 10px;
+  padding: 10px;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .prayer-content-overlay {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+
+

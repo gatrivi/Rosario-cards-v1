@@ -1,0 +1,75 @@
+.backup-rosary {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.pixel-bead {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.pixel-bead:hover {
+  transform: scale(1.5);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.pixel-bead.current {
+  transform: scale(2);
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 1);
+  }
+  100% {
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+  }
+}
+
+.hail-mary-counter {
+  font-family: "Courier New", monospace;
+  text-align: center;
+  min-width: 120px;
+}
+
+.cross-indicator {
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+}
+
+/* Ensure backup rosary doesn't interfere with other elements */
+.backup-rosary * {
+  pointer-events: auto;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .hail-mary-counter {
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  border-color: #fff;
+}
+
+[data-theme="dark"] .pixel-bead {
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .pixel-bead:hover {
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+

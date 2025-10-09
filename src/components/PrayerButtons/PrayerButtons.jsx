@@ -1,6 +1,6 @@
 import ThemeToggle from "../common/ThemeToggle";
 import "./PrayerButtons.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 function PrayerButtons({
   prayers,
   setPrayer,
@@ -10,127 +10,286 @@ function PrayerButtons({
   currentMystery,
   setcurrentMystery,
 }) {
-  // Estado para controlar si mostramos apertura o cierre
-  const [showOpening, setShowOpening] = useState(true);
-  // Estado para el grupo de misterios actual
+  // Estados para la botonera segmentada
+  const [activeSection, setActiveSection] = useState("none");
+  const [cycleIndex, setCycleIndex] = useState(0);
+  const [globalIndex, setGlobalIndex] = useState(0);
+  const [subView, setSubView] = useState(null);
 
-  const handlePrayerAndCount = (prayerText, prayerImg) => {
-    setPrayer(prayerText);
-    if (prayerImg.imgmo && localStorage.getItem("theme") === "dark")
-      return setPrayerImg(prayerImg.imgmo);
-    if (localStorage.getItem("theme") === "light")
-      return setPrayerImg(prayerImg.img);
+  // Helper function to get the correct rosary array based on mystery type
+  const getRosaryArray = useCallback(
+    (mysteryType) => {
+      const mysteryToArray = {
+        gozosos: "RGo",
+        dolorosos: "RDo",
+        gloriosos: "RGl",
+        luminosos: "RL",
+      };
+      return prayers[mysteryToArray[mysteryType]] || [];
+    },
+    [prayers]
+  );
 
-    if (
-      prayerText ==
-      "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
-    ) {
-      countUp();
-    } else {
-      reset();
+  // Helper function to get prayer object by ID
+  const getPrayerById = useCallback(
+    (id) => {
+      // Check in apertura
+      const aperturaPrayer = prayers.apertura?.find((p) => p.id === id);
+      if (aperturaPrayer) return aperturaPrayer;
+
+      // Check in decada
+      const decadaPrayer = prayers.decada?.find((p) => p.id === id);
+      if (decadaPrayer) return decadaPrayer;
+
+      // Check in mysteries
+      const mysteryPrayer = prayers.mysteries?.[currentMystery]?.find(
+        (p) => p.id === id
+      );
+      if (mysteryPrayer) return mysteryPrayer;
+
+      // Check in cierre
+      const cierrePrayer = prayers.cierre?.find((p) => p.id === id);
+      if (cierrePrayer) return cierrePrayer;
+
+      return null;
+    },
+    [prayers, currentMystery]
+  );
+
+  const handlePrayerAndCount = useCallback(
+    (prayerText, prayerImg) => {
+      setPrayer(prayerText);
+      if (prayerImg.imgmo && localStorage.getItem("theme") === "dark")
+        return setPrayerImg(prayerImg.imgmo);
+      if (localStorage.getItem("theme") === "light")
+        return setPrayerImg(prayerImg.img);
+
+      if (
+        prayerText ===
+        "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, Jesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, \npecadores, \nahora y en la hora de nuestra muerte. \nAmén."
+      ) {
+        countUp();
+      } else {
+        reset();
+      }
+    },
+    [setPrayer, setPrayerImg, countUp, reset]
+  );
+
+  // Helper: Items por sección
+  const getSectionItems = (section) => {
+    switch (section) {
+      case "apertura":
+        return prayers.apertura || [];
+      case "decada":
+        return prayers.decada || [];
+      case "misterios":
+        return prayers.mysteries?.[currentMystery] || [];
+      case "cierre":
+        return prayers.cierre || [];
+      default:
+        return [];
     }
   };
 
-  function makeAcronym(str) {
-    return str;
-    /*   .split(/\s+/) // Split by whitespace
-      .map((word) => word[0]?.toUpperCase()) // Get first letter of each word, uppercase
-      .join("") // Join letters
-      .slice(0, 5); */
-  }
+  // Handlers para la botonera segmentada
+  const handleSegmentTap = (section) => {
+    if (activeSection === section) {
+      // Ya activo: Cicla al siguiente
+      const items = getSectionItems(section);
+      if (items.length > 0) {
+        setCycleIndex((prev) => (prev + 1) % items.length);
+        const item = items[(cycleIndex + 1) % items.length];
+        // Jump to this prayer in the rosary sequence
+        jumpToPrayer(item.id);
+      }
+    } else {
+      // Nuevo: Entra modo
+      setActiveSection(section);
+      setCycleIndex(0);
+      const items = getSectionItems(section);
+      if (items.length > 0) {
+        const item = items[0];
+        // Jump to this prayer in the rosary sequence
+        jumpToPrayer(item.id);
+      }
+
+      // Para misterios, mostrar sub-bar
+      if (section === "misterios") {
+        setSubView("misterios");
+      } else {
+        setSubView(null);
+      }
+    }
+  };
+
+  const handlePrev = () => {
+    const rosaryArray = getRosaryArray(currentMystery);
+    if (rosaryArray.length > 0) {
+      setGlobalIndex(
+        (prev) => (prev - 1 + rosaryArray.length) % rosaryArray.length
+      );
+      const prevPrayerId =
+        rosaryArray[
+          (globalIndex - 1 + rosaryArray.length) % rosaryArray.length
+        ];
+      const prevPrayer = getPrayerById(prevPrayerId);
+      if (prevPrayer) {
+        handlePrayerAndCount(prevPrayer.text, prevPrayer);
+      }
+    }
+  };
+
+  const handleNext = () => {
+    const rosaryArray = getRosaryArray(currentMystery);
+    if (rosaryArray.length > 0) {
+      setGlobalIndex((prev) => (prev + 1) % rosaryArray.length);
+      const nextPrayerId = rosaryArray[(globalIndex + 1) % rosaryArray.length];
+      const nextPrayer = getPrayerById(nextPrayerId);
+      if (nextPrayer) {
+        handlePrayerAndCount(nextPrayer.text, nextPrayer);
+      }
+    }
+  };
+
+  const handleCloseSubBar = () => {
+    setSubView(null);
+    setActiveSection("none");
+  };
+
   // Lista de tipos de misterios para el selector
   const mysteryTypes = ["gozosos", "dolorosos", "gloriosos", "luminosos"];
 
-  // Oraciones a mostrar (apertura o cierre)
-  const currentPrayers = showOpening ? prayers.apertura : prayers.cierre;
+  // Get current rosary sequence based on mystery type
+  const rosaryArray = getRosaryArray(currentMystery);
+  const rosarySequence = rosaryArray
+    .map((id) => getPrayerById(id))
+    .filter(Boolean);
+
+  const currentRosaryItem = rosarySequence[globalIndex];
+
+  // Function to jump to a specific prayer while maintaining progression
+  const jumpToPrayer = (prayerId) => {
+    const rosaryArray = getRosaryArray(currentMystery);
+    const targetIndex = rosaryArray.indexOf(prayerId);
+    if (targetIndex !== -1) {
+      setGlobalIndex(targetIndex);
+      const prayer = getPrayerById(prayerId);
+      if (prayer) {
+        handlePrayerAndCount(prayer.text, prayer);
+      }
+    }
+  };
+
+  // Reset global index when mystery type changes
+  const handleMysteryChange = () => {
+    setGlobalIndex(0);
+    setcurrentMystery(
+      (prev) =>
+        mysteryTypes[(mysteryTypes.indexOf(prev) + 1) % mysteryTypes.length]
+    );
+  };
+
+  // Initialize rosary when component mounts or mystery changes
+  useEffect(() => {
+    const rosaryArray = getRosaryArray(currentMystery);
+    if (rosaryArray.length > 0 && globalIndex === 0) {
+      const firstPrayerId = rosaryArray[0];
+      const firstPrayer = getPrayerById(firstPrayerId);
+      if (firstPrayer) {
+        handlePrayerAndCount(firstPrayer.text, firstPrayer);
+      }
+    }
+  }, [
+    currentMystery,
+    globalIndex,
+    getRosaryArray,
+    getPrayerById,
+    handlePrayerAndCount,
+  ]);
+
+  // Iconos simples (emoji)
+  const segments = [
+    { key: "prev", icon: "⬅️", onClick: handlePrev, disabled: false },
+    {
+      key: "apertura",
+      icon: "🌟",
+      onClick: () => handleSegmentTap("apertura"),
+    },
+    { key: "decada", icon: "📿", onClick: () => handleSegmentTap("decada") },
+    {
+      key: "misterios",
+      icon: "🔮",
+      onClick: () => handleSegmentTap("misterios"),
+    },
+    {
+      key: "misterio-type",
+      icon: currentMystery.charAt(0).toUpperCase(),
+      onClick: handleMysteryChange,
+    },
+    { key: "cierre", icon: "✨", onClick: () => handleSegmentTap("cierre") },
+    { key: "next", icon: "➡️", onClick: handleNext, disabled: false },
+  ];
   return (
-    <div
-      className="button-grid"
-      style={{
-        height: "38vh",
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "1px",
-        padding: "1px",
-      }}
-    >
-      {/* Selector de misterios */}
-      {mysteryTypes.map((type) => (
-        <button
-          key={type}
-          onClick={() => setcurrentMystery(type)}
-          className={`button-base ${
-            currentMystery === type ? "button-active" : "button-inactive"
-          }`}
-          style={{
-            padding: "8px",
-            borderRadius: "5px",
-          }}
-        >
-          {type.charAt(0).toUpperCase() + type.slice(1)}
+    <div className="segmented-bar">
+      <div className="segments-container">
+        {segments.map(({ key, icon, onClick, disabled }) => (
+          <button
+            key={key}
+            onClick={onClick}
+            className={`segment-btn ${activeSection === key ? "active" : ""} ${
+              disabled ? "disabled" : ""
+            }`}
+            disabled={disabled}
+          >
+            <span className="icon">{icon}</span>
+            {activeSection === key && (
+              <span className="label">
+                {getSectionItems(key)?.[cycleIndex]?.title?.slice(0, 3) || ""}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Sub-bar para misterios específicos */}
+      {subView === "misterios" && (
+        <div className="sub-bar active">
+          <button
+            className="close-btn"
+            onClick={handleCloseSubBar}
+            title="Cerrar"
+          >
+            ✕
+          </button>
+          {prayers.mysteries?.[currentMystery]?.map((prayer, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setCycleIndex(idx);
+                jumpToPrayer(prayer.id);
+                setSubView(null); // Close sub-bar after selection
+              }}
+              className={`sub-btn ${cycleIndex === idx ? "active" : ""}`}
+            >
+              {idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Preview actual oración */}
+      <div className="preview">
+        {currentRosaryItem?.title || "Listo para rezar"}
+      </div>
+
+      {/* Botones adicionales */}
+      <div className="additional-controls">
+        <button onClick={reset} className="control-btn">
+          Reset
         </button>
-      ))}
-
-      {/* Botones de misterios */}
-
-      {!prayers.mysteries[currentMystery] ||
-      prayers.mysteries[currentMystery].length === 0 ? (
-        <div>Cargando Misterios...</div>
-      ) : (
-        prayers.mysteries[currentMystery].map((prayer, index) => (
-          <button
-            onClick={() => handlePrayerAndCount(prayer.text, prayer)}
-            key={index}
-            style={{ padding: "4px" }}
-          >
-            {makeAcronym(prayer.title)}
-          </button>
-        ))
-      )}
-      <button onClick={reset}>Reset</button>
-      <ThemeToggle />
-      <button disabled>Oraciones de la década:</button>
-      {/* Botones de oraciones de la década (siempre visibles) */}
-      {!prayers.decada || prayers.decada.length === 0 ? (
-        <div>Cargando Oraciones de la Decada...</div>
-      ) : (
-        prayers.decada.map((prayer, index) => (
-          <button
-            onClick={() => handlePrayerAndCount(prayer.text, prayer)}
-            key={index}
-            style={{ padding: "4px" }}
-          >
-            {makeAcronym(prayer.title)}
-          </button>
-        ))
-      )}
-      {/* Botón para alternar apertura/cierre */}
-      <button
-        onClick={() => setShowOpening(!showOpening)}
-        className="button-inactive"
-        style={{
-          padding: "4x",
-        }}
-      >
-        {showOpening ? "Oraciones de Apertura:" : "Oraciones de Cierre:"}
-      </button>
-
-      {/* Botones de oraciones de apertura/cierre */}
-
-      {!currentPrayers || currentPrayers.length === 0 ? (
-        <div>Cargando Oraciones Iniciales o de Cierre...</div>
-      ) : (
-        currentPrayers.map((prayer, index) => (
-          <button
-            onClick={() => handlePrayerAndCount(prayer.text, prayer)}
-            key={index}
-            style={{ padding: "4px" }}
-          >
-            {makeAcronym(prayer.title)}
-          </button>
-        ))
-      )}
-      {/* Botonera final */}
+        <ThemeToggle />
+      </div>
     </div>
   );
 }
