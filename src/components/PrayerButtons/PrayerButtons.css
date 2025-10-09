@@ -1,49 +1,60 @@
-/* Segmented Bar Layout */
+/* iOS-style Segmented Bar Layout */
 .segmented-bar {
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 60px; /* Slim: ~10vh equiv */
-  background: var(--primary);
-  border-top: 1px solid var(--border-color, #ccc);
+  min-height: 88px;
+  background: var(--card-background);
+  border-top: 1px solid var(--separator);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 8px 16px 16px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
   box-sizing: border-box;
   z-index: 1000;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .segments-container {
   display: flex;
   width: 100%;
-  height: 100%;
+  max-width: 800px;
+  gap: 4px;
+  padding: 4px;
+  background: var(--system-fill);
+  border-radius: 10px;
 }
 
 .segment-btn {
-  flex: 1; /* Equal width: 7 parts */
+  flex: 1;
   border: none;
   background: transparent;
-  color: var(--text-color);
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  font-size: 20px; /* Icono grande */
-  transition: background 0.2s ease;
+  font-size: 22px;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   position: relative;
+  border-radius: 8px;
 }
 
 .segment-btn.active {
-  background: var(--accent, rgba(255, 255, 255, 0.2));
-  border-radius: 8px; /* Modern pill */
+  background: var(--card-background);
+  color: var(--text-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .segment-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+  opacity: 0.8;
 }
 
 .segment-btn.disabled {
@@ -53,28 +64,33 @@
 
 .icon {
   margin-bottom: 2px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .label {
-  font-size: 10px; /* Solo si activo: Muestra acronym */
-  font-weight: bold;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
 }
 
-/* Sub-bar para misterios específicos */
+/* iOS-style Sub-bar */
 .sub-bar {
   position: absolute;
-  bottom: 60px;
+  bottom: 88px;
   left: 0;
   right: 0;
-  height: 50px;
-  background: var(--primary);
+  min-height: 64px;
+  background: var(--card-background);
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  /* Anim: Slide up */
+  gap: 8px;
+  padding: 12px 16px;
   transform: translateY(100%);
-  transition: transform 0.3s ease;
-  border-top: 1px solid var(--border-color, #ccc);
+  transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-top: 1px solid var(--separator);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .sub-bar.active {
@@ -83,105 +99,130 @@
 
 .close-btn {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  background: var(--accent, rgba(255, 255, 255, 0.2));
+  top: 12px;
+  right: 12px;
+  background: var(--system-fill);
   color: var(--text-color);
   border: none;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 14px;
+  font-weight: 600;
   z-index: 10;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .close-btn:hover {
-  background: var(--accent, rgba(255, 255, 255, 0.3));
+  transform: scale(1.1);
+  background: var(--text-secondary);
+  color: var(--card-background);
 }
 
 .sub-btn {
   flex: 1;
   border: none;
-  background: transparent;
+  background: var(--system-fill);
   color: var(--text-color);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  font-size: 16px;
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  min-height: 44px;
+  font-size: 17px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .sub-btn.active {
-  background: var(--accent, rgba(255, 255, 255, 0.2));
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 }
 
 .sub-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Preview actual oración */
+/* iOS-style Preview */
 .preview {
-  position: absolute;
-  bottom: -25px; /* Sobre barra */
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--primary);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  margin-top: 8px;
+  width: 100%;
+  max-width: 800px;
+  background: var(--system-fill);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
   white-space: nowrap;
-  border: 1px solid var(--border-color, #ccc);
-  max-width: 80%;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--text-secondary);
 }
 
-/* Botones adicionales */
+/* iOS-style Additional Controls */
 .additional-controls {
   position: absolute;
-  top: -50px;
-  right: 10px;
+  top: -60px;
+  right: 16px;
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .control-btn {
-  background-color: var(--primary);
+  background-color: var(--system-fill);
   color: var(--text-color);
-  border: 1px solid var(--border-color, #ccc);
-  padding: 6px 12px;
-  border-radius: 4px;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 44px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .control-btn:hover {
-  background-color: var(--accent, rgba(255, 255, 255, 0.1));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Mobile: Ya responsive por flex */
+/* iOS Mobile Optimizations */
 @media (max-width: 480px) {
   .segmented-bar {
-    height: 56px;
+    min-height: 80px;
+    padding: 6px 12px 12px 12px;
   }
   .segment-btn {
-    font-size: 18px;
+    font-size: 20px;
+    min-height: 40px;
   }
   .sub-bar {
-    height: 45px;
-    bottom: 56px;
+    min-height: 60px;
+    bottom: 80px;
+    padding: 10px 12px;
   }
   .preview {
-    bottom: -20px;
-    font-size: 10px;
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  .additional-controls {
+    top: -56px;
+    right: 12px;
+    gap: 8px;
+  }
+  .control-btn {
+    padding: 8px 16px;
+    font-size: 14px;
   }
 }

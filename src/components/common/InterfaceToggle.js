@@ -76,25 +76,27 @@ const InterfaceToggle = ({
   };
 
   return (
-    <div className={`interface-toggle ${className}`} style={{ position: "fixed", top: "10px", left: "10px", zIndex: 2000 }}>
-      {/* Main toggle button */}
+    <div className={`interface-toggle ${className}`} style={{ position: "fixed", top: "16px", left: "16px", zIndex: 2000 }}>
+      {/* iOS-style Main toggle button */}
       <button
         onClick={toggleExpanded}
         className="main-toggle-btn"
         style={{
-          background: "rgba(0, 0, 0, 0.8)",
-          color: "white",
-          border: "2px solid #FFD700",
+          background: "var(--system-fill)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          color: "var(--text-color)",
+          border: "none",
           borderRadius: "50%",
           width: "50px",
           height: "50px",
           cursor: "pointer",
-          fontSize: "20px",
+          fontSize: "22px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transition: "all 0.3s ease",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+          transition: "all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)",
+          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.12)",
         }}
         title="Toggle Interface Controls"
         aria-label="Toggle interface controls"
@@ -102,7 +104,7 @@ const InterfaceToggle = ({
         {isExpanded ? "✕" : "⚙️"}
       </button>
 
-      {/* Expanded control panel */}
+      {/* iOS-style Expanded control panel */}
       {isExpanded && (
         <div
           className="control-panel"
@@ -110,81 +112,125 @@ const InterfaceToggle = ({
             position: "absolute",
             top: "60px",
             left: "0",
-            background: "rgba(0, 0, 0, 0.9)",
-            color: "white",
-            padding: "15px",
-            borderRadius: "10px",
-            minWidth: "200px",
-            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
-            border: "1px solid #FFD700",
+            background: "var(--card-background)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            color: "var(--text-color)",
+            padding: "20px",
+            borderRadius: "16px",
+            minWidth: "240px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+            border: "1px solid var(--separator)",
           }}
         >
-          <div style={{ marginBottom: "10px", fontWeight: "bold", color: "#FFD700" }}>
+          <div style={{ marginBottom: "16px", fontWeight: "600", fontSize: "17px", color: "var(--text-color)" }}>
             Interface Controls
           </div>
 
-          {/* Toggle All Button */}
+          {/* iOS-style Toggle All Button */}
           <button
             onClick={handleToggleAll}
             style={{
               width: "100%",
-              padding: "8px",
-              marginBottom: "10px",
-              background: showRosary && showBackupRosary && showCounters ? "#FF6B6B" : "#4ECDC4",
-              color: "white",
+              padding: "12px",
+              marginBottom: "16px",
+              background: showRosary && showBackupRosary && showCounters ? "var(--primary)" : "var(--system-fill)",
+              color: showRosary && showBackupRosary && showCounters ? "white" : "var(--text-color)",
               border: "none",
-              borderRadius: "5px",
+              borderRadius: "10px",
               cursor: "pointer",
-              fontWeight: "bold",
+              fontWeight: "600",
+              fontSize: "15px",
+              transition: "all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)",
+              minHeight: "44px",
             }}
           >
             {showRosary && showBackupRosary && showCounters ? "Hide All" : "Show All"}
           </button>
 
-          {/* Individual toggles */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {/* iOS-style Individual toggles */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {/* Interactive Rosary Toggle */}
-            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <label style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              cursor: "pointer",
+              padding: "8px",
+              borderRadius: "8px",
+              background: "var(--system-fill)",
+              transition: "all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)",
+            }}>
               <input
                 type="checkbox"
                 checked={showRosary}
                 onChange={handleRosaryToggle}
-                style={{ marginRight: "8px" }}
+                style={{ 
+                  marginRight: "12px",
+                  width: "20px",
+                  height: "20px",
+                  cursor: "pointer",
+                }}
               />
-              <span>📿 Interactive Rosary</span>
+              <span style={{ fontSize: "15px", fontWeight: "500" }}>📿 Interactive Rosary</span>
             </label>
 
             {/* Backup Rosary Toggle */}
-            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <label style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              cursor: "pointer",
+              padding: "8px",
+              borderRadius: "8px",
+              background: "var(--system-fill)",
+              transition: "all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)",
+            }}>
               <input
                 type="checkbox"
                 checked={showBackupRosary}
                 onChange={handleBackupRosaryToggle}
-                style={{ marginRight: "8px" }}
+                style={{ 
+                  marginRight: "12px",
+                  width: "20px",
+                  height: "20px",
+                  cursor: "pointer",
+                }}
               />
-              <span>🔴 Backup Rosary</span>
+              <span style={{ fontSize: "15px", fontWeight: "500" }}>🔴 Backup Rosary</span>
             </label>
 
             {/* Counters Toggle */}
-            <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <label style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              cursor: "pointer",
+              padding: "8px",
+              borderRadius: "8px",
+              background: "var(--system-fill)",
+              transition: "all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)",
+            }}>
               <input
                 type="checkbox"
                 checked={showCounters}
                 onChange={handleCountersToggle}
-                style={{ marginRight: "8px" }}
+                style={{ 
+                  marginRight: "12px",
+                  width: "20px",
+                  height: "20px",
+                  cursor: "pointer",
+                }}
               />
-              <span>📊 Prayer Counters</span>
+              <span style={{ fontSize: "15px", fontWeight: "500" }}>📊 Prayer Counters</span>
             </label>
           </div>
 
-          {/* Help text */}
+          {/* iOS-style Help text */}
           <div style={{ 
-            marginTop: "10px", 
-            fontSize: "12px", 
-            color: "#ccc", 
-            fontStyle: "italic",
-            borderTop: "1px solid #333",
-            paddingTop: "8px"
+            marginTop: "16px", 
+            fontSize: "13px", 
+            color: "var(--text-secondary)", 
+            borderTop: "1px solid var(--separator)",
+            paddingTop: "12px",
+            lineHeight: "1.4",
           }}>
             💡 Hide elements for distraction-free prayer
           </div>

@@ -8,7 +8,6 @@ import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import BackupRosary from "./components/RosarioNube/BackupRosary";
-import SimpleBeadTest from "./components/RosarioNube/SimpleBeadTest";
 import InterfaceToggle from "./components/common/InterfaceToggle";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
@@ -20,7 +19,6 @@ function App() {
     RosarioPrayerBook.mysteries[currentMystery][0]
   );
   const [count, setCount] = useState(0);
-  const [showSimpleTest, setShowSimpleTest] = useState(false);
 
   // Interface visibility states for clean prayer mode
   const [showRosary, setShowRosary] = useState(true);
@@ -69,34 +67,6 @@ function App() {
         onToggleCounters={() => setShowCounters(!showCounters)}
       />
 
-      {/* Simple Test Toggle Button */}
-      <div
-        style={{
-          position: "absolute",
-          top: "60px",
-          right: "20px",
-          zIndex: 1000,
-          background: "rgba(255, 255, 255, 0.9)",
-          padding: "10px",
-          borderRadius: "8px",
-          border: "2px solid #FF6B6B",
-        }}
-      >
-        <button
-          onClick={() => setShowSimpleTest(!showSimpleTest)}
-          style={{
-            background: showSimpleTest ? "#FF6B6B" : "#4ECDC4",
-            color: "white",
-            border: "none",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          {showSimpleTest ? "Hide Simple Test" : "Show Simple Test"}
-        </button>
-      </div>
 
       {/* Main content area with rosary */}
       <div
@@ -107,29 +77,9 @@ function App() {
           overflow: "hidden",
         }}
       >
-        {/* Simple Bead Test - Show when toggled */}
-        {showSimpleTest && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 10,
-              pointerEvents: "auto",
-              background: "rgba(0, 0, 0, 0.8)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <SimpleBeadTest />
-          </div>
-        )}
 
-        {/* Interactive Rosary - Make it more visible */}
-        {!showSimpleTest && showRosary && (
+        {/* Interactive Rosary - iOS style */}
+        {showRosary && (
           <div
             style={{
               position: "absolute",

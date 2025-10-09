@@ -78,40 +78,64 @@ function ViewPrayers({
       className="top-section prayer-content-overlay"
       style={{
         display: "flex",
-        height: "58vh",
-        background: "rgba(255, 255, 255, 0.1)", // More transparent
-        backdropFilter: "blur(0.5px)", // Less blur
-        borderRadius: "8px",
-        margin: "10px",
-        padding: "10px",
-        pointerEvents: "none", // Allow clicks to pass through
+        height: "60vh",
+        background: "rgba(255, 255, 255, 0.7)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderRadius: "20px",
+        margin: "16px",
+        padding: "16px",
+        gap: "16px",
+        pointerEvents: "none",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        border: "1px solid rgba(255, 255, 255, 0.18)",
       }}
     >
       <div
         className="page-left"
         style={{
           flex: 1,
-          overflow: "scroll",
-          padding: "4px",
+          overflow: "auto",
+          padding: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
         }}
       >
         {showCounters && (
-          <span style={{ color: "gold", fontSize: "18px", fontWeight: "bold" }}>
-            📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
-          </span>
+          <div style={{ 
+            background: "rgba(0, 122, 255, 0.1)",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "15px",
+            fontWeight: "600",
+            color: "var(--primary)",
+            alignSelf: "center",
+            boxShadow: "0 2px 8px rgba(0, 122, 255, 0.15)",
+          }}>
+            <span>📿</span>
+            <span>Hail Marys: {hailMaryCount}</span>
+          </div>
         )}
-        <p>{prayer}</p>
+        <p style={{ 
+          margin: 0, 
+          lineHeight: "1.7",
+          fontSize: "1.125rem",
+        }}>{prayer}</p>
       </div>
-      <div className="page-right" style={{ flex: 1 }}>
+      <div className="page-right" style={{ flex: 1, padding: "8px" }}>
         <img
           className="prayer-image"
           src={finalImageUrl}
           alt={`${prayer.name} illustration`}
           style={{
-            width: "47vw",
-            height: "56vh",
+            width: "100%",
+            height: "100%",
             objectFit: "contain",
-            borderRadius: "8px",
+            borderRadius: "16px",
           }}
         />
       </div>

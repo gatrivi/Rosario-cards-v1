@@ -1,3 +1,4 @@
+/* iOS-style Interactive Rosary */
 .interactive-rosary {
   width: 100%;
   height: 100%;
@@ -15,30 +16,30 @@
   width: 100% !important;
   height: 100% !important;
   cursor: grab;
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .interactive-rosary canvas:active {
   cursor: grabbing;
+  transform: scale(0.99);
 }
 
-/* Ensure the rosary is visible but doesn't interfere with prayer content */
-.app {
-  position: relative;
-}
-
-/* Make prayer content semi-transparent when rosary is active */
+/* iOS-style Prayer Content Overlay */
 .prayer-content-overlay {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(2px);
-  border-radius: 8px;
-  margin: 10px;
-  padding: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  margin: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Dark mode adjustments */
-[data-theme="dark"] .prayer-content-overlay {
-  background: rgba(0, 0, 0, 0.8);
+/* Dark mode iOS adjustments */
+.dark .prayer-content-overlay {
+  background: rgba(28, 28, 30, 0.85);
+  border: 1px solid rgba(84, 84, 88, 0.65);
 }
-
-
 
