@@ -76,25 +76,34 @@ const InterfaceToggle = ({
   };
 
   return (
-    <div className={`interface-toggle ${className}`} style={{ position: "fixed", top: "10px", left: "10px", zIndex: 2000 }}>
+    <div
+      className={`interface-toggle ${className}`}
+      style={{
+        position: "fixed",
+        top: "calc(env(safe-area-inset-top) + 8px)",
+        left: 10,
+        zIndex: 2000,
+      }}
+    >
       {/* Main toggle button */}
       <button
         onClick={toggleExpanded}
         className="main-toggle-btn"
         style={{
-          background: "rgba(0, 0, 0, 0.8)",
-          color: "white",
-          border: "2px solid #FFD700",
+          background: "var(--surface)",
+          color: "var(--text-color)",
+          border: "0.5px solid var(--separator)",
           borderRadius: "50%",
-          width: "50px",
-          height: "50px",
+          width: 44,
+          height: 44,
           cursor: "pointer",
-          fontSize: "20px",
+          fontSize: 18,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transition: "all 0.3s ease",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+          transition: "all 0.2s ease",
+          WebkitBackdropFilter: "saturate(180%) blur(20px)",
+          backdropFilter: "saturate(180%) blur(20px)",
         }}
         title="Toggle Interface Controls"
         aria-label="Toggle interface controls"
@@ -108,15 +117,17 @@ const InterfaceToggle = ({
           className="control-panel"
           style={{
             position: "absolute",
-            top: "60px",
-            left: "0",
-            background: "rgba(0, 0, 0, 0.9)",
-            color: "white",
-            padding: "15px",
-            borderRadius: "10px",
-            minWidth: "200px",
-            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
-            border: "1px solid #FFD700",
+            top: 56,
+            left: 0,
+            background: "var(--surface)",
+            color: "var(--text-color)",
+            padding: 12,
+            borderRadius: 12,
+            minWidth: 200,
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
+            border: "0.5px solid var(--separator)",
+            WebkitBackdropFilter: "saturate(180%) blur(20px)",
+            backdropFilter: "saturate(180%) blur(20px)",
           }}
         >
           <div style={{ marginBottom: "10px", fontWeight: "bold", color: "#FFD700" }}>
@@ -128,12 +139,12 @@ const InterfaceToggle = ({
             onClick={handleToggleAll}
             style={{
               width: "100%",
-              padding: "8px",
-              marginBottom: "10px",
-              background: showRosary && showBackupRosary && showCounters ? "#FF6B6B" : "#4ECDC4",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
+              padding: 8,
+              marginBottom: 10,
+              background: "var(--primary)",
+              color: "#fff",
+              border: "1px solid var(--primary)",
+              borderRadius: 8,
               cursor: "pointer",
               fontWeight: "bold",
             }}

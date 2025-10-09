@@ -2,18 +2,12 @@ import React from "react";
 
 function Header({ logo }) {
   return (
-    <header
-      style={{
-        textAlign: "center",
-      }}
-      className="App-header"
-    >
+    <header className="nav-bar" role="banner">
       <img
         id="logo"
         src={logo}
-        className="App-logo"
-        alt="logo"
-        style={{ height: "4vh" }}
+        alt="App logo"
+        style={{ height: 28 }}
       />
     </header>
   );

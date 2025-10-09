@@ -79,12 +79,10 @@ function ViewPrayers({
       style={{
         display: "flex",
         height: "58vh",
-        background: "rgba(255, 255, 255, 0.1)", // More transparent
-        backdropFilter: "blur(0.5px)", // Less blur
-        borderRadius: "8px",
-        margin: "10px",
-        padding: "10px",
-        pointerEvents: "none", // Allow clicks to pass through
+        borderRadius: 12,
+        margin: 10,
+        padding: 12,
+        pointerEvents: "none",
       }}
     >
       <div
@@ -100,7 +98,7 @@ function ViewPrayers({
             📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
           </span>
         )}
-        <p>{prayer}</p>
+        <p style={{ lineHeight: 1.5, marginTop: 8, textAlign: "left" }}>{prayer}</p>
       </div>
       <div className="page-right" style={{ flex: 1 }}>
         <img
@@ -111,7 +109,7 @@ function ViewPrayers({
             width: "47vw",
             height: "56vh",
             objectFit: "contain",
-            borderRadius: "8px",
+            borderRadius: 12,
           }}
         />
       </div>

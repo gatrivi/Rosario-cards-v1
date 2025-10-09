@@ -1,10 +1,10 @@
 * {
-  transition: all 0.2s ease-in-out;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
 .app {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 4px;
+  padding: calc(env(safe-area-inset-top) + 4px) 4px calc(env(safe-area-inset-bottom) + 64px) 4px;
 }
 @font-face {
   font-family: "Cloister Black"; /* Name your custom font */
@@ -47,48 +47,72 @@ img#logo {
 }
 /* Define CSS variables for light and dark themes */
 :root {
-  --background: #fffce9;
-  --text-color: #362f27;
-  --surface: #f5f5f5;
-  --primary: ##f5dbc2;
-  --secondary: #a6a296;
-  --accent: #f5f5f5;
+  /* iOS-like light palette */
+  --background: #ffffff;
+  --text-color: #1d1d1f;
+  --surface: rgba(255, 255, 255, 0.72);
+  --separator: rgba(60, 60, 67, 0.29);
+  --fill: rgba(118, 118, 128, 0.12);
+  --primary: #007aff; /* iOS blue */
+  --secondary: #34c759; /* iOS green */
+  --accent: rgba(0, 122, 255, 0.12);
 }
 
 /* Dark mode styles */
 .dark {
-  --background: #1e1802;
-  --text-color: #bbbbbb;
-  --surface: #2c2c2c;
-  --primary: #1a1a1a;
-  --secondary: #1e1802;
-  --accent: #4c4c42;
+  /* iOS-like dark palette */
+  --background: #000000;
+  --text-color: #f2f2f7;
+  --surface: rgba(29, 29, 31, 0.72);
+  --separator: rgba(84, 84, 88, 0.65);
+  --fill: rgba(120, 120, 128, 0.24);
+  --primary: #0a84ff;
+  --secondary: #30d158;
+  --accent: rgba(10, 132, 255, 0.2);
 }
 button {
-  font-family: "Cloister Black", serif; /* Use the custom font */
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .button-active {
   background-color: var(--primary);
+  color: #fff;
 }
 
 .button-inactive {
-  background-color: var(--secondary);
+  background-color: var(--fill);
 }
 /* Apply variables to elements */
 body {
   background-color: var(--background);
   color: var(--text-color);
   transition: background-color 0.3s ease, color 0.3s ease;
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 0;
-  padding: 0;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
 }
 
 /* Common components */
 .container {
   background-color: var(--surface);
-  padding: 4px;
-  border-radius: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Translucent iOS-like navigation bar */
+.nav-bar {
+  position: sticky;
+  top: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--separator);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  z-index: 1000;
 }
 
 /* Media query for smaller screens */
@@ -111,10 +135,25 @@ button:hover {
 /* Toggle switch for dark mode */
 .theme-toggle {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: 12px;
+  background: var(--fill);
+  border: 1px solid var(--separator);
+  border-radius: 22px;
+  padding: 6px 10px;
+  font-size: 14px;
   cursor: pointer;
+}
+
+/* Prayer overlay polish */
+.prayer-content-overlay {
+  background: var(--surface) !important;
+  border: 0.5px solid var(--separator);
+}
+
+.page-left {
+  -webkit-overflow-scrolling: touch;
+}
+.page-right img {
+  border-radius: 12px;
 }

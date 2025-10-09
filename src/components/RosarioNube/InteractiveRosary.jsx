@@ -638,13 +638,12 @@ const InteractiveRosary = ({
     <div
       className={`interactive-rosary ${className}`}
       style={{
-        border: "3px solid #FF6B6B",
-        minHeight: "400px", // Increased height
-        background: "rgba(255, 255, 255, 0.05)", // More transparent
-        borderRadius: "10px",
-        margin: "10px",
+        minHeight: "400px",
+        background: "transparent",
+        borderRadius: 12,
+        margin: 10,
         position: "absolute",
-        top: "20%", // Position in middle area
+        top: "20%",
         left: "20%",
         right: "20%",
         bottom: "20%",
@@ -657,51 +656,14 @@ const InteractiveRosary = ({
           width: "100%",
           height: "100%",
           cursor: "grab",
-          border: "2px solid #4ECDC4",
-          borderRadius: "8px",
+          border: "none",
+          borderRadius: 12,
         }}
       />
 
-      {/* Enhanced debug information */}
-      <div
-        style={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          background: "rgba(255, 255, 0, 0.9)",
-          padding: "8px",
-          borderRadius: "5px",
-          fontSize: "12px",
-          fontWeight: "bold",
-          border: "1px solid #000",
-        }}
-      >
-        <div>🎯 Rosary Debug:</div>
-        <div>Status: {isInitialized ? "✅ Initialized" : "⏳ Loading..."}</div>
-        <div>Mystery: {currentMystery}</div>
-        <div>Prayer Index: {currentPrayerIndex}</div>
-        <div>Colors: {colors.beads}</div>
-        <div>Canvas: {canvasRef.current ? "✅ Ready" : "❌ Missing"}</div>
-        <div>Engine: {engineRef.current ? "✅ Running" : "❌ Stopped"}</div>
-        <div>Beads: {beadsRef.current.length}</div>
-      </div>
+      {/* Debug panel removed for cleaner UI */}
 
-      {/* Visual indicator for rosary position */}
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "20px",
-          height: "20px",
-          background: colors.highlight,
-          borderRadius: "50%",
-          border: "2px solid #000",
-          opacity: 0.7,
-          pointerEvents: "none",
-        }}
-      />
+      {/* Center indicator removed */}
     </div>
   );
 };

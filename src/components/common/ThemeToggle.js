@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaLightbulb, FaMoon } from "react-icons/fa"; // Import icons here
+import { FaLightbulb, FaMoon } from "react-icons/fa";
 const ThemeToggle = () => {
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage first, then system preference
@@ -23,8 +23,9 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className=" rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors"
+      className="theme-toggle"
       aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+      title={darkMode ? "Light" : "Dark"}
     >
       {darkMode ? <FaLightbulb size={15} /> : <FaMoon size={15} />}
     </button>
