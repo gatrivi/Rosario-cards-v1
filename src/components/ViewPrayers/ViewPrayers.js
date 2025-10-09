@@ -1,5 +1,23 @@
 import React from "react";
 import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
+
+/**
+ * ViewPrayers Component
+ * 
+ * Displays the current prayer text and image with Hail Mary counter
+ * Provides a clean, focused interface for prayer reading with:
+ * - Prayer text display with proper formatting
+ * - Prayer image display with theme support
+ * - Hail Mary counter based on actual prayer sequence
+ * - Responsive layout for different screen sizes
+ * 
+ * @param {string} prayer - Current prayer text to display
+ * @param {number} count - Manual counter for Hail Marys (legacy)
+ * @param {string} prayerImg - URL of the current prayer image
+ * @param {string} currentMystery - Current mystery type
+ * @param {number} currentPrayerIndex - Current position in rosary sequence
+ * @param {object} prayers - Prayer data object for sequence analysis
+ */
 function ViewPrayers({
   prayer,
   count,
@@ -7,12 +25,19 @@ function ViewPrayers({
   currentMystery,
   currentPrayerIndex,
   prayers,
+  showCounters = true,
 }) {
   let baseImageUrl;
   const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
   const currentTheme = localStorage.getItem("theme");
 
-  // Count Hail Marys based on actual prayer sequence
+  /**
+   * Count Hail Marys based on actual prayer sequence
+   * This function analyzes the rosary sequence to count how many "A" entries
+   * (Ave Maria/Hail Mary) have been reached up to the current prayer index
+   * 
+   * @returns {number} Number of Hail Marys prayed so far
+   */
   const getHailMaryCount = () => {
     if (!prayers) return 0;
 
@@ -27,6 +52,7 @@ function ViewPrayers({
     let count = 0;
 
     // Count "A" entries (Ave Maria/Hail Mary) up to current prayer index
+    // This provides an accurate count of Hail Marys prayed so far
     for (let i = 0; i <= currentPrayerIndex && i < rosarySequence.length; i++) {
       if (rosarySequence[i] === "A") {
         count++;
@@ -38,6 +64,8 @@ function ViewPrayers({
 
   const hailMaryCount = getHailMaryCount();
 
+  // Set base image URL based on theme and mystery type
+  // Dark theme uses special images for certain mysteries
   if (currentTheme === "dark") {
     if (currentMystery === "gloriosos") {
       baseImageUrl = "/gallery-images/misterios/modooscuro/misteriogloria0.jpg";
@@ -67,9 +95,11 @@ function ViewPrayers({
           padding: "4px",
         }}
       >
-        <span style={{ color: "gold", fontSize: "18px", fontWeight: "bold" }}>
-          📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
-        </span>
+        {showCounters && (
+          <span style={{ color: "gold", fontSize: "18px", fontWeight: "bold" }}>
+            📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
+          </span>
+        )}
         <p>{prayer}</p>
       </div>
       <div className="page-right" style={{ flex: 1 }}>

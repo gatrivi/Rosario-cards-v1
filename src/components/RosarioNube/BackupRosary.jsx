@@ -7,6 +7,7 @@ const BackupRosary = ({
   totalPrayers = 57,
   onBeadClick,
   prayers,
+  showCounters = true,
 }) => {
   // Mystery-specific color schemes
   const getMysteryColors = (mystery) => {
@@ -150,27 +151,29 @@ const BackupRosary = ({
       ))}
 
       {/* Hail Mary Counter */}
-      <div
-        className="hail-mary-counter"
-        style={{
-          position: "fixed",
-          top: "10px",
-          right: "10px",
-          background: "rgba(255, 255, 0, 0.9)",
-          padding: "8px",
-          borderRadius: "5px",
-          fontSize: "14px",
-          fontWeight: "bold",
-          border: "2px solid #000",
-          zIndex: 1001,
-        }}
-      >
-        <div>📿 Hail Marys: {hailMaryCount}</div>
-        <div>
-          Prayer: {currentPrayerIndex + 1}/{totalPrayers}
+      {showCounters && (
+        <div
+          className="hail-mary-counter"
+          style={{
+            position: "fixed",
+            top: "10px",
+            right: "10px",
+            background: "rgba(255, 255, 0, 0.9)",
+            padding: "8px",
+            borderRadius: "5px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            border: "2px solid #000",
+            zIndex: 1001,
+          }}
+        >
+          <div>📿 Hail Marys: {hailMaryCount}</div>
+          <div>
+            Prayer: {currentPrayerIndex + 1}/{totalPrayers}
+          </div>
+          <div>Mystery: {currentMystery}</div>
         </div>
-        <div>Mystery: {currentMystery}</div>
-      </div>
+      )}
 
       {/* Cross indicator at starting position */}
       <div
