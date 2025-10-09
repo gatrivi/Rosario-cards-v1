@@ -2,7 +2,7 @@ import "./App.css";
 import logo from "./logo.png";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
@@ -26,6 +26,9 @@ function App() {
   const [showRosary, setShowRosary] = useState(true);
   const [showBackupRosary, setShowBackupRosary] = useState(true);
   const [showCounters, setShowCounters] = useState(true);
+
+  // Ref for scroll control in ViewPrayers component
+  const scrollControlRef = useRef(null);
 
   // Use the rosary state hook
   const { currentPrayerIndex, handleBeadClick, jumpToPrayer } = useRosaryState(
@@ -163,6 +166,7 @@ function App() {
           }}
         >
           <ViewPrayers
+            ref={scrollControlRef}
             count={count}
             prayerImg={prayerImg}
             prayer={prayer}
@@ -184,6 +188,7 @@ function App() {
         setcurrentMystery={setcurrentMystery}
         jumpToPrayer={jumpToPrayer}
         currentPrayerIndex={currentPrayerIndex}
+        scrollControlRef={scrollControlRef}
       />
 
       {/* Backup Rosary - Always visible around screen edges */}

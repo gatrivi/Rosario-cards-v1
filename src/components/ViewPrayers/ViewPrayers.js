@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useImperativeHandle, forwardRef } from "react";
 import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
 
 /**
@@ -10,6 +10,7 @@ import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
  * - Prayer image display with theme support
  * - Hail Mary counter based on actual prayer sequence
  * - Responsive layout for different screen sizes
+ * - Scroll control for navigation
  * 
  * @param {string} prayer - Current prayer text to display
  * @param {number} count - Manual counter for Hail Marys (legacy)
@@ -18,7 +19,7 @@ import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
  * @param {number} currentPrayerIndex - Current position in rosary sequence
  * @param {object} prayers - Prayer data object for sequence analysis
  */
-function ViewPrayers({
+const ViewPrayers = forwardRef(({
   prayer,
   count,
   prayerImg,
@@ -26,7 +27,8 @@ function ViewPrayers({
   currentPrayerIndex,
   prayers,
   showCounters = true,
-}) {
+}, ref) => {
+  const scrollContainerRef = useRef(null);
   let baseImageUrl;
   const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
   const currentTheme = localStorage.getItem("theme");
@@ -64,6 +66,63 @@ function ViewPrayers({
 
   const hailMaryCount = getHailMaryCount();
 
+  /**
+   * Expose scroll control methods to parent component
+   * Allows parent to check scroll position and control scrolling
+   */
+  useImperativeHandle(ref, () => ({
+    /**
+     * Check if content can scroll down
+     * @returns {boolean} True if there's more content below
+     */
+    canScrollDown: () => {
+      if (!scrollContainerRef.current) return false;
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+      return scrollTop + clientHeight < scrollHeight - 10; // 10px threshold
+    },
+    
+    /**
+     * Check if content can scroll up
+     * @returns {boolean} True if there's content above
+     */
+    canScrollUp: () => {
+      if (!scrollContainerRef.current) return false;
+      return scrollContainerRef.current.scrollTop > 10; // 10px threshold
+    },
+    
+    /**
+     * Scroll down by one viewport
+     */
+    scrollDown: () => {
+      if (!scrollContainerRef.current) return;
+      const scrollAmount = scrollContainerRef.current.clientHeight * 0.8;
+      scrollContainerRef.current.scrollBy({
+        top: scrollAmount,
+        behavior: 'smooth'
+      });
+    },
+    
+    /**
+     * Scroll up by one viewport
+     */
+    scrollUp: () => {
+      if (!scrollContainerRef.current) return;
+      const scrollAmount = scrollContainerRef.current.clientHeight * 0.8;
+      scrollContainerRef.current.scrollBy({
+        top: -scrollAmount,
+        behavior: 'smooth'
+      });
+    },
+    
+    /**
+     * Reset scroll to top
+     */
+    resetScroll: () => {
+      if (!scrollContainerRef.current) return;
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }));
+
   // Set base image URL based on theme and mystery type
   // Dark theme uses special images for certain mysteries
   if (currentTheme === "dark") {
@@ -88,6 +147,7 @@ function ViewPrayers({
       }}
     >
       <div
+        ref={scrollContainerRef}
         className="page-left"
         style={{
           flex: 1,
@@ -117,6 +177,8 @@ function ViewPrayers({
       </div>
     </div>
   );
-}
+});
+
+ViewPrayers.displayName = 'ViewPrayers';
 
 export default ViewPrayers;

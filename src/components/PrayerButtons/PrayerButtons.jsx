@@ -1,6 +1,8 @@
 import ThemeToggle from "../common/ThemeToggle";
 import "./PrayerButtons.css";
 import { useState, useEffect, useCallback } from "react";
+import soundEffects from "../../utils/soundEffects";
+
 function PrayerButtons({
   prayers,
   setPrayer,
@@ -9,11 +11,13 @@ function PrayerButtons({
   setPrayerImg,
   currentMystery,
   setcurrentMystery,
+  scrollControlRef,
+  jumpToPrayer,
+  currentPrayerIndex,
 }) {
   // Estados para la botonera segmentada
   const [activeSection, setActiveSection] = useState("none");
   const [cycleIndex, setCycleIndex] = useState(0);
-  const [globalIndex, setGlobalIndex] = useState(0);
   const [subView, setSubView] = useState(null);
 
   // Helper function to get the correct rosary array based on mystery type
@@ -123,33 +127,84 @@ function PrayerButtons({
     }
   };
 
+  /**
+   * Handle Previous button - scroll up first, then navigate to previous prayer
+   * Implements scroll-first behavior with sound feedback
+   */
   const handlePrev = () => {
-    const rosaryArray = getRosaryArray(currentMystery);
-    if (rosaryArray.length > 0) {
-      setGlobalIndex(
-        (prev) => (prev - 1 + rosaryArray.length) % rosaryArray.length
-      );
-      const prevPrayerId =
-        rosaryArray[
-          (globalIndex - 1 + rosaryArray.length) % rosaryArray.length
-        ];
-      const prevPrayer = getPrayerById(prevPrayerId);
-      if (prevPrayer) {
-        handlePrayerAndCount(prevPrayer.text, prevPrayer);
-      }
+    // Check if we can scroll up first
+    if (scrollControlRef?.current?.canScrollUp()) {
+      // Still can scroll up - just scroll
+      scrollControlRef.current.scrollUp();
+      soundEffects.playScrollSound();
+      return;
     }
+    
+    // At the top - play end sound to indicate we'll change prayer
+    soundEffects.playEndSound();
+    
+    // Small delay to let user hear the end sound
+    setTimeout(() => {
+      const rosaryArray = getRosaryArray(currentMystery);
+      if (rosaryArray.length > 0) {
+        const prevIndex = (currentPrayerIndex - 1 + rosaryArray.length) % rosaryArray.length;
+        const prevPrayerId = rosaryArray[prevIndex];
+        const prevPrayer = getPrayerById(prevPrayerId);
+        if (prevPrayer) {
+          // Use jumpToPrayer to keep state in sync
+          jumpToPrayer(prevPrayerId);
+          handlePrayerAndCount(prevPrayer.text, prevPrayer);
+          // Reset scroll to bottom when moving to previous prayer
+          setTimeout(() => {
+            if (scrollControlRef?.current) {
+              // Scroll to bottom for previous prayer
+              const scrollContainer = document.querySelector('.page-left');
+              if (scrollContainer) {
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+              }
+            }
+          }, 100);
+          soundEffects.playPageTurnSound();
+        }
+      }
+    }, 200);
   };
 
+  /**
+   * Handle Next button - scroll down first, then navigate to next prayer
+   * Implements scroll-first behavior with sound feedback
+   */
   const handleNext = () => {
-    const rosaryArray = getRosaryArray(currentMystery);
-    if (rosaryArray.length > 0) {
-      setGlobalIndex((prev) => (prev + 1) % rosaryArray.length);
-      const nextPrayerId = rosaryArray[(globalIndex + 1) % rosaryArray.length];
-      const nextPrayer = getPrayerById(nextPrayerId);
-      if (nextPrayer) {
-        handlePrayerAndCount(nextPrayer.text, nextPrayer);
-      }
+    // Check if we can scroll down first
+    if (scrollControlRef?.current?.canScrollDown()) {
+      // Still can scroll down - just scroll
+      scrollControlRef.current.scrollDown();
+      soundEffects.playScrollSound();
+      return;
     }
+    
+    // At the bottom - play end sound to indicate we'll change prayer
+    soundEffects.playEndSound();
+    
+    // Small delay to let user hear the end sound
+    setTimeout(() => {
+      const rosaryArray = getRosaryArray(currentMystery);
+      if (rosaryArray.length > 0) {
+        const nextIndex = (currentPrayerIndex + 1) % rosaryArray.length;
+        const nextPrayerId = rosaryArray[nextIndex];
+        const nextPrayer = getPrayerById(nextPrayerId);
+        if (nextPrayer) {
+          // Use jumpToPrayer to keep state in sync
+          jumpToPrayer(nextPrayerId);
+          handlePrayerAndCount(nextPrayer.text, nextPrayer);
+          // Reset scroll to top when moving to next prayer
+          setTimeout(() => {
+            scrollControlRef?.current?.resetScroll();
+          }, 100);
+          soundEffects.playPageTurnSound();
+        }
+      }
+    }, 200);
   };
 
   const handleCloseSubBar = () => {
@@ -166,34 +221,29 @@ function PrayerButtons({
     .map((id) => getPrayerById(id))
     .filter(Boolean);
 
-  const currentRosaryItem = rosarySequence[globalIndex];
+  const currentRosaryItem = rosarySequence[currentPrayerIndex];
 
-  // Function to jump to a specific prayer while maintaining progression
-  const jumpToPrayer = (prayerId) => {
-    const rosaryArray = getRosaryArray(currentMystery);
-    const targetIndex = rosaryArray.indexOf(prayerId);
-    if (targetIndex !== -1) {
-      setGlobalIndex(targetIndex);
-      const prayer = getPrayerById(prayerId);
-      if (prayer) {
-        handlePrayerAndCount(prayer.text, prayer);
-      }
-    }
-  };
-
-  // Reset global index when mystery type changes
+  // Reset to first prayer when mystery type changes
   const handleMysteryChange = () => {
-    setGlobalIndex(0);
-    setcurrentMystery(
-      (prev) =>
-        mysteryTypes[(mysteryTypes.indexOf(prev) + 1) % mysteryTypes.length]
-    );
+    const newMystery = mysteryTypes[(mysteryTypes.indexOf(currentMystery) + 1) % mysteryTypes.length];
+    setcurrentMystery(newMystery);
+    // Jump to first prayer of new mystery
+    setTimeout(() => {
+      const rosaryArray = getRosaryArray(newMystery);
+      if (rosaryArray.length > 0) {
+        jumpToPrayer(rosaryArray[0]);
+        const firstPrayer = getPrayerById(rosaryArray[0]);
+        if (firstPrayer) {
+          handlePrayerAndCount(firstPrayer.text, firstPrayer);
+        }
+      }
+    }, 100);
   };
 
-  // Initialize rosary when component mounts or mystery changes
+  // Initialize rosary when component mounts
   useEffect(() => {
     const rosaryArray = getRosaryArray(currentMystery);
-    if (rosaryArray.length > 0 && globalIndex === 0) {
+    if (rosaryArray.length > 0 && currentPrayerIndex === 0) {
       const firstPrayerId = rosaryArray[0];
       const firstPrayer = getPrayerById(firstPrayerId);
       if (firstPrayer) {
@@ -202,7 +252,7 @@ function PrayerButtons({
     }
   }, [
     currentMystery,
-    globalIndex,
+    currentPrayerIndex,
     getRosaryArray,
     getPrayerById,
     handlePrayerAndCount,
