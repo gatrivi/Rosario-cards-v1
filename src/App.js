@@ -2,7 +2,7 @@ import "./App.css";
 import logo from "./logo.png";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
@@ -26,6 +26,22 @@ function App() {
   const [showRosary, setShowRosary] = useState(true);
   const [showBackupRosary, setShowBackupRosary] = useState(true);
   const [showCounters, setShowCounters] = useState(true);
+
+  // Left-handed mode state - persisted in localStorage via LeftHandedToggle
+  const [leftHandedMode, setLeftHandedMode] = useState(() => {
+    return localStorage.getItem("leftHandedMode") === "true";
+  });
+
+  // Listen for left-handed mode changes from toggle component
+  useEffect(() => {
+    const handleLeftHandedModeChange = (event) => {
+      setLeftHandedMode(event.detail.leftHandedMode);
+    };
+    window.addEventListener("leftHandedModeChange", handleLeftHandedModeChange);
+    return () => {
+      window.removeEventListener("leftHandedModeChange", handleLeftHandedModeChange);
+    };
+  }, []);
 
   // Use the rosary state hook
   const { currentPrayerIndex, handleBeadClick, jumpToPrayer } = useRosaryState(
@@ -184,6 +200,7 @@ function App() {
         setcurrentMystery={setcurrentMystery}
         jumpToPrayer={jumpToPrayer}
         currentPrayerIndex={currentPrayerIndex}
+        leftHandedMode={leftHandedMode}
       />
 
       {/* Backup Rosary - Always visible around screen edges */}

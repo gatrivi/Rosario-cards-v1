@@ -1,4 +1,5 @@
 import ThemeToggle from "../common/ThemeToggle";
+import LeftHandedToggle from "../common/LeftHandedToggle";
 import "./PrayerButtons.css";
 import { useState, useEffect, useCallback } from "react";
 function PrayerButtons({
@@ -9,6 +10,7 @@ function PrayerButtons({
   setPrayerImg,
   currentMystery,
   setcurrentMystery,
+  leftHandedMode = false,
 }) {
   // Estados para la botonera segmentada
   const [activeSection, setActiveSection] = useState("none");
@@ -209,7 +211,8 @@ function PrayerButtons({
   ]);
 
   // Iconos simples (emoji)
-  const segments = [
+  // Navigation buttons are ordered based on left-handed mode preference
+  const navigationSegments = [
     { key: "prev", icon: "⬅️", onClick: handlePrev, disabled: false },
     {
       key: "apertura",
@@ -230,6 +233,11 @@ function PrayerButtons({
     { key: "cierre", icon: "✨", onClick: () => handleSegmentTap("cierre") },
     { key: "next", icon: "➡️", onClick: handleNext, disabled: false },
   ];
+
+  // Reverse button order for left-handed mode (Next button on left side)
+  const segments = leftHandedMode 
+    ? [...navigationSegments].reverse() 
+    : navigationSegments;
   return (
     <div className="segmented-bar">
       <div className="segments-container">
@@ -288,6 +296,7 @@ function PrayerButtons({
         <button onClick={reset} className="control-btn">
           Reset
         </button>
+        <LeftHandedToggle />
         <ThemeToggle />
       </div>
     </div>
