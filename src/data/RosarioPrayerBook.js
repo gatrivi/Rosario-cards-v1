@@ -348,14 +348,14 @@ const RosarioPrayerBook = {
       title: "Acto de Contrición",
       img: "/gallery-images/misterios/latin-credo.jpeg",
       imgmo: "/gallery-images/misterios/modooscuro/contricion.jpg",
-      text: "Yo confieso ante Dios todopoderoso y ante vosotros, hermanos, que he pecado mucho de pensamiento, palabra, obra y omisión. Por mi culpa, por mi culpa, por mi gran culpa. Por eso ruego a Santa María, siempre Virgen, a los ángeles, a los santos y a vosotros, hermanos, que intercedáis por mí ante Dios, nuestro Señor. Amén.",
+      text: "Yo confieso ante Dios todopoderoso\ny ante vosotros, hermanos,\nque he pecado mucho\nde pensamiento, palabra, obra y omisión.\n\nPor mi culpa, por mi culpa, por mi gran culpa.\n\nPor eso ruego a Santa María, siempre Virgen,\na los ángeles, a los santos\ny a vosotros, hermanos,\nque intercedáis por mí\nante Dios, nuestro Señor.\n\nAmén.",
     },
     {
       id: "C",
       title: "Credo",
       img: "/gallery-images/misterios/latin-credo.jpeg",
       imgmo: "/gallery-images/misterios/modooscuro/credo.webp",
-      text: "Creo en Dios, Padre todopoderoso, Creador del cielo y de la tierra. Creo en Jesucristo, su único Hijo, nuestro Señor, que fue concebido por obra y gracia del Espíritu Santo, nació de Santa María Virgen, padeció bajo el poder de Poncio Pilato, fue crucificado, muerto y sepultado, descendió a los infiernos, al tercer día resucitó de entre los muertos, subió a los cielos y está sentado a la derecha de Dios, Padre todopoderoso. Desde allí ha de venir a juzgar a vivos y muertos. Creo en el Espíritu Santo, la santa Iglesia católica, la comunión de los santos, el perdón de los pecados, la resurrección de la carne y la vida eterna. Amén.",
+      text: "Creo en Dios, Padre todopoderoso,\nCreador del cielo y de la tierra.\n\nCreo en Jesucristo, su único Hijo, nuestro Señor,\nque fue concebido por obra y gracia del Espíritu Santo,\nnació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos\ny está sentado a la derecha de Dios, Padre todopoderoso.\nDesde allí ha de venir a juzgar a vivos y muertos.\n\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna.\n\nAmén.",
     },
   ],
   decada: [
@@ -364,7 +364,7 @@ const RosarioPrayerBook = {
       title: "Padre Nuestro",
       img: "/gallery-images/misterios/latin-pater-noster.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/padre-nuestro.jpg",
-      text: "Padre nuestro, que estás en el cielo, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
+      text: "Padre nuestro,\nque estás en el cielo,\nsantificado sea tu nombre;\nvenga a nosotros tu reino;\nhágase tu voluntad\nen la tierra como en el cielo.\n\nDanos hoy nuestro pan de cada día;\nperdona nuestras ofensas,\ncomo también nosotros perdonamos\na los que nos ofenden;\nno nos dejes caer en la tentación,\ny líbranos del mal.\n\nAmén.",
     },
     {
       id: "A",
@@ -378,14 +378,14 @@ const RosarioPrayerBook = {
       title: "Gloria",
       img: "/gallery-images/misterios/latin-gloria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/gloria.webp",
-      text: "Gloria al Padre, y al Hijo, y al Espíritu Santo. Como era en el principio, ahora y siempre, por los siglos de los siglos. Amén.",
+      text: "Gloria al Padre,\ny al Hijo,\ny al Espíritu Santo.\n\nComo era en el principio,\nahora y siempre,\npor los siglos de los siglos.\n\nAmén.",
     },
     {
       id: "F",
       title: "Oración de Fátima",
       img: "/gallery-images/misterios/latin-gloria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/roseLimaJuarez-870x1250.jpg",
-      text: "Oh Jesús mío, perdona nuestros pecados, líbranos del fuego del infierno, lleva al cielo a todas las almas, especialmente a las más necesitadas de tu misericordia.",
+      text: "Oh Jesús mío,\nperdona nuestros pecados,\nlíbranos del fuego del infierno,\nlleva al cielo a todas las almas,\nespecialmente a las más necesitadas\nde tu misericordia.",
     },
   ],
   mysteries: {
