@@ -64,7 +64,7 @@ const InterfaceToggle = ({
   return (
     <div
       className={`interface-toggle ${className}`}
-      style={{ position: "fixed", top: "10px", left: "10px", zIndex: 2 }}
+      style={{ position: "fixed", top: "10px", left: "10px", zIndex: 10 }}
     >
       {/* Main toggle button */}
       <button
@@ -73,7 +73,6 @@ const InterfaceToggle = ({
         style={{
           background: "rgba(0, 0, 0, 0.8)",
           color: "white",
-          border: "2px solid #FFD700",
           borderRadius: "50%",
           width: "50px",
           height: "50px",

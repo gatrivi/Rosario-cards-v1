@@ -688,16 +688,11 @@ const InteractiveRosary = ({
     <div
       className={`interactive-rosary ${className}`}
       style={{
-        minHeight: "400px",
+        width: "100%",
+        height: "100%",
         background: "transparent",
         borderRadius: "10px",
-        margin: "10px",
-        position: "absolute",
-        top: "20%",
-        left: "20%",
-        right: "20%",
-        bottom: "20%",
-        zIndex: 1,
+        position: "relative",
       }}
     >
       <canvas
