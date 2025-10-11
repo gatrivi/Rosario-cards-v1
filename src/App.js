@@ -77,6 +77,26 @@ function App() {
     };
   }, [currentPrayerIndex, navigateToIndex, getRosarySequence]);
 
+  // Listen for theme changes and update current prayer image
+  useEffect(() => {
+    const handleThemeChange = () => {
+      // Only process if prayerImg is an object with image properties
+      if (!prayerImg || typeof prayerImg === 'string') return;
+      
+      const theme = localStorage.getItem("theme");
+      const isDark = theme === "dark";
+      
+      // If we have the prayer object with img/imgmo properties
+      if (prayerImg.img || prayerImg.imgmo) {
+        const selectedImage = (isDark && prayerImg.imgmo) ? prayerImg.imgmo : prayerImg.img;
+        setPrayerImg(selectedImage);
+      }
+    };
+
+    window.addEventListener('themeChanged', handleThemeChange);
+    return () => window.removeEventListener('themeChanged', handleThemeChange);
+  }, [prayerImg]);
+
   const handleCountClick = () => {
     if (count < 10) {
       setCount(count + 1);

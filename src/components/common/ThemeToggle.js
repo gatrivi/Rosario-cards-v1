@@ -16,9 +16,9 @@ const ThemeToggle = () => {
       document.body.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
-    
+
     // Dispatch custom event for theme change
-    window.dispatchEvent(new CustomEvent('themeChanged'));
+    window.dispatchEvent(new CustomEvent("themeChanged"));
   }, [darkMode]);
 
   const toggleTheme = () => setDarkMode(!darkMode);
