@@ -31,8 +31,8 @@
 .page-right img {
   width: 100%;
   height: 100%;
-  /* Ensures the image covers the container without distortion */
-  object-fit: cover;
+  /* Better aspect ratio preservation and horizontal space usage */
+  object-fit: contain;
   /* CRITICAL: Makes the zoom smooth */
   transition: transform 0.3s ease-in-out;
   /* Start at a normal scale */

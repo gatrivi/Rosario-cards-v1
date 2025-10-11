@@ -339,14 +339,14 @@ const RosarioPrayerBook = {
     {
       id: "SC",
       title: "Señal de la Cruz",
-      img: "/gallery-images/misterios/francisco_de_asis_2.jpg",
-      imgmo: "/gallery-images/misterios/senalcruz.jpg",
+      img: "/gallery-images/misterios/senalcruz.jpg",
+      imgmo: "/gallery-images/misterios/modooscuro/francisco_de_asis_2.jpg",
       text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
     },
     {
       id: "AC",
       title: "Acto de Contrición",
-      img: "/gallery-images/misterios/contricion.jpg",
+      img: "/gallery-images/misterios/latin-credo.jpeg",
       imgmo: "/gallery-images/misterios/modooscuro/contricion.jpg",
       text: "Yo confieso ante Dios todopoderoso y ante vosotros, hermanos, que he pecado mucho de pensamiento, palabra, obra y omisión. Por mi culpa, por mi culpa, por mi gran culpa. Por eso ruego a Santa María, siempre Virgen, a los ángeles, a los santos y a vosotros, hermanos, que intercedáis por mí ante Dios, nuestro Señor. Amén.",
     },
@@ -383,7 +383,7 @@ const RosarioPrayerBook = {
     {
       id: "F",
       title: "Oración de Fátima",
-      img: "/gallery-images/misterios/Encounters in the cathedral of Raleigh.jpg",
+      img: "/gallery-images/misterios/latin-gloria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/roseLimaJuarez-870x1250.jpg",
       text: "Oh Jesús mío, perdona nuestros pecados, líbranos del fuego del infierno, lleva al cielo a todas las almas, especialmente a las más necesitadas de tu misericordia.",
     },

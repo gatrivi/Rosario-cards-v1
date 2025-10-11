@@ -19,6 +19,42 @@ function PrayerButtons({
   const [activeSection, setActiveSection] = useState("none");
   const [cycleIndex, setCycleIndex] = useState(0);
   const [subView, setSubView] = useState(null);
+  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem("theme"));
+
+  // Listen for theme changes and update current prayer image
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const newTheme = localStorage.getItem("theme");
+      setCurrentTheme(newTheme);
+      
+      // Re-evaluate current prayer image with new theme
+      const currentPrayer = prayers?.apertura?.find(p => p.id === "SC") || 
+                           prayers?.decada?.find(p => p.id === "P") ||
+                           prayers?.mysteries?.[currentMystery]?.[0] ||
+                           prayers?.cierre?.find(p => p.id === "LL");
+      
+      if (currentPrayer) {
+        const isDark = newTheme === "dark";
+        const selectedImage = (isDark && currentPrayer.imgmo) ? currentPrayer.imgmo : currentPrayer.img;
+        setPrayerImg(selectedImage);
+      }
+    };
+
+    // Listen for custom theme change events
+    window.addEventListener('themeChanged', handleThemeChange);
+    
+    // Also listen for storage changes (in case theme is changed in another tab)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'theme') {
+        handleThemeChange();
+      }
+    });
+
+    return () => {
+      window.removeEventListener('themeChanged', handleThemeChange);
+      window.removeEventListener('storage', handleThemeChange);
+    };
+  }, [prayers, currentMystery, setPrayerImg]);
 
   // Helper function to get the correct rosary array based on mystery type
   const getRosaryArray = useCallback(
@@ -63,10 +99,12 @@ function PrayerButtons({
   const handlePrayerAndCount = useCallback(
     (prayerText, prayerImg) => {
       setPrayer(prayerText);
-      if (prayerImg.imgmo && localStorage.getItem("theme") === "dark")
-        return setPrayerImg(prayerImg.imgmo);
-      if (localStorage.getItem("theme") === "light")
-        return setPrayerImg(prayerImg.img);
+      
+      // Improved image selection logic with proper fallback
+      const theme = localStorage.getItem("theme");
+      const isDark = theme === "dark";
+      const selectedImage = (isDark && prayerImg.imgmo) ? prayerImg.imgmo : prayerImg.img;
+      setPrayerImg(selectedImage);
 
       if (
         prayerText ===
