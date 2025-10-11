@@ -3,11 +3,11 @@ import { FaHandPaper } from "react-icons/fa";
 
 /**
  * LeftHandedToggle Component
- * 
+ *
  * Provides a toggle to switch between right-handed (default) and left-handed mode.
  * In left-handed mode, navigation buttons are reversed so the Next button
  * is on the left side for easier thumb access on large phones.
- * 
+ *
  * Features:
  * - Persists preference in localStorage
  * - Visual indicator showing current mode
@@ -22,11 +22,13 @@ const LeftHandedToggle = () => {
   useEffect(() => {
     // Save preference to localStorage
     localStorage.setItem("leftHandedMode", leftHandedMode.toString());
-    
+
     // Dispatch custom event so other components can react to the change
-    window.dispatchEvent(new CustomEvent("leftHandedModeChange", { 
-      detail: { leftHandedMode } 
-    }));
+    window.dispatchEvent(
+      new CustomEvent("leftHandedModeChange", {
+        detail: { leftHandedMode },
+      })
+    );
   }, [leftHandedMode]);
 
   const toggleMode = () => setLeftHandedMode(!leftHandedMode);
@@ -42,15 +44,21 @@ const LeftHandedToggle = () => {
         gap: "4px",
         position: "relative",
       }}
-      aria-label={leftHandedMode ? "Switch to right-handed mode" : "Switch to left-handed mode"}
-      title={leftHandedMode ? "Left-handed mode active" : "Right-handed mode active"}
+      aria-label={
+        leftHandedMode
+          ? "Switch to right-handed mode"
+          : "Switch to left-handed mode"
+      }
+      title={
+        leftHandedMode ? "Left-handed mode active" : "Right-handed mode active"
+      }
     >
-      <FaHandPaper 
-        size={15} 
-        style={{ 
+      <FaHandPaper
+        size={15}
+        style={{
           transform: leftHandedMode ? "scaleX(-1)" : "scaleX(1)",
-          transition: "transform 0.3s ease"
-        }} 
+          transition: "transform 0.3s ease",
+        }}
       />
       {leftHandedMode && (
         <span style={{ fontSize: "10px", fontWeight: "bold" }}>L</span>
@@ -60,4 +68,3 @@ const LeftHandedToggle = () => {
 };
 
 export default LeftHandedToggle;
-
