@@ -2,7 +2,7 @@ import "./App.css";
 import logo from "./logo.png";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
@@ -40,6 +40,9 @@ function App() {
   // Color picker visibility
   const [showColorPicker, setShowColorPicker] = useState(false);
 
+  // Settings menu visibility
+  const [showSettings, setShowSettings] = useState(false);
+
   // Use the rosary state hook
   const { currentPrayerIndex, handleBeadClick, jumpToPrayer } = useRosaryState(
     RosarioPrayerBook,
@@ -47,6 +50,22 @@ function App() {
   );
 
   // Back to basics - working TestMatterScene only
+
+  // Keyboard navigation for rosary beads
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
+        // Fire event to move to next bead
+        window.dispatchEvent(new CustomEvent("rosary:nextBead"));
+      } else if (e.key === "ArrowLeft" || e.key === "p" || e.key === "P") {
+        // Fire event to move to previous bead
+        window.dispatchEvent(new CustomEvent("rosary:prevBead"));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, []);
 
   const handleCountClick = () => {
     if (count < 10) {
@@ -82,7 +101,7 @@ function App() {
         onToggleCounters={() => setShowCounters(!showCounters)}
       />
 
-      {/* Rosary Type Toggle and Color Controls */}
+      {/* Settings Menu */}
       <div
         style={{
           display: "flex",
@@ -95,10 +114,10 @@ function App() {
         }}
       >
         <button
-          onClick={() => setUseRosary2(!useRosary2)}
+          onClick={() => setShowSettings(!showSettings)}
           style={{
             padding: "8px 16px",
-            backgroundColor: useRosary2 ? "#4CAF50" : "#2196F3",
+            backgroundColor: showSettings ? "#FF9800" : "#9E9E9E",
             color: "white",
             border: "none",
             borderRadius: "4px",
@@ -106,61 +125,89 @@ function App() {
             fontSize: "12px",
           }}
         >
-          {useRosary2 ? "Rosary2" : "InteractiveRosary"}
+          Settings
         </button>
 
-        {useRosary2 && (
+        {showSettings && (
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             <button
-              onClick={() => setShowColorPicker(!showColorPicker)}
+              onClick={() => setUseRosary2(!useRosary2)}
               style={{
-                padding: "4px 8px",
-                backgroundColor: showColorPicker ? "#FF9800" : "#9E9E9E",
+                padding: "8px 16px",
+                backgroundColor: useRosary2 ? "#4CAF50" : "#2196F3",
                 color: "white",
                 border: "none",
                 borderRadius: "4px",
                 cursor: "pointer",
-                fontSize: "10px",
+                fontSize: "12px",
               }}
             >
-              Colors
+              {useRosary2 ? "Rosary2" : "InteractiveRosary"}
             </button>
 
-            {showColorPicker && (
+            {useRosary2 && (
               <div
                 style={{ display: "flex", gap: "8px", alignItems: "center" }}
               >
-                <ColorPicker
-                  label="Start"
-                  color={customColors.mainLoopStart}
-                  onChange={(color) =>
-                    setCustomColors((prev) => ({
-                      ...prev,
-                      mainLoopStart: color,
-                    }))
-                  }
-                />
-                <ColorPicker
-                  label="End"
-                  color={customColors.mainLoopEnd}
-                  onChange={(color) =>
-                    setCustomColors((prev) => ({ ...prev, mainLoopEnd: color }))
-                  }
-                />
-                <ColorPicker
-                  label="Tail"
-                  color={customColors.tail}
-                  onChange={(color) =>
-                    setCustomColors((prev) => ({ ...prev, tail: color }))
-                  }
-                />
-                <ColorPicker
-                  label="Cross"
-                  color={customColors.cross}
-                  onChange={(color) =>
-                    setCustomColors((prev) => ({ ...prev, cross: color }))
-                  }
-                />
+                <button
+                  onClick={() => setShowColorPicker(!showColorPicker)}
+                  style={{
+                    padding: "4px 8px",
+                    backgroundColor: showColorPicker ? "#FF9800" : "#9E9E9E",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "10px",
+                  }}
+                >
+                  Colors
+                </button>
+
+                {showColorPicker && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <ColorPicker
+                      label="Start"
+                      color={customColors.mainLoopStart}
+                      onChange={(color) =>
+                        setCustomColors((prev) => ({
+                          ...prev,
+                          mainLoopStart: color,
+                        }))
+                      }
+                    />
+                    <ColorPicker
+                      label="End"
+                      color={customColors.mainLoopEnd}
+                      onChange={(color) =>
+                        setCustomColors((prev) => ({
+                          ...prev,
+                          mainLoopEnd: color,
+                        }))
+                      }
+                    />
+                    <ColorPicker
+                      label="Tail"
+                      color={customColors.tail}
+                      onChange={(color) =>
+                        setCustomColors((prev) => ({ ...prev, tail: color }))
+                      }
+                    />
+                    <ColorPicker
+                      label="Cross"
+                      color={customColors.cross}
+                      onChange={(color) =>
+                        setCustomColors((prev) => ({ ...prev, cross: color }))
+                      }
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
