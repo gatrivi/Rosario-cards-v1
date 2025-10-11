@@ -396,7 +396,7 @@ const RosarioPrayerBook = {
         title: "MG1: La Anunciación del Ángel a María",
         img: "/gallery-images/misterios/misteriogozo1.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogozo1.webp",
-        text: "El arcángel Gabriel anuncia a María que será la Madre del Salvador\nl\nCitas Escriturísticas:\n\nLucas 1:28: Y entrando el ángel en donde ella estaba, dijo: ¡Salve, muy favorecida! El Señor es contigo; bendita tú entre las mujeres.\nLucas 1:38: Entonces María dijo: He aquí la sierva del Señor; hágase conmigo conforme a tu palabra.\nIsaías 7:14: Por tanto, el Señor mismo os dará señal: He aquí que la virgen concebirá, y dará a luz un hijo, y llamará su nombre Emanuel.",
+        text: "Lucas 1:28: Y entrando el ángel en donde ella estaba, dijo: ¡Salve, muy favorecida! El Señor es contigo; bendita tú entre las mujeres.\nLucas 1:38: Entonces María dijo: He aquí la sierva del Señor; hágase conmigo conforme a tu palabra.\nIsaías 7:14: Por tanto, el Señor mismo os dará señal: He aquí que la virgen concebirá, y dará a luz un hijo, y llamará su nombre Emanuel.",
       },
       {
         id: "MGo2",
@@ -404,7 +404,7 @@ const RosarioPrayerBook = {
         title: "MG2: La Visitación de María a su prima Isabel",
         img: "/gallery-images/misterios/misteriogozo2.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogozo2.webp",
-        text: "María visita a su prima Isabel, quien reconoce en ella a la Madre del Señor\nl\nCitas Escriturísticas:\n\nLucas 1:42-43: Y exclamó a gran voz, y dijo: Bendita tú entre las mujeres, y bendito el fruto de tu vientre. ¿Por qué se me concede esto a mí, que la madre de mi Señor venga a mí?\nLucas 1:46-47: Entonces María dijo: Engrandece mi alma al Señor; Y mi espíritu se regocija en Dios mi Salvador.\nLucas 1:41: Y aconteció que cuando oyó Isabel la salutación de María, la criatura saltó en su vientre; e Isabel fue llena del Espíritu Santo.",
+        text: "Lucas 1:42-43: Y exclamó a gran voz, y dijo: Bendita tú entre las mujeres, y bendito el fruto de tu vientre. ¿Por qué se me concede esto a mí, que la madre de mi Señor venga a mí?\nLucas 1:46-47: Entonces María dijo: Engrandece mi alma al Señor; Y mi espíritu se regocija en Dios mi Salvador.\nLucas 1:41: Y aconteció que cuando oyó Isabel la salutación de María, la criatura saltó en su vientre; e Isabel fue llena del Espíritu Santo.",
       },
       {
         id: "MGo3",
@@ -412,7 +412,7 @@ const RosarioPrayerBook = {
         title: "MG3: El Nacimiento de Jesús en Belén",
         img: "/gallery-images/misterios/misteriogozo3.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogozo3.webp",
-        text: "El Verbo se hace carne y nace de la Virgen María en Belén\nl\nCitas Escriturísticas:\n\nJuan 1:14: Y aquel Verbo fue hecho carne, y habitó entre nosotros (y vimos su gloria, gloria como del unigénito del Padre), lleno de gracia y de verdad.\nLucas 2:7: Y dio a luz a su hijo primogénito, y lo envolvió en pañales, y lo acostó en un pesebre, porque no había lugar para ellos en el mesón.\nLucas 2:10-11: Pero el ángel les dijo: No temáis; porque he aquí os doy nuevas de gran gozo, que será para todo el pueblo: que os ha nacido hoy, en la ciudad de David, un Salvador, que es CRISTO el Señor.",
+        text: "Juan 1:14: Y aquel Verbo fue hecho carne, y habitó entre nosotros (y vimos su gloria, gloria como del unigénito del Padre), lleno de gracia y de verdad.\nLucas 2:7: Y dio a luz a su hijo primogénito, y lo envolvió en pañales, y lo acostó en un pesebre, porque no había lugar para ellos en el mesón.\nLucas 2:10-11: Pero el ángel les dijo: No temáis; porque he aquí os doy nuevas de gran gozo, que será para todo el pueblo: que os ha nacido hoy, en la ciudad de David, un Salvador, que es CRISTO el Señor.",
       },
       {
         id: "MGo4",
@@ -420,7 +420,7 @@ const RosarioPrayerBook = {
         title: "MG4: La Presentación del Niño Jesús en el Templo",
         img: "/gallery-images/misterios/misteriogozo4.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogozo4.webp",
-        text: "María y José presentan al Niño Jesús en el Templo, donde es reconocido por Simeón y Ana\nl\nCitas Escriturísticas:\n\nLucas 2:29-30: Ahora, Señor, despides a tu siervo en paz, Conforme a tu palabra; Porque han visto mis ojos tu salvación.\nLucas 2:34-35: Y los bendijo Simeón, y dijo a su madre María: He aquí, éste está puesto para caída y para levantamiento de muchos en Israel, y para señal que será contradicha; y una espada traspasará tu misma alma.\nLevítico 12:6-8: Y cuando los días de su purificación fueren cumplidos, por hijo o por hija, traerá un cordero de un año para holocausto, y un palomino o una tórtola para expiación.",
+        text: "Lucas 2:29-30: Ahora, Señor, despides a tu siervo en paz, Conforme a tu palabra; Porque han visto mis ojos tu salvación.\nLucas 2:34-35: Y los bendijo Simeón, y dijo a su madre María: He aquí, éste está puesto para caída y para levantamiento de muchos en Israel, y para señal que será contradicha; y una espada traspasará tu misma alma.\nLevítico 12:6-8: Y cuando los días de su purificación fueren cumplidos, por hijo o por hija, traerá un cordero de un año para holocausto, y un palomino o una tórtola para expiación.",
       },
       {
         id: "MGo5",
@@ -488,7 +488,7 @@ const RosarioPrayerBook = {
         img: "/gallery-images/misterios/misteriogloria1.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria1.webp",
 
-        text: "Jesús resucita de entre los muertos al tercer día, venciendo la muerte\nl\nCitas Escriturísticas:\n\nMateo 28:6: No está aquí, pues ha resucitado, como dijo. Venid, ved el lugar donde fue puesto el Señor.\n1 Corintios 15:20: Mas ahora Cristo ha resucitado de los muertos; primicias de los que durmieron es hecho.\nRomanos 6:9: Sabiendo que Cristo, habiendo resucitado de los muertos, ya no muere; la muerte no se enseñorea más de él.",
+        text: "Mateo 28:6: No está aquí, pues ha resucitado, como dijo. Venid, ved el lugar donde fue puesto el Señor.\n1 Corintios 15:20: Mas ahora Cristo ha resucitado de los muertos; primicias de los que durmieron es hecho.\nRomanos 6:9: Sabiendo que Cristo, habiendo resucitado de los muertos, ya no muere; la muerte no se enseñorea más de él.",
       },
       {
         id: "MGl2",
@@ -497,7 +497,7 @@ const RosarioPrayerBook = {
         img: "/gallery-images/misterios/misteriogloria2.jpg",
 
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria2.webp",
-        text: "Jesús asciende a los cielos delante de sus discípulos\nl\nCitas Escriturísticas:\n\nHechos 1:9: Y habiendo dicho estas cosas, viéndolo ellos, fue alzado, y le recibió una nube que le ocultó de sus ojos.\nMarcos 16:19: Y el Señor, después que les habló, fue recibido arriba en el cielo, y se sentó a la diestra de Dios.\nEfesios 4:10: El que descendió, es el mismo que también subió por encima de todos los cielos para llenarlo todo.",
+        text: "Hechos 1:9: Y habiendo dicho estas cosas, viéndolo ellos, fue alzado, y le recibió una nube que le ocultó de sus ojos.\nMarcos 16:19: Y el Señor, después que les habló, fue recibido arriba en el cielo, y se sentó a la diestra de Dios.\nEfesios 4:10: El que descendió, es el mismo que también subió por encima de todos los cielos para llenarlo todo.",
       },
       {
         id: "MGl3",
@@ -506,7 +506,7 @@ const RosarioPrayerBook = {
         img: "/gallery-images/misterios/misteriogloria3.jpg",
 
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria3.webp",
-        text: "El Espíritu Santo desciende sobre los Apóstoles y María en Pentecostés\nl\nCitas Escriturísticas:\n\nHechos 2:4: Y fueron todos llenos del Espíritu Santo, y comenzaron a hablar en otras lenguas, según el Espíritu les daba que hablasen.\nJuan 14:26: Mas el Consolador, el Espíritu Santo, a quien el Padre enviará en mi nombre, él os enseñará todas las cosas, y os recordará todo lo que yo os he dicho.\nHechos 1:8: Pero recibiréis poder, cuando haya venido sobre vosotros el Espíritu Santo, y me seréis testigos en Jerusalén, en toda Judea, en Samaria, y hasta lo último de la tierra.",
+        text: "Hechos 2:4: Y fueron todos llenos del Espíritu Santo, y comenzaron a hablar en otras lenguas, según el Espíritu les daba que hablasen.\nJuan 14:26: Mas el Consolador, el Espíritu Santo, a quien el Padre enviará en mi nombre, él os enseñará todas las cosas, y os recordará todo lo que yo os he dicho.\nHechos 1:8: Pero recibiréis poder, cuando haya venido sobre vosotros el Espíritu Santo, y me seréis testigos en Jerusalén, en toda Judea, en Samaria, y hasta lo último de la tierra.",
       },
       {
         id: "MGl4",
@@ -514,7 +514,7 @@ const RosarioPrayerBook = {
         title: "MG4: La Asunción de María Santísima",
         img: "/gallery-images/misterios/misteriogloria4.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria4.webp",
-        text: "María es elevada en cuerpo y alma a la gloria celestiall\nCitas Escriturísticas:\n\n\nLucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\n¡Levántate, amada mía, hermosa mía, y vente! Porque, mira, ha pasado ya el invierno, han cesado las lluvias y se han ido. (...) Muéstrame tu semblante, déjame oír tu voz; porque tu voz es dulce, y bello tu semblante.\nLucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\nCantares 2:10: Mi amado habló, y me dijo: Levántate, oh amiga mía, hermosa mía, y ven.",
+        text: "Lucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\n¡Levántate, amada mía, hermosa mía, y vente! Porque, mira, ha pasado ya el invierno, han cesado las lluvias y se han ido. (...) Muéstrame tu semblante, déjame oír tu voz; porque tu voz es dulce, y bello tu semblante.\nLucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\nCantares 2:10: Mi amado habló, y me dijo: Levántate, oh amiga mía, hermosa mía, y ven.",
       },
       {
         id: "MGl5",
@@ -523,7 +523,7 @@ const RosarioPrayerBook = {
           "MG5: La Coronación de María como Reina del Cielo y de la Tierra",
         img: "/gallery-images/misterios/misteriogloria5.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria5.webp",
-        text: "María es coronada Reina del universo junto a su Hijo\nl\nCitas Escriturísticas:\n\nApocalipsis 12:1: Apareció en el cielo una gran señal: una mujer vestida del sol, con la luna debajo de sus pies, y sobre su cabeza una corona de doce estrellas.\nSalmo 45:9: Está la reina a tu diestra con oro de Ofir.\nJeremías 13:18: Di al rey y a la reina: Humillaos, sentaos en tierra; porque la corona de vuestra gloria caerá de vuestras cabezas.",
+        text: "Apocalipsis 12:1: Apareció en el cielo una gran señal: una mujer vestida del sol, con la luna debajo de sus pies, y sobre su cabeza una corona de doce estrellas.\nSalmo 45:9: Está la reina a tu diestra con oro de Ofir.\nJeremías 13:18: Di al rey y a la reina: Humillaos, sentaos en tierra; porque la corona de vuestra gloria caerá de vuestras cabezas.",
       },
     ],
     luminosos: [

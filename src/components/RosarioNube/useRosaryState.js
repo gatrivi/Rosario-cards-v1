@@ -89,7 +89,7 @@ export const useRosaryState = (prayers, currentMystery) => {
         console.log(`✅ handleBeadClick: Found prayer for ${prayerId}`);
         return {
           prayer: prayer.text,
-          prayerImg: prayer.img || prayer.imgmo, // Use dark mode image if available
+          prayerImg: prayer, // Return full prayer object for theme-based selection
           prayerIndex: prayerIndex,
         };
       }
@@ -180,7 +180,7 @@ export const useRosaryState = (prayers, currentMystery) => {
         if (prayer) {
           return {
             prayer: prayer.text,
-            prayerImg: prayer.img || prayer.imgmo,
+            prayerImg: prayer, // Return full prayer object for theme-based selection
             prayerIndex: index,
           };
         }

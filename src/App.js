@@ -113,7 +113,13 @@ function App() {
     const result = handleBeadClick(prayerIndex, prayerId);
     if (result) {
       setPrayer(result.prayer);
-      setPrayerImg(result.prayerImg);
+      
+      // Handle theme-based image selection
+      const theme = localStorage.getItem("theme");
+      const isDark = theme === "dark";
+      const prayerObj = result.prayerImg;
+      const selectedImage = isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+      setPrayerImg(selectedImage);
     }
   };
 
