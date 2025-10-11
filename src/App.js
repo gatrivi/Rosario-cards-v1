@@ -46,6 +46,8 @@ function App() {
     currentMystery
   );
 
+  // Back to basics - working TestMatterScene only
+
   const handleCountClick = () => {
     if (count < 10) {
       setCount(count + 1);
@@ -208,20 +210,22 @@ function App() {
           </div>
         )}
 
-        {/* TEST: Working MatterScene from react-matter.js-draggable-rosary */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 10,
-            pointerEvents: "auto",
-          }}
-        >
-          <TestMatterScene />
-        </div>
+        {/* TestMatterScene: Working rosary - back to basics */}
+        {showRosary && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 10,
+              pointerEvents: "auto",
+            }}
+          >
+            <TestMatterScene />
+          </div>
+        )}
 
         {/* Prayer content overlay - Behind rosary */}
         <div
