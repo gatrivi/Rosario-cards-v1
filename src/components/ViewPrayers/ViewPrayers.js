@@ -127,8 +127,8 @@ function ViewPrayers({
         }}
       >
         {showCounters && (
-          <span style={{ color: "gold", fontSize: "18px", fontWeight: "bold" }}>
-            📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
+          <span style={{ color: "gold", fontSize: "18px", fontWeight: "100" }}>
+            📿 {hailMaryCount} {currentPrayerIndex}
           </span>
         )}
         <p>{prayer}</p>
