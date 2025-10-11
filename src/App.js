@@ -44,6 +44,15 @@ function App() {
     };
   }, []);
 
+  // Use the rosary state hook - MUST come before any code that uses these values
+  const {
+    currentPrayerIndex,
+    handleBeadClick,
+    jumpToPrayer,
+    navigateToIndex,
+    getRosarySequence,
+  } = useRosaryState(RosarioPrayerBook, currentMystery);
+
   // Listen for scroll-based prayer navigation
   useEffect(() => {
     const handlePrayerScrollNext = () => {
@@ -67,15 +76,6 @@ function App() {
       window.removeEventListener("prayerScrollPrev", handlePrayerScrollPrev);
     };
   }, [currentPrayerIndex, navigateToIndex, getRosarySequence]);
-
-  // Use the rosary state hook
-  const {
-    currentPrayerIndex,
-    handleBeadClick,
-    jumpToPrayer,
-    navigateToIndex,
-    getRosarySequence,
-  } = useRosaryState(RosarioPrayerBook, currentMystery);
 
   const handleCountClick = () => {
     if (count < 10) {
