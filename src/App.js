@@ -2,13 +2,14 @@ import "./App.css";
 import logo from "./logo.png";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
 import ProgressBar from "./components/common/ProgressBar";
+import LeftHandedToggle from "./components/common/LeftHandedToggle";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
   const [prayer, setPrayer] = useState(
@@ -23,6 +24,49 @@ function App() {
   // Interface visibility states for clean prayer mode
   const [showRosary, setShowRosary] = useState(true);
   const [showCounters, setShowCounters] = useState(true);
+
+  // Left-handed mode state - persisted in localStorage via LeftHandedToggle
+  const [leftHandedMode, setLeftHandedMode] = useState(() => {
+    return localStorage.getItem("leftHandedMode") === "true";
+  });
+
+  // Listen for left-handed mode changes from toggle component
+  useEffect(() => {
+    const handleLeftHandedModeChange = (event) => {
+      setLeftHandedMode(event.detail.leftHandedMode);
+    };
+    window.addEventListener("leftHandedModeChange", handleLeftHandedModeChange);
+    return () => {
+      window.removeEventListener(
+        "leftHandedModeChange",
+        handleLeftHandedModeChange
+      );
+    };
+  }, []);
+
+  // Listen for scroll-based prayer navigation
+  useEffect(() => {
+    const handlePrayerScrollNext = () => {
+      const sequence = getRosarySequence();
+      if (currentPrayerIndex < sequence.length - 1) {
+        navigateToIndex(currentPrayerIndex + 1);
+      }
+    };
+
+    const handlePrayerScrollPrev = () => {
+      if (currentPrayerIndex > 0) {
+        navigateToIndex(currentPrayerIndex - 1);
+      }
+    };
+
+    window.addEventListener("prayerScrollNext", handlePrayerScrollNext);
+    window.addEventListener("prayerScrollPrev", handlePrayerScrollPrev);
+
+    return () => {
+      window.removeEventListener("prayerScrollNext", handlePrayerScrollNext);
+      window.removeEventListener("prayerScrollPrev", handlePrayerScrollPrev);
+    };
+  }, [currentPrayerIndex, navigateToIndex, getRosarySequence]);
 
   // Use the rosary state hook
   const {
@@ -66,6 +110,18 @@ function App() {
         onToggleRosary={() => setShowRosary(!showRosary)}
         onToggleCounters={() => setShowCounters(!showCounters)}
       />
+
+      {/* Left-handed mode toggle */}
+      <div
+        style={{
+          position: "absolute",
+          top: "60px",
+          right: "20px",
+          zIndex: 10,
+        }}
+      >
+        <LeftHandedToggle />
+      </div>
 
       {/* Main content area with rosary */}
       <div
@@ -140,6 +196,7 @@ function App() {
         currentPrayerIndex={currentPrayerIndex}
         navigateToIndex={navigateToIndex}
         getRosarySequence={getRosarySequence}
+        leftHandedMode={leftHandedMode}
       />
     </div>
   );
