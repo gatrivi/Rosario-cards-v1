@@ -138,12 +138,13 @@ function PrayerButtons({
       const result = navigateToIndex(prevIndex);
       if (result) {
         setPrayer(result.prayer);
-        
+
         // Handle theme-based image selection
         const theme = localStorage.getItem("theme");
         const isDark = theme === "dark";
         const prayerObj = result.prayerImg;
-        const selectedImage = isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+        const selectedImage =
+          isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
         setPrayerImg(selectedImage);
       }
     }
@@ -156,12 +157,13 @@ function PrayerButtons({
       const result = navigateToIndex(nextIndex);
       if (result) {
         setPrayer(result.prayer);
-        
+
         // Handle theme-based image selection
         const theme = localStorage.getItem("theme");
         const isDark = theme === "dark";
         const prayerObj = result.prayerImg;
-        const selectedImage = isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+        const selectedImage =
+          isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
         setPrayerImg(selectedImage);
       }
     }
@@ -191,12 +193,13 @@ function PrayerButtons({
       const result = navigateToIndex(targetIndex);
       if (result) {
         setPrayer(result.prayer);
-        
+
         // Handle theme-based image selection
         const theme = localStorage.getItem("theme");
         const isDark = theme === "dark";
         const prayerObj = result.prayerImg;
-        const selectedImage = isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+        const selectedImage =
+          isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
         setPrayerImg(selectedImage);
       }
     }
