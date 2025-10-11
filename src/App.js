@@ -81,20 +81,21 @@ function App() {
   useEffect(() => {
     const handleThemeChange = () => {
       // Only process if prayerImg is an object with image properties
-      if (!prayerImg || typeof prayerImg === 'string') return;
-      
+      if (!prayerImg || typeof prayerImg === "string") return;
+
       const theme = localStorage.getItem("theme");
       const isDark = theme === "dark";
-      
+
       // If we have the prayer object with img/imgmo properties
       if (prayerImg.img || prayerImg.imgmo) {
-        const selectedImage = (isDark && prayerImg.imgmo) ? prayerImg.imgmo : prayerImg.img;
+        const selectedImage =
+          isDark && prayerImg.imgmo ? prayerImg.imgmo : prayerImg.img;
         setPrayerImg(selectedImage);
       }
     };
 
-    window.addEventListener('themeChanged', handleThemeChange);
-    return () => window.removeEventListener('themeChanged', handleThemeChange);
+    window.addEventListener("themeChanged", handleThemeChange);
+    return () => window.removeEventListener("themeChanged", handleThemeChange);
   }, [prayerImg]);
 
   const handleCountClick = () => {
