@@ -376,7 +376,7 @@ const InteractiveRosary = ({
         // Update Matter.js mouse position to match touch
         mouse.position.x = touch.clientX - rect.left;
         mouse.position.y = touch.clientY - rect.top;
-        
+
         // Simulate mouse button state for touch
         if (e.type === "touchstart") {
           mouse.button = 0; // Left button pressed
