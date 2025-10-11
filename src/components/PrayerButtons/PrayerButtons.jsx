@@ -9,11 +9,14 @@ function PrayerButtons({
   setPrayerImg,
   currentMystery,
   setcurrentMystery,
+  jumpToPrayer,
+  currentPrayerIndex,
+  navigateToIndex,
+  getRosarySequence,
 }) {
   // Estados para la botonera segmentada
   const [activeSection, setActiveSection] = useState("none");
   const [cycleIndex, setCycleIndex] = useState(0);
-  const [globalIndex, setGlobalIndex] = useState(0);
   const [subView, setSubView] = useState(null);
 
   // Helper function to get the correct rosary array based on mystery type
@@ -101,7 +104,7 @@ function PrayerButtons({
         setCycleIndex((prev) => (prev + 1) % items.length);
         const item = items[(cycleIndex + 1) % items.length];
         // Jump to this prayer in the rosary sequence
-        jumpToPrayer(item.id);
+        handleJumpToPrayer(item.id);
       }
     } else {
       // Nuevo: Entra modo
@@ -111,7 +114,7 @@ function PrayerButtons({
       if (items.length > 0) {
         const item = items[0];
         // Jump to this prayer in the rosary sequence
-        jumpToPrayer(item.id);
+        handleJumpToPrayer(item.id);
       }
 
       // Para misterios, mostrar sub-bar
@@ -124,30 +127,26 @@ function PrayerButtons({
   };
 
   const handlePrev = () => {
-    const rosaryArray = getRosaryArray(currentMystery);
+    const rosaryArray = getRosarySequence();
     if (rosaryArray.length > 0) {
-      setGlobalIndex(
-        (prev) => (prev - 1 + rosaryArray.length) % rosaryArray.length
-      );
-      const prevPrayerId =
-        rosaryArray[
-          (globalIndex - 1 + rosaryArray.length) % rosaryArray.length
-        ];
-      const prevPrayer = getPrayerById(prevPrayerId);
-      if (prevPrayer) {
-        handlePrayerAndCount(prevPrayer.text, prevPrayer);
+      const prevIndex =
+        (currentPrayerIndex - 1 + rosaryArray.length) % rosaryArray.length;
+      const result = navigateToIndex(prevIndex);
+      if (result) {
+        setPrayer(result.prayer);
+        setPrayerImg(result.prayerImg);
       }
     }
   };
 
   const handleNext = () => {
-    const rosaryArray = getRosaryArray(currentMystery);
+    const rosaryArray = getRosarySequence();
     if (rosaryArray.length > 0) {
-      setGlobalIndex((prev) => (prev + 1) % rosaryArray.length);
-      const nextPrayerId = rosaryArray[(globalIndex + 1) % rosaryArray.length];
-      const nextPrayer = getPrayerById(nextPrayerId);
-      if (nextPrayer) {
-        handlePrayerAndCount(nextPrayer.text, nextPrayer);
+      const nextIndex = (currentPrayerIndex + 1) % rosaryArray.length;
+      const result = navigateToIndex(nextIndex);
+      if (result) {
+        setPrayer(result.prayer);
+        setPrayerImg(result.prayerImg);
       }
     }
   };
@@ -161,29 +160,28 @@ function PrayerButtons({
   const mysteryTypes = ["gozosos", "dolorosos", "gloriosos", "luminosos"];
 
   // Get current rosary sequence based on mystery type
-  const rosaryArray = getRosaryArray(currentMystery);
+  const rosaryArray = getRosarySequence();
   const rosarySequence = rosaryArray
     .map((id) => getPrayerById(id))
     .filter(Boolean);
 
-  const currentRosaryItem = rosarySequence[globalIndex];
+  const currentRosaryItem = rosarySequence[currentPrayerIndex];
 
   // Function to jump to a specific prayer while maintaining progression
-  const jumpToPrayer = (prayerId) => {
-    const rosaryArray = getRosaryArray(currentMystery);
+  const handleJumpToPrayer = (prayerId) => {
+    const rosaryArray = getRosarySequence();
     const targetIndex = rosaryArray.indexOf(prayerId);
     if (targetIndex !== -1) {
-      setGlobalIndex(targetIndex);
-      const prayer = getPrayerById(prayerId);
-      if (prayer) {
-        handlePrayerAndCount(prayer.text, prayer);
+      const result = navigateToIndex(targetIndex);
+      if (result) {
+        setPrayer(result.prayer);
+        setPrayerImg(result.prayerImg);
       }
     }
   };
 
-  // Reset global index when mystery type changes
+  // Reset index when mystery type changes
   const handleMysteryChange = () => {
-    setGlobalIndex(0);
     setcurrentMystery(
       (prev) =>
         mysteryTypes[(mysteryTypes.indexOf(prev) + 1) % mysteryTypes.length]
@@ -192,8 +190,8 @@ function PrayerButtons({
 
   // Initialize rosary when component mounts or mystery changes
   useEffect(() => {
-    const rosaryArray = getRosaryArray(currentMystery);
-    if (rosaryArray.length > 0 && globalIndex === 0) {
+    const rosaryArray = getRosarySequence();
+    if (rosaryArray.length > 0 && currentPrayerIndex === 0) {
       const firstPrayerId = rosaryArray[0];
       const firstPrayer = getPrayerById(firstPrayerId);
       if (firstPrayer) {
@@ -202,8 +200,8 @@ function PrayerButtons({
     }
   }, [
     currentMystery,
-    globalIndex,
-    getRosaryArray,
+    currentPrayerIndex,
+    getRosarySequence,
     getPrayerById,
     handlePrayerAndCount,
   ]);
@@ -267,7 +265,7 @@ function PrayerButtons({
               key={idx}
               onClick={() => {
                 setCycleIndex(idx);
-                jumpToPrayer(prayer.id);
+                handleJumpToPrayer(prayer.id);
                 setSubView(null); // Close sub-bar after selection
               }}
               className={`sub-btn ${cycleIndex === idx ? "active" : ""}`}

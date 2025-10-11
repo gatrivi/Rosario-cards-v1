@@ -168,20 +168,73 @@
   background-color: var(--accent, rgba(255, 255, 255, 0.1));
 }
 
-/* Mobile: Ya responsive por flex */
-@media (max-width: 480px) {
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
   .segmented-bar {
-    height: 56px;
+    height: 64px;
+    padding: 0 8px;
   }
+
   .segment-btn {
     font-size: 18px;
+    min-height: 48px;
   }
+
+  .sub-bar {
+    height: 50px;
+    bottom: 64px;
+    padding: 6px;
+  }
+
+  .preview {
+    bottom: -22px;
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .additional-controls {
+    top: -55px;
+    right: 8px;
+  }
+
+  .control-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .segmented-bar {
+    height: 60px;
+    padding: 0 4px;
+  }
+
+  .segment-btn {
+    font-size: 16px;
+    min-height: 44px; /* Touch-friendly */
+  }
+
   .sub-bar {
     height: 45px;
-    bottom: 56px;
+    bottom: 60px;
+    padding: 4px;
   }
+
   .preview {
     bottom: -20px;
     font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .additional-controls {
+    top: -50px;
+    right: 4px;
+  }
+
+  .control-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+    min-height: 32px;
   }
 }

@@ -160,12 +160,43 @@ export const useRosaryState = (prayers, currentMystery) => {
     setHighlightedBead(0);
   }, [currentMystery]);
 
+  /**
+   * Navigate to a specific index in the rosary sequence
+   * This function allows external components to update the current prayer position
+   *
+   * @param {number} index - Target prayer index
+   * @returns {object|null} Prayer data object or null if not found
+   */
+  const navigateToIndex = useCallback(
+    (index) => {
+      const rosarySequence = getRosarySequence();
+      if (index >= 0 && index < rosarySequence.length) {
+        const prayerId = rosarySequence[index];
+        const prayer = getPrayerById(prayerId);
+
+        setCurrentPrayerIndex(index);
+        setHighlightedBead(index);
+
+        if (prayer) {
+          return {
+            prayer: prayer.text,
+            prayerImg: prayer.img || prayer.imgmo,
+            prayerIndex: index,
+          };
+        }
+      }
+      return null;
+    },
+    [getRosarySequence, getPrayerById]
+  );
+
   // Return all state and handler functions for use in components
   return {
     currentPrayerIndex, // Current position in rosary sequence
     highlightedBead, // Currently highlighted bead index
     handleBeadClick, // Function to handle bead clicks
     jumpToPrayer, // Function to jump to specific prayer
+    navigateToIndex, // Function to navigate to specific index
     getCurrentMysteryNumber, // Function to get current mystery number
     getRosarySequence, // Function to get current rosary sequence
   };

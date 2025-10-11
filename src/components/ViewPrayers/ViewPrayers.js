@@ -109,7 +109,9 @@ function ViewPrayers({
       className="top-section prayer-content-overlay"
       style={{
         display: "flex",
-        height: "58vh",
+        flexDirection: window.innerWidth < 768 ? "column" : "row",
+        height: window.innerWidth < 768 ? "auto" : "58vh",
+        minHeight: window.innerWidth < 768 ? "40vh" : "58vh",
         background: "rgba(255, 255, 255, 0.1)", // More transparent
         backdropFilter: "blur(0.5px)", // Less blur
         borderRadius: "8px",
@@ -123,24 +125,41 @@ function ViewPrayers({
         style={{
           flex: 1,
           overflow: "scroll",
-          padding: "4px",
+          padding: window.innerWidth < 768 ? "8px" : "4px",
+          fontSize:
+            window.innerWidth < 768 ? "clamp(14px, 4vw, 18px)" : "1.2rem",
+          minHeight: window.innerWidth < 768 ? "200px" : "auto",
         }}
       >
         {showCounters && (
-          <span style={{ color: "gold", fontSize: "18px", fontWeight: "bold" }}>
+          <span
+            style={{
+              color: "gold",
+              fontSize: window.innerWidth < 768 ? "14px" : "18px",
+              fontWeight: "bold",
+              display: "block",
+              marginBottom: "8px",
+            }}
+          >
             📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
           </span>
         )}
         <p>{prayer}</p>
       </div>
-      <div className="page-right" style={{ flex: 1 }}>
+      <div
+        className="page-right"
+        style={{
+          flex: 1,
+          minHeight: window.innerWidth < 768 ? "250px" : "auto",
+        }}
+      >
         <img
           className="prayer-image"
           src={finalImageUrl}
           alt={`${prayer.name} illustration`}
           style={{
-            width: "47vw",
-            height: "56vh",
+            width: window.innerWidth < 768 ? "100%" : "47vw",
+            height: window.innerWidth < 768 ? "250px" : "56vh",
             objectFit: "contain",
             borderRadius: "8px",
           }}

@@ -21,6 +21,8 @@
   background-color: var(--background); /* Light beige background */
   color: var(--text-color); /* Dark brown text */
   overflow-y: auto; /* Enable vertical scrolling if content overflows */
+  line-height: 1.6; /* Better readability */
+  letter-spacing: 0.5px; /* Slight letter spacing for elegance */
 }
 .page-right {
   overflow: hidden; /* CRITICAL: Clips the zoomed part */
@@ -66,6 +68,11 @@ img#logo {
 }
 button {
   font-family: "Cloister Black", serif; /* Use the custom font */
+  border-radius: 6px; /* Consistent border radius */
+  transition: all 0.2s ease; /* Smooth transitions */
+  cursor: pointer;
+  border: none;
+  outline: none;
 }
 .button-active {
   background-color: var(--primary);
@@ -87,20 +94,58 @@ body {
 /* Common components */
 .container {
   background-color: var(--surface);
-  padding: 4px;
+  padding: 8px;
   border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Media query for smaller screens */
-@media (max-width: 600px) {
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .app {
+    padding: 2px;
+  }
+
+  .page-left {
+    font-size: clamp(14px, 4vw, 18px);
+    padding: 8px;
+    line-height: 1.6;
+  }
+
+  .page-right img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
+
+  .interactive-rosary {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
   .button-container {
-    gap: 4px; /* Reduce gap for smaller screens */
+    gap: 4px;
     padding: 2px;
   }
 
   .button {
-    font-size: 10px; /* Smaller font for very small screens */
-    padding: 2px;
+    font-size: 12px;
+    padding: 4px 8px;
+    min-height: 44px; /* Touch-friendly */
+  }
+
+  .page-left {
+    font-size: clamp(12px, 3.5vw, 16px);
+    padding: 6px;
+  }
+
+  .page-right img {
+    max-height: 200px;
   }
 }
 

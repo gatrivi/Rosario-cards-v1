@@ -73,7 +73,7 @@ const InterfaceToggle = ({
         style={{
           background: "rgba(0, 0, 0, 0.8)",
           color: "white",
-          border: "2px solid #FFD700",
+          border: "none",
           borderRadius: "50%",
           width: "50px",
           height: "50px",
@@ -105,7 +105,7 @@ const InterfaceToggle = ({
             borderRadius: "10px",
             minWidth: "200px",
             boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
-            border: "1px solid #FFD700",
+            border: "none",
           }}
         >
           <div

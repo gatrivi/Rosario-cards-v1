@@ -8,6 +8,7 @@ import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
+import ProgressBar from "./components/common/ProgressBar";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
   const [prayer, setPrayer] = useState(
@@ -24,10 +25,13 @@ function App() {
   const [showCounters, setShowCounters] = useState(true);
 
   // Use the rosary state hook
-  const { currentPrayerIndex, handleBeadClick, jumpToPrayer } = useRosaryState(
-    RosarioPrayerBook,
-    currentMystery
-  );
+  const {
+    currentPrayerIndex,
+    handleBeadClick,
+    jumpToPrayer,
+    navigateToIndex,
+    getRosarySequence,
+  } = useRosaryState(RosarioPrayerBook, currentMystery);
 
   const handleCountClick = () => {
     if (count < 10) {
@@ -118,6 +122,12 @@ function App() {
         </div>
       </div>
 
+      {/* Progress Bar */}
+      <ProgressBar
+        currentIndex={currentPrayerIndex}
+        totalPrayers={getRosarySequence().length}
+      />
+
       <PrayerButtons
         prayers={RosarioPrayerBook}
         countUp={handleCountClick}
@@ -128,6 +138,8 @@ function App() {
         setcurrentMystery={setcurrentMystery}
         jumpToPrayer={jumpToPrayer}
         currentPrayerIndex={currentPrayerIndex}
+        navigateToIndex={navigateToIndex}
+        getRosarySequence={getRosarySequence}
       />
     </div>
   );
