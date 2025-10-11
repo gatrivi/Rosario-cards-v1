@@ -205,6 +205,5 @@ class SoundEffects {
 }
 
 // Export singleton instance and class
-export const SoundEffects = SoundEffects;
+export { SoundEffects };
 export default new SoundEffects();
-
