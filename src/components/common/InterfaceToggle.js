@@ -23,6 +23,8 @@ const InterfaceToggle = ({
   showCounters = true,
   onToggleRosary,
   onToggleCounters,
+  leftHandedMode = false,
+  setLeftHandedMode = () => {},
   className = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -59,6 +61,19 @@ const InterfaceToggle = ({
     const allVisible = showRosary && showCounters;
     if (onToggleRosary) onToggleRosary(!allVisible);
     if (onToggleCounters) onToggleCounters(!allVisible);
+  };
+
+  /**
+   * Handle left-handed mode toggle
+   */
+  const handleLeftHandedToggle = () => {
+    const newMode = !leftHandedMode;
+    setLeftHandedMode(newMode);
+    localStorage.setItem("leftHandedMode", newMode.toString());
+    // Dispatch event for other components
+    window.dispatchEvent(new CustomEvent("leftHandedModeChange", {
+      detail: { leftHandedMode: newMode }
+    }));
   };
 
   return (
@@ -201,6 +216,32 @@ const InterfaceToggle = ({
                 }}
               />
               <span style={{ fontWeight: "bold", fontSize: "14px" }}>📊 Prayer Counters</span>
+            </label>
+
+            {/* Left-Handed Mode Toggle */}
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={leftHandedMode}
+                onChange={handleLeftHandedToggle}
+                style={{ 
+                  marginRight: "12px",
+                  transform: "scale(1.2)",
+                  accentColor: "var(--catholic-gold)",
+                }}
+              />
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>👈 Left-Handed Mode</span>
             </label>
           </div>
 

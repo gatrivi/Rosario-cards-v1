@@ -234,12 +234,15 @@ const ViewPrayers = forwardRef(
         <div
           className="page-right"
           style={{
-            position: "absolute",
+            position: "fixed",
             top: 0,
             left: 0,
-            width: "100%",
-            height: "100%",
+            width: "100vw",
+            height: "100vh",
             zIndex: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <img
@@ -249,8 +252,9 @@ const ViewPrayers = forwardRef(
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "contain",
-              filter: "brightness(0.8) contrast(1.1)",
+              objectFit: "cover",
+              objectPosition: "center",
+              filter: "brightness(0.7) contrast(1.1)",
             }}
           />
         </div>

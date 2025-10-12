@@ -26,23 +26,23 @@ const ProgressBar = ({ currentIndex, totalPrayers, className = "" }) => {
       className={`progress-bar ${className}`}
       style={{
         position: "fixed",
-        bottom: "90px", // Above the prayer buttons
+        bottom: "110px", // Above the prayer buttons
         left: "50%",
         transform: "translateX(-50%)",
-        width: "85%",
-        maxWidth: "500px",
+        width: "90%",
+        maxWidth: "600px",
         background: "var(--glass-bg)",
-        backdropFilter: "blur(12px)",
-        borderRadius: "16px",
-        padding: "12px 20px",
-        border: "2px solid var(--glass-border)",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+        backdropFilter: "blur(15px)",
+        borderRadius: "20px",
+        padding: "16px 24px",
+        border: "3px solid var(--glass-border)",
+        boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(212, 175, 55, 0.1)",
         zIndex: 100,
-        fontSize: "14px",
+        fontSize: "16px",
         color: "var(--text-color)",
         fontFamily: "Cloister Black, serif",
         fontWeight: "bold",
-        textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
+        textShadow: "2px 2px 4px rgba(0, 0, 0, 0.7)",
       }}
     >
       {/* Progress text */}
@@ -51,26 +51,29 @@ const ProgressBar = ({ currentIndex, totalPrayers, className = "" }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "8px",
-          fontSize: "13px",
-          opacity: 0.9,
+          marginBottom: "12px",
+          fontSize: "15px",
+          opacity: 1,
         }}
       >
-        <span>
-          📿 {currentIndex + 1} / {totalPrayers}
+        <span style={{ color: "var(--catholic-gold)" }}>
+          📿 Prayer {currentIndex + 1} of {totalPrayers}
         </span>
-        <span>{Math.round(progress)}%</span>
+        <span style={{ color: "var(--catholic-gold)" }}>
+          {Math.round(progress)}% Complete
+        </span>
       </div>
 
       {/* Progress bar container */}
       <div
         style={{
           position: "relative",
-          height: "8px",
-          background: "rgba(0, 0, 0, 0.3)",
-          borderRadius: "4px",
+          height: "12px",
+          background: "rgba(0, 0, 0, 0.4)",
+          borderRadius: "6px",
           overflow: "hidden",
-          border: "1px solid var(--glass-border)",
+          border: "2px solid var(--glass-border)",
+          boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.3)",
         }}
       >
         {/* Progress fill */}
@@ -78,10 +81,10 @@ const ProgressBar = ({ currentIndex, totalPrayers, className = "" }) => {
           style={{
             height: "100%",
             width: `${progress}%`,
-            background: "linear-gradient(90deg, var(--catholic-gold), var(--catholic-red))",
+            background: "linear-gradient(90deg, var(--catholic-gold), var(--catholic-red), var(--catholic-purple))",
             borderRadius: "4px",
-            transition: "width 0.3s ease",
-            boxShadow: "0 0 10px rgba(212, 175, 55, 0.5)",
+            transition: "width 0.5s ease",
+            boxShadow: "0 0 15px rgba(212, 175, 55, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
           }}
         />
 
@@ -94,10 +97,11 @@ const ProgressBar = ({ currentIndex, totalPrayers, className = "" }) => {
               left: `${marker}%`,
               top: "0",
               height: "100%",
-              width: "2px",
+              width: "3px",
               background: "var(--catholic-gold)",
               transform: "translateX(-50%)",
-              opacity: 0.6,
+              opacity: 0.8,
+              boxShadow: "0 0 8px rgba(212, 175, 55, 0.6)",
             }}
           />
         ))}

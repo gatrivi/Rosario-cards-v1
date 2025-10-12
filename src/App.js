@@ -128,51 +128,16 @@ function App() {
 
   return (
     <div className="app">
-      {/* Header with stained glass styling */}
-      <Header 
-        logo={logo} 
-        style={{ 
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          zIndex: 100,
-          background: "rgba(255, 255, 255, 0.08)",
-          backdropFilter: "blur(8px)",
-          borderRadius: "12px",
-          padding: "8px 16px",
-          border: "2px solid rgba(212, 175, 55, 0.3)",
-          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)"
-        }} 
-      />
-
-      {/* Interface Toggle - Control panel for hiding/showing elements */}
-      <div style={{ position: "absolute", top: "10px", right: "10px", zIndex: 100 }}>
+      {/* Settings Panel - Consolidated controls */}
+      <div style={{ position: "absolute", top: "10px", left: "10px", zIndex: 100 }}>
         <InterfaceToggle
           showRosary={showRosary}
           showCounters={showCounters}
           onToggleRosary={() => setShowRosary(!showRosary)}
           onToggleCounters={() => setShowCounters(!showCounters)}
+          leftHandedMode={leftHandedMode}
+          setLeftHandedMode={setLeftHandedMode}
         />
-      </div>
-
-      {/* Left-handed mode toggle and Rosary toggle */}
-      <div
-        style={{
-          position: "absolute",
-          top: "60px",
-          right: "10px",
-          zIndex: 100,
-          display: "flex",
-          gap: "10px",
-        }}
-      >
-        <RosaryToggle />
-        <LeftHandedToggle />
-      </div>
-
-      {/* Physics Controls */}
-      <div style={{ position: "absolute", top: "100px", right: "10px", zIndex: 100 }}>
-        <PhysicsControls />
       </div>
 
       {/* Main content area with stained glass design */}
