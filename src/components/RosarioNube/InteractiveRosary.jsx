@@ -349,60 +349,46 @@ const InteractiveRosary = ({
       );
     }
 
-    // --- Create Cross Body (as a single composite object) ---
-    // Using the working approach from react-matter.js-draggable-rosary
+    // Create Cross Body (as a single composite object)
     const crossParts = [];
     const crossCenterX = tailBeads[numTailBeads - 1].position.x;
-    const crossCenterY =
-      tailBeads[numTailBeads - 1].position.y + chainSegmentLength * 2;
+    const crossCenterY = tailBeads[numTailBeads - 1].position.y + chainSegmentLength * 2;
     const cbs = crossBeadSize;
 
-    console.log(
-      `📍 Cross position: x=${crossCenterX}, y=${crossCenterY}, viewport height=${height}`
-    );
-
     const crossPositions = [
-      { x: crossCenterX - cbs * 1.5, y: crossCenterY, num: 1 }, // 1
-      { x: crossCenterX - cbs * 0.5, y: crossCenterY, num: 2 }, // 2 (center piece)
-      { x: crossCenterX + cbs * 0.5, y: crossCenterY, num: 3 }, // 3
-      { x: crossCenterX + cbs * 1.5, y: crossCenterY, num: 4 }, // 4
-      { x: crossCenterX - cbs * 0.5, y: crossCenterY + cbs, num: 5 }, // 5
-      { x: crossCenterX - cbs * 0.5, y: crossCenterY - cbs, num: 6 }, // 6
+        { x: crossCenterX - cbs * 1.5, y: crossCenterY, num: 1 }, // 1
+        { x: crossCenterX - cbs * 0.5, y: crossCenterY, num: 2 }, // 2 (center piece)
+        { x: crossCenterX + cbs * 0.5, y: crossCenterY, num: 3 }, // 3
+        { x: crossCenterX + cbs * 1.5, y: crossCenterY, num: 4 }, // 4
+        { x: crossCenterX - cbs * 0.5, y: crossCenterY + cbs, num: 5 }, // 5
+        { x: crossCenterX - cbs * 0.5, y: crossCenterY - cbs, num: 6 }, // 6
     ];
 
-    crossPositions.forEach((pos) => {
-      const part = Matter.Bodies.rectangle(pos.x, pos.y, cbs, cbs, {
-        crossNumber: pos.num,
-        render: { fillStyle: colors.cross },
-      });
-      crossParts.push(part);
+    crossPositions.forEach(pos => {
+        const part = Matter.Bodies.rectangle(pos.x, pos.y, cbs, cbs, {
+            crossNumber: pos.num,
+            render: { fillStyle: colors.cross }
+        });
+        crossParts.push(part);
     });
-
+    
     const crossBody = Matter.Body.create({
-      parts: crossParts,
-      friction: 0.5,
-      frictionAir: 0.05,
-      restitution: 0.8,
-      isCrossComposite: true, // Custom flag
-      crossParts: crossParts, // Store reference for rendering
+        parts: crossParts,
+        friction: 0.5,
+        frictionAir: 0.05,
+        restitution: 0.8,
+        isCrossComposite: true, // Custom flag
+        crossParts: crossParts, // Store reference for rendering
     });
     allBeads.push(crossBody);
 
-    // --- Connect tail to cross ---
-    // Connect to the outermost side of cross square #1
+    // Connect tail to the outermost side of cross square #1
     const connectionOffset = {
-      x: crossParts[0].position.x - crossBody.position.x - cbs / 2,
-      y: crossParts[0].position.y - crossBody.position.y,
+        // Start with vector to center of square #1, then move left by half a square's width
+        x: (crossParts[0].position.x - crossBody.position.x) - (cbs / 2),
+        y: crossParts[0].position.y - crossBody.position.y,
     };
-
-    constraints.push(
-      Matter.Constraint.create({
-        ...springOptions(chainSegmentLength * 0.5), // HALF size for cross connection
-        bodyA: tailBeads[numTailBeads - 1],
-        bodyB: crossBody,
-        pointB: connectionOffset,
-      })
-    );
+    constraints.push(Matter.Constraint.create({ ...springOptions(chainSegmentLength * 2), bodyA: tailBeads[numTailBeads - 1], bodyB: crossBody, pointB: connectionOffset }));
 
     console.log(
       `✅ Created ${allBeads.length} beads and ${constraints.length} constraints`
@@ -455,25 +441,7 @@ const InteractiveRosary = ({
             const numberToDisplay = part.crossNumber;
             if (numberToDisplay) {
               context.font = `bold ${crossBeadSize * 0.8}px Arial`;
-              context.fillText(
-                `${numberToDisplay}`,
-                part.position.x,
-                part.position.y
-              );
-            }
-
-            // Highlight entire cross if prayer index 0 is current
-            if (currentPrayerIndexRef.current === 0) {
-              context.strokeStyle = colors.highlight;
-              context.lineWidth = 3;
-              context.beginPath();
-              context.rect(
-                part.position.x - crossBeadSize / 2,
-                part.position.y - crossBeadSize / 2,
-                crossBeadSize,
-                crossBeadSize
-              );
-              context.stroke();
+              context.fillText(`${numberToDisplay}`, part.position.x, part.position.y);
             }
           });
           return; // Skip normal rendering for composite body
