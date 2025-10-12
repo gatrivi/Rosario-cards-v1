@@ -13,7 +13,6 @@ import React from "react";
 const ProgressBar = ({ currentIndex, totalPrayers, className = "" }) => {
   const progress =
     totalPrayers > 0 ? ((currentIndex + 1) / totalPrayers) * 100 : 0;
-  const isDarkMode = document.body.classList.contains("dark");
 
   // Calculate decade markers (every 10 prayers)
   const decadeMarkers = [];

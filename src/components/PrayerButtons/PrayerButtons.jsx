@@ -20,19 +20,6 @@ function PrayerButtons({
   const [cycleIndex, setCycleIndex] = useState(0);
   const [subView, setSubView] = useState(null);
 
-  // Helper function to get the correct rosary array based on mystery type
-  const getRosaryArray = useCallback(
-    (mysteryType) => {
-      const mysteryToArray = {
-        gozosos: "RGo",
-        dolorosos: "RDo",
-        gloriosos: "RGl",
-        luminosos: "RL",
-      };
-      return prayers[mysteryToArray[mysteryType]] || [];
-    },
-    [prayers]
-  );
 
   // Helper function to get prayer object by ID
   const getPrayerById = useCallback(
@@ -259,8 +246,8 @@ function PrayerButtons({
   const segments = leftHandedMode
     ? [...navigationSegments].reverse()
     : navigationSegments;
-  // Calculate progress
-  const rosaryArray = getRosarySequence();
+  
+  // Calculate progress using existing rosaryArray
   const totalPrayers = rosaryArray.length;
   const progress = totalPrayers > 0 ? ((currentPrayerIndex + 1) / totalPrayers) * 100 : 0;
 

@@ -1,17 +1,11 @@
 import "./App.css";
-import logo from "./logo.png";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
-import Header from "./components/common/Header";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
-import ProgressBar from "./components/common/ProgressBar";
-import LeftHandedToggle from "./components/common/LeftHandedToggle";
-import RosaryToggle from "./components/common/RosaryToggle";
-import PhysicsControls from "./components/common/PhysicsControls";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
   const [prayer, setPrayer] = useState(
@@ -134,17 +128,17 @@ function App() {
   };
 
   // Focus mode handlers
-  const toggleFocusMode = () => {
+  const toggleFocusMode = useCallback(() => {
     setFocusMode(!focusMode);
-  };
+  }, [focusMode]);
 
-  const enterFocusMode = () => {
+  const enterFocusMode = useCallback(() => {
     setFocusMode(true);
-  };
+  }, []);
 
-  const exitFocusMode = () => {
+  const exitFocusMode = useCallback(() => {
     setFocusMode(false);
-  };
+  }, []);
 
   // Handle bead click from rosary
   const onBeadClick = (prayerIndex, prayerId) => {
