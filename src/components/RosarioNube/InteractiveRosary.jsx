@@ -1,92 +1,75 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import Matter from "matter-js";
 import "./InteractiveRosary.css";
 
 /**
  * InteractiveRosary Component
  *
- * A physics-based interactive rosary using Matter.js that provides:
- * - Realistic bead physics with zero gravity for floating effect
- * - Interactive beads that can be clicked to jump to specific prayers
- * - Visual highlighting of current prayer bead in gold
- * - Drag functionality to move the entire rosary around
- * - Mystery-specific color schemes for different rosary types
- * - Cross structure with 6 squares as specified
- * - 5 decades of 10 beads each arranged in circular pattern
- *
- * @param {string} currentMystery - The current mystery type (gozosos, dolorosos, gloriosos, luminosos)
- * @param {number} currentPrayerIndex - Index of the current prayer in the rosary sequence
- * @param {function} onBeadClick - Callback function when a bead is clicked
- * @param {object} prayers - Prayer data object containing rosary sequences
- * @param {string} className - Additional CSS classes for styling
+ * Based on working implementation from react-matter.js-draggable-rosary
+ * Adapted for Catholic rosary with 60 beads total:
+ * - Cross: 6 beads
+ * - Tail: 3 beads
+ * - Center: 1 bead
+ * - Main loop: 50 beads (5 decades of 10 beads each)
  */
 const InteractiveRosary = ({
-  currentMystery,
-  currentPrayerIndex,
+  currentMystery = "gozosos",
+  currentPrayerIndex = 0,
   onBeadClick,
   prayers,
   className = "",
 }) => {
-  console.log(
-    "🚀 InteractiveRosary: Component rendering with mystery:",
-    currentMystery,
-    "prayerIndex:",
-    currentPrayerIndex
-  );
+  const sceneRef = useRef(null);
+  const matterInstance = useRef(null);
+  const currentPrayerIndexRef = useRef(currentPrayerIndex); // Ref to track current prayer
+  const [isVisible, setIsVisible] = React.useState(() => {
+    const saved = localStorage.getItem("rosaryVisible");
+    return saved !== "false"; // Default to visible
+  });
+
+  // Update ref when currentPrayerIndex prop changes
+  React.useEffect(() => {
+    currentPrayerIndexRef.current = currentPrayerIndex;
+  }, [currentPrayerIndex]);
 
   /**
-   * Get mystery-specific color schemes for visual consistency
-   * Each mystery type has its own color palette for beads, cross, and chain
-   *
-   * @param {string} mystery - The mystery type
-   * @returns {object} Color scheme object with beads, cross, chain, and highlight colors
+   * Get mystery-specific colors
    */
   const getMysteryColors = (mystery) => {
     const colorSchemes = {
       dolorosos: {
-        beads: "#D2B48C", // light earth colored
-        cross: "#D2B48C", // light earth colored
-        chain: "#8B4513", // earth brown chain
-        highlight: "#FFD700", // gold for current bead
+        beads: "#D2B48C",
+        cross: "#8B4513",
+        chain: "#708090",
+        highlight: "#FFD700",
       },
       gloriosos: {
-        beads: "#2F2F2F", // onyx
-        cross: "#2F2F2F", // onyx
-        chain: "#708090", // darkish silver chain
-        highlight: "#FFD700", // gold for current bead
+        beads: "#2F2F2F",
+        cross: "#1C1C1C",
+        chain: "#708090",
+        highlight: "#FFD700",
       },
       gozosos: {
-        beads: "#FF7F7F", // coral pinkish salmon colored
-        cross: "#FF7F7F", // coral pinkish salmon colored
-        chain: "#708090", // darkish silver chain
-        highlight: "#FFD700", // gold for current bead
+        beads: "#FF7F7F",
+        cross: "#CD5C5C",
+        chain: "#708090",
+        highlight: "#FFD700",
       },
       luminosos: {
-        beads: "#F5F5DC", // pearl colored
-        cross: "#F5F5DC", // pearl colored
-        chain: "#F8F8FF", // pearl chain
-        highlight: "#FFD700", // gold for current bead
+        beads: "#F5F5DC",
+        cross: "#DEB887",
+        chain: "#C0C0C0",
+        highlight: "#FFD700",
       },
     };
-    return colorSchemes[mystery] || colorSchemes.dolorosos;
+    return colorSchemes[mystery] || colorSchemes.gozosos;
   };
 
-  // Matter.js physics engine references
-  const canvasRef = useRef(null); // Canvas DOM element reference
-  const engineRef = useRef(null); // Matter.js physics engine instance
-  const renderRef = useRef(null); // Matter.js renderer instance
-  const beadsRef = useRef([]); // Array of all bead physics bodies
-  const constraintsRef = useRef([]); // Array of all constraint connections
-  const centerBeadRef = useRef(null); // Reference to the center connecting bead
-  const [isInitialized, setIsInitialized] = useState(false); // Initialization state
-
   /**
-   * Get the rosary sequence based on current mystery type
-   * Maps mystery types to their corresponding prayer sequences in the prayers object
-   *
-   * @returns {array} Array of prayer IDs in the correct rosary sequence
+   * Get rosary sequence for current mystery
    */
-  const getRosarySequence = useCallback(() => {
+  const getRosarySequence = () => {
+    if (!prayers) return [];
     const mysteryToArray = {
       gozosos: "RGo",
       dolorosos: "RDo",
@@ -94,652 +77,464 @@ const InteractiveRosary = ({
       luminosos: "RL",
     };
     return prayers[mysteryToArray[currentMystery]] || [];
-  }, [prayers, currentMystery]);
+  };
 
-  /**
-   * Create the complete rosary structure with physics bodies and constraints
-   * This function builds the entire rosary including cross, center bead, and decades
-   *
-   * Structure:
-   * - Cross: 6 squares arranged in traditional cross pattern
-   * - Center bead: Large connecting bead between cross and decades
-   * - Decades: 5 sets of 10 beads each arranged in circular pattern
-   * - Chains: Spring constraints connecting all elements
-   *
-   * @param {object} engine - Matter.js physics engine instance
-   */
-  const createRosaryStructure = useCallback(
-    (engine) => {
-      console.log("🎯 createRosaryStructure: Starting...");
-      const rosarySequence = getRosarySequence();
-      const colors = getMysteryColors(currentMystery);
-      console.log(
-        "📿 createRosaryStructure: Rosary sequence length:",
-        rosarySequence.length,
-        "Colors:",
-        colors
-      );
-      const beads = [];
-      const constraints = [];
-
-      // Clear previous beads and constraints to prevent memory leaks
-      beadsRef.current.forEach((bead) =>
-        Matter.World.remove(engine.world, bead)
-      );
-      constraintsRef.current.forEach((constraint) =>
-        Matter.World.remove(engine.world, constraint)
-      );
-      beadsRef.current = [];
-      constraintsRef.current = [];
-      console.log("🧹 createRosaryStructure: Cleared previous elements");
-
-      // Create center bead (the large bead connecting cross to decades)
-      // This is the central hub that connects the cross to all decades
-      const centerX = canvasRef.current.offsetWidth / 2;
-      const centerY = canvasRef.current.offsetHeight / 2;
-      const centerBead = Matter.Bodies.circle(centerX, centerY, 15, {
-        render: {
-          fillStyle: colors.beads,
-          strokeStyle: colors.chain,
-          lineWidth: 2,
-        },
-        isStatic: false, // Allow physics interaction
-        density: 0.001, // Light weight for floating effect
-        frictionAir: 0.01, // Minimal air resistance
-        label: "center_bead", // Debug label
-        prayerIndex: 6, // Center bead is at index 6 in rosary sequence
-        prayerId: rosarySequence[6] || "unknown", // Prayer ID for click handling
-      });
-      centerBeadRef.current = centerBead;
-      Matter.World.add(engine.world, centerBead);
-      beads.push(centerBead);
-      console.log("🔵 createRosaryStructure: Center bead created");
-
-      // Create cross (6 squares as specified in traditional cross pattern)
-      // The cross is positioned above the center bead
-      const crossBodies = createCross(
-        centerX,
-        centerY - 100,
-        engine,
-        colors,
-        rosarySequence
-      );
-      crossBodies.forEach((body) => {
-        Matter.World.add(engine.world, body);
-        beads.push(body);
-      });
-      console.log(
-        "✝️ createRosaryStructure: Cross created with",
-        crossBodies.length,
-        "elements"
-      );
-
-      // Connect cross to center bead with a spring constraint
-      // This creates the chain connection between cross and center bead
-      const crossConstraint = Matter.Constraint.create({
-        bodyA: centerBead,
-        bodyB: crossBodies[0], // Top of cross
-        length: 50, // Rest length of the chain
-        stiffness: 0.8, // Spring stiffness for realistic feel
-        render: {
-          visible: true,
-          strokeStyle: colors.chain,
-          lineWidth: 2,
-        },
-      });
-      Matter.World.add(engine.world, crossConstraint);
-      constraints.push(crossConstraint);
-
-      // Create decades (5 sets of 10 beads each arranged in circular pattern)
-      // Each decade represents one mystery of the rosary
-      const decadePositions = calculateDecadePositions(centerX, centerY);
-      let beadIndex = 7; // Start after cross (6 elements) + center bead (1 element) = 7
-      console.log(
-        "📿 createRosaryStructure: Creating",
-        decadePositions.length,
-        "decades, starting beadIndex at",
-        beadIndex
-      );
-
-      // Create individual beads for each decade
-      // Each bead is clickable and corresponds to a specific prayer in the sequence
-      decadePositions.forEach((decade, decadeIndex) => {
-        decade.forEach((position, positionIndex) => {
-          const bead = Matter.Bodies.circle(position.x, position.y, 8, {
-            render: {
-              // Highlight current prayer bead in gold
-              fillStyle:
-                beadIndex === currentPrayerIndex
-                  ? colors.highlight
-                  : colors.beads,
-              strokeStyle: colors.chain,
-              lineWidth: 1,
-            },
-            isStatic: false, // Allow physics interaction
-            density: 0.001, // Light weight for floating effect
-            frictionAir: 0.01, // Minimal air resistance
-            label: `bead_${beadIndex}`, // Debug label
-            prayerIndex: beadIndex, // Index in rosary sequence
-            prayerId: rosarySequence[beadIndex] || "unknown", // Prayer ID for click handling
-          });
-
-          Matter.World.add(engine.world, bead);
-          beads.push(bead);
-          beadIndex++;
-        });
-      });
-      console.log(
-        "🔴 createRosaryStructure: Created",
-        beadIndex,
-        "decade beads"
-      );
-
-      // Create chains connecting beads with spring constraints
-      // This creates the realistic chain effect between all beads
-      createBeadChains(beads, constraints, engine, colors);
-
-      // Store references for cleanup and updates
-      beadsRef.current = beads;
-      constraintsRef.current = constraints;
-      console.log(
-        "💾 createRosaryStructure: Stored",
-        beads.length,
-        "beads and",
-        constraints.length,
-        "constraints"
-      );
-
-      // Add click handlers to beads for prayer navigation
-      // Users can click any bead to jump to that prayer
-      const mouse = Matter.Mouse.create(renderRef.current.canvas);
-
-      Matter.Events.on(mouse, "mousedown", (event) => {
-        console.log("🖱️ Mouse click detected at:", event.mouse.position);
-        const bodies = Matter.Query.point(beads, event.mouse.position);
-        console.log("🎯 Bodies found:", bodies.length);
-        if (bodies.length > 0) {
-          const clickedBead = bodies[0];
-          console.log(
-            "🔍 Clicked bead:",
-            clickedBead.label,
-            "prayerIndex:",
-            clickedBead.prayerIndex,
-            "prayerId:",
-            clickedBead.prayerId
-          );
-          // Only handle clicks on beads with prayer data
-          if (clickedBead.prayerIndex !== undefined && onBeadClick) {
-            console.log(
-              "✅ Calling onBeadClick with:",
-              clickedBead.prayerIndex,
-              clickedBead.prayerId
-            );
-            onBeadClick(clickedBead.prayerIndex, clickedBead.prayerId);
-          } else {
-            console.log(
-              "❌ Not calling onBeadClick - prayerIndex:",
-              clickedBead.prayerIndex,
-              "onBeadClick:",
-              !!onBeadClick
-            );
-          }
-        }
-      });
-      console.log("🎯 createRosaryStructure: Click handlers added");
-      console.log(
-        "🎉 createRosaryStructure: Complete! Total elements:",
-        beads.length
-      );
-    },
-    [getRosarySequence, currentPrayerIndex, onBeadClick, currentMystery]
-  );
-
-  /**
-   * Initialize Matter.js physics engine and renderer
-   * This effect runs once when the component mounts and sets up the physics simulation
-   */
+  // Listen for visibility toggle events
   useEffect(() => {
-    console.log("🎯 InteractiveRosary: Initializing physics engine...");
-    if (!canvasRef.current) {
-      console.log("❌ InteractiveRosary: Canvas ref not available");
-      return;
+    const handleVisibilityChange = (event) => {
+      setIsVisible(event.detail.visible);
+    };
+
+    window.addEventListener("rosaryVisibilityChange", handleVisibilityChange);
+    return () =>
+      window.removeEventListener(
+        "rosaryVisibilityChange",
+        handleVisibilityChange
+      );
+  }, []);
+
+  useEffect(() => {
+    if (!sceneRef.current) return;
+
+    const container = sceneRef.current;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    console.log("🎯 InteractiveRosary: Initializing...", {
+      width,
+      height,
+      currentMystery,
+    });
+
+    // --- Cleanup previous instance if it exists ---
+    if (matterInstance.current) {
+      const { render, runner, world, engine } = matterInstance.current;
+      Matter.Render.stop(render);
+      Matter.Runner.stop(runner);
+      Matter.World.clear(world, false);
+      Matter.Engine.clear(engine);
+      if (render.canvas) {
+        render.canvas.remove();
+      }
+      render.textures = {};
+      console.log("🧹 InteractiveRosary: Cleaned up previous instance");
     }
 
-    // Create physics engine with zero gravity for floating rosary effect
-    const engine = Matter.Engine.create();
-    engine.world.gravity.y = 0; // No gravity - rosary floats reverently
-    engineRef.current = engine;
-    console.log("✅ InteractiveRosary: Engine created successfully");
+    // --- Engine and World ---
+    const engine = Matter.Engine.create({
+      gravity: { x: 0, y: 0 }, // Zero gravity for floating rosary
+    });
+    const world = engine.world;
 
-    // Create renderer with clean visual settings
-    // All debug options are disabled for a clean, prayer-focused interface
+    // --- Renderer ---
     const render = Matter.Render.create({
-      canvas: canvasRef.current,
+      element: container,
       engine: engine,
       options: {
-        width: canvasRef.current.offsetWidth,
-        height: canvasRef.current.offsetHeight,
-        wireframes: false, // Show solid bodies, not wireframes
-        background: "transparent", // Transparent background for overlay effect
-        showAngleIndicator: false, // Hide debug indicators
-        showVelocity: false, // Hide velocity vectors
-        showCollisions: false, // Hide collision points
-        showSeparations: false, // Hide separation vectors
-        showAxes: false, // Hide coordinate axes
-        showPositions: false, // Hide position indicators
-        showBroadphase: false, // Hide broadphase grid
-        showBounds: false, // Hide body bounds
-        showVertexNumbers: false, // Hide vertex numbers
-        showConvexHulls: false, // Hide convex hulls
-        showInternalEdges: false, // Hide internal edges
-        showMousePosition: false, // Hide mouse position
-        showSleeping: false, // Hide sleeping bodies
-        showIds: false, // Hide body IDs
-        showShadows: false, // Hide shadows
-        showStaticLabels: false, // Hide static body labels
+        width: width,
+        height: height,
+        wireframes: false,
+        background: "transparent",
       },
     });
 
-    renderRef.current = render;
-    console.log("✅ InteractiveRosary: Renderer created successfully");
+    // --- Get Colors and Sequence ---
+    const colors = getMysteryColors(currentMystery);
+    const rosarySequence = getRosarySequence();
+    console.log("📿 Rosary sequence length:", rosarySequence.length);
 
-    // Create the complete rosary structure with all beads and constraints
-    console.log("🎯 InteractiveRosary: Creating rosary structure...");
-    createRosaryStructure(engine);
+    // --- Parameters ---
+    const beadSize = 8;
+    const crossBeadSize = 10;
+    const centerBeadSize = 12;
 
-    // Add mouse control for dragging the rosary
-    // Users can click and drag to move the entire rosary around
+    const allBeads = [];
+    const constraints = [];
+
+    // --- Helper function for bead options ---
+    const beadOptions = (color, extraOptions = {}) => ({
+      restitution: 0.1, // Reduced from 0.6 - much less bouncy
+      friction: 0.5, // Increased from 0.3
+      frictionAir: 0.08, // Increased from 0.02 - more air resistance/damping
+      density: 0.001,
+      render: { fillStyle: color, strokeStyle: colors.chain, lineWidth: 1 },
+      ...extraOptions,
+    });
+
+    // --- Helper function for constraint/spring options ---
+    const springOptions = (length, stiffness = 0.2) => ({
+      stiffness: stiffness, // Reduced default from 0.5 to 0.2 - softer springs
+      damping: 0.9, // Increased from 0.5 - much more damping
+      length: length,
+      render: { strokeStyle: "#555", lineWidth: 0.5, visible: true }, // Thin dark string
+    });
+
+    // --- Helper function to calculate pole connection offsets ---
+    // This makes constraints connect to bead edges instead of centers
+    const getPoleOffset = (beadA, beadB, radiusA) => {
+      const dx = beadB.position.x - beadA.position.x;
+      const dy = beadB.position.y - beadA.position.y;
+      const angle = Math.atan2(dy, dx);
+      return {
+        x: radiusA * Math.cos(angle),
+        y: radiusA * Math.sin(angle),
+      };
+    };
+
+    // --- Layout & Bead Creation ---
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 3.5;
+    const chainSegmentLength = 15;
+
+    // --- Create Center Bead (Heart bead at top of loop) ---
+    const centerBead = Matter.Bodies.circle(
+      centerX,
+      centerY - radius,
+      centerBeadSize,
+      beadOptions(colors.beads, {
+        beadNumber: 7, // Bead numbering starts after cross + tail
+        prayerIndex: 6,
+        prayerId: rosarySequence[6] || "unknown",
+      })
+    );
+    allBeads.push(centerBead);
+
+    // --- Create Main Loop Beads (50 beads for 5 decades) ---
+    const numMainBeads = 50;
+    const mainLoopBeads = [];
+    const numLoopPoints = numMainBeads + 1; // +1 because heart bead closes the loop
+
+    for (let i = 0; i < numMainBeads; i++) {
+      const angle = ((i + 1) / numLoopPoints) * 2 * Math.PI - Math.PI / 2;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+
+      const beadNumber = 8 + i; // Start at 8 (after cross=1-6, tail=7)
+      const prayerIndex = 7 + i; // Prayer index in rosary sequence
+
+      const bead = Matter.Bodies.circle(
+        x,
+        y,
+        beadSize,
+        beadOptions(colors.beads, {
+          beadNumber: beadNumber,
+          prayerIndex: prayerIndex,
+          prayerId: rosarySequence[prayerIndex] || "unknown",
+        })
+      );
+      mainLoopBeads.push(bead);
+    }
+    allBeads.push(...mainLoopBeads);
+
+    // --- Connect Main Loop Beads internally with pole connections ---
+    for (let i = 0; i < numMainBeads - 1; i++) {
+      const beadA = mainLoopBeads[i];
+      const beadB = mainLoopBeads[i + 1];
+
+      // Every 11th connection is longer (Glory Be separator between decades)
+      const isLongSpring = (i + 1) % 11 === 10 || (i + 1) % 11 === 0;
+      const baseLength = isLongSpring
+        ? chainSegmentLength * 1.5
+        : chainSegmentLength;
+      // DOUBLE size for all other strings, reduce length to account for bead radii
+      const adjustedLength = Math.max(1, baseLength * 2 - 2 * beadSize);
+
+      constraints.push(
+        Matter.Constraint.create({
+          ...springOptions(adjustedLength),
+          bodyA: beadA,
+          bodyB: beadB,
+          pointA: getPoleOffset(beadA, beadB, beadSize),
+          pointB: getPoleOffset(beadB, beadA, beadSize),
+        })
+      );
+    }
+
+    // --- Close the loop via the center/heart bead (with long springs and pole connections) ---
+    const adjustedLoopLength = Math.max(
+      1,
+      chainSegmentLength * 1.5 * 2 - beadSize - centerBeadSize // DOUBLE size
+    );
+
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(adjustedLoopLength),
+        bodyA: centerBead,
+        bodyB: mainLoopBeads[0],
+        pointA: getPoleOffset(centerBead, mainLoopBeads[0], centerBeadSize),
+        pointB: getPoleOffset(mainLoopBeads[0], centerBead, beadSize),
+      })
+    );
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(adjustedLoopLength),
+        bodyA: mainLoopBeads[numMainBeads - 1],
+        bodyB: centerBead,
+        pointA: getPoleOffset(
+          mainLoopBeads[numMainBeads - 1],
+          centerBead,
+          beadSize
+        ),
+        pointB: getPoleOffset(
+          centerBead,
+          mainLoopBeads[numMainBeads - 1],
+          centerBeadSize
+        ),
+      })
+    );
+
+    // --- Create Tail Beads (3 beads connecting heart to cross) ---
+    const numTailBeads = 3;
+    const tailBeads = [];
+    let lastY = centerBead.position.y;
+
+    for (let i = 0; i < numTailBeads; i++) {
+      const x = centerBead.position.x;
+      lastY += chainSegmentLength * 1.2;
+      const beadNumber = 6 - i; // Tail beads are numbered 6, 5, 4 (counting down toward cross)
+      const prayerIndex = 5 - i; // Prayer indices 5, 4, 3
+
+      const bead = Matter.Bodies.circle(
+        x,
+        lastY,
+        beadSize,
+        beadOptions(colors.beads, {
+          beadNumber: beadNumber,
+          prayerIndex: prayerIndex,
+          prayerId: rosarySequence[prayerIndex] || "unknown",
+        })
+      );
+      tailBeads.push(bead);
+    }
+    allBeads.push(...tailBeads);
+
+    // --- Connect Tail beads ---
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(chainSegmentLength * 1.5 * 2), // DOUBLE size
+        bodyA: centerBead,
+        bodyB: tailBeads[0],
+      })
+    );
+    for (let i = 0; i < numTailBeads - 1; i++) {
+      const length = i === 1 ? chainSegmentLength : chainSegmentLength * 1.2;
+      constraints.push(
+        Matter.Constraint.create({
+          ...springOptions(length * 2), // DOUBLE size
+          bodyA: tailBeads[i],
+          bodyB: tailBeads[i + 1],
+        })
+      );
+    }
+
+    // --- Create Cross Body (as a single composite object) ---
+    // Using the working approach from react-matter.js-draggable-rosary
+    const crossParts = [];
+    const crossCenterX = tailBeads[numTailBeads - 1].position.x;
+    const crossCenterY =
+      tailBeads[numTailBeads - 1].position.y + chainSegmentLength * 2;
+    const cbs = crossBeadSize;
+
+    console.log(
+      `📍 Cross position: x=${crossCenterX}, y=${crossCenterY}, viewport height=${height}`
+    );
+
+    const crossPositions = [
+      { x: crossCenterX - cbs * 1.5, y: crossCenterY, num: 1 }, // 1
+      { x: crossCenterX - cbs * 0.5, y: crossCenterY, num: 2 }, // 2 (center piece)
+      { x: crossCenterX + cbs * 0.5, y: crossCenterY, num: 3 }, // 3
+      { x: crossCenterX + cbs * 1.5, y: crossCenterY, num: 4 }, // 4
+      { x: crossCenterX - cbs * 0.5, y: crossCenterY + cbs, num: 5 }, // 5
+      { x: crossCenterX - cbs * 0.5, y: crossCenterY - cbs, num: 6 }, // 6
+    ];
+
+    crossPositions.forEach((pos) => {
+      const part = Matter.Bodies.rectangle(pos.x, pos.y, cbs, cbs, {
+        crossNumber: pos.num,
+        beadNumber: pos.num,
+        prayerIndex: 0, // Entire cross treated as single prayer (index 0)
+        prayerId: rosarySequence[0] || "unknown", // First prayer in sequence
+        render: { fillStyle: colors.cross },
+      });
+      crossParts.push(part);
+    });
+
+    const crossBody = Matter.Body.create({
+      parts: crossParts,
+      friction: 0.5,
+      frictionAir: 0.05,
+      restitution: 0.8,
+      isCrossComposite: true, // Custom flag
+      crossParts: crossParts, // Store reference for rendering
+    });
+    allBeads.push(crossBody);
+
+    // --- Connect tail to cross ---
+    // Connect to the outermost side of cross square #1
+    const connectionOffset = {
+      x: crossParts[0].position.x - crossBody.position.x - cbs / 2,
+      y: crossParts[0].position.y - crossBody.position.y,
+    };
+
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(chainSegmentLength * 0.5), // HALF size for cross connection
+        bodyA: tailBeads[numTailBeads - 1],
+        bodyB: crossBody,
+        pointB: connectionOffset,
+      })
+    );
+
+    console.log(
+      `✅ Created ${allBeads.length} beads and ${constraints.length} constraints`
+    );
+
+    // --- Add Everything to World ---
+    Matter.Composite.add(world, [...allBeads, ...constraints]);
+
+    // --- Mouse Control ---
     const mouse = Matter.Mouse.create(render.canvas);
     const mouseConstraint = Matter.MouseConstraint.create(engine, {
       mouse: mouse,
-      constraint: {
-        stiffness: 0.2, // Soft constraint for smooth dragging
-        render: {
-          visible: false, // Hide the constraint line
-        },
-      },
+      constraint: { stiffness: 0.2, render: { visible: false } },
     });
 
-    Matter.World.add(engine.world, mouseConstraint);
-    console.log("✅ InteractiveRosary: Mouse controls added");
-
-    // Keep mouse in sync with rendering for accurate interaction
+    Matter.Composite.add(world, mouseConstraint);
     render.mouse = mouse;
 
-    // Add touch support for mobile devices
-    const canvas = render.canvas;
-    const handleTouch = (e) => {
-      e.preventDefault(); // Prevent default touch behavior
-      const touch = e.touches[0] || e.changedTouches[0];
-      if (touch) {
-        const rect = canvas.getBoundingClientRect();
-        // Update Matter.js mouse position to match touch
-        mouse.position.x = touch.clientX - rect.left;
-        mouse.position.y = touch.clientY - rect.top;
+    // --- Event Listeners ---
+    Matter.Events.on(mouseConstraint, "mousedown", (event) => {
+      let clickedBody = event.source.body;
+      if (!clickedBody) return;
 
-        // Simulate mouse button state for touch
-        if (e.type === "touchstart") {
-          mouse.button = 0; // Left button pressed
-          mouseConstraint.mouse.button = 0;
-        } else if (e.type === "touchend") {
-          mouse.button = -1; // No button pressed
-          mouseConstraint.mouse.button = -1;
+      const clickedBead = matterInstance.current?.allBeads.find(
+        (b) => b.id === clickedBody.id
+      );
+      if (clickedBead && clickedBead.prayerIndex !== undefined) {
+        console.log(
+          `🎯 Bead clicked: #${clickedBead.beadNumber}, Index ${clickedBead.prayerIndex}, Prayer ${clickedBead.prayerId}`
+        );
+
+        // Call the onBeadClick callback
+        if (onBeadClick) {
+          onBeadClick(clickedBead.prayerIndex, clickedBead.prayerId);
         }
       }
-    };
-
-    canvas.addEventListener("touchstart", handleTouch, { passive: false });
-    canvas.addEventListener("touchmove", handleTouch, { passive: false });
-    canvas.addEventListener("touchend", handleTouch, { passive: false });
-    console.log("✅ InteractiveRosary: Touch controls added");
-
-    // Start the physics simulation and rendering loop
-    Matter.Engine.run(engine);
-    Matter.Render.run(render);
-    console.log("✅ InteractiveRosary: Engine and renderer started");
-
-    setIsInitialized(true);
-    console.log("🎉 InteractiveRosary: Initialization complete!");
-
-    // Cleanup function to prevent memory leaks
-    return () => {
-      console.log("🧹 InteractiveRosary: Cleaning up physics engine...");
-      canvas.removeEventListener("touchstart", handleTouch);
-      canvas.removeEventListener("touchmove", handleTouch);
-      canvas.removeEventListener("touchend", handleTouch);
-      Matter.Render.stop(render);
-      Matter.Engine.clear(engine);
-      render.canvas.remove();
-      render.textures = {};
-    };
-  }, [createRosaryStructure]);
-
-  /**
-   * Create cross structure with 6 squares arranged in traditional cross pattern
-   *
-   * Pattern:
-   *   x
-   *  xxx
-   *   x
-   *   x
-   *
-   * @param {number} centerX - X coordinate for cross center
-   * @param {number} centerY - Y coordinate for cross center
-   * @param {object} engine - Matter.js physics engine
-   * @param {object} colors - Color scheme object
-   * @returns {array} Array of cross body elements
-   */
-  const createCross = (centerX, centerY, engine, colors, rosarySequence) => {
-    const crossBodies = [];
-    const squareSize = 12;
-    const spacing = 2;
-
-    // Cross pattern:
-    //   x
-    //  xxx
-    //   x
-    //   x
-
-    // Top square
-    crossBodies.push(
-      Matter.Bodies.rectangle(
-        centerX,
-        centerY - squareSize - spacing,
-        squareSize,
-        squareSize,
-        {
-          render: { fillStyle: colors.cross, strokeStyle: colors.chain },
-          isStatic: false,
-          density: 0.001,
-          label: "cross_top",
-          prayerIndex: 0,
-          prayerId: rosarySequence[0] || "unknown",
-        }
-      )
-    );
-
-    // Middle horizontal row
-    crossBodies.push(
-      Matter.Bodies.rectangle(
-        centerX - squareSize - spacing,
-        centerY,
-        squareSize,
-        squareSize,
-        {
-          render: { fillStyle: colors.cross, strokeStyle: colors.chain },
-          isStatic: false,
-          density: 0.001,
-          label: "cross_left",
-          prayerIndex: 1,
-          prayerId: rosarySequence[1] || "unknown",
-        }
-      )
-    );
-    crossBodies.push(
-      Matter.Bodies.rectangle(centerX, centerY, squareSize, squareSize, {
-        render: { fillStyle: colors.cross, strokeStyle: colors.chain },
-        isStatic: false,
-        density: 0.001,
-        label: "cross_center",
-        prayerIndex: 2,
-        prayerId: rosarySequence[2] || "unknown",
-      })
-    );
-    crossBodies.push(
-      Matter.Bodies.rectangle(
-        centerX + squareSize + spacing,
-        centerY,
-        squareSize,
-        squareSize,
-        {
-          render: { fillStyle: colors.cross, strokeStyle: colors.chain },
-          isStatic: false,
-          density: 0.001,
-          label: "cross_right",
-          prayerIndex: 3,
-          prayerId: rosarySequence[3] || "unknown",
-        }
-      )
-    );
-
-    // Bottom squares
-    crossBodies.push(
-      Matter.Bodies.rectangle(
-        centerX,
-        centerY + squareSize + spacing,
-        squareSize,
-        squareSize,
-        {
-          render: { fillStyle: colors.cross, strokeStyle: colors.chain },
-          isStatic: false,
-          density: 0.001,
-          label: "cross_bottom1",
-          prayerIndex: 4,
-          prayerId: rosarySequence[4] || "unknown",
-        }
-      )
-    );
-    crossBodies.push(
-      Matter.Bodies.rectangle(
-        centerX,
-        centerY + 2 * (squareSize + spacing),
-        squareSize,
-        squareSize,
-        {
-          render: { fillStyle: colors.cross, strokeStyle: colors.chain },
-          isStatic: false,
-          density: 0.001,
-          label: "cross_bottom2",
-          prayerIndex: 5,
-          prayerId: rosarySequence[5] || "unknown",
-        }
-      )
-    );
-
-    // Connect cross squares with constraints
-    const crossConstraints = [];
-    for (let i = 0; i < crossBodies.length - 1; i++) {
-      const constraint = Matter.Constraint.create({
-        bodyA: crossBodies[i],
-        bodyB: crossBodies[i + 1],
-        length: squareSize + spacing,
-        stiffness: 0.9,
-        render: {
-          visible: true,
-          strokeStyle: colors.chain,
-          lineWidth: 2,
-        },
-      });
-      crossConstraints.push(constraint);
-    }
-
-    // Add cross constraints to world
-    crossConstraints.forEach((constraint) => {
-      Matter.World.add(engine.world, constraint);
     });
 
-    return crossBodies;
-  };
+    // --- Render bead numbers ---
+    Matter.Events.on(render, "afterRender", () => {
+      const context = render.context;
+      context.fillStyle = "white";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
 
-  /**
-   * Calculate positions for decades in a circular pattern around the center
-   * Creates 5 decades of 10 beads each, arranged in a circle
-   *
-   * @param {number} centerX - X coordinate for center of rosary
-   * @param {number} centerY - Y coordinate for center of rosary
-   * @returns {array} Array of decade arrays, each containing position objects
-   */
-  const calculateDecadePositions = (centerX, centerY) => {
-    const decades = [];
-    const radius = 120;
-    const beadsPerDecade = 10;
-    const decadesCount = 5;
+      matterInstance.current?.allBeads.forEach((bead) => {
+        // Handle composite cross body separately
+        if (bead.isCrossComposite) {
+          bead.crossParts.forEach((part) => {
+            const numberToDisplay = part.crossNumber;
+            if (numberToDisplay) {
+              context.font = `bold ${crossBeadSize * 0.8}px Arial`;
+              context.fillText(
+                `${numberToDisplay}`,
+                part.position.x,
+                part.position.y
+              );
+            }
 
-    for (let decadeIndex = 0; decadeIndex < decadesCount; decadeIndex++) {
-      const decade = [];
-      const startAngle = (decadeIndex * 2 * Math.PI) / decadesCount;
-      const angleStep = (2 * Math.PI) / decadesCount / beadsPerDecade;
-
-      for (let beadIndex = 0; beadIndex < beadsPerDecade; beadIndex++) {
-        const angle = startAngle + beadIndex * angleStep;
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-        decade.push({ x, y });
-      }
-      decades.push(decade);
-    }
-
-    return decades;
-  };
-
-  /**
-   * Create chains connecting beads with spring constraints
-   * This function creates the realistic chain effect by connecting:
-   * - Center bead to first decade
-   * - Beads within each decade
-   * - Last bead of each decade back to center
-   *
-   * @param {array} beads - Array of all bead physics bodies
-   * @param {array} constraints - Array to store constraint references
-   * @param {object} engine - Matter.js physics engine
-   * @param {object} colors - Color scheme object
-   */
-  const createBeadChains = (beads, constraints, engine, colors) => {
-    // Wait a frame to ensure all bodies are properly created
-    setTimeout(() => {
-      // Connect center bead to first decade
-      if (beads.length > 7 && centerBeadRef.current) {
-        const centerToFirst = Matter.Constraint.create({
-          bodyA: centerBeadRef.current,
-          bodyB: beads[7], // First bead of first decade
-          length: 30,
-          stiffness: 0.8,
-          render: {
-            visible: true,
-            strokeStyle: colors.chain,
-            lineWidth: 2,
-          },
-        });
-        Matter.World.add(engine.world, centerToFirst);
-        constraints.push(centerToFirst);
-      }
-
-      // Connect beads within decades
-      let beadIndex = 7; // Start after cross and center bead
-      const beadsPerDecade = 10;
-
-      for (let decade = 0; decade < 5; decade++) {
-        for (let i = 0; i < beadsPerDecade - 1; i++) {
-          if (
-            beadIndex + 1 < beads.length &&
-            beads[beadIndex] &&
-            beads[beadIndex + 1]
-          ) {
-            const constraint = Matter.Constraint.create({
-              bodyA: beads[beadIndex],
-              bodyB: beads[beadIndex + 1],
-              length: 15,
-              stiffness: 0.8,
-              render: {
-                visible: true,
-                strokeStyle: colors.chain,
-                lineWidth: 2,
-              },
-            });
-            Matter.World.add(engine.world, constraint);
-            constraints.push(constraint);
-          }
-          beadIndex++;
-        }
-        beadIndex++; // Skip to next decade
-      }
-
-      // Connect last bead of each decade to center
-      beadIndex = 7 + beadsPerDecade - 1;
-      for (let decade = 0; decade < 5; decade++) {
-        if (
-          beadIndex < beads.length &&
-          beads[beadIndex] &&
-          centerBeadRef.current
-        ) {
-          const constraint = Matter.Constraint.create({
-            bodyA: beads[beadIndex],
-            bodyB: centerBeadRef.current,
-            length: 30,
-            stiffness: 0.8,
-            render: {
-              visible: true,
-              strokeStyle: colors.chain,
-              lineWidth: 2,
-            },
+            // Highlight if this cross part's prayer is current
+            if (part.prayerIndex === currentPrayerIndexRef.current) {
+              context.strokeStyle = colors.highlight;
+              context.lineWidth = 3;
+              context.beginPath();
+              context.rect(
+                part.position.x - crossBeadSize / 2,
+                part.position.y - crossBeadSize / 2,
+                crossBeadSize,
+                crossBeadSize
+              );
+              context.stroke();
+            }
           });
-          Matter.World.add(engine.world, constraint);
-          constraints.push(constraint);
+          return; // Skip normal rendering for composite body
         }
-        beadIndex += beadsPerDecade;
-      }
-    }, 0);
-  };
 
-  /**
-   * Update bead highlighting when current prayer changes
-   * This effect runs whenever the current prayer index changes and updates
-   * the visual highlighting of the current bead in gold
-   */
-  useEffect(() => {
-    if (!isInitialized || !engineRef.current) return;
-    const colors = getMysteryColors(currentMystery);
+        // Determine bead size for rendering
+        let size = beadSize;
+        if (bead.id === centerBead.id) size = centerBeadSize;
 
-    beadsRef.current.forEach((bead, index) => {
-      if (bead.prayerIndex !== undefined) {
-        const isCurrent = bead.prayerIndex === currentPrayerIndex;
-        Matter.Body.set(bead, {
-          render: {
-            fillStyle: isCurrent ? colors.highlight : colors.beads,
-            strokeStyle: colors.chain,
-            lineWidth: 1,
-          },
-        });
-      }
+        // Draw bead number
+        const numberToDisplay = bead.beadNumber;
+        if (numberToDisplay) {
+          context.font = `bold ${size * 0.8}px Arial`;
+          context.fillText(
+            `${numberToDisplay}`,
+            bead.position.x,
+            bead.position.y
+          );
+        }
+
+        // Highlight current prayer bead
+        if (bead.prayerIndex === currentPrayerIndexRef.current) {
+          context.strokeStyle = colors.highlight;
+          context.lineWidth = 3;
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size + 2,
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+        }
+      });
     });
-  }, [currentPrayerIndex, isInitialized, currentMystery]);
 
-  /**
-   * Recreate rosary when mystery changes
-   * This effect runs when the mystery type changes and rebuilds the entire
-   * rosary structure with the new mystery's color scheme and prayer sequence
-   */
-  useEffect(() => {
-    if (!isInitialized || !engineRef.current) return;
-    createRosaryStructure(engineRef.current);
-  }, [currentMystery, isInitialized, createRosaryStructure]);
+    // --- Runner ---
+    const runner = Matter.Runner.create();
+    Matter.Render.run(render);
+    Matter.Runner.run(runner, engine);
+
+    // Store instance for cleanup
+    matterInstance.current = {
+      render,
+      engine,
+      runner,
+      world,
+      mouseConstraint,
+      allBeads,
+      centerBead,
+    };
+
+    console.log("✅ InteractiveRosary: Initialization complete!");
+
+    // --- Cleanup on component unmount ---
+    return () => {
+      console.log("🧹 InteractiveRosary: Component unmounting");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once! Do NOT add dependencies or it will break.
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div
+      ref={sceneRef}
       className={`interactive-rosary ${className}`}
       style={{
-        minHeight: "400px",
-        background: "transparent",
-        borderRadius: "10px",
-        margin: "10px",
+        width: "100%",
+        height: "100%",
         position: "absolute",
-        top: "20%",
-        left: "20%",
-        right: "20%",
-        bottom: "20%",
-        zIndex: 1,
+        top: 0,
+        left: 0,
+        pointerEvents: "all",
       }}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{
-          width: "100%",
-          height: "100%",
-          cursor: "grab",
-          borderRadius: "8px",
-        }}
-      />
-    </div>
+    />
   );
 };
 

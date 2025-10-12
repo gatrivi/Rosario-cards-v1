@@ -10,6 +10,7 @@ import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
 import ProgressBar from "./components/common/ProgressBar";
 import LeftHandedToggle from "./components/common/LeftHandedToggle";
+import RosaryToggle from "./components/common/RosaryToggle";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
   const [prayer, setPrayer] = useState(
@@ -139,15 +140,18 @@ function App() {
         onToggleCounters={() => setShowCounters(!showCounters)}
       />
 
-      {/* Left-handed mode toggle */}
+      {/* Left-handed mode toggle and Rosary toggle */}
       <div
         style={{
           position: "absolute",
           top: "60px",
           right: "20px",
           zIndex: 10,
+          display: "flex",
+          gap: "10px",
         }}
       >
+        <RosaryToggle />
         <LeftHandedToggle />
       </div>
 
