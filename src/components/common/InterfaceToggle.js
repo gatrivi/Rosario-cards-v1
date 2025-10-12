@@ -25,6 +25,10 @@ const InterfaceToggle = ({
   onToggleCounters,
   leftHandedMode = false,
   setLeftHandedMode = () => {},
+  focusMode = false,
+  onToggleFocusMode = () => {},
+  onEnterFocusMode = () => {},
+  onExitFocusMode = () => {},
   className = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -279,6 +283,67 @@ const InterfaceToggle = ({
               />
               <span style={{ fontWeight: "bold", fontSize: "14px" }}>👈 Left-Handed Mode</span>
             </label>
+
+            {/* Focus Mode Controls */}
+            <div
+              style={{
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+              }}
+            >
+              <div style={{ 
+                fontWeight: "bold", 
+                fontSize: "14px", 
+                marginBottom: "8px",
+                color: "var(--catholic-gold)"
+              }}>
+                🎯 Focus Mode
+              </div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                <button
+                  onClick={onToggleFocusMode}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: focusMode ? "2px solid var(--catholic-gold)" : "1px solid var(--glass-border)",
+                    background: focusMode 
+                      ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-red))"
+                      : "var(--glass-bg)",
+                    color: focusMode ? "var(--catholic-white)" : "var(--text-color)",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px"
+                  }}
+                >
+                  {focusMode ? "📖 Show Text" : "🎯 Focus Mode"}
+                </button>
+                <button
+                  onClick={focusMode ? onExitFocusMode : onEnterFocusMode}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--glass-border)",
+                    background: "var(--glass-bg)",
+                    color: "var(--text-color)",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px"
+                  }}
+                >
+                  {focusMode ? "❌ Exit" : "▶️ Enter"}
+                </button>
+              </div>
+            </div>
 
             {/* Font Size Control */}
             <div

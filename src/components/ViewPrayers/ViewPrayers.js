@@ -34,6 +34,8 @@ const ViewPrayers = forwardRef(
       currentPrayerIndex,
       prayers,
       showCounters = true,
+      focusMode = false,
+      onToggleFocusMode = () => {},
     },
     ref
   ) => {
@@ -220,6 +222,122 @@ const ViewPrayers = forwardRef(
       baseImageUrl = AveMariaD;
     }
     const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
+    
+    // Focus mode - show only image with discreet counter
+    if (focusMode) {
+      return (
+        <div
+          className="stained-glass-prayer-container focus-mode"
+          style={{
+            position: "relative",
+            width: "100vw",
+            height: "100vh",
+            overflow: "hidden",
+          }}
+        >
+          {/* Full-screen background image */}
+          <div
+            className="page-right"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              zIndex: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              className="prayer-image"
+              src={finalImageUrl}
+              alt={`${prayer.name} illustration`}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                filter: "brightness(0.8) contrast(1.1)",
+              }}
+            />
+          </div>
+
+          {/* Stained glass overlay */}
+          <div
+            className="stained-glass-overlay"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(255, 255, 255, 0.03)",
+              backdropFilter: "blur(0.5px)",
+              border: "3px solid rgba(212, 175, 55, 0.2)",
+              borderRadius: "20px",
+              boxShadow: "inset 0 0 30px rgba(212, 175, 55, 0.05)",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Discreet rosary counter */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "8px",
+              background: "rgba(0, 0, 0, 0.3)",
+              backdropFilter: "blur(8px)",
+              borderRadius: "20px",
+              padding: "16px 24px",
+              border: "2px solid rgba(212, 175, 55, 0.4)",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onClick={onToggleFocusMode}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translate(-50%, -50%) scale(1.05)";
+              e.target.style.background = "rgba(0, 0, 0, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "translate(-50%, -50%) scale(1)";
+              e.target.style.background = "rgba(0, 0, 0, 0.3)";
+            }}
+          >
+            <div style={{ fontSize: "48px", lineHeight: 1 }}>📿</div>
+            <div style={{ 
+              fontSize: "24px", 
+              fontWeight: "bold", 
+              color: "#d4af37",
+              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
+              fontFamily: "Cloister Black, serif"
+            }}>
+              {hailMaryCount}
+            </div>
+            <div style={{ 
+              fontSize: "12px", 
+              color: "#d4af37",
+              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
+              opacity: 0.8
+            }}>
+              Tap to show text
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Normal mode - show text and image
     return (
       <div
         className="stained-glass-prayer-container"
@@ -300,7 +418,21 @@ const ViewPrayers = forwardRef(
             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
             zIndex: 2,
             pointerEvents: "auto",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
           }}
+          onDoubleClick={onToggleFocusMode}
+          onTouchEnd={(e) => {
+            // Handle double tap on mobile
+            if (e.touches.length === 0) {
+              const now = Date.now();
+              if (now - (e.target.lastTouchEnd || 0) < 300) {
+                onToggleFocusMode();
+              }
+              e.target.lastTouchEnd = now;
+            }
+          }}
+          title="Double-tap to enter focus mode"
         >
           {showCounters && (
             <div

@@ -26,6 +26,9 @@ function App() {
   // Interface visibility states for clean prayer mode
   const [showRosary, setShowRosary] = useState(true);
   const [showCounters, setShowCounters] = useState(true);
+  
+  // Focus mode state - hides text and shows only rosary counter
+  const [focusMode, setFocusMode] = useState(false);
 
   // Left-handed mode state - persisted in localStorage via LeftHandedToggle
   const [leftHandedMode, setLeftHandedMode] = useState(() => {
@@ -100,6 +103,26 @@ function App() {
     return () => window.removeEventListener("themeChanged", handleThemeChange);
   }, [prayerImg]);
 
+  // Keyboard shortcuts for focus mode
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // F key to toggle focus mode
+      if (event.key === 'f' || event.key === 'F') {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          toggleFocusMode();
+        }
+      }
+      // Escape key to exit focus mode
+      if (event.key === 'Escape' && focusMode) {
+        exitFocusMode();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [focusMode, toggleFocusMode, exitFocusMode]);
+
   const handleCountClick = () => {
     if (count < 10) {
       setCount(count + 1);
@@ -108,6 +131,19 @@ function App() {
 
   const handleResetClick = () => {
     setCount(0);
+  };
+
+  // Focus mode handlers
+  const toggleFocusMode = () => {
+    setFocusMode(!focusMode);
+  };
+
+  const enterFocusMode = () => {
+    setFocusMode(true);
+  };
+
+  const exitFocusMode = () => {
+    setFocusMode(false);
   };
 
   // Handle bead click from rosary
@@ -137,6 +173,10 @@ function App() {
           onToggleCounters={() => setShowCounters(!showCounters)}
           leftHandedMode={leftHandedMode}
           setLeftHandedMode={setLeftHandedMode}
+          focusMode={focusMode}
+          onToggleFocusMode={toggleFocusMode}
+          onEnterFocusMode={enterFocusMode}
+          onExitFocusMode={exitFocusMode}
         />
       </div>
 
@@ -181,6 +221,8 @@ function App() {
           currentPrayerIndex={currentPrayerIndex}
           prayers={RosarioPrayerBook}
           showCounters={showCounters}
+          focusMode={focusMode}
+          onToggleFocusMode={toggleFocusMode}
         />
       </div>
 
