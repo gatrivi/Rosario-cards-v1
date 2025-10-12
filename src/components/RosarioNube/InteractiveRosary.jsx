@@ -153,18 +153,18 @@ const InteractiveRosary = ({
 
     // --- Helper function for bead options ---
     const beadOptions = (color, extraOptions = {}) => ({
-      restitution: 0.1, // Reduced from 0.6 - much less bouncy
-      friction: 0.5, // Increased from 0.3
-      frictionAir: 0.08, // Increased from 0.02 - more air resistance/damping
-      density: 0.001,
+      restitution: 0.05, // Glass beads - minimal bounce
+      friction: 0.8, // High friction - glass on countertop
+      frictionAir: 0.08, // Moderate air resistance
+      density: 0.005, // Heavier beads - more mass
       render: { fillStyle: color, strokeStyle: colors.chain, lineWidth: 1 },
       ...extraOptions,
     });
 
     // --- Helper function for constraint/spring options ---
-    const springOptions = (length, stiffness = 0.2) => ({
-      stiffness: stiffness, // Reduced default from 0.5 to 0.2 - softer springs
-      damping: 0.9, // Increased from 0.5 - much more damping
+    const springOptions = (length, stiffness = 0.8) => ({
+      stiffness: stiffness, // Firm strings - less stretching
+      damping: 0.95, // High damping - absorb oscillations, prevent dancing
       length: length,
       render: { strokeStyle: "#555", lineWidth: 0.5, visible: true }, // Thin dark string
     });
@@ -188,19 +188,22 @@ const InteractiveRosary = ({
     const chainSegmentLength = 15;
 
     // --- Create Center Bead (Heart bead at top of loop) ---
+    // This is the Glory Be (G) after the opening 3 Hail Marys
     const centerBead = Matter.Bodies.circle(
       centerX,
       centerY - radius,
       centerBeadSize,
       beadOptions(colors.beads, {
-        beadNumber: 7, // Bead numbering starts after cross + tail
-        prayerIndex: 6,
-        prayerId: rosarySequence[6] || "unknown",
+        beadNumber: 7, // Display number
+        prayerIndex: 7, // Index 7 = Glory Be (G)
+        prayerId: rosarySequence[7] || "unknown",
       })
     );
     allBeads.push(centerBead);
 
     // --- Create Main Loop Beads (50 beads for 5 decades) ---
+    // Each decade has 10 Hail Marys (A) on physical beads
+    // Prayer mapping: Decade 1 (11-20), Decade 2 (25-34), Decade 3 (39-48), Decade 4 (53-62), Decade 5 (67-76)
     const numMainBeads = 50;
     const mainLoopBeads = [];
     const numLoopPoints = numMainBeads + 1; // +1 because heart bead closes the loop
@@ -210,15 +213,22 @@ const InteractiveRosary = ({
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
 
-      const beadNumber = 8 + i; // Start at 8 (after cross=1-6, tail=7)
-      const prayerIndex = 7 + i; // Prayer index in rosary sequence
+      // Calculate which decade (0-4) and position within decade (0-9)
+      const decadeNum = Math.floor(i / 10);
+      const posInDecade = i % 10;
+      
+      // Each decade in prayer array: F(skip), M(skip), P(skip), A×10
+      // Decade starts at: 8 + (decadeNum * 14)
+      // Hail Marys start at: decadeStart + 3 (skip F, M, P)
+      const decadeStart = 8 + (decadeNum * 14);
+      const prayerIndex = decadeStart + 3 + posInDecade; // +3 to skip F, Mystery, P
 
       const bead = Matter.Bodies.circle(
         x,
         y,
         beadSize,
         beadOptions(colors.beads, {
-          beadNumber: beadNumber,
+          beadNumber: 8 + i, // Display number 8-57
           prayerIndex: prayerIndex,
           prayerId: rosarySequence[prayerIndex] || "unknown",
         })
@@ -285,6 +295,8 @@ const InteractiveRosary = ({
     );
 
     // --- Create Tail Beads (3 beads connecting heart to cross) ---
+    // From center bead down: C (Credo), P (Our Father), A (Hail Mary)
+    // Prayer indices: 2, 3, 4
     const numTailBeads = 3;
     const tailBeads = [];
     let lastY = centerBead.position.y;
@@ -292,8 +304,8 @@ const InteractiveRosary = ({
     for (let i = 0; i < numTailBeads; i++) {
       const x = centerBead.position.x;
       lastY += chainSegmentLength * 1.2;
-      const beadNumber = 6 - i; // Tail beads are numbered 6, 5, 4 (counting down toward cross)
-      const prayerIndex = 5 - i; // Prayer indices 5, 4, 3
+      const beadNumber = 6 - i; // Display numbers: 6, 5, 4 (counting down toward cross)
+      const prayerIndex = 2 + i; // Prayer indices: 2 (C), 3 (P), 4 (A)
 
       const bead = Matter.Bodies.circle(
         x,
@@ -362,9 +374,10 @@ const InteractiveRosary = ({
 
     const crossBody = Matter.Body.create({
       parts: crossParts,
-      friction: 0.5,
-      frictionAir: 0.05,
-      restitution: 0.8,
+      friction: 0.8, // Match bead friction
+      frictionAir: 0.08, // Match bead air resistance
+      restitution: 0.05, // Minimal bounce like glass
+      density: 0.008, // Heavier than beads - iron cross
       isCrossComposite: true, // Custom flag
       crossParts: crossParts, // Store reference for rendering
     });
