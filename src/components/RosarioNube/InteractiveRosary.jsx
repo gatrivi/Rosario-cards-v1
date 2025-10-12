@@ -373,9 +373,6 @@ const InteractiveRosary = ({
     crossPositions.forEach((pos) => {
       const part = Matter.Bodies.rectangle(pos.x, pos.y, cbs, cbs, {
         crossNumber: pos.num,
-        beadNumber: pos.num,
-        prayerIndex: 0, // Entire cross treated as single prayer (index 0)
-        prayerId: rosarySequence[0] || "unknown", // First prayer in sequence
         render: { fillStyle: colors.cross },
       });
       crossParts.push(part);
@@ -383,10 +380,9 @@ const InteractiveRosary = ({
 
     const crossBody = Matter.Body.create({
       parts: crossParts,
-      friction: 0.1, // Demo default
-      frictionAir: 0.01, // Demo default
-      restitution: 0.8, // Demo default
-      density: 0.001, // Demo default
+      friction: 0.5,
+      frictionAir: 0.05,
+      restitution: 0.8,
       isCrossComposite: true, // Custom flag
       crossParts: crossParts, // Store reference for rendering
     });
@@ -466,8 +462,8 @@ const InteractiveRosary = ({
               );
             }
 
-            // Highlight if this cross part's prayer is current
-            if (part.prayerIndex === currentPrayerIndexRef.current) {
+            // Highlight entire cross if prayer index 0 is current
+            if (currentPrayerIndexRef.current === 0) {
               context.strokeStyle = colors.highlight;
               context.lineWidth = 3;
               context.beginPath();
