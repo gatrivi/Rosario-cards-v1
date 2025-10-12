@@ -380,6 +380,9 @@ const InteractiveRosary = ({
       restitution: 0.8,
       isCrossComposite: true, // Custom flag
       crossParts: crossParts, // Store reference for rendering
+      beadNumber: 0, // Entire cross is bead number 0
+      prayerIndex: 0, // Links to first prayer (Sign of the Cross)
+      prayerId: rosarySequence[0] || "unknown", // First prayer in sequence
     });
     allBeads.push(crossBody);
 
@@ -454,6 +457,20 @@ const InteractiveRosary = ({
                 part.position.x,
                 part.position.y
               );
+            }
+
+            // Highlight entire cross if prayer index 0 is current
+            if (currentPrayerIndexRef.current === 0) {
+              context.strokeStyle = colors.highlight;
+              context.lineWidth = 3;
+              context.beginPath();
+              context.rect(
+                part.position.x - crossBeadSize / 2,
+                part.position.y - crossBeadSize / 2,
+                crossBeadSize,
+                crossBeadSize
+              );
+              context.stroke();
             }
           });
           return; // Skip normal rendering for composite body
