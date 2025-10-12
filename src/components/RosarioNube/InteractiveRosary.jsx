@@ -167,7 +167,7 @@ const InteractiveRosary = ({
       stiffness: stiffness,
       damping: 0.5,
       length: length,
-      render: { strokeStyle: '#94a3b8', lineWidth: 2, visible: true },
+      render: { strokeStyle: "#94a3b8", lineWidth: 2, visible: true },
     });
 
     // --- Helper function to calculate pole connection offsets ---
@@ -218,6 +218,10 @@ const InteractiveRosary = ({
       const decadeNum = Math.floor(i / 10);
       const posInDecade = i % 10;
 
+      // Every 10th bead is LARGE (decade marker for Our Father)
+      const isDecadeBead = (i + 1) % 10 === 0;
+      const currentBeadSize = isDecadeBead ? centerBeadSize : beadSize;
+
       // Each decade in prayer array: F(skip), M(skip), P(skip), A×10
       // Decade starts at: 8 + (decadeNum * 14)
       // Hail Marys start at: decadeStart + 3 (skip F, M, P)
@@ -227,7 +231,7 @@ const InteractiveRosary = ({
       const bead = Matter.Bodies.circle(
         x,
         y,
-        beadSize,
+        currentBeadSize, // Variable size: large for decade markers
         beadOptions(colors.beads, {
           beadNumber: 8 + i, // Display number 8-57
           prayerIndex: prayerIndex,
@@ -308,10 +312,14 @@ const InteractiveRosary = ({
       const beadNumber = 6 - i; // Display numbers: 6, 5, 4 (counting down toward cross)
       const prayerIndex = 2 + i; // Prayer indices: 2 (C), 3 (P), 4 (A)
 
+      // First bead is LARGE (Credo), rest are small
+      const isFirstBead = i === 0;
+      const currentBeadSize = isFirstBead ? centerBeadSize : beadSize;
+
       const bead = Matter.Bodies.circle(
         x,
         lastY,
-        beadSize,
+        currentBeadSize, // Variable size: first bead larger
         beadOptions(colors.beads, {
           beadNumber: beadNumber,
           prayerIndex: prayerIndex,
@@ -478,6 +486,13 @@ const InteractiveRosary = ({
         // Determine bead size for rendering
         let size = beadSize;
         if (bead.id === centerBead.id) size = centerBeadSize;
+        // Check if it's a decade bead (every 10th bead in main loop)
+        if (bead.beadNumber && bead.beadNumber >= 8) {
+          const loopPosition = bead.beadNumber - 7; // 8 -> 1, 18 -> 11, etc.
+          if (loopPosition % 10 === 0) size = centerBeadSize;
+        }
+        // Check if it's first tail bead (bead number 6)
+        if (bead.beadNumber === 6) size = centerBeadSize;
 
         // Draw bead number
         const numberToDisplay = bead.beadNumber;

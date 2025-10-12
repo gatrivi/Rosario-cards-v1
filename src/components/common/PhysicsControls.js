@@ -184,25 +184,25 @@ const PhysicsControls = ({ onPhysicsChange }) => {
               String Properties
             </h4>
 
-             <label
-               style={{
-                 color: "white",
-                 display: "block",
-                 marginBottom: "8px",
-                 fontSize: "12px",
-               }}
-             >
-               String Stiffness: <strong>{physics.stiffness.toFixed(2)}</strong>
-               <input
-                 type="range"
-                 min="0"
-                 max="0.2"
-                 step="0.01"
-                 value={physics.stiffness}
-                 onChange={(e) => handleChange("stiffness", e.target.value)}
-                 style={{ width: "100%", marginTop: "4px" }}
-               />
-             </label>
+            <label
+              style={{
+                color: "white",
+                display: "block",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              String Stiffness: <strong>{physics.stiffness.toFixed(2)}</strong>
+              <input
+                type="range"
+                min="0"
+                max="0.2"
+                step="0.01"
+                value={physics.stiffness}
+                onChange={(e) => handleChange("stiffness", e.target.value)}
+                style={{ width: "100%", marginTop: "4px" }}
+              />
+            </label>
 
             <label
               style={{
