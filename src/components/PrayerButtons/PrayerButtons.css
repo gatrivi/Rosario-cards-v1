@@ -1,9 +1,9 @@
-/* Segmented Bar Layout - Stained Glass Theme */
+/* Segmented Bar Layout - Two Row Stained Glass Theme */
 .segmented-bar {
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 80px;
+  height: 88px;
   background: var(--glass-bg);
   backdrop-filter: blur(15px);
   border-top: 4px solid var(--glass-border);
@@ -11,8 +11,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 0 12px;
+  justify-content: space-between;
+  padding: 8px 12px;
   box-sizing: border-box;
   z-index: 200;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(212, 175, 55, 0.1);
@@ -22,11 +22,33 @@
   display: flex;
   width: 100%;
   height: 100%;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Progress bar row */
+.progress-row {
+  display: flex;
+  width: 100%;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Navigation buttons row */
+.navigation-row {
+  display: flex;
+  width: 100%;
+  height: 44px;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
 }
 
 .segment-btn {
-  flex: 1;
-  border: 3px solid var(--glass-border);
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--glass-border);
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
   color: var(--text-color);
@@ -35,16 +57,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60px;
-  font-size: 22px;
+  font-size: 18px;
   transition: all 0.3s ease;
   position: relative;
-  border-radius: 15px;
-  margin: 3px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
 }
 
 .segment-btn::before {
@@ -171,6 +192,37 @@
   transform: scale(1.02);
 }
 
+/* Integrated Progress Bar */
+.integrated-progress {
+  width: 100%;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--catholic-gold), var(--catholic-red), var(--catholic-purple));
+  border-radius: 7px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--catholic-gold);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+
 /* Preview actual oración - Stained Glass */
 .preview {
   position: absolute;
@@ -226,20 +278,37 @@
 /* Mobile responsive improvements - Stained Glass */
 @media (max-width: 768px) {
   .segmented-bar {
-    height: 85px;
-    padding: 0 15px;
+    height: 88px;
+    padding: 6px 10px;
     border-radius: 20px 20px 0 0;
   }
 
   .segment-btn {
-    font-size: 20px;
-    min-height: 65px;
-    margin: 4px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .navigation-row {
+    height: 40px;
+    gap: 3px;
+  }
+
+  .progress-row {
+    height: 18px;
+  }
+
+  .integrated-progress {
+    height: 14px;
+  }
+
+  .progress-text {
+    font-size: 9px;
   }
 
   .sub-bar {
     height: 70px;
-    bottom: 85px;
+    bottom: 88px;
     padding: 12px;
     left: 15px;
     right: 15px;
@@ -265,20 +334,37 @@
 
 @media (max-width: 480px) {
   .segmented-bar {
-    height: 80px;
-    padding: 0 10px;
+    height: 88px;
+    padding: 4px 8px;
     border-radius: 18px 18px 0 0;
   }
 
   .segment-btn {
-    font-size: 18px;
-    min-height: 60px;
-    margin: 3px;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .navigation-row {
+    height: 36px;
+    gap: 2px;
+  }
+
+  .progress-row {
+    height: 16px;
+  }
+
+  .integrated-progress {
+    height: 12px;
+  }
+
+  .progress-text {
+    font-size: 8px;
   }
 
   .sub-bar {
     height: 65px;
-    bottom: 80px;
+    bottom: 88px;
     padding: 10px;
     left: 10px;
     right: 10px;

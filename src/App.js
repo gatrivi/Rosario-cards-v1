@@ -184,13 +184,6 @@ function App() {
         />
       </div>
 
-      {/* Progress Bar */}
-      <div style={{ position: "absolute", bottom: "80px", left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
-        <ProgressBar
-          currentIndex={currentPrayerIndex}
-          totalPrayers={getRosarySequence().length}
-        />
-      </div>
 
       {/* Prayer Buttons with stained glass styling */}
       <div style={{ position: "absolute", bottom: "10px", left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>

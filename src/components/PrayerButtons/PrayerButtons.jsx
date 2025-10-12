@@ -259,26 +259,42 @@ function PrayerButtons({
   const segments = leftHandedMode
     ? [...navigationSegments].reverse()
     : navigationSegments;
+  // Calculate progress
+  const rosaryArray = getRosarySequence();
+  const totalPrayers = rosaryArray.length;
+  const progress = totalPrayers > 0 ? ((currentPrayerIndex + 1) / totalPrayers) * 100 : 0;
+
   return (
     <div className="segmented-bar">
       <div className="segments-container">
-        {segments.map(({ key, icon, onClick, disabled }) => (
-          <button
-            key={key}
-            onClick={onClick}
-            className={`segment-btn ${activeSection === key ? "active" : ""} ${
-              disabled ? "disabled" : ""
-            }`}
-            disabled={disabled}
-          >
-            <span className="icon">{icon}</span>
-            {activeSection === key && (
-              <span className="label">
-                {getSectionItems(key)?.[cycleIndex]?.title?.slice(0, 3) || ""}
-              </span>
-            )}
-          </button>
-        ))}
+        {/* Progress bar row */}
+        <div className="progress-row">
+          <div className="integrated-progress">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${progress}%` }}
+            />
+            <div className="progress-text">
+              {currentPrayerIndex + 1}/{totalPrayers} ({Math.round(progress)}%)
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation buttons row */}
+        <div className="navigation-row">
+          {segments.map(({ key, icon, onClick, disabled }) => (
+            <button
+              key={key}
+              onClick={onClick}
+              className={`segment-btn ${activeSection === key ? "active" : ""} ${
+                disabled ? "disabled" : ""
+              }`}
+              disabled={disabled}
+            >
+              <span className="icon">{icon}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Sub-bar para misterios específicos */}
