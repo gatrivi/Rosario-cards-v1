@@ -3,26 +3,32 @@ import React, { useState } from "react";
 const PhysicsControls = ({ onPhysicsChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Ultra-stiff test defaults (user hypothesis) + working friction values
+  // Safe defaults + working friction values
   const DEFAULTS = {
     restitution: 0.8,
     friction: 0.5, // Working value (fixes slingshot)
     frictionAir: 0.05, // Working value (fixes slingshot)
     density: 0.001,
-    stiffness: 2.0, // Ultra-stiff test
+    stiffness: 0.9, // Safe default (prevents explosion)
     damping: 0.5,
   };
 
-  const [physics, setPhysics] = useState(DEFAULTS);
+  // Load from localStorage or use defaults
+  const [physics, setPhysics] = useState(() => {
+    const saved = localStorage.getItem('rosaryPhysics');
+    return saved ? JSON.parse(saved) : DEFAULTS;
+  });
 
   const handleChange = (key, value) => {
     const updated = { ...physics, [key]: parseFloat(value) };
     setPhysics(updated);
+    localStorage.setItem('rosaryPhysics', JSON.stringify(updated));
     onPhysicsChange?.(updated);
   };
 
   const resetToDefaults = () => {
     setPhysics(DEFAULTS);
+    localStorage.setItem('rosaryPhysics', JSON.stringify(DEFAULTS));
     onPhysicsChange?.(DEFAULTS);
   };
 
@@ -178,25 +184,25 @@ const PhysicsControls = ({ onPhysicsChange }) => {
               String Properties
             </h4>
 
-             <label
-               style={{
-                 color: "white",
-                 display: "block",
-                 marginBottom: "8px",
-                 fontSize: "12px",
-               }}
-             >
-               String Stiffness: <strong>{physics.stiffness.toFixed(2)}</strong>
-               <input
-                 type="range"
-                 min="0"
-                 max="5"
-                 step="0.1"
-                 value={physics.stiffness}
-                 onChange={(e) => handleChange("stiffness", e.target.value)}
-                 style={{ width: "100%", marginTop: "4px" }}
-               />
-             </label>
+            <label
+              style={{
+                color: "white",
+                display: "block",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              String Stiffness: <strong>{physics.stiffness.toFixed(2)}</strong>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                step="0.1"
+                value={physics.stiffness}
+                onChange={(e) => handleChange("stiffness", e.target.value)}
+                style={{ width: "100%", marginTop: "4px" }}
+              />
+            </label>
 
             <label
               style={{
@@ -245,12 +251,14 @@ const PhysicsControls = ({ onPhysicsChange }) => {
               padding: "8px",
               background: "rgba(76, 175, 80, 0.1)",
               borderRadius: "4px",
-              fontSize: "11px",
+              fontSize: "10px",
               color: "#aaa",
               textAlign: "center",
             }}
           >
-            Note: Changes recreate the rosary
+            💾 Values saved to localStorage
+            <br />
+            Refresh page to apply changes
           </div>
         </div>
       )}

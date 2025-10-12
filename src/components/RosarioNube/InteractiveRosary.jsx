@@ -163,8 +163,8 @@ const InteractiveRosary = ({
     });
 
     // --- Helper function for constraint/spring options ---
-    const springOptions = (length, stiffness = 2.0) => ({
-      stiffness: stiffness, // Ultra-stiff test: 2.0 (rigid connections)
+    const springOptions = (length, stiffness = 0.9) => ({
+      stiffness: stiffness, // Safe default: 0.9 (prevents explosion)
       damping: 0.5, // Reasonable default
       length: length,
       render: { strokeStyle: "#555", lineWidth: 0.5, type: "line" }, // Render as thin lines, not springs
