@@ -71,9 +71,10 @@ const InterfaceToggle = ({
         onClick={toggleExpanded}
         className="main-toggle-btn"
         style={{
-          background: "rgba(0, 0, 0, 0.8)",
-          color: "white",
-          border: "none",
+          background: "var(--glass-bg)",
+          backdropFilter: "blur(8px)",
+          color: "var(--text-color)",
+          border: "2px solid var(--glass-border)",
           borderRadius: "50%",
           width: "50px",
           height: "50px",
@@ -83,7 +84,9 @@ const InterfaceToggle = ({
           alignItems: "center",
           justifyContent: "center",
           transition: "all 0.3s ease",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
+          fontFamily: "Cloister Black, serif",
+          fontWeight: "bold",
         }}
         title="Toggle Interface Controls"
         aria-label="Toggle interface controls"
@@ -99,23 +102,28 @@ const InterfaceToggle = ({
             position: "absolute",
             top: "60px",
             left: "0",
-            background: "rgba(0, 0, 0, 0.9)",
-            color: "white",
-            padding: "15px",
-            borderRadius: "10px",
-            minWidth: "200px",
-            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
-            border: "none",
+            background: "var(--glass-bg)",
+            backdropFilter: "blur(12px)",
+            color: "var(--text-color)",
+            padding: "20px",
+            borderRadius: "16px",
+            minWidth: "220px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+            border: "2px solid var(--glass-border)",
+            fontFamily: "Cloister Black, serif",
           }}
         >
           <div
             style={{
-              marginBottom: "10px",
+              marginBottom: "15px",
               fontWeight: "bold",
-              color: "#FFD700",
+              color: "var(--catholic-gold)",
+              fontSize: "16px",
+              textAlign: "center",
+              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
             }}
           >
-            Interface Controls
+            ⚙️ Interface Controls
           </div>
 
           {/* Toggle All Button */}
@@ -123,36 +131,50 @@ const InterfaceToggle = ({
             onClick={handleToggleAll}
             style={{
               width: "100%",
-              padding: "8px",
-              marginBottom: "10px",
-              background: showRosary && showCounters ? "#FF6B6B" : "#4ECDC4",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
+              padding: "12px",
+              marginBottom: "15px",
+              background: showRosary && showCounters 
+                ? "linear-gradient(135deg, var(--catholic-red), #8b0000)" 
+                : "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))",
+              color: "var(--catholic-white)",
+              border: "2px solid var(--glass-border)",
+              borderRadius: "12px",
               cursor: "pointer",
               fontWeight: "bold",
+              fontSize: "14px",
+              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+              transition: "all 0.3s ease",
             }}
           >
-            {showRosary && showCounters ? "Hide All" : "Show All"}
+            {showRosary && showCounters ? "🙈 Hide All" : "👁️ Show All"}
           </button>
 
           {/* Individual toggles */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {/* Interactive Rosary Toggle */}
             <label
               style={{
                 display: "flex",
                 alignItems: "center",
                 cursor: "pointer",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                transition: "all 0.3s ease",
               }}
             >
               <input
                 type="checkbox"
                 checked={showRosary}
                 onChange={handleRosaryToggle}
-                style={{ marginRight: "8px" }}
+                style={{ 
+                  marginRight: "12px",
+                  transform: "scale(1.2)",
+                  accentColor: "var(--catholic-gold)",
+                }}
               />
-              <span>📿 Interactive Rosary</span>
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>📿 Interactive Rosary</span>
             </label>
 
             {/* Counters Toggle */}
@@ -161,27 +183,38 @@ const InterfaceToggle = ({
                 display: "flex",
                 alignItems: "center",
                 cursor: "pointer",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                transition: "all 0.3s ease",
               }}
             >
               <input
                 type="checkbox"
                 checked={showCounters}
                 onChange={handleCountersToggle}
-                style={{ marginRight: "8px" }}
+                style={{ 
+                  marginRight: "12px",
+                  transform: "scale(1.2)",
+                  accentColor: "var(--catholic-gold)",
+                }}
               />
-              <span>📊 Prayer Counters</span>
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>📊 Prayer Counters</span>
             </label>
           </div>
 
           {/* Help text */}
           <div
             style={{
-              marginTop: "10px",
+              marginTop: "15px",
               fontSize: "12px",
-              color: "#ccc",
+              color: "var(--catholic-gold)",
               fontStyle: "italic",
-              borderTop: "1px solid #333",
-              paddingTop: "8px",
+              borderTop: "2px solid var(--glass-border)",
+              paddingTop: "12px",
+              textAlign: "center",
+              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
             }}
           >
             💡 Hide elements for distraction-free prayer

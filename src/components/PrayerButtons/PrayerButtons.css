@@ -1,18 +1,21 @@
-/* Segmented Bar Layout */
+/* Segmented Bar Layout - Stained Glass Theme */
 .segmented-bar {
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 60px; /* Slim: ~10vh equiv */
-  background: var(--primary);
-  border-top: 1px solid var(--border-color, #ccc);
+  height: 70px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-top: 3px solid var(--glass-border);
+  border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 8px;
   box-sizing: border-box;
-  z-index: 2;
+  z-index: 100;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .segments-container {
@@ -22,28 +25,52 @@
 }
 
 .segment-btn {
-  flex: 1; /* Equal width: 7 parts */
-  border: none;
-  background: transparent;
+  flex: 1;
+  border: 2px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
   color: var(--text-color);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  font-size: 20px; /* Icono grande */
-  transition: background 0.2s ease;
+  min-height: 50px;
+  font-size: 20px;
+  transition: all 0.3s ease;
   position: relative;
+  border-radius: 12px;
+  margin: 2px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.segment-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.segment-btn:hover::before {
+  left: 100%;
 }
 
 .segment-btn.active {
-  background: var(--accent, rgba(255, 255, 255, 0.2));
-  border-radius: 8px; /* Modern pill */
+  background: linear-gradient(135deg, var(--catholic-gold), var(--catholic-red));
+  border-color: var(--catholic-gold);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+  transform: scale(1.05);
 }
 
 .segment-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--catholic-gold);
+  transform: scale(1.02);
 }
 
 .segment-btn.disabled {
@@ -60,21 +87,23 @@
   font-weight: bold;
 }
 
-/* Sub-bar para misterios específicos */
+/* Sub-bar para misterios específicos - Stained Glass */
 .sub-bar {
   position: absolute;
-  bottom: 60px;
-  left: 0;
-  right: 0;
-  height: 50px;
-  background: var(--primary);
+  bottom: 70px;
+  left: 8px;
+  right: 8px;
+  height: 60px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  /* Anim: Slide up */
+  gap: 8px;
+  padding: 8px;
   transform: translateY(100%);
   transition: transform 0.3s ease;
-  border-top: 1px solid var(--border-color, #ccc);
+  border: 2px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .sub-bar.active {
@@ -83,117 +112,184 @@
 
 .close-btn {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  background: var(--accent, rgba(255, 255, 255, 0.2));
+  top: 8px;
+  right: 8px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
   color: var(--text-color);
-  border: none;
+  border: 2px solid var(--glass-border);
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   z-index: 10;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  background: var(--accent, rgba(255, 255, 255, 0.3));
+  background: linear-gradient(135deg, var(--catholic-gold), var(--catholic-red));
+  border-color: var(--catholic-gold);
+  transform: scale(1.1);
 }
 
 .sub-btn {
   flex: 1;
-  border: none;
-  background: transparent;
+  border: 2px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
   color: var(--text-color);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 44px;
   font-size: 16px;
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
 }
 
 .sub-btn.active {
-  background: var(--accent, rgba(255, 255, 255, 0.2));
+  background: linear-gradient(135deg, var(--catholic-gold), var(--catholic-red));
+  border-color: var(--catholic-gold);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+  transform: scale(1.05);
 }
 
 .sub-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--catholic-gold);
+  transform: scale(1.02);
 }
 
-/* Preview actual oración */
+/* Preview actual oración - Stained Glass */
 .preview {
   position: absolute;
-  bottom: -25px; /* Sobre barra */
+  bottom: -30px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--primary);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 14px;
   white-space: nowrap;
-  border: 1px solid var(--border-color, #ccc);
+  border: 2px solid var(--glass-border);
   max-width: 80%;
   overflow: hidden;
   text-overflow: ellipsis;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Botones adicionales */
+/* Botones adicionales - Stained Glass */
 .additional-controls {
   position: absolute;
-  top: -50px;
+  top: -60px;
   right: 10px;
   display: flex;
   gap: 8px;
 }
 
 .control-btn {
-  background-color: var(--primary);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
   color: var(--text-color);
-  border: 1px solid var(--border-color, #ccc);
-  padding: 6px 12px;
-  border-radius: 4px;
+  border: 2px solid var(--glass-border);
+  padding: 8px 16px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .control-btn:hover {
-  background-color: var(--accent, rgba(255, 255, 255, 0.1));
+  background: linear-gradient(135deg, var(--catholic-gold), var(--catholic-red));
+  border-color: var(--catholic-gold);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
 }
 
-/* Mobile responsive improvements */
+/* Mobile responsive improvements - Stained Glass */
 @media (max-width: 768px) {
   .segmented-bar {
-    height: 64px;
-    padding: 0 8px;
+    height: 75px;
+    padding: 0 12px;
+    border-radius: 16px 16px 0 0;
   }
 
   .segment-btn {
     font-size: 18px;
-    min-height: 48px;
+    min-height: 55px;
+    margin: 3px;
   }
 
   .sub-bar {
-    height: 50px;
-    bottom: 64px;
-    padding: 6px;
+    height: 65px;
+    bottom: 75px;
+    padding: 10px;
+    left: 12px;
+    right: 12px;
   }
 
   .preview {
-    bottom: -22px;
-    font-size: 11px;
-    padding: 6px 10px;
+    bottom: -35px;
+    font-size: 13px;
+    padding: 10px 16px;
   }
 
   .additional-controls {
-    top: -55px;
+    top: -65px;
+    right: 12px;
+  }
+
+  .control-btn {
+    padding: 10px 16px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .segmented-bar {
+    height: 70px;
+    padding: 0 8px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .segment-btn {
+    font-size: 16px;
+    min-height: 50px;
+    margin: 2px;
+  }
+
+  .sub-bar {
+    height: 60px;
+    bottom: 70px;
+    padding: 8px;
+    left: 8px;
+    right: 8px;
+  }
+
+  .preview {
+    bottom: -30px;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .additional-controls {
+    top: -60px;
     right: 8px;
   }
 
@@ -201,40 +297,5 @@
     padding: 8px 12px;
     font-size: 11px;
     min-height: 36px;
-  }
-}
-
-@media (max-width: 480px) {
-  .segmented-bar {
-    height: 60px;
-    padding: 0 4px;
-  }
-
-  .segment-btn {
-    font-size: 16px;
-    min-height: 44px; /* Touch-friendly */
-  }
-
-  .sub-bar {
-    height: 45px;
-    bottom: 60px;
-    padding: 4px;
-  }
-
-  .preview {
-    bottom: -20px;
-    font-size: 10px;
-    padding: 4px 8px;
-  }
-
-  .additional-controls {
-    top: -50px;
-    right: 4px;
-  }
-
-  .control-btn {
-    padding: 6px 10px;
-    font-size: 10px;
-    min-height: 32px;
   }
 }

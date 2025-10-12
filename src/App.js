@@ -127,27 +127,41 @@ function App() {
   };
 
   return (
-    <div
-      className="app"
-      style={{ display: "flex", flexDirection: "column", height: "100vh" }}
-    >
-      <Header logo={logo} style={{ height: "4vh" }} />
+    <div className="app">
+      {/* Header with stained glass styling */}
+      <Header 
+        logo={logo} 
+        style={{ 
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          zIndex: 100,
+          background: "rgba(255, 255, 255, 0.08)",
+          backdropFilter: "blur(8px)",
+          borderRadius: "12px",
+          padding: "8px 16px",
+          border: "2px solid rgba(212, 175, 55, 0.3)",
+          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)"
+        }} 
+      />
 
       {/* Interface Toggle - Control panel for hiding/showing elements */}
-      <InterfaceToggle
-        showRosary={showRosary}
-        showCounters={showCounters}
-        onToggleRosary={() => setShowRosary(!showRosary)}
-        onToggleCounters={() => setShowCounters(!showCounters)}
-      />
+      <div style={{ position: "absolute", top: "10px", right: "10px", zIndex: 100 }}>
+        <InterfaceToggle
+          showRosary={showRosary}
+          showCounters={showCounters}
+          onToggleRosary={() => setShowRosary(!showRosary)}
+          onToggleCounters={() => setShowCounters(!showCounters)}
+        />
+      </div>
 
       {/* Left-handed mode toggle and Rosary toggle */}
       <div
         style={{
           position: "absolute",
           top: "60px",
-          right: "20px",
-          zIndex: 10,
+          right: "10px",
+          zIndex: 100,
           display: "flex",
           gap: "10px",
         }}
@@ -157,14 +171,16 @@ function App() {
       </div>
 
       {/* Physics Controls */}
-      <PhysicsControls />
+      <div style={{ position: "absolute", top: "100px", right: "10px", zIndex: 100 }}>
+        <PhysicsControls />
+      </div>
 
-      {/* Main content area with rosary */}
+      {/* Main content area with stained glass design */}
       <div
         style={{
-          display: "flex",
-          flex: 1,
           position: "relative",
+          width: "100vw",
+          height: "100vh",
           overflow: "hidden",
         }}
       >
@@ -177,7 +193,7 @@ function App() {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 1,
+              zIndex: 10,
               pointerEvents: "auto",
             }}
           >
@@ -191,49 +207,43 @@ function App() {
           </div>
         )}
 
-        {/* Prayer content overlay - Behind rosary */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 0, // Behind rosary (baseline level)
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            pointerEvents: "none", // Allow clicks to pass through to rosary
-          }}
-        >
-          <ViewPrayers
-            count={count}
-            prayerImg={prayerImg}
-            prayer={prayer}
-            currentMystery={currentMystery}
-            currentPrayerIndex={currentPrayerIndex}
-            prayers={RosarioPrayerBook}
-            showCounters={showCounters}
-          />
-        </div>
+        {/* Prayer content with stained glass background */}
+        <ViewPrayers
+          count={count}
+          prayerImg={prayerImg}
+          prayer={prayer}
+          currentMystery={currentMystery}
+          currentPrayerIndex={currentPrayerIndex}
+          prayers={RosarioPrayerBook}
+          showCounters={showCounters}
+        />
       </div>
 
       {/* Progress Bar */}
-      <ProgressBar
-        currentIndex={currentPrayerIndex}
-        totalPrayers={getRosarySequence().length}
-      />
+      <div style={{ position: "absolute", bottom: "80px", left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
+        <ProgressBar
+          currentIndex={currentPrayerIndex}
+          totalPrayers={getRosarySequence().length}
+        />
+      </div>
 
-      <PrayerButtons
-        prayers={RosarioPrayerBook}
-        countUp={handleCountClick}
-        reset={handleResetClick}
-        setPrayer={setPrayer}
-        setPrayerImg={setPrayerImg}
-        currentMystery={currentMystery}
-        setcurrentMystery={setcurrentMystery}
-        jumpToPrayer={jumpToPrayer}
-        currentPrayerIndex={currentPrayerIndex}
-        navigateToIndex={navigateToIndex}
-        getRosarySequence={getRosarySequence}
-        leftHandedMode={leftHandedMode}
-      />
+      {/* Prayer Buttons with stained glass styling */}
+      <div style={{ position: "absolute", bottom: "10px", left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
+        <PrayerButtons
+          prayers={RosarioPrayerBook}
+          countUp={handleCountClick}
+          reset={handleResetClick}
+          setPrayer={setPrayer}
+          setPrayerImg={setPrayerImg}
+          currentMystery={currentMystery}
+          setcurrentMystery={setcurrentMystery}
+          jumpToPrayer={jumpToPrayer}
+          currentPrayerIndex={currentPrayerIndex}
+          navigateToIndex={navigateToIndex}
+          getRosarySequence={getRosarySequence}
+          leftHandedMode={leftHandedMode}
+        />
+      </div>
     </div>
   );
 }

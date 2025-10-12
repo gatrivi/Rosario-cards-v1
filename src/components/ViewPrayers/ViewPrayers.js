@@ -222,51 +222,24 @@ const ViewPrayers = forwardRef(
     const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
     return (
       <div
-        className="top-section prayer-content-overlay"
+        className="stained-glass-prayer-container"
         style={{
-          display: "flex",
-          flexDirection: window.innerWidth < 768 ? "column" : "row",
-          height: window.innerWidth < 768 ? "auto" : "58vh",
-          minHeight: window.innerWidth < 768 ? "40vh" : "58vh",
-          background: "rgba(255, 255, 255, 0.1)", // More transparent
-          backdropFilter: "blur(0.5px)", // Less blur
-          borderRadius: "8px",
-          margin: "10px",
-          padding: "10px",
-          pointerEvents: "none", // Allow clicks to pass through
+          position: "relative",
+          width: "100vw",
+          height: "100vh",
+          overflow: "hidden",
         }}
       >
-        <div
-          className="page-left"
-          style={{
-            flex: 1,
-            overflow: "scroll",
-            padding: window.innerWidth < 768 ? "8px" : "4px",
-            fontSize:
-              window.innerWidth < 768 ? "clamp(14px, 4vw, 18px)" : "1.2rem",
-            minHeight: window.innerWidth < 768 ? "200px" : "auto",
-          }}
-        >
-          {showCounters && (
-            <span
-              style={{
-                color: "gold",
-                fontSize: window.innerWidth < 768 ? "14px" : "18px",
-                fontWeight: "bold",
-                display: "block",
-                marginBottom: "8px",
-              }}
-            >
-              📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
-            </span>
-          )}
-          <p>{prayer}</p>
-        </div>
+        {/* Full-screen background image */}
         <div
           className="page-right"
           style={{
-            flex: 1,
-            minHeight: window.innerWidth < 768 ? "250px" : "auto",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 0,
           }}
         >
           <img
@@ -274,12 +247,82 @@ const ViewPrayers = forwardRef(
             src={finalImageUrl}
             alt={`${prayer.name} illustration`}
             style={{
-              width: window.innerWidth < 768 ? "100%" : "47vw",
-              height: window.innerWidth < 768 ? "250px" : "56vh",
+              width: "100%",
+              height: "100%",
               objectFit: "contain",
-              borderRadius: "8px",
+              filter: "brightness(0.8) contrast(1.1)",
             }}
           />
+        </div>
+
+        {/* Stained glass overlay */}
+        <div
+          className="stained-glass-overlay"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(255, 255, 255, 0.05)",
+            backdropFilter: "blur(1px)",
+            border: "3px solid rgba(212, 175, 55, 0.3)",
+            borderRadius: "20px",
+            boxShadow: "inset 0 0 50px rgba(212, 175, 55, 0.1)",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Prayer text overlay */}
+        <div
+          className="page-left"
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: window.innerWidth < 768 ? "90%" : "70%",
+            maxWidth: "800px",
+            maxHeight: "80vh",
+            overflow: "auto",
+            padding: window.innerWidth < 768 ? "16px" : "24px",
+            fontSize: window.innerWidth < 768 ? "clamp(16px, 4vw, 20px)" : "1.4rem",
+            background: "rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(8px)",
+            border: "2px solid rgba(212, 175, 55, 0.3)",
+            borderRadius: "16px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+            zIndex: 2,
+            pointerEvents: "auto",
+          }}
+        >
+          {showCounters && (
+            <div
+              style={{
+                color: "#d4af37",
+                fontSize: window.innerWidth < 768 ? "16px" : "20px",
+                fontWeight: "bold",
+                display: "block",
+                marginBottom: "16px",
+                textAlign: "center",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
+              }}
+            >
+              📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
+            </div>
+          )}
+          <p
+            style={{
+              margin: 0,
+              lineHeight: 1.8,
+              letterSpacing: "1px",
+              textAlign: "center",
+            }}
+          >
+            {prayer}
+          </p>
         </div>
       </div>
     );

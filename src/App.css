@@ -1,10 +1,15 @@
 * {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
+
 .app {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 4px;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1a0b2e 0%, #2d1b69 50%, #1a0b2e 100%);
 }
 @font-face {
   font-family: "Cloister Black"; /* Name your custom font */
@@ -13,108 +18,182 @@
   font-style: normal;
 }
 .page-left {
-  font-family: "Cloister Black", serif; /* Use the custom font */
-  font-size: 1.2rem;
-  padding: 4px;
+  font-family: "Cloister Black", serif;
+  font-size: 1.4rem;
+  padding: 20px;
   box-sizing: border-box;
   text-align: center;
-  background-color: var(--background); /* Light beige background */
-  color: var(--text-color); /* Dark brown text */
-  overflow-y: auto; /* Enable vertical scrolling if content overflows */
-  line-height: 1.6; /* Better readability */
-  letter-spacing: 0.5px; /* Slight letter spacing for elegance */
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text-color);
+  overflow-y: auto;
+  line-height: 1.8;
+  letter-spacing: 1px;
+  border: 2px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2;
 }
+
 .page-right {
-  overflow: hidden; /* CRITICAL: Clips the zoomed part */
-  cursor: zoom-in; /* Provides visual feedback to the user */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
 }
+
 .page-right img {
   width: 100%;
   height: 100%;
-  /* Better aspect ratio preservation and horizontal space usage */
   object-fit: contain;
-  /* CRITICAL: Makes the zoom smooth */
   transition: transform 0.3s ease-in-out;
-  /* Start at a normal scale */
   transform: scale(1);
+  filter: brightness(0.9) contrast(1.1);
 }
+
 .page-right img:hover {
-  /* Zoom in when hovered */
-  transform: scale(1.6);
+  transform: scale(1.05);
 }
 
 img#logo {
   height: 30px;
   width: 20px;
 }
-/* Define CSS variables for light and dark themes */
+/* Define CSS variables for stained glass theme */
 :root {
-  --background: #fffce9;
-  --text-color: #362f27;
-  --surface: #f5f5f5;
-  --primary: ##f5dbc2;
-  --secondary: #a6a296;
-  --accent: #f5f5f5;
+  --background: linear-gradient(135deg, #1a0b2e 0%, #2d1b69 50%, #1a0b2e 100%);
+  --text-color: #f8f4e6;
+  --surface: rgba(139, 69, 19, 0.15);
+  --primary: #d4af37;
+  --secondary: #8b4513;
+  --accent: #4a148c;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(212, 175, 55, 0.3);
+  --catholic-gold: #d4af37;
+  --catholic-red: #8b0000;
+  --catholic-blue: #1e3a8a;
+  --catholic-purple: #4a148c;
+  --catholic-white: #f8f4e6;
 }
 
-/* Dark mode styles */
+/* Dark mode styles - enhanced for stained glass */
 .dark {
-  --background: #1e1802;
-  --text-color: #bbbbbb;
-  --surface: #2c2c2c;
-  --primary: #1a1a1a;
-  --secondary: #1e1802;
-  --accent: #4c4c42;
+  --background: linear-gradient(135deg, #0d0a1a 0%, #1a0b2e 50%, #0d0a1a 100%);
+  --text-color: #f8f4e6;
+  --surface: rgba(139, 69, 19, 0.2);
+  --primary: #d4af37;
+  --secondary: #8b4513;
+  --accent: #6a1b9a;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(212, 175, 55, 0.4);
 }
 button {
-  font-family: "Cloister Black", serif; /* Use the custom font */
-  border-radius: 6px; /* Consistent border radius */
-  transition: all 0.2s ease; /* Smooth transitions */
+  font-family: "Cloister Black", serif;
+  border-radius: 12px;
+  transition: all 0.3s ease;
   cursor: pointer;
-  border: none;
+  border: 2px solid var(--glass-border);
   outline: none;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
 }
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+button:hover::before {
+  left: 100%;
+}
+
 .button-active {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--catholic-gold), var(--catholic-red));
+  border-color: var(--catholic-gold);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
 }
 
 .button-inactive {
-  background-color: var(--secondary);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
 }
 /* Apply variables to elements */
 body {
-  background-color: var(--background);
+  background: var(--background);
   color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
-  font-family: Arial, sans-serif;
+  transition: all 0.3s ease;
+  font-family: "Cloister Black", serif;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 /* Common components */
 .container {
-  background-color: var(--surface);
-  padding: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Stained glass overlay for prayer content */
+.stained-glass-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(2px);
+  border: 3px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: inset 0 0 50px rgba(212, 175, 55, 0.1);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Media queries for responsive design */
 @media (max-width: 768px) {
   .app {
-    padding: 2px;
+    padding: 0;
   }
 
   .page-left {
-    font-size: clamp(14px, 4vw, 18px);
-    padding: 8px;
-    line-height: 1.6;
+    font-size: clamp(16px, 4vw, 20px);
+    padding: 16px;
+    line-height: 1.7;
+    margin: 10px;
+  }
+
+  .page-right {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
   }
 
   .page-right img {
     width: 100%;
-    height: auto;
-    max-height: 300px;
+    height: 100%;
+    object-fit: contain;
   }
 
   .interactive-rosary {
@@ -129,23 +208,27 @@ body {
 
 @media (max-width: 480px) {
   .button-container {
-    gap: 4px;
-    padding: 2px;
+    gap: 8px;
+    padding: 8px;
   }
 
   .button {
-    font-size: 12px;
-    padding: 4px 8px;
-    min-height: 44px; /* Touch-friendly */
+    font-size: 14px;
+    padding: 8px 12px;
+    min-height: 48px;
+    border-radius: 8px;
   }
 
   .page-left {
-    font-size: clamp(12px, 3.5vw, 16px);
-    padding: 6px;
+    font-size: clamp(14px, 3.5vw, 18px);
+    padding: 12px;
+    margin: 8px;
   }
 
   .page-right img {
-    max-height: 200px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 }
 
