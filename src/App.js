@@ -76,6 +76,29 @@ function App() {
     };
   }, [currentPrayerIndex, navigateToIndex, getRosarySequence]);
 
+  // Focus mode handlers
+  const toggleFocusMode = useCallback(() => {
+    setFocusMode(!focusMode);
+  }, [focusMode]);
+
+  const enterFocusMode = useCallback(() => {
+    setFocusMode(true);
+  }, []);
+
+  const exitFocusMode = useCallback(() => {
+    setFocusMode(false);
+  }, []);
+
+  const handleCountClick = () => {
+    if (count < 10) {
+      setCount(count + 1);
+    }
+  };
+
+  const handleResetClick = () => {
+    setCount(0);
+  };
+
   // Listen for theme changes and update current prayer image
   useEffect(() => {
     const handleThemeChange = () => {
@@ -116,29 +139,6 @@ function App() {
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [focusMode, toggleFocusMode, exitFocusMode]);
-
-  const handleCountClick = () => {
-    if (count < 10) {
-      setCount(count + 1);
-    }
-  };
-
-  const handleResetClick = () => {
-    setCount(0);
-  };
-
-  // Focus mode handlers
-  const toggleFocusMode = useCallback(() => {
-    setFocusMode(!focusMode);
-  }, [focusMode]);
-
-  const enterFocusMode = useCallback(() => {
-    setFocusMode(true);
-  }, []);
-
-  const exitFocusMode = useCallback(() => {
-    setFocusMode(false);
-  }, []);
 
   // Handle bead click from rosary
   const onBeadClick = (prayerIndex, prayerId) => {
