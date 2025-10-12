@@ -152,19 +152,20 @@ const InteractiveRosary = ({
     const constraints = [];
 
     // --- Helper function for bead options ---
+    // Using Matter.js demo defaults (chains.md) - works perfectly without gravity
     const beadOptions = (color, extraOptions = {}) => ({
-      restitution: 0.05, // Glass beads - minimal bounce
-      friction: 0.8, // High friction - glass on countertop
-      frictionAir: 0.08, // Moderate air resistance
-      density: 0.005, // Heavier beads - more mass
+      restitution: 0.8, // Demo default
+      friction: 0.1, // Demo default
+      frictionAir: 0.01, // Demo default
+      density: 0.001, // Demo default (no heavy weight)
       render: { fillStyle: color, strokeStyle: colors.chain, lineWidth: 1 },
       ...extraOptions,
     });
 
     // --- Helper function for constraint/spring options ---
     const springOptions = (length, stiffness = 0.8) => ({
-      stiffness: stiffness, // Firm strings - less stretching
-      damping: 0.95, // High damping - absorb oscillations, prevent dancing
+      stiffness: stiffness, // Demo default: 0.8
+      damping: 0.5, // Reasonable default
       length: length,
       render: { strokeStyle: "#555", lineWidth: 0.5, visible: true }, // Thin dark string
     });
@@ -216,11 +217,11 @@ const InteractiveRosary = ({
       // Calculate which decade (0-4) and position within decade (0-9)
       const decadeNum = Math.floor(i / 10);
       const posInDecade = i % 10;
-      
+
       // Each decade in prayer array: F(skip), M(skip), P(skip), A×10
       // Decade starts at: 8 + (decadeNum * 14)
       // Hail Marys start at: decadeStart + 3 (skip F, M, P)
-      const decadeStart = 8 + (decadeNum * 14);
+      const decadeStart = 8 + decadeNum * 14;
       const prayerIndex = decadeStart + 3 + posInDecade; // +3 to skip F, Mystery, P
 
       const bead = Matter.Bodies.circle(
@@ -374,10 +375,10 @@ const InteractiveRosary = ({
 
     const crossBody = Matter.Body.create({
       parts: crossParts,
-      friction: 0.8, // Match bead friction
-      frictionAir: 0.08, // Match bead air resistance
-      restitution: 0.05, // Minimal bounce like glass
-      density: 0.008, // Heavier than beads - iron cross
+      friction: 0.1, // Demo default
+      frictionAir: 0.01, // Demo default
+      restitution: 0.8, // Demo default
+      density: 0.001, // Demo default
       isCrossComposite: true, // Custom flag
       crossParts: crossParts, // Store reference for rendering
     });

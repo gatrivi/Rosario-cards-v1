@@ -11,6 +11,7 @@ import InterfaceToggle from "./components/common/InterfaceToggle";
 import ProgressBar from "./components/common/ProgressBar";
 import LeftHandedToggle from "./components/common/LeftHandedToggle";
 import RosaryToggle from "./components/common/RosaryToggle";
+import PhysicsControls from "./components/common/PhysicsControls";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
   const [prayer, setPrayer] = useState(
@@ -154,6 +155,9 @@ function App() {
         <RosaryToggle />
         <LeftHandedToggle />
       </div>
+
+      {/* Physics Controls */}
+      <PhysicsControls />
 
       {/* Main content area with rosary */}
       <div
