@@ -152,22 +152,22 @@ const InteractiveRosary = ({
     const constraints = [];
 
     // --- Helper function for bead options ---
-    // Using Matter.js demo defaults (chains.md) - works perfectly without gravity
+    // Using working MatterScene.tsx values to fix slingshot dragging
     const beadOptions = (color, extraOptions = {}) => ({
-      restitution: 0.8, // Demo default
-      friction: 0.1, // Demo default
-      frictionAir: 0.01, // Demo default
-      density: 0.001, // Demo default (no heavy weight)
+      restitution: 0.8,
+      friction: 0.5, // Increased from 0.1 (fixes slingshot)
+      frictionAir: 0.05, // Increased from 0.01 (fixes slingshot)
+      density: 0.001,
       render: { fillStyle: color, strokeStyle: colors.chain, lineWidth: 1 },
       ...extraOptions,
     });
 
     // --- Helper function for constraint/spring options ---
-    const springOptions = (length, stiffness = 0.8) => ({
-      stiffness: stiffness, // Demo default: 0.8
+    const springOptions = (length, stiffness = 2.0) => ({
+      stiffness: stiffness, // Ultra-stiff test: 2.0 (rigid connections)
       damping: 0.5, // Reasonable default
       length: length,
-      render: { strokeStyle: "#555", lineWidth: 0.5, type: 'line' }, // Render as thin lines, not springs
+      render: { strokeStyle: "#555", lineWidth: 0.5, type: "line" }, // Render as thin lines, not springs
     });
 
     // --- Helper function to calculate pole connection offsets ---

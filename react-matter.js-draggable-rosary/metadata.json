@@ -1,0 +1,5 @@
+{
+  "name": "React Matter.js Draggable Bead",
+  "description": "A simple interactive physics simulation of a single draggable bead created with React, TypeScript, and Matter.js, styled with Tailwind CSS.",
+  "requestFramePermissions": []
+}

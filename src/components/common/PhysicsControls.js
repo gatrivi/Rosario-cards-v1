@@ -3,13 +3,13 @@ import React, { useState } from "react";
 const PhysicsControls = ({ onPhysicsChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Demo defaults from Matter.js chains example
+  // Ultra-stiff test defaults (user hypothesis) + working friction values
   const DEFAULTS = {
     restitution: 0.8,
-    friction: 0.1,
-    frictionAir: 0.01,
+    friction: 0.5, // Working value (fixes slingshot)
+    frictionAir: 0.05, // Working value (fixes slingshot)
     density: 0.001,
-    stiffness: 0.8,
+    stiffness: 2.0, // Ultra-stiff test
     damping: 0.5,
   };
 
@@ -97,65 +97,65 @@ const PhysicsControls = ({ onPhysicsChange }) => {
               />
             </label>
 
-             <label
-               style={{
-                 color: "white",
-                 display: "block",
-                 marginBottom: "8px",
-                 fontSize: "12px",
-               }}
-             >
-               Friction: <strong>{physics.friction.toFixed(2)}</strong>
-               <input
-                 type="range"
-                 min="0"
-                 max="2"
-                 step="0.05"
-                 value={physics.friction}
-                 onChange={(e) => handleChange("friction", e.target.value)}
-                 style={{ width: "100%", marginTop: "4px" }}
-               />
-             </label>
+            <label
+              style={{
+                color: "white",
+                display: "block",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              Friction: <strong>{physics.friction.toFixed(2)}</strong>
+              <input
+                type="range"
+                min="0"
+                max="2"
+                step="0.05"
+                value={physics.friction}
+                onChange={(e) => handleChange("friction", e.target.value)}
+                style={{ width: "100%", marginTop: "4px" }}
+              />
+            </label>
 
-             <label
-               style={{
-                 color: "white",
-                 display: "block",
-                 marginBottom: "8px",
-                 fontSize: "12px",
-               }}
-             >
-               Air Friction: <strong>{physics.frictionAir.toFixed(3)}</strong>
-               <input
-                 type="range"
-                 min="0"
-                 max="0.5"
-                 step="0.01"
-                 value={physics.frictionAir}
-                 onChange={(e) => handleChange("frictionAir", e.target.value)}
-                 style={{ width: "100%", marginTop: "4px" }}
-               />
-             </label>
+            <label
+              style={{
+                color: "white",
+                display: "block",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              Air Friction: <strong>{physics.frictionAir.toFixed(3)}</strong>
+              <input
+                type="range"
+                min="0"
+                max="0.5"
+                step="0.01"
+                value={physics.frictionAir}
+                onChange={(e) => handleChange("frictionAir", e.target.value)}
+                style={{ width: "100%", marginTop: "4px" }}
+              />
+            </label>
 
-             <label
-               style={{
-                 color: "white",
-                 display: "block",
-                 marginBottom: "8px",
-                 fontSize: "12px",
-               }}
-             >
-               Density (Weight): <strong>{physics.density.toFixed(4)}</strong>
-               <input
-                 type="range"
-                 min="0.001"
-                 max="0.02"
-                 step="0.001"
-                 value={physics.density}
-                 onChange={(e) => handleChange("density", e.target.value)}
-                 style={{ width: "100%", marginTop: "4px" }}
-               />
-             </label>
+            <label
+              style={{
+                color: "white",
+                display: "block",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              Density (Weight): <strong>{physics.density.toFixed(4)}</strong>
+              <input
+                type="range"
+                min="0.001"
+                max="0.02"
+                step="0.001"
+                value={physics.density}
+                onChange={(e) => handleChange("density", e.target.value)}
+                style={{ width: "100%", marginTop: "4px" }}
+              />
+            </label>
           </div>
 
           {/* String Properties */}
@@ -190,8 +190,8 @@ const PhysicsControls = ({ onPhysicsChange }) => {
                <input
                  type="range"
                  min="0"
-                 max="1"
-                 step="0.05"
+                 max="5"
+                 step="0.1"
                  value={physics.stiffness}
                  onChange={(e) => handleChange("stiffness", e.target.value)}
                  style={{ width: "100%", marginTop: "4px" }}
