@@ -163,11 +163,11 @@ const InteractiveRosary = ({
     });
 
     // --- Helper function for constraint/spring options ---
-    const springOptions = (length, stiffness = 0.9) => ({
-      stiffness: stiffness, // Safe default: 0.9 (prevents explosion)
-      damping: 0.5, // Reasonable default
+    const springOptions = (length, stiffness = 0.08) => ({
+      stiffness: stiffness,
+      damping: 0.5,
       length: length,
-      render: { strokeStyle: "#555", lineWidth: 0.5, type: "line" }, // Render as thin lines, not springs
+      render: { strokeStyle: '#94a3b8', lineWidth: 2, visible: true },
     });
 
     // --- Helper function to calculate pole connection offsets ---
