@@ -291,7 +291,7 @@ const ViewPrayers = forwardRef(
             maxHeight: "80vh",
             overflow: "auto",
             padding: window.innerWidth < 768 ? "16px" : "24px",
-            fontSize: window.innerWidth < 768 ? "clamp(16px, 4vw, 20px)" : "1.4rem",
+            fontSize: `calc(${window.innerWidth < 768 ? "clamp(16px, 4vw, 20px)" : "1.4rem"} * var(--font-size-multiplier, 1.0))`,
             background: "rgba(255, 255, 255, 0.08)",
             backdropFilter: "blur(8px)",
             border: "2px solid rgba(212, 175, 55, 0.3)",

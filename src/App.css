@@ -79,6 +79,7 @@ img#logo {
   --catholic-blue: #1e3a8a;
   --catholic-purple: #4a148c;
   --catholic-white: #f8f4e6;
+  --font-size-multiplier: 1.0;
 }
 
 /* Dark mode styles - enhanced for stained glass */

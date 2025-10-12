@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 /**
  * InterfaceToggle Component
@@ -28,6 +28,15 @@ const InterfaceToggle = ({
   className = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [fontSize, setFontSize] = useState(() => {
+    return localStorage.getItem("fontSize") || "medium";
+  });
+
+  // Initialize font size on mount
+  useEffect(() => {
+    const multiplier = getFontSizeMultiplier(fontSize);
+    document.documentElement.style.setProperty('--font-size-multiplier', multiplier);
+  }, [fontSize]);
 
   /**
    * Toggle the expanded state of the control panel
@@ -74,6 +83,33 @@ const InterfaceToggle = ({
     window.dispatchEvent(new CustomEvent("leftHandedModeChange", {
       detail: { leftHandedMode: newMode }
     }));
+  };
+
+  /**
+   * Handle font size change
+   */
+  const handleFontSizeChange = (newSize) => {
+    setFontSize(newSize);
+    localStorage.setItem("fontSize", newSize);
+    // Apply font size to document
+    document.documentElement.style.setProperty('--font-size-multiplier', getFontSizeMultiplier(newSize));
+    // Dispatch event for other components
+    window.dispatchEvent(new CustomEvent("fontSizeChange", {
+      detail: { fontSize: newSize }
+    }));
+  };
+
+  /**
+   * Get font size multiplier based on size name
+   */
+  const getFontSizeMultiplier = (size) => {
+    const multipliers = {
+      'small': '0.8',
+      'medium': '1.0',
+      'large': '1.2',
+      'xlarge': '1.4'
+    };
+    return multipliers[size] || '1.0';
   };
 
   return (
@@ -243,6 +279,58 @@ const InterfaceToggle = ({
               />
               <span style={{ fontWeight: "bold", fontSize: "14px" }}>👈 Left-Handed Mode</span>
             </label>
+
+            {/* Font Size Control */}
+            <div
+              style={{
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+              }}
+            >
+              <div style={{ 
+                fontWeight: "bold", 
+                fontSize: "14px", 
+                marginBottom: "8px",
+                color: "var(--catholic-gold)"
+              }}>
+                🔤 Font Size
+              </div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {[
+                  { key: 'small', label: 'S', title: 'Small' },
+                  { key: 'medium', label: 'M', title: 'Medium' },
+                  { key: 'large', label: 'L', title: 'Large' },
+                  { key: 'xlarge', label: 'XL', title: 'Extra Large' }
+                ].map(({ key, label, title }) => (
+                  <button
+                    key={key}
+                    onClick={() => handleFontSizeChange(key)}
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      border: fontSize === key ? "2px solid var(--catholic-gold)" : "1px solid var(--glass-border)",
+                      background: fontSize === key 
+                        ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-red))"
+                        : "var(--glass-bg)",
+                      color: fontSize === key ? "var(--catholic-white)" : "var(--text-color)",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      transition: "all 0.3s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      title: title
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Help text */}

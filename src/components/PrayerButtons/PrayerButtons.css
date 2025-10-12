@@ -13,9 +13,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   z-index: 200;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(212, 175, 55, 0.1);
+  /* Support for bottom browser navigation bars */
+  bottom: env(safe-area-inset-bottom, 0);
 }
 
 .segments-container {
@@ -273,6 +276,104 @@
   border-color: var(--catholic-gold);
   transform: scale(1.05);
   box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Desktop specific styles - Larger, more spacious */
+@media (min-width: 1024px) {
+  .segmented-bar {
+    height: 100px;
+    padding: 12px 20px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    border-radius: 30px 30px 0 0;
+  }
+
+  .segment-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    border-radius: 15px;
+  }
+
+  .navigation-row {
+    height: 50px;
+    gap: 6px;
+  }
+
+  .progress-row {
+    height: 24px;
+  }
+
+  .integrated-progress {
+    height: 18px;
+    border-radius: 9px;
+  }
+
+  .progress-text {
+    font-size: 12px;
+  }
+
+  .sub-bar {
+    height: 80px;
+    bottom: 100px;
+    padding: 16px;
+    left: 20px;
+    right: 20px;
+    border-radius: 20px;
+  }
+
+  .sub-btn {
+    min-height: 50px;
+    font-size: 18px;
+  }
+}
+
+/* Tablet specific styles - Medium size */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .segmented-bar {
+    height: 94px;
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    border-radius: 28px 28px 0 0;
+  }
+
+  .segment-btn {
+    width: 47px;
+    height: 47px;
+    font-size: 19px;
+    border-radius: 14px;
+  }
+
+  .navigation-row {
+    height: 47px;
+    gap: 5px;
+  }
+
+  .progress-row {
+    height: 22px;
+  }
+
+  .integrated-progress {
+    height: 17px;
+    border-radius: 8px;
+  }
+
+  .progress-text {
+    font-size: 11px;
+  }
+
+  .sub-bar {
+    height: 75px;
+    bottom: 94px;
+    padding: 14px;
+    left: 16px;
+    right: 16px;
+    border-radius: 18px;
+  }
+
+  .sub-btn {
+    min-height: 47px;
+    font-size: 17px;
+  }
 }
 
 /* Mobile responsive improvements - Stained Glass */
