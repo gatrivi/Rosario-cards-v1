@@ -167,7 +167,7 @@ const InteractiveRosary = ({
       stiffness: stiffness, // Demo default: 0.8
       damping: 0.5, // Reasonable default
       length: length,
-      render: { strokeStyle: "#555", lineWidth: 0.5, visible: true }, // Thin dark string
+      render: { strokeStyle: "#555", lineWidth: 0.5, type: 'line' }, // Render as thin lines, not springs
     });
 
     // --- Helper function to calculate pole connection offsets ---
