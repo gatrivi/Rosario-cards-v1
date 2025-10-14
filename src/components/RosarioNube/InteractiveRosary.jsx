@@ -485,12 +485,11 @@ const InteractiveRosary = ({
         // Handle composite cross body separately
         if (bead.isCrossComposite) {
           bead.crossParts.forEach((part) => {
-            const numberToDisplay = part.crossNumber;
-            // Only show numbers in developer mode
-            if (numberToDisplay && developerMode) {
+            // Only show prayer index in developer mode
+            if (developerMode) {
               context.font = `bold ${crossBeadSize * 0.8}px Arial`;
               context.fillText(
-                `${numberToDisplay}`,
+                `${bead.prayerIndex}`,
                 part.position.x,
                 part.position.y
               );
@@ -524,12 +523,12 @@ const InteractiveRosary = ({
         // Check if it's first tail bead (bead number 6)
         if (bead.beadNumber === 6) size = centerBeadSize;
 
-        // Draw bead number only in developer mode
-        const numberToDisplay = bead.beadNumber;
-        if (numberToDisplay && developerMode) {
+        // Draw prayer index only in developer mode
+        const prayerIndexToDisplay = bead.prayerIndex;
+        if (prayerIndexToDisplay !== undefined && developerMode) {
           context.font = `bold ${size * 0.8}px Arial`;
           context.fillText(
-            `${numberToDisplay}`,
+            `${prayerIndexToDisplay}`,
             bead.position.x,
             bead.position.y
           );
