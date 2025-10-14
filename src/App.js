@@ -123,7 +123,7 @@ function App() {
     return () => window.removeEventListener("themeChanged", handleThemeChange);
   }, [prayerImg]);
 
-  // Keyboard shortcuts for focus mode
+  // Keyboard shortcuts for focus mode and navigation
   useEffect(() => {
     const handleKeyPress = (event) => {
       // F key to toggle focus mode
@@ -137,11 +137,33 @@ function App() {
       if (event.key === "Escape" && focusMode) {
         exitFocusMode();
       }
+      // Arrow keys for navigation
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent("prayerScrollNext", {
+            detail: { direction: "next" },
+          })
+        );
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent("prayerScrollPrev", {
+            detail: { direction: "prev" },
+          })
+        );
+      }
+      // Space bar to toggle focus mode
+      if (event.key === ' ' && !focusMode) {
+        event.preventDefault();
+        enterFocusMode();
+      }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [focusMode, toggleFocusMode, exitFocusMode]);
+  }, [focusMode, toggleFocusMode, exitFocusMode, enterFocusMode]);
 
   // Handle bead click from rosary
   const onBeadClick = (prayerIndex, prayerId) => {
