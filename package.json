@@ -18,6 +18,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:visibility": "react-scripts test ButtonVisibility --watchAll=false --testTimeout=90000",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

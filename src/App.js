@@ -1,17 +1,11 @@
 import "./App.css";
-import logo from "./logo.png";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
-import Header from "./components/common/Header";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
-import ProgressBar from "./components/common/ProgressBar";
-import LeftHandedToggle from "./components/common/LeftHandedToggle";
-import RosaryToggle from "./components/common/RosaryToggle";
-import PhysicsControls from "./components/common/PhysicsControls";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 function App() {
   const [prayer, setPrayer] = useState(
@@ -27,10 +21,16 @@ function App() {
   const [showRosary, setShowRosary] = useState(true);
   const [showCounters, setShowCounters] = useState(true);
 
+  // Focus mode state - hides text and shows only rosary counter
+  const [focusMode, setFocusMode] = useState(false);
+
   // Left-handed mode state - persisted in localStorage via LeftHandedToggle
   const [leftHandedMode, setLeftHandedMode] = useState(() => {
     return localStorage.getItem("leftHandedMode") === "true";
   });
+
+  // Detailed progress bar state - default disabled
+  const [showDetailedProgress, setShowDetailedProgress] = useState(false);
 
   // Listen for left-handed mode changes from toggle component
   useEffect(() => {
@@ -79,6 +79,29 @@ function App() {
     };
   }, [currentPrayerIndex, navigateToIndex, getRosarySequence]);
 
+  // Focus mode handlers
+  const toggleFocusMode = useCallback(() => {
+    setFocusMode(!focusMode);
+  }, [focusMode]);
+
+  const enterFocusMode = useCallback(() => {
+    setFocusMode(true);
+  }, []);
+
+  const exitFocusMode = useCallback(() => {
+    setFocusMode(false);
+  }, []);
+
+  const handleCountClick = () => {
+    if (count < 10) {
+      setCount(count + 1);
+    }
+  };
+
+  const handleResetClick = () => {
+    setCount(0);
+  };
+
   // Listen for theme changes and update current prayer image
   useEffect(() => {
     const handleThemeChange = () => {
@@ -100,15 +123,47 @@ function App() {
     return () => window.removeEventListener("themeChanged", handleThemeChange);
   }, [prayerImg]);
 
-  const handleCountClick = () => {
-    if (count < 10) {
-      setCount(count + 1);
-    }
-  };
+  // Keyboard shortcuts for focus mode and navigation
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // F key to toggle focus mode
+      if (event.key === "f" || event.key === "F") {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          toggleFocusMode();
+        }
+      }
+      // Escape key to exit focus mode
+      if (event.key === "Escape" && focusMode) {
+        exitFocusMode();
+      }
+      // Arrow keys for navigation
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent("prayerScrollNext", {
+            detail: { direction: "next" },
+          })
+        );
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent("prayerScrollPrev", {
+            detail: { direction: "prev" },
+          })
+        );
+      }
+      // Space bar to toggle focus mode
+      if (event.key === ' ' && !focusMode) {
+        event.preventDefault();
+        enterFocusMode();
+      }
+    };
 
-  const handleResetClick = () => {
-    setCount(0);
-  };
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [focusMode, toggleFocusMode, exitFocusMode, enterFocusMode]);
 
   // Handle bead click from rosary
   const onBeadClick = (prayerIndex, prayerId) => {
@@ -127,44 +182,32 @@ function App() {
   };
 
   return (
-    <div
-      className="app"
-      style={{ display: "flex", flexDirection: "column", height: "100vh" }}
-    >
-      <Header logo={logo} style={{ height: "4vh" }} />
-
-      {/* Interface Toggle - Control panel for hiding/showing elements */}
+    <div className="app">
+      {/* Settings Panel - Consolidated controls */}
       <InterfaceToggle
         showRosary={showRosary}
         showCounters={showCounters}
         onToggleRosary={() => setShowRosary(!showRosary)}
         onToggleCounters={() => setShowCounters(!showCounters)}
+        leftHandedMode={leftHandedMode}
+        setLeftHandedMode={setLeftHandedMode}
+        focusMode={focusMode}
+        onToggleFocusMode={toggleFocusMode}
+        onEnterFocusMode={enterFocusMode}
+        onExitFocusMode={exitFocusMode}
+        onReset={handleResetClick}
+        showDetailedProgress={showDetailedProgress}
+        onToggleDetailedProgress={() =>
+          setShowDetailedProgress(!showDetailedProgress)
+        }
       />
 
-      {/* Left-handed mode toggle and Rosary toggle */}
+      {/* Main content area with stained glass design */}
       <div
         style={{
-          position: "absolute",
-          top: "60px",
-          right: "20px",
-          zIndex: 10,
-          display: "flex",
-          gap: "10px",
-        }}
-      >
-        <RosaryToggle />
-        <LeftHandedToggle />
-      </div>
-
-      {/* Physics Controls */}
-      <PhysicsControls />
-
-      {/* Main content area with rosary */}
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
           position: "relative",
+          width: "100vw",
+          height: "100vh",
           overflow: "hidden",
         }}
       >
@@ -177,7 +220,7 @@ function App() {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 1,
+              zIndex: 10,
               pointerEvents: "auto",
             }}
           >
@@ -191,35 +234,23 @@ function App() {
           </div>
         )}
 
-        {/* Prayer content overlay - Behind rosary */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 0, // Behind rosary (baseline level)
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            pointerEvents: "none", // Allow clicks to pass through to rosary
-          }}
-        >
-          <ViewPrayers
-            count={count}
-            prayerImg={prayerImg}
-            prayer={prayer}
-            currentMystery={currentMystery}
-            currentPrayerIndex={currentPrayerIndex}
-            prayers={RosarioPrayerBook}
-            showCounters={showCounters}
-          />
-        </div>
+        {/* Prayer content with stained glass background */}
+        <ViewPrayers
+          count={count}
+          prayerImg={prayerImg}
+          prayer={prayer}
+          currentMystery={currentMystery}
+          currentPrayerIndex={currentPrayerIndex}
+          prayers={RosarioPrayerBook}
+          showCounters={showCounters}
+          focusMode={focusMode}
+          onToggleFocusMode={toggleFocusMode}
+          getRosarySequence={getRosarySequence}
+          showDetailedProgress={showDetailedProgress}
+        />
       </div>
 
-      {/* Progress Bar */}
-      <ProgressBar
-        currentIndex={currentPrayerIndex}
-        totalPrayers={getRosarySequence().length}
-      />
-
+      {/* Prayer Buttons with stained glass styling */}
       <PrayerButtons
         prayers={RosarioPrayerBook}
         countUp={handleCountClick}

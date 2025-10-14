@@ -3,6 +3,8 @@ import React, {
   useImperativeHandle,
   forwardRef,
   useEffect,
+  useState,
+  useCallback,
 } from "react";
 import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
 import { SoundEffects } from "../../utils/soundEffects";
@@ -34,6 +36,10 @@ const ViewPrayers = forwardRef(
       currentPrayerIndex,
       prayers,
       showCounters = true,
+      focusMode = false,
+      onToggleFocusMode = () => {},
+      getRosarySequence = () => [],
+      showDetailedProgress = false,
     },
     ref
   ) => {
@@ -103,6 +109,82 @@ const ViewPrayers = forwardRef(
     const hailMaryCount = getHailMaryCount();
 
     /**
+     * Get 7-segment progress data for rosary with mystery images
+     */
+    const getProgressSegments = () => {
+      // Get mystery images from prayer data - filter out string entries
+      const isDark = localStorage.getItem("theme") === "dark";
+      const validMysteries =
+        prayers.mysteries?.[currentMystery]?.filter(
+          (m) => typeof m === "object" && m.img
+        ) || [];
+      const mysteryImages = validMysteries.map((m) =>
+        isDark && m.imgmo ? m.imgmo : m.img
+      );
+
+      const segments = [
+        {
+          label: "Opening",
+          fullName: "Opening Prayers",
+          start: 0,
+          end: 8,
+          image: null,
+        },
+        {
+          label: "M1",
+          fullName: mysteryImages[0] ? "1st Mystery" : "1st Mystery",
+          start: 9,
+          end: 22,
+          image: mysteryImages[0],
+        },
+        {
+          label: "M2",
+          fullName: mysteryImages[1] ? "2nd Mystery" : "2nd Mystery",
+          start: 23,
+          end: 36,
+          image: mysteryImages[1],
+        },
+        {
+          label: "M3",
+          fullName: mysteryImages[2] ? "3rd Mystery" : "3rd Mystery",
+          start: 37,
+          end: 50,
+          image: mysteryImages[2],
+        },
+        {
+          label: "M4",
+          fullName: mysteryImages[3] ? "4th Mystery" : "4th Mystery",
+          start: 51,
+          end: 64,
+          image: mysteryImages[3],
+        },
+        {
+          label: "M5",
+          fullName: mysteryImages[4] ? "5th Mystery" : "5th Mystery",
+          start: 65,
+          end: 78,
+          image: mysteryImages[4],
+        },
+        {
+          label: "Closing",
+          fullName: "Closing Prayers",
+          start: 79,
+          end: 81,
+          image: null,
+        },
+      ];
+
+      const currentSegment = segments.find(
+        (seg) =>
+          currentPrayerIndex >= seg.start && currentPrayerIndex <= seg.end
+      );
+
+      return { segments, currentSegment };
+    };
+
+    const { segments, currentSegment } = getProgressSegments();
+
+    /**
      * Expose scroll control methods to parent component
      * Allows parent to check scroll position and control scrolling
      */
@@ -154,6 +236,57 @@ const ViewPrayers = forwardRef(
       },
     }));
 
+    // Touch/swipe navigation state
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const [isNavigating, setIsNavigating] = useState(false);
+    const [showNavigationHint, setShowNavigationHint] = useState(false);
+
+    // Minimum swipe distance (in pixels)
+    const minSwipeDistance = 50;
+
+    // Handle touch start
+    const handleTouchStart = useCallback((e) => {
+      setTouchEnd(null);
+      setTouchStart(e.targetTouches[0].clientX);
+    }, []);
+
+    // Handle touch move
+    const handleTouchMove = useCallback((e) => {
+      setTouchEnd(e.targetTouches[0].clientX);
+    }, []);
+
+    // Handle touch end and determine swipe direction
+    const handleTouchEnd = useCallback(() => {
+      if (!touchStart || !touchEnd) return;
+      
+      const distance = touchStart - touchEnd;
+      const isLeftSwipe = distance > minSwipeDistance;
+      const isRightSwipe = distance < -minSwipeDistance;
+
+      if (isLeftSwipe) {
+        // Swipe left = next prayer
+        soundEffectsRef.current.playEndOfScrollSound();
+        window.dispatchEvent(
+          new CustomEvent("prayerScrollNext", {
+            detail: { direction: "next" },
+          })
+        );
+        setIsNavigating(true);
+        setTimeout(() => setIsNavigating(false), 300);
+      } else if (isRightSwipe) {
+        // Swipe right = previous prayer
+        soundEffectsRef.current.playEndOfScrollSound();
+        window.dispatchEvent(
+          new CustomEvent("prayerScrollPrev", {
+            detail: { direction: "prev" },
+          })
+        );
+        setIsNavigating(true);
+        setTimeout(() => setIsNavigating(false), 300);
+      }
+    }, [touchStart, touchEnd, minSwipeDistance]);
+
     // Handle wheel events for scroll-based navigation
     useEffect(() => {
       const handleWheel = (event) => {
@@ -200,10 +333,38 @@ const ViewPrayers = forwardRef(
       }
     }, []);
 
+    // Add touch event listeners
+    useEffect(() => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        container.addEventListener("touchstart", handleTouchStart, { passive: true });
+        container.addEventListener("touchmove", handleTouchMove, { passive: true });
+        container.addEventListener("touchend", handleTouchEnd, { passive: true });
+        
+        return () => {
+          container.removeEventListener("touchstart", handleTouchStart);
+          container.removeEventListener("touchmove", handleTouchMove);
+          container.removeEventListener("touchend", handleTouchEnd);
+        };
+      }
+    }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
     // Handle prayer change sound
     useEffect(() => {
       soundEffectsRef.current.playPrayerChangeSound();
     }, [prayer]);
+
+    // Show navigation hint on first load
+    useEffect(() => {
+      const hasSeenHint = localStorage.getItem("navigationHintSeen");
+      if (!hasSeenHint) {
+        setShowNavigationHint(true);
+        setTimeout(() => {
+          setShowNavigationHint(false);
+          localStorage.setItem("navigationHintSeen", "true");
+        }, 4000);
+      }
+    }, []);
     console.log(
       `📿 ViewPrayers: currentPrayerIndex=${currentPrayerIndex}, hailMaryCount=${hailMaryCount}, currentMystery=${currentMystery}`
     );
@@ -220,53 +381,161 @@ const ViewPrayers = forwardRef(
       baseImageUrl = AveMariaD;
     }
     const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
-    return (
-      <div
-        className="top-section prayer-content-overlay"
-        style={{
-          display: "flex",
-          flexDirection: window.innerWidth < 768 ? "column" : "row",
-          height: window.innerWidth < 768 ? "auto" : "58vh",
-          minHeight: window.innerWidth < 768 ? "40vh" : "58vh",
-          background: "rgba(255, 255, 255, 0.1)", // More transparent
-          backdropFilter: "blur(0.5px)", // Less blur
-          borderRadius: "8px",
-          margin: "10px",
-          padding: "10px",
-          pointerEvents: "none", // Allow clicks to pass through
-        }}
-      >
+
+    // Focus mode - show only image with discreet counter
+    if (focusMode) {
+      return (
         <div
-          className="page-left"
+          className="stained-glass-prayer-container focus-mode"
           style={{
-            flex: 1,
-            overflow: "scroll",
-            padding: window.innerWidth < 768 ? "8px" : "4px",
-            fontSize:
-              window.innerWidth < 768 ? "clamp(14px, 4vw, 18px)" : "1.2rem",
-            minHeight: window.innerWidth < 768 ? "200px" : "auto",
+            position: "relative",
+            width: "100vw",
+            height: "100vh",
+            overflow: "hidden",
           }}
         >
-          {showCounters && (
-            <span
+          {/* Full-screen background image */}
+          <div
+            className="page-right"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              zIndex: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              className="prayer-image"
+              src={finalImageUrl}
+              alt={`${prayer.name} illustration`}
               style={{
-                color: "gold",
-                fontSize: window.innerWidth < 768 ? "14px" : "18px",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                filter: "brightness(0.8) contrast(1.1)",
+              }}
+            />
+          </div>
+
+          {/* Stained glass overlay */}
+          <div
+            className="stained-glass-overlay"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(255, 255, 255, 0.03)",
+              backdropFilter: "blur(0.5px)",
+              border: "3px solid rgba(212, 175, 55, 0.2)",
+              borderRadius: "20px",
+              boxShadow: "inset 0 0 30px rgba(212, 175, 55, 0.05)",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Discreet rosary counter */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "8px",
+              background: "rgba(0, 0, 0, 0.3)",
+              backdropFilter: "blur(8px)",
+              borderRadius: "20px",
+              padding: "16px 24px",
+              border: "2px solid rgba(212, 175, 55, 0.4)",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+              touchAction: "manipulation",
+            }}
+            onClick={onToggleFocusMode}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={(e) => {
+              handleTouchEnd();
+              // Also handle tap to toggle focus mode
+              if (!touchStart || !touchEnd) {
+                onToggleFocusMode();
+              }
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translate(-50%, -50%) scale(1.05)";
+              e.target.style.background = "rgba(0, 0, 0, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "translate(-50%, -50%) scale(1)";
+              e.target.style.background = "rgba(0, 0, 0, 0.3)";
+            }}
+          >
+            <div style={{ fontSize: "48px", lineHeight: 1 }}>📿</div>
+            <div
+              style={{
+                fontSize: "24px",
                 fontWeight: "bold",
-                display: "block",
-                marginBottom: "8px",
+                color: "#d4af37",
+                textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
+                fontFamily: "Cloister Black, serif",
               }}
             >
-              📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
-            </span>
-          )}
-          <p>{prayer}</p>
+              {hailMaryCount}
+            </div>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#d4af37",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                opacity: 0.8,
+              }}
+            >
+              Tap to show text
+            </div>
+          </div>
         </div>
+      );
+    }
+
+    // Normal mode - show text and image
+    return (
+      <div
+        className="stained-glass-prayer-container"
+        style={{
+          position: "relative",
+          width: "100vw",
+          height: "100vh",
+          overflow: "hidden",
+        }}
+      >
+        {/* Full-screen background image */}
         <div
           className="page-right"
           style={{
-            flex: 1,
-            minHeight: window.innerWidth < 768 ? "250px" : "auto",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <img
@@ -274,13 +543,337 @@ const ViewPrayers = forwardRef(
             src={finalImageUrl}
             alt={`${prayer.name} illustration`}
             style={{
-              width: window.innerWidth < 768 ? "100%" : "47vw",
-              height: window.innerWidth < 768 ? "250px" : "56vh",
-              objectFit: "contain",
-              borderRadius: "8px",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center",
+              filter: "brightness(0.7) contrast(1.1)",
             }}
           />
         </div>
+
+        {/* Stained glass overlay */}
+        <div
+          className="stained-glass-overlay"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(255, 255, 255, 0.05)",
+            backdropFilter: "blur(1px)",
+            border: "3px solid rgba(212, 175, 55, 0.3)",
+            borderRadius: "20px",
+            boxShadow: "inset 0 0 50px rgba(212, 175, 55, 0.1)",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Navigation edge indicators */}
+        <div
+          style={{
+            position: "absolute",
+            left: "20px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 5,
+            pointerEvents: "none",
+            opacity: 0.6,
+            transition: "opacity 0.3s ease",
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(212, 175, 55, 0.3)",
+              backdropFilter: "blur(8px)",
+              borderRadius: "50%",
+              width: "60px",
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "24px",
+              color: "var(--catholic-gold)",
+              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
+              border: "2px solid rgba(212, 175, 55, 0.5)",
+            }}
+          >
+            ←
+          </div>
+          <div
+            style={{
+              fontSize: "12px",
+              color: "var(--catholic-gold)",
+              textAlign: "center",
+              marginTop: "8px",
+              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
+              fontFamily: "Cloister Black, serif",
+            }}
+          >
+            Swipe
+          </div>
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            right: "20px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 5,
+            pointerEvents: "none",
+            opacity: 0.6,
+            transition: "opacity 0.3s ease",
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(212, 175, 55, 0.3)",
+              backdropFilter: "blur(8px)",
+              borderRadius: "50%",
+              width: "60px",
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "24px",
+              color: "var(--catholic-gold)",
+              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
+              border: "2px solid rgba(212, 175, 55, 0.5)",
+            }}
+          >
+            →
+          </div>
+          <div
+            style={{
+              fontSize: "12px",
+              color: "var(--catholic-gold)",
+              textAlign: "center",
+              marginTop: "8px",
+              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
+              fontFamily: "Cloister Black, serif",
+            }}
+          >
+            Swipe
+          </div>
+        </div>
+
+        {/* Navigation hint overlay */}
+        {showNavigationHint && (
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 15,
+              background: "rgba(0, 0, 0, 0.8)",
+              backdropFilter: "blur(12px)",
+              borderRadius: "20px",
+              padding: "24px",
+              border: "3px solid var(--catholic-gold)",
+              boxShadow: "0 12px 40px rgba(0, 0, 0, 0.6)",
+              textAlign: "center",
+              color: "var(--catholic-gold)",
+              fontFamily: "Cloister Black, serif",
+              animation: "fadeInOut 4s ease-in-out",
+            }}
+          >
+            <div style={{ fontSize: "32px", marginBottom: "16px" }}>📿</div>
+            <div style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>
+              Navigation Guide
+            </div>
+            <div style={{ fontSize: "14px", lineHeight: 1.6, opacity: 0.9 }}>
+              <div>👆 Swipe left/right to navigate prayers</div>
+              <div>⌨️ Use arrow keys or space bar</div>
+              <div>👆 Double-tap for focus mode</div>
+              <div>🎯 Tap bottom buttons for controls</div>
+            </div>
+          </div>
+        )}
+
+        {/* Prayer text overlay */}
+        <div
+          className="page-left"
+          ref={scrollContainerRef}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: `translate(-50%, -50%) ${isNavigating ? 'scale(0.98)' : 'scale(1)'}`,
+            width: window.innerWidth < 768 ? "90%" : "70%",
+            maxWidth: "800px",
+            maxHeight: "80vh",
+            overflow: "auto",
+            padding: window.innerWidth < 768 ? "16px" : "24px",
+            fontSize: `calc(${
+              window.innerWidth < 768 ? "clamp(16px, 4vw, 20px)" : "1.4rem"
+            } * var(--font-size-multiplier, 1.0))`,
+            background: "rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(8px)",
+            border: "2px solid rgba(212, 175, 55, 0.3)",
+            borderRadius: "16px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+            zIndex: 2,
+            pointerEvents: "auto",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            touchAction: "pan-y",
+          }}
+          onDoubleClick={onToggleFocusMode}
+          onTouchEnd={(e) => {
+            // Handle double tap on mobile
+            if (e.touches.length === 0) {
+              const now = Date.now();
+              if (now - (e.target.lastTouchEnd || 0) < 300) {
+                onToggleFocusMode();
+              }
+              e.target.lastTouchEnd = now;
+            }
+          }}
+          title="Swipe left/right to navigate • Double-tap for focus mode"
+        >
+          {showCounters && (
+            <div
+              style={{
+                color: "#d4af37",
+                fontSize: window.innerWidth < 768 ? "16px" : "20px",
+                fontWeight: "bold",
+                display: "block",
+                marginBottom: "16px",
+                textAlign: "center",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
+              }}
+            >
+              📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
+            </div>
+          )}
+          <p
+            style={{
+              margin: 0,
+              lineHeight: 1.8,
+              letterSpacing: "1px",
+              textAlign: "center",
+            }}
+          >
+            {prayer}
+          </p>
+        </div>
+
+        {/* Detailed Progress Bar - Only show if enabled */}
+        {showDetailedProgress && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "106px", // 10px (margin) + 88px (nav height) + 8px (gap)
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "calc(100% - 20px)",
+              maxWidth: "800px",
+              height: "60px",
+              background: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(8px)",
+              border: "2px solid rgba(212, 175, 55, 0.3)",
+              borderRadius: "12px",
+              padding: "8px",
+              display: "flex",
+              gap: "6px",
+              zIndex: 45, // Below navigation bar (1000) and sub-bar (999)
+              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            {segments.map((segment) => {
+              const isActive = currentSegment?.label === segment.label;
+              const isCompleted = currentPrayerIndex > segment.end;
+
+              return (
+                <div
+                  key={segment.label}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "4px",
+                    padding: "4px",
+                    background: "rgba(0, 0, 0, 0.3)",
+                    borderRadius: "8px",
+                    border: isActive
+                      ? "2px solid var(--catholic-gold)"
+                      : "1px solid rgba(212, 175, 55, 0.2)",
+                    cursor: "pointer", // For future interactivity
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {/* Thumbnail - grayscale if not completed, only for mysteries */}
+                  {segment.image && (
+                    <img
+                      src={segment.image}
+                      alt={segment.fullName}
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "4px",
+                        objectFit: "cover",
+                        filter: isCompleted ? "none" : "grayscale(100%)",
+                        opacity: isCompleted ? 1 : 0.6,
+                        transition: "filter 0.3s ease, opacity 0.3s ease",
+                        border: isActive
+                          ? "1px solid var(--catholic-gold)"
+                          : "none",
+                      }}
+                    />
+                  )}
+
+                  {/* Opening/Closing icon for non-mystery segments */}
+                  {!segment.image && (
+                    <div
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "4px",
+                        background: isCompleted
+                          ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))"
+                          : "rgba(212, 175, 55, 0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "18px",
+                        filter: isCompleted ? "none" : "grayscale(100%)",
+                        opacity: isCompleted ? 1 : 0.6,
+                        transition: "filter 0.3s ease, opacity 0.3s ease",
+                      }}
+                    >
+                      {segment.label === "Opening" ? "🌟" : "✨"}
+                    </div>
+                  )}
+
+                  {/* Mystery name */}
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      fontWeight: "bold",
+                      color: isActive
+                        ? "var(--catholic-gold)"
+                        : "var(--catholic-white)",
+                      textAlign: "center",
+                      lineHeight: 1.2,
+                      textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                    }}
+                  >
+                    {segment.fullName}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }
