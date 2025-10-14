@@ -28,6 +28,7 @@ const InteractiveRosary = ({
   });
 
   const [developerMode, setDeveloperMode] = React.useState(false);
+  const developerModeRef = React.useRef(false); // Track developer mode in a ref
 
   // Update ref when currentPrayerIndex prop changes
   React.useEffect(() => {
@@ -98,7 +99,9 @@ const InteractiveRosary = ({
   // Listen for developer mode toggle events
   useEffect(() => {
     const handleDeveloperModeChange = (event) => {
-      setDeveloperMode(event.detail.developerMode);
+      const newMode = event.detail.developerMode;
+      setDeveloperMode(newMode);
+      developerModeRef.current = newMode; // Update ref immediately
     };
 
     window.addEventListener("developerModeChange", handleDeveloperModeChange);
@@ -174,9 +177,9 @@ const InteractiveRosary = ({
     console.log("📿 Rosary sequence length:", rosarySequence.length);
 
     // --- Parameters ---
-    const beadSize = 8;
-    const crossBeadSize = 10;
-    const centerBeadSize = 12;
+    const beadSize = 8; // Regular beads
+    const crossBeadSize = 10; // Cross pieces
+    const centerBeadSize = 14; // Heart bead (increased from 12)
 
     const allBeads = [];
     const constraints = [];
@@ -218,60 +221,93 @@ const InteractiveRosary = ({
       };
     };
 
+    // --- Helper function to calculate opposite pole offset ---
+    // For lone beads, chains should connect to opposite sides
+    const getOppositePoleOffset = (beadA, beadB, radiusA) => {
+      const dx = beadB.position.x - beadA.position.x;
+      const dy = beadB.position.y - beadA.position.y;
+      const angle = Math.atan2(dy, dx) + Math.PI; // Add 180 degrees for opposite side
+      return {
+        x: radiusA * Math.cos(angle),
+        y: radiusA * Math.sin(angle),
+      };
+    };
+
     // --- Layout & Bead Creation ---
     const centerX = width / 2;
     const centerY = height / 2;
     const radius = Math.min(width, height) / 3.5;
     const chainSegmentLength = 15;
 
-    // --- Create Center Bead (Heart bead at top of loop) ---
-    // This is the Glory Be (G) after the opening 3 Hail Marys
+    // --- Create Center Bead (Heart medal at top of loop) ---
+    // This is decorative - holds image of Our Lady
     const centerBead = Matter.Bodies.circle(
       centerX,
       centerY - radius,
       centerBeadSize,
       beadOptions(colors.beads, {
-        beadNumber: 7, // Display number
-        prayerIndex: 7, // Index 7 = Glory Be (G)
-        prayerId: rosarySequence[7] || "unknown",
+        beadNumber: 0, // Display number (or hide it)
+        prayerIndex: null, // No prayer - decorative only
+        prayerId: null,
+        isHeartMedal: true, // Flag for special rendering
       })
     );
     allBeads.push(centerBead);
 
-    // --- Create Main Loop Beads (50 beads for 5 decades) ---
-    // Each decade has 10 Hail Marys (A) on physical beads
-    // Prayer mapping: Decade 1 (11-20), Decade 2 (25-34), Decade 3 (39-48), Decade 4 (53-62), Decade 5 (67-76)
-    const numMainBeads = 50;
+    // --- Create Main Loop Beads (54 beads: 50 regular + 4 lone decade markers) ---
+    // Structure: 10 beads → lone → 10 beads → lone → 10 beads → lone → 10 beads → lone → 10 beads
+    const numMainBeads = 54; // Changed from 50
     const mainLoopBeads = [];
     const numLoopPoints = numMainBeads + 1; // +1 because heart bead closes the loop
+
+    // Lone bead positions (after every 10 beads)
+    const loneBeadPositions = [10, 21, 32, 43]; // Positions in the 54-bead array
+    const loneBeadPrayerIndices = [23, 37, 51, 65]; // MGo2, MGo3, MGo4, MGo5
 
     for (let i = 0; i < numMainBeads; i++) {
       const angle = ((i + 1) / numLoopPoints) * 2 * Math.PI - Math.PI / 2;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
 
-      // Calculate which decade (0-4) and position within decade (0-9)
-      const decadeNum = Math.floor(i / 10);
-      const posInDecade = i % 10;
+      // Check if this is a lone bead position
+      const loneBeadIndex = loneBeadPositions.indexOf(i);
+      const isLoneBead = loneBeadIndex !== -1;
 
-      // Every 10th bead is LARGE (decade marker for Our Father)
-      const isDecadeBead = (i + 1) % 10 === 0;
-      const currentBeadSize = isDecadeBead ? centerBeadSize : beadSize;
+      let prayerIndex;
+      let prayerId;
 
-      // Each decade in prayer array: F(skip), M(skip), P(skip), A×10
-      // Decade starts at: 8 + (decadeNum * 14)
-      // Hail Marys start at: decadeStart + 3 (skip F, M, P)
-      const decadeStart = 8 + decadeNum * 14;
-      const prayerIndex = decadeStart + 3 + posInDecade; // +3 to skip F, Mystery, P
+      if (isLoneBead) {
+        // This is a lone bead (decade marker)
+        prayerIndex = loneBeadPrayerIndices[loneBeadIndex];
+        prayerId = rosarySequence[prayerIndex] || "unknown";
+      } else {
+        // This is a regular bead (Hail Mary)
+        // Calculate which group of 10 we're in (0-4)
+        let adjustedPosition = i;
+        // Subtract lone beads that come before this position
+        for (let j = 0; j < loneBeadPositions.length; j++) {
+          if (loneBeadPositions[j] < i) adjustedPosition--;
+        }
+
+        const decadeNum = Math.floor(adjustedPosition / 10);
+        const posInDecade = adjustedPosition % 10;
+
+        // Decade structure: LL(skip) P(skip) A×10 G(skip) F(skip)
+        // Decade 1 starts at 10, Decade 2 at 24, etc. (+14 each)
+        const decadeStart = 10 + decadeNum * 14;
+        prayerIndex = decadeStart + 1 + posInDecade; // +1 to skip P
+        prayerId = rosarySequence[prayerIndex] || "unknown";
+      }
 
       const bead = Matter.Bodies.circle(
         x,
         y,
-        currentBeadSize, // Variable size: large for decade markers
+        beadSize, // All beads in loop are regular size
         beadOptions(colors.beads, {
-          beadNumber: 8 + i, // Display number 8-57
+          beadNumber: 7 + i, // Display number 7-60
           prayerIndex: prayerIndex,
-          prayerId: rosarySequence[prayerIndex] || "unknown",
+          prayerId: prayerId,
+          isLoneBead: isLoneBead, // Flag for identification
         })
       );
       mainLoopBeads.push(bead);
@@ -279,47 +315,60 @@ const InteractiveRosary = ({
     allBeads.push(...mainLoopBeads);
 
     // --- Connect Main Loop Beads internally with pole connections ---
+    // Now connecting 54 beads (50 regular + 4 lone decade markers)
     for (let i = 0; i < numMainBeads - 1; i++) {
       const beadA = mainLoopBeads[i];
       const beadB = mainLoopBeads[i + 1];
 
       // Every 11th connection is longer (Glory Be separator between decades)
       const isLongSpring = (i + 1) % 11 === 10 || (i + 1) % 11 === 0;
-      const baseLength = isLongSpring
-        ? chainSegmentLength * 1.5
-        : chainSegmentLength;
-      // DOUBLE size for all other strings, reduce length to account for bead radii
-      const adjustedLength = Math.max(1, baseLength * 2 - 2 * beadSize);
+      // Use bead-based chain lengths: beadSize = 8px
+      const shortChain = beadSize * 0.6; // ~5px = 1 link (0.6 bead diameter)
+      const longChain = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
+      const adjustedLength = isLongSpring ? longChain : shortChain;
 
-      constraints.push(
-        Matter.Constraint.create({
-          ...springOptions(adjustedLength),
-          bodyA: beadA,
-          bodyB: beadB,
-          pointA: getPoleOffset(beadA, beadB, beadSize),
-          pointB: getPoleOffset(beadB, beadA, beadSize),
-        })
-      );
+      const constraint = Matter.Constraint.create({
+        ...springOptions(adjustedLength),
+        bodyA: beadA,
+        bodyB: beadB,
+        pointA: getPoleOffset(beadA, beadB, beadSize),
+        pointB: getPoleOffset(beadB, beadA, beadSize),
+      });
+
+      // Assign prayer indices to long chains between decades
+      // These are G (Glory Be) and F (Fatima) prayers
+      if (isLongSpring) {
+        const decadeNum = Math.floor(i / 11); // Every 11th connection is long (after 10 beads + 1 lone)
+        // After each set of 10 beads: G and F prayers
+        // Decade 1: indices 21, 22; Decade 2: 35, 36; etc.
+        const prayerIndex = 21 + decadeNum * 14;
+        constraint.prayerIndex = prayerIndex; // This will be G or F
+        constraint.prayerId = rosarySequence[prayerIndex];
+      }
+
+      constraints.push(constraint);
     }
 
     // --- Close the loop via the center/heart bead (with long springs and pole connections) ---
-    const adjustedLoopLength = Math.max(
-      1,
-      chainSegmentLength * 1.5 * 2 - beadSize - centerBeadSize // DOUBLE size
-    );
-
+    // Heart to first bead of first decade (P prayer, index 10) - LONG chain around lone bead
+    const heartToMainLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(adjustedLoopLength),
+        ...springOptions(heartToMainLength),
         bodyA: centerBead,
         bodyB: mainLoopBeads[0],
         pointA: getPoleOffset(centerBead, mainLoopBeads[0], centerBeadSize),
         pointB: getPoleOffset(mainLoopBeads[0], centerBead, beadSize),
+        prayerIndex: 10, // P (Our Father) before 1st decade
+        prayerId: rosarySequence[10],
       })
     );
+
+    // Last bead of 5th decade back to heart (G and F prayers, indices 77, 78) - LONG chain around lone bead
+    const mainToHeartLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(adjustedLoopLength),
+        ...springOptions(mainToHeartLength),
         bodyA: mainLoopBeads[numMainBeads - 1],
         bodyB: centerBead,
         pointA: getPoleOffset(
@@ -332,57 +381,109 @@ const InteractiveRosary = ({
           mainLoopBeads[numMainBeads - 1],
           centerBeadSize
         ),
+        prayerIndex: 77, // G prayer (Glory Be) - index 77
+        prayerId: rosarySequence[77],
       })
     );
 
-    // --- Create Tail Beads (3 beads connecting heart to cross) ---
-    // From center bead down: C (Credo), P (Our Father), A (Hail Mary)
-    // Prayer indices: 2, 3, 4
-    const numTailBeads = 3;
+    // --- Create Tail Beads (5 beads: 1 lone + 3 beads + 1 lone) ---
+    // Prayer indices: 9, 6, 5, 4, 2 (going DOWN from heart to cross)
+    const numTailBeads = 5; // 1 lone (1st Mystery) + 3 beads (A,A,A) + 1 lone (C)
     const tailBeads = [];
     let lastY = centerBead.position.y;
+
+    // Create 5 tail beads going UP from cross to heart
+    const tailIndices = [3, 4, 5, 6, 9]; // Our Father, A, A, A, 1st Mystery (going UP from cross to heart)
+    const tailBeadNumbers = [1, 2, 3, 4, 5]; // Display numbers
 
     for (let i = 0; i < numTailBeads; i++) {
       const x = centerBead.position.x;
       lastY += chainSegmentLength * 1.2;
-      const beadNumber = 6 - i; // Display numbers: 6, 5, 4 (counting down toward cross)
-      const prayerIndex = 2 + i; // Prayer indices: 2 (C), 3 (P), 4 (A)
-
-      // First bead is LARGE (Credo), rest are small
-      const isFirstBead = i === 0;
-      const currentBeadSize = isFirstBead ? centerBeadSize : beadSize;
 
       const bead = Matter.Bodies.circle(
         x,
         lastY,
-        currentBeadSize, // Variable size: first bead larger
+        beadSize, // All tail beads are regular size
         beadOptions(colors.beads, {
-          beadNumber: beadNumber,
-          prayerIndex: prayerIndex,
-          prayerId: rosarySequence[prayerIndex] || "unknown",
+          beadNumber: tailBeadNumbers[i],
+          prayerIndex: tailIndices[i],
+          prayerId: rosarySequence[tailIndices[i]] || "unknown",
         })
       );
       tailBeads.push(bead);
     }
     allBeads.push(...tailBeads);
 
-    // --- Connect Tail beads ---
+    // --- Connect Tail beads with appropriate chain lengths ---
+    // Heart bead to first tail bead (long chain) - prayers G (7) and F (8)
+    // Heart medal to last tail bead (5th bead with 1st mystery at index 9)
+    // Heart to last tail bead (1st Mystery bead at index 9) - LONG chain around lone bead
+    const heartToTailLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(chainSegmentLength * 1.5 * 2), // DOUBLE size
+        ...springOptions(heartToTailLength),
         bodyA: centerBead,
-        bodyB: tailBeads[0],
+        bodyB: tailBeads[numTailBeads - 1], // tailBeads[4] = index 9 (1st mystery)
+        pointA: getPoleOffset(
+          centerBead,
+          tailBeads[numTailBeads - 1],
+          centerBeadSize
+        ),
+        pointB: getOppositePoleOffset(
+          tailBeads[numTailBeads - 1],
+          centerBead,
+          beadSize
+        ), // Opposite pole for lone bead
+        prayerIndex: 7, // G prayer (Glory Be) - index 7
+        prayerId: rosarySequence[7],
       })
     );
+
+    // Connect tail beads with proper chain lengths and prayer indices
+    // tailBeads[0] = Our Father bead (prayer index 3, closest to cross)
+    // tailBeads[1] = first of 3 A beads (prayer index 4)
+    // tailBeads[2] = second of 3 A beads (prayer index 5)
+    // tailBeads[3] = third of 3 A beads (prayer index 6)
+    // tailBeads[4] = lone bead 1st Mystery (prayer index 9, closest to heart)
+
+    const tailChainPrayerIndices = [3, null, null, null];
+    // Chain 0 (C bead to first A): P (index 3)
+    // Chain 1-2 (between 3 A beads): none
+    // Chain 3 (last A to 1st Mystery bead): none (G prayer is on heart-to-tail chain)
+
     for (let i = 0; i < numTailBeads - 1; i++) {
-      const length = i === 1 ? chainSegmentLength : chainSegmentLength * 1.2;
-      constraints.push(
-        Matter.Constraint.create({
-          ...springOptions(length * 2), // DOUBLE size
-          bodyA: tailBeads[i],
-          bodyB: tailBeads[i + 1],
-        })
-      );
+      let chainLength;
+      let prayerIndex = tailChainPrayerIndices[i];
+
+      // Use bead-based chain lengths: beadSize = 8px
+      const shortChain = beadSize * 0.6; // ~5px = 1 link (0.6 bead diameter)
+      const longChain = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
+
+      if (i === 0) {
+        // Our Father bead → First A bead: LONG chain (empty)
+        chainLength = longChain;
+      } else if (i === 1 || i === 2) {
+        // Between the 3 A beads: SHORT chain (no prayers)
+        chainLength = shortChain;
+      } else if (i === 3) {
+        // Last A → 1st Mystery bead: LONG chain (Gloria+Fatima, index 7)
+        chainLength = longChain;
+      }
+
+      const constraint = Matter.Constraint.create({
+        ...springOptions(chainLength),
+        bodyA: tailBeads[i],
+        bodyB: tailBeads[i + 1],
+        pointA: getPoleOffset(tailBeads[i], tailBeads[i + 1], beadSize),
+        pointB: getPoleOffset(tailBeads[i + 1], tailBeads[i], beadSize),
+      });
+
+      if (prayerIndex !== null) {
+        constraint.prayerIndex = prayerIndex;
+        constraint.prayerId = rosarySequence[prayerIndex];
+      }
+
+      constraints.push(constraint);
     }
 
     // Create Cross Body (as a single composite object)
@@ -422,18 +523,25 @@ const InteractiveRosary = ({
     });
     allBeads.push(crossBody);
 
-    // Connect tail to the outermost side of cross square #1
-    const connectionOffset = {
-      // Start with vector to center of square #1, then move left by half a square's width
-      x: crossParts[0].position.x - crossBody.position.x - cbs / 2,
-      y: crossParts[0].position.y - crossBody.position.y,
+    // Cross to first tail bead (Our Father bead at index 3)
+    // This chain has AC prayer (index 1) - LONG chain around lone bead
+    const crossToTailLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
+
+    // Calculate proper pole connection point on cross (top center)
+    const crossPoleOffset = {
+      x: 0, // Center horizontally
+      y: -cbs, // Top edge of cross
     };
+
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(chainSegmentLength * 2),
-        bodyA: tailBeads[numTailBeads - 1],
+        ...springOptions(crossToTailLength),
+        bodyA: tailBeads[0], // tailBeads[0] = index 3 (Our Father bead)
         bodyB: crossBody,
-        pointB: connectionOffset,
+        pointA: getOppositePoleOffset(tailBeads[0], crossBody, beadSize), // Opposite pole for lone bead
+        pointB: crossPoleOffset,
+        prayerIndex: 1, // AC prayer (Apostles' Creed)
+        prayerId: rosarySequence[1],
       })
     );
 
@@ -486,8 +594,16 @@ const InteractiveRosary = ({
         if (bead.isCrossComposite) {
           bead.crossParts.forEach((part) => {
             // Only show prayer index in developer mode
-            if (developerMode) {
-              context.font = `bold ${crossBeadSize * 0.8}px Arial`;
+            if (developerModeRef.current) {
+              context.font = `bold ${crossBeadSize * 1.2}px Arial`;
+              context.fillStyle = "#000000";
+              context.strokeStyle = "#FFFFFF";
+              context.lineWidth = 2;
+              context.strokeText(
+                `${bead.prayerIndex}`,
+                part.position.x,
+                part.position.y
+              );
               context.fillText(
                 `${bead.prayerIndex}`,
                 part.position.x,
@@ -512,21 +628,79 @@ const InteractiveRosary = ({
           return; // Skip normal rendering for composite body
         }
 
+        // Render heart medal with Our Lady image
+        if (bead.isHeartMedal) {
+          // Load image if not already loaded
+          if (!render.textures) render.textures = {};
+          if (!render.textures["maryImage"]) {
+            const img = new Image();
+            img.src =
+              "/gallery-images/misterios/modooscuro/MetMary-870x489.jpg";
+            img.onload = () => {
+              render.textures["maryImage"] = img;
+            };
+          }
+
+          // Draw image if loaded
+          if (render.textures["maryImage"]) {
+            const img = render.textures["maryImage"];
+
+            context.save();
+            context.beginPath();
+            context.arc(
+              bead.position.x,
+              bead.position.y,
+              centerBeadSize,
+              0,
+              2 * Math.PI
+            );
+            context.clip();
+
+            context.drawImage(
+              img,
+              bead.position.x - centerBeadSize,
+              bead.position.y - centerBeadSize,
+              centerBeadSize * 2,
+              centerBeadSize * 2
+            );
+
+            context.restore();
+
+            // Draw gold border around medal
+            context.strokeStyle = colors.highlight;
+            context.lineWidth = 2;
+            context.beginPath();
+            context.arc(
+              bead.position.x,
+              bead.position.y,
+              centerBeadSize,
+              0,
+              2 * Math.PI
+            );
+            context.stroke();
+          }
+
+          return; // Skip normal bead rendering
+        }
+
         // Determine bead size for rendering
         let size = beadSize;
+        // Only the heart bead is large
         if (bead.id === centerBead.id) size = centerBeadSize;
-        // Check if it's a decade bead (every 10th bead in main loop)
-        if (bead.beadNumber && bead.beadNumber >= 8) {
-          const loopPosition = bead.beadNumber - 7; // 8 -> 1, 18 -> 11, etc.
-          if (loopPosition % 10 === 0) size = centerBeadSize;
-        }
-        // Check if it's first tail bead (bead number 6)
-        if (bead.beadNumber === 6) size = centerBeadSize;
+        // All other beads (tail, main loop, decade markers) are regular size
 
         // Draw prayer index only in developer mode
         const prayerIndexToDisplay = bead.prayerIndex;
-        if (prayerIndexToDisplay !== undefined && developerMode) {
-          context.font = `bold ${size * 0.8}px Arial`;
+        if (prayerIndexToDisplay !== undefined && developerModeRef.current) {
+          context.font = `bold ${size * 1.2}px Arial`;
+          context.fillStyle = "#000000";
+          context.strokeStyle = "#FFFFFF";
+          context.lineWidth = 2;
+          context.strokeText(
+            `${prayerIndexToDisplay}`,
+            bead.position.x,
+            bead.position.y
+          );
           context.fillText(
             `${prayerIndexToDisplay}`,
             bead.position.x,
@@ -547,6 +721,55 @@ const InteractiveRosary = ({
             2 * Math.PI
           );
           context.stroke();
+        }
+      });
+
+      // Highlight active chain constraints (for chain prayers)
+      const allConstraints = Matter.Composite.allConstraints(world);
+      allConstraints.forEach((constraint) => {
+        if (constraint.prayerIndex === currentPrayerIndexRef.current) {
+          // Draw thick gold line for active chain prayer
+          if (constraint.bodyA && constraint.bodyB) {
+            const posA = constraint.bodyA.position;
+            const posB = constraint.bodyB.position;
+
+            context.strokeStyle = colors.highlight;
+            context.lineWidth = 5;
+            context.beginPath();
+            context.moveTo(posA.x, posA.y);
+            context.lineTo(posB.x, posB.y);
+            context.stroke();
+          }
+        }
+
+        // Show chain length in developer mode
+        if (developerModeRef.current && constraint.bodyA && constraint.bodyB) {
+          const posA = constraint.bodyA.position;
+          const posB = constraint.bodyB.position;
+          const midX = (posA.x + posB.x) / 2;
+          const midY = (posA.y + posB.y) / 2;
+
+          // Calculate actual distance
+          const dx = posB.x - posA.x;
+          const dy = posB.y - posA.y;
+          const actualLength = Math.sqrt(dx * dx + dy * dy);
+
+          // Show length info
+          context.font = `bold 10px Arial`;
+          context.fillStyle = "#000000";
+          context.strokeStyle = "#FFFFFF";
+          context.lineWidth = 1;
+          context.strokeText(`${Math.round(actualLength)}px`, midX, midY - 15);
+          context.fillText(`${Math.round(actualLength)}px`, midX, midY - 15);
+
+          // Show prayer info if available
+          if (
+            constraint.prayerIndex !== null &&
+            constraint.prayerIndex !== undefined
+          ) {
+            context.strokeText(`P${constraint.prayerIndex}`, midX, midY + 5);
+            context.fillText(`P${constraint.prayerIndex}`, midX, midY + 5);
+          }
         }
       });
     });

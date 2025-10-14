@@ -7,13 +7,31 @@ import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
+
+/**
+ * Get random unused mystery image for starting display
+ * @param {string} currentMystery - Current mystery type to exclude
+ * @returns {object} Random mystery image object
+ */
+const getRandomUnusedMysteryImage = (currentMystery) => {
+  const allMysteries = ["gozosos", "dolorosos", "gloriosos", "luminosos"];
+  const unusedMysteries = allMysteries.filter((m) => m !== currentMystery);
+  const randomMystery =
+    unusedMysteries[Math.floor(Math.random() * unusedMysteries.length)];
+  const mysteryImages = RosarioPrayerBook.mysteries[randomMystery].filter(
+    (m) => typeof m === "object" && m.img
+  );
+  const randomIndex = Math.floor(Math.random() * mysteryImages.length);
+  return mysteryImages[randomIndex];
+};
+
 function App() {
   const [prayer, setPrayer] = useState(
     "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
   );
   const [currentMystery, setcurrentMystery] = useState(getDefaultMystery);
-  const [prayerImg, setPrayerImg] = useState(
-    RosarioPrayerBook.mysteries[currentMystery][0]
+  const [prayerImg, setPrayerImg] = useState(() =>
+    getRandomUnusedMysteryImage(getDefaultMystery())
   );
   const [count, setCount] = useState(0);
 
