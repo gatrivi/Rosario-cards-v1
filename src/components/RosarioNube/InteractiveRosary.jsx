@@ -27,6 +27,8 @@ const InteractiveRosary = ({
     return saved !== "false"; // Default to visible
   });
 
+  const [developerMode, setDeveloperMode] = React.useState(false);
+
   // Update ref when currentPrayerIndex prop changes
   React.useEffect(() => {
     currentPrayerIndexRef.current = currentPrayerIndex;
@@ -92,6 +94,34 @@ const InteractiveRosary = ({
         handleVisibilityChange
       );
   }, []);
+
+  // Listen for developer mode toggle events
+  useEffect(() => {
+    const handleDeveloperModeChange = (event) => {
+      setDeveloperMode(event.detail.developerMode);
+    };
+
+    window.addEventListener("developerModeChange", handleDeveloperModeChange);
+    return () =>
+      window.removeEventListener(
+        "developerModeChange",
+        handleDeveloperModeChange
+      );
+  }, []);
+
+  // Update constraint visibility when developer mode changes
+  useEffect(() => {
+    if (matterInstance.current?.world) {
+      const allConstraints = Matter.Composite.allConstraints(
+        matterInstance.current.world
+      );
+      allConstraints.forEach((constraint) => {
+        if (constraint.render) {
+          constraint.render.anchors = developerMode;
+        }
+      });
+    }
+  }, [developerMode]);
 
   useEffect(() => {
     if (!sceneRef.current) return;
@@ -167,7 +197,13 @@ const InteractiveRosary = ({
       stiffness: stiffness,
       damping: 0.5,
       length: length,
-      render: { strokeStyle: "#94a3b8", lineWidth: 2, type: "line" },
+      render: {
+        strokeStyle: "#94a3b8",
+        lineWidth: 2,
+        type: "line",
+        visible: true, // Always show lines
+        anchors: developerMode, // Only show anchor points in developer mode
+      },
     });
 
     // --- Helper function to calculate pole connection offsets ---
@@ -450,7 +486,8 @@ const InteractiveRosary = ({
         if (bead.isCrossComposite) {
           bead.crossParts.forEach((part) => {
             const numberToDisplay = part.crossNumber;
-            if (numberToDisplay) {
+            // Only show numbers in developer mode
+            if (numberToDisplay && developerMode) {
               context.font = `bold ${crossBeadSize * 0.8}px Arial`;
               context.fillText(
                 `${numberToDisplay}`,
@@ -487,9 +524,9 @@ const InteractiveRosary = ({
         // Check if it's first tail bead (bead number 6)
         if (bead.beadNumber === 6) size = centerBeadSize;
 
-        // Draw bead number
+        // Draw bead number only in developer mode
         const numberToDisplay = bead.beadNumber;
-        if (numberToDisplay) {
+        if (numberToDisplay && developerMode) {
           context.font = `bold ${size * 0.8}px Arial`;
           context.fillText(
             `${numberToDisplay}`,
@@ -498,7 +535,7 @@ const InteractiveRosary = ({
           );
         }
 
-        // Highlight current prayer bead
+        // Highlight current prayer bead (always shown)
         if (bead.prayerIndex === currentPrayerIndexRef.current) {
           context.strokeStyle = colors.highlight;
           context.lineWidth = 3;

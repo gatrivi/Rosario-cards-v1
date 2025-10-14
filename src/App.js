@@ -32,6 +32,9 @@ function App() {
   // Detailed progress bar state - default disabled
   const [showDetailedProgress, setShowDetailedProgress] = useState(false);
 
+  // Developer mode state - shows bead numbers and constraints
+  const [developerMode, setDeveloperMode] = useState(false);
+
   // Listen for left-handed mode changes from toggle component
   useEffect(() => {
     const handleLeftHandedModeChange = (event) => {
@@ -102,6 +105,16 @@ function App() {
     setCount(0);
   };
 
+  const toggleDeveloperMode = useCallback(() => {
+    setDeveloperMode((prev) => !prev);
+    // Dispatch event for InteractiveRosary to listen
+    window.dispatchEvent(
+      new CustomEvent("developerModeChange", {
+        detail: { developerMode: !developerMode },
+      })
+    );
+  }, [developerMode]);
+
   // Listen for theme changes and update current prayer image
   useEffect(() => {
     const handleThemeChange = () => {
@@ -138,7 +151,7 @@ function App() {
         exitFocusMode();
       }
       // Arrow keys for navigation
-      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
         event.preventDefault();
         window.dispatchEvent(
           new CustomEvent("prayerScrollNext", {
@@ -146,7 +159,7 @@ function App() {
           })
         );
       }
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
         event.preventDefault();
         window.dispatchEvent(
           new CustomEvent("prayerScrollPrev", {
@@ -155,7 +168,7 @@ function App() {
         );
       }
       // Space bar to toggle focus mode
-      if (event.key === ' ' && !focusMode) {
+      if (event.key === " " && !focusMode) {
         event.preventDefault();
         enterFocusMode();
       }
@@ -200,6 +213,8 @@ function App() {
         onToggleDetailedProgress={() =>
           setShowDetailedProgress(!showDetailedProgress)
         }
+        developerMode={developerMode}
+        onToggleDeveloperMode={toggleDeveloperMode}
       />
 
       {/* Main content area with stained glass design */}

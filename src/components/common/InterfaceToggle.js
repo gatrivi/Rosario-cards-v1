@@ -33,6 +33,8 @@ const InterfaceToggle = ({
   onReset = () => {}, // NEW: Reset counter function
   showDetailedProgress = false,
   onToggleDetailedProgress = () => {},
+  developerMode = false,
+  onToggleDeveloperMode = () => {},
   className = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -364,6 +366,34 @@ const InterfaceToggle = ({
               />
               <span style={{ fontWeight: "bold", fontSize: "14px" }}>
                 📊 Detailed Progress
+              </span>
+            </label>
+
+            {/* Developer Mode Toggle */}
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={developerMode}
+                onChange={onToggleDeveloperMode}
+                style={{
+                  marginRight: "12px",
+                  transform: "scale(1.2)",
+                  accentColor: "var(--catholic-gold)",
+                }}
+              />
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>
+                🔧 Developer Mode
               </span>
             </label>
 
