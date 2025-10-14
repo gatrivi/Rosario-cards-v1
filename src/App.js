@@ -20,7 +20,7 @@ function App() {
   // Interface visibility states for clean prayer mode
   const [showRosary, setShowRosary] = useState(true);
   const [showCounters, setShowCounters] = useState(true);
-  
+
   // Focus mode state - hides text and shows only rosary counter
   const [focusMode, setFocusMode] = useState(false);
 
@@ -28,6 +28,9 @@ function App() {
   const [leftHandedMode, setLeftHandedMode] = useState(() => {
     return localStorage.getItem("leftHandedMode") === "true";
   });
+
+  // Detailed progress bar state - default disabled
+  const [showDetailedProgress, setShowDetailedProgress] = useState(false);
 
   // Listen for left-handed mode changes from toggle component
   useEffect(() => {
@@ -124,14 +127,14 @@ function App() {
   useEffect(() => {
     const handleKeyPress = (event) => {
       // F key to toggle focus mode
-      if (event.key === 'f' || event.key === 'F') {
+      if (event.key === "f" || event.key === "F") {
         if (event.ctrlKey || event.metaKey) {
           event.preventDefault();
           toggleFocusMode();
         }
       }
       // Escape key to exit focus mode
-      if (event.key === 'Escape' && focusMode) {
+      if (event.key === "Escape" && focusMode) {
         exitFocusMode();
       }
     };
@@ -159,20 +162,23 @@ function App() {
   return (
     <div className="app">
       {/* Settings Panel - Consolidated controls */}
-      <div style={{ position: "absolute", top: "10px", left: "10px", zIndex: 100 }}>
-        <InterfaceToggle
-          showRosary={showRosary}
-          showCounters={showCounters}
-          onToggleRosary={() => setShowRosary(!showRosary)}
-          onToggleCounters={() => setShowCounters(!showCounters)}
-          leftHandedMode={leftHandedMode}
-          setLeftHandedMode={setLeftHandedMode}
-          focusMode={focusMode}
-          onToggleFocusMode={toggleFocusMode}
-          onEnterFocusMode={enterFocusMode}
-          onExitFocusMode={exitFocusMode}
-        />
-      </div>
+      <InterfaceToggle
+        showRosary={showRosary}
+        showCounters={showCounters}
+        onToggleRosary={() => setShowRosary(!showRosary)}
+        onToggleCounters={() => setShowCounters(!showCounters)}
+        leftHandedMode={leftHandedMode}
+        setLeftHandedMode={setLeftHandedMode}
+        focusMode={focusMode}
+        onToggleFocusMode={toggleFocusMode}
+        onEnterFocusMode={enterFocusMode}
+        onExitFocusMode={exitFocusMode}
+        onReset={handleResetClick}
+        showDetailedProgress={showDetailedProgress}
+        onToggleDetailedProgress={() =>
+          setShowDetailedProgress(!showDetailedProgress)
+        }
+      />
 
       {/* Main content area with stained glass design */}
       <div
@@ -217,27 +223,26 @@ function App() {
           showCounters={showCounters}
           focusMode={focusMode}
           onToggleFocusMode={toggleFocusMode}
+          getRosarySequence={getRosarySequence}
+          showDetailedProgress={showDetailedProgress}
         />
       </div>
-
 
       {/* Prayer Buttons with stained glass styling */}
-      <div style={{ position: "absolute", bottom: "10px", left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
-        <PrayerButtons
-          prayers={RosarioPrayerBook}
-          countUp={handleCountClick}
-          reset={handleResetClick}
-          setPrayer={setPrayer}
-          setPrayerImg={setPrayerImg}
-          currentMystery={currentMystery}
-          setcurrentMystery={setcurrentMystery}
-          jumpToPrayer={jumpToPrayer}
-          currentPrayerIndex={currentPrayerIndex}
-          navigateToIndex={navigateToIndex}
-          getRosarySequence={getRosarySequence}
-          leftHandedMode={leftHandedMode}
-        />
-      </div>
+      <PrayerButtons
+        prayers={RosarioPrayerBook}
+        countUp={handleCountClick}
+        reset={handleResetClick}
+        setPrayer={setPrayer}
+        setPrayerImg={setPrayerImg}
+        currentMystery={currentMystery}
+        setcurrentMystery={setcurrentMystery}
+        jumpToPrayer={jumpToPrayer}
+        currentPrayerIndex={currentPrayerIndex}
+        navigateToIndex={navigateToIndex}
+        getRosarySequence={getRosarySequence}
+        leftHandedMode={leftHandedMode}
+      />
     </div>
   );
 }

@@ -3,22 +3,41 @@ import { FaLightbulb, FaMoon } from "react-icons/fa"; // Import icons here
 const ThemeToggle = () => {
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage first, then system preference
-    if (localStorage.getItem("theme") === "dark") return true;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    try {
+      if (localStorage.getItem("theme") === "dark") return true;
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+    }
+
+    // Safely check for matchMedia API
+    if (window.matchMedia) {
+      try {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches;
+      } catch (error) {
+        console.warn("matchMedia not supported:", error);
+        return false; // Default to light mode if API fails
+      }
+    }
+
+    return false; // Default to light mode if matchMedia not available
   });
 
   useEffect(() => {
     // Apply theme to body
-    if (darkMode) {
-      document.body.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.body.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    try {
+      if (darkMode) {
+        document.body.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        document.body.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
 
-    // Dispatch custom event for theme change
-    window.dispatchEvent(new CustomEvent("themeChanged"));
+      // Dispatch custom event for theme change
+      window.dispatchEvent(new CustomEvent("themeChanged"));
+    } catch (error) {
+      console.warn("Error applying theme:", error);
+    }
   }, [darkMode]);
 
   const toggleTheme = () => setDarkMode(!darkMode);

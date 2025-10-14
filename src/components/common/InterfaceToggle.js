@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 /**
  * InterfaceToggle Component
@@ -29,17 +30,28 @@ const InterfaceToggle = ({
   onToggleFocusMode = () => {},
   onEnterFocusMode = () => {},
   onExitFocusMode = () => {},
+  onReset = () => {}, // NEW: Reset counter function
+  showDetailedProgress = false,
+  onToggleDetailedProgress = () => {},
   className = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [fontSize, setFontSize] = useState(() => {
-    return localStorage.getItem("fontSize") || "medium";
+    try {
+      return localStorage.getItem("fontSize") || "medium";
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+      return "medium";
+    }
   });
 
   // Initialize font size on mount
   useEffect(() => {
     const multiplier = getFontSizeMultiplier(fontSize);
-    document.documentElement.style.setProperty('--font-size-multiplier', multiplier);
+    document.documentElement.style.setProperty(
+      "--font-size-multiplier",
+      multiplier
+    );
   }, [fontSize]);
 
   /**
@@ -82,11 +94,17 @@ const InterfaceToggle = ({
   const handleLeftHandedToggle = () => {
     const newMode = !leftHandedMode;
     setLeftHandedMode(newMode);
-    localStorage.setItem("leftHandedMode", newMode.toString());
+    try {
+      localStorage.setItem("leftHandedMode", newMode.toString());
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+    }
     // Dispatch event for other components
-    window.dispatchEvent(new CustomEvent("leftHandedModeChange", {
-      detail: { leftHandedMode: newMode }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("leftHandedModeChange", {
+        detail: { leftHandedMode: newMode },
+      })
+    );
   };
 
   /**
@@ -94,13 +112,22 @@ const InterfaceToggle = ({
    */
   const handleFontSizeChange = (newSize) => {
     setFontSize(newSize);
-    localStorage.setItem("fontSize", newSize);
+    try {
+      localStorage.setItem("fontSize", newSize);
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+    }
     // Apply font size to document
-    document.documentElement.style.setProperty('--font-size-multiplier', getFontSizeMultiplier(newSize));
+    document.documentElement.style.setProperty(
+      "--font-size-multiplier",
+      getFontSizeMultiplier(newSize)
+    );
     // Dispatch event for other components
-    window.dispatchEvent(new CustomEvent("fontSizeChange", {
-      detail: { fontSize: newSize }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("fontSizeChange", {
+        detail: { fontSize: newSize },
+      })
+    );
   };
 
   /**
@@ -108,18 +135,37 @@ const InterfaceToggle = ({
    */
   const getFontSizeMultiplier = (size) => {
     const multipliers = {
-      'small': '0.8',
-      'medium': '1.0',
-      'large': '1.2',
-      'xlarge': '1.4'
+      small: "0.8",
+      medium: "1.0",
+      large: "1.2",
+      xlarge: "1.4",
     };
-    return multipliers[size] || '1.0';
+    return multipliers[size] || "1.0";
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Settings shortcut: Ctrl+, or Cmd+,
+      if ((event.ctrlKey || event.metaKey) && event.key === ",") {
+        event.preventDefault();
+        setIsExpanded(!isExpanded);
+      }
+
+      // Escape to close settings
+      if (event.key === "Escape" && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [isExpanded]);
 
   return (
     <div
       className={`interface-toggle ${className}`}
-      style={{ position: "fixed", top: "10px", left: "10px", zIndex: 2 }}
+      style={{ position: "fixed", top: "10px", left: "10px", zIndex: 20 }}
     >
       {/* Main toggle button */}
       <button
@@ -188,9 +234,10 @@ const InterfaceToggle = ({
               width: "100%",
               padding: "12px",
               marginBottom: "15px",
-              background: showRosary && showCounters 
-                ? "linear-gradient(135deg, var(--catholic-red), #8b0000)" 
-                : "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))",
+              background:
+                showRosary && showCounters
+                  ? "linear-gradient(135deg, var(--catholic-red), #8b0000)"
+                  : "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))",
               color: "var(--catholic-white)",
               border: "2px solid var(--glass-border)",
               borderRadius: "12px",
@@ -205,7 +252,9 @@ const InterfaceToggle = ({
           </button>
 
           {/* Individual toggles */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {/* Interactive Rosary Toggle */}
             <label
               style={{
@@ -223,13 +272,15 @@ const InterfaceToggle = ({
                 type="checkbox"
                 checked={showRosary}
                 onChange={handleRosaryToggle}
-                style={{ 
+                style={{
                   marginRight: "12px",
                   transform: "scale(1.2)",
                   accentColor: "var(--catholic-gold)",
                 }}
               />
-              <span style={{ fontWeight: "bold", fontSize: "14px" }}>📿 Interactive Rosary</span>
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>
+                📿 Interactive Rosary
+              </span>
             </label>
 
             {/* Counters Toggle */}
@@ -249,13 +300,15 @@ const InterfaceToggle = ({
                 type="checkbox"
                 checked={showCounters}
                 onChange={handleCountersToggle}
-                style={{ 
+                style={{
                   marginRight: "12px",
                   transform: "scale(1.2)",
                   accentColor: "var(--catholic-gold)",
                 }}
               />
-              <span style={{ fontWeight: "bold", fontSize: "14px" }}>📊 Prayer Counters</span>
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>
+                📊 Prayer Counters
+              </span>
             </label>
 
             {/* Left-Handed Mode Toggle */}
@@ -275,13 +328,43 @@ const InterfaceToggle = ({
                 type="checkbox"
                 checked={leftHandedMode}
                 onChange={handleLeftHandedToggle}
-                style={{ 
+                style={{
                   marginRight: "12px",
                   transform: "scale(1.2)",
                   accentColor: "var(--catholic-gold)",
                 }}
               />
-              <span style={{ fontWeight: "bold", fontSize: "14px" }}>👈 Left-Handed Mode</span>
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>
+                👈 Left-Handed Mode
+              </span>
+            </label>
+
+            {/* Detailed Progress Bar Toggle */}
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showDetailedProgress}
+                onChange={onToggleDetailedProgress}
+                style={{
+                  marginRight: "12px",
+                  transform: "scale(1.2)",
+                  accentColor: "var(--catholic-gold)",
+                }}
+              />
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>
+                📊 Detailed Progress
+              </span>
             </label>
 
             {/* Focus Mode Controls */}
@@ -293,12 +376,14 @@ const InterfaceToggle = ({
                 border: "1px solid var(--glass-border)",
               }}
             >
-              <div style={{ 
-                fontWeight: "bold", 
-                fontSize: "14px", 
-                marginBottom: "8px",
-                color: "var(--catholic-gold)"
-              }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  color: "var(--catholic-gold)",
+                }}
+              >
                 🎯 Focus Mode
               </div>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -307,18 +392,22 @@ const InterfaceToggle = ({
                   style={{
                     padding: "8px 12px",
                     borderRadius: "8px",
-                    border: focusMode ? "2px solid var(--catholic-gold)" : "1px solid var(--glass-border)",
-                    background: focusMode 
+                    border: focusMode
+                      ? "2px solid var(--catholic-gold)"
+                      : "1px solid var(--glass-border)",
+                    background: focusMode
                       ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-red))"
                       : "var(--glass-bg)",
-                    color: focusMode ? "var(--catholic-white)" : "var(--text-color)",
+                    color: focusMode
+                      ? "var(--catholic-white)"
+                      : "var(--text-color)",
                     cursor: "pointer",
                     fontSize: "12px",
                     fontWeight: "bold",
                     transition: "all 0.3s ease",
                     display: "flex",
                     alignItems: "center",
-                    gap: "4px"
+                    gap: "4px",
                   }}
                 >
                   {focusMode ? "📖 Show Text" : "🎯 Focus Mode"}
@@ -337,7 +426,7 @@ const InterfaceToggle = ({
                     transition: "all 0.3s ease",
                     display: "flex",
                     alignItems: "center",
-                    gap: "4px"
+                    gap: "4px",
                   }}
                 >
                   {focusMode ? "❌ Exit" : "▶️ Enter"}
@@ -354,20 +443,22 @@ const InterfaceToggle = ({
                 border: "1px solid var(--glass-border)",
               }}
             >
-              <div style={{ 
-                fontWeight: "bold", 
-                fontSize: "14px", 
-                marginBottom: "8px",
-                color: "var(--catholic-gold)"
-              }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  color: "var(--catholic-gold)",
+                }}
+              >
                 🔤 Font Size
               </div>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                 {[
-                  { key: 'small', label: 'S', title: 'Small' },
-                  { key: 'medium', label: 'M', title: 'Medium' },
-                  { key: 'large', label: 'L', title: 'Large' },
-                  { key: 'xlarge', label: 'XL', title: 'Extra Large' }
+                  { key: "small", label: "S", title: "Small" },
+                  { key: "medium", label: "M", title: "Medium" },
+                  { key: "large", label: "L", title: "Large" },
+                  { key: "xlarge", label: "XL", title: "Extra Large" },
                 ].map(({ key, label, title }) => (
                   <button
                     key={key}
@@ -376,11 +467,18 @@ const InterfaceToggle = ({
                       width: "32px",
                       height: "32px",
                       borderRadius: "8px",
-                      border: fontSize === key ? "2px solid var(--catholic-gold)" : "1px solid var(--glass-border)",
-                      background: fontSize === key 
-                        ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-red))"
-                        : "var(--glass-bg)",
-                      color: fontSize === key ? "var(--catholic-white)" : "var(--text-color)",
+                      border:
+                        fontSize === key
+                          ? "2px solid var(--catholic-gold)"
+                          : "1px solid var(--glass-border)",
+                      background:
+                        fontSize === key
+                          ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-red))"
+                          : "var(--glass-bg)",
+                      color:
+                        fontSize === key
+                          ? "var(--catholic-white)"
+                          : "var(--text-color)",
                       cursor: "pointer",
                       fontSize: "12px",
                       fontWeight: "bold",
@@ -388,12 +486,86 @@ const InterfaceToggle = ({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      title: title
+                      title: title,
                     }}
                   >
                     {label}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Actions Section */}
+            <div
+              style={{
+                padding: "12px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                marginTop: "8px",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  marginBottom: "12px",
+                  color: "var(--catholic-gold)",
+                }}
+              >
+                🎬 Actions
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              >
+                {/* Reset Counter Button */}
+                <button
+                  onClick={onReset}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "2px solid var(--glass-border)",
+                    background: "var(--glass-bg)",
+                    color: "var(--text-color)",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: "bold",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background =
+                      "linear-gradient(135deg, var(--catholic-gold), var(--catholic-red))";
+                    e.target.style.color = "var(--catholic-white)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "var(--glass-bg)";
+                    e.target.style.color = "var(--text-color)";
+                  }}
+                >
+                  🔄 Reset Counter
+                </button>
+
+                {/* Theme Toggle */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px",
+                    borderRadius: "8px",
+                    background: "rgba(0, 0, 0, 0.2)",
+                  }}
+                >
+                  <span style={{ fontSize: "13px", fontWeight: "bold" }}>
+                    🌙 Theme
+                  </span>
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
           </div>
@@ -402,7 +574,7 @@ const InterfaceToggle = ({
           <div
             style={{
               marginTop: "15px",
-              fontSize: "12px",
+              fontSize: "11px",
               color: "var(--catholic-gold)",
               fontStyle: "italic",
               borderTop: "2px solid var(--glass-border)",
@@ -411,7 +583,7 @@ const InterfaceToggle = ({
               textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)",
             }}
           >
-            💡 Hide elements for distraction-free prayer
+            💡 Tip: Press Ctrl+, to toggle settings
           </div>
         </div>
       )}

@@ -36,6 +36,8 @@ const ViewPrayers = forwardRef(
       showCounters = true,
       focusMode = false,
       onToggleFocusMode = () => {},
+      getRosarySequence = () => [],
+      showDetailedProgress = false,
     },
     ref
   ) => {
@@ -103,6 +105,82 @@ const ViewPrayers = forwardRef(
     };
 
     const hailMaryCount = getHailMaryCount();
+
+    /**
+     * Get 7-segment progress data for rosary with mystery images
+     */
+    const getProgressSegments = () => {
+      // Get mystery images from prayer data - filter out string entries
+      const isDark = localStorage.getItem("theme") === "dark";
+      const validMysteries =
+        prayers.mysteries?.[currentMystery]?.filter(
+          (m) => typeof m === "object" && m.img
+        ) || [];
+      const mysteryImages = validMysteries.map((m) =>
+        isDark && m.imgmo ? m.imgmo : m.img
+      );
+
+      const segments = [
+        {
+          label: "Opening",
+          fullName: "Opening Prayers",
+          start: 0,
+          end: 8,
+          image: null,
+        },
+        {
+          label: "M1",
+          fullName: mysteryImages[0] ? "1st Mystery" : "1st Mystery",
+          start: 9,
+          end: 22,
+          image: mysteryImages[0],
+        },
+        {
+          label: "M2",
+          fullName: mysteryImages[1] ? "2nd Mystery" : "2nd Mystery",
+          start: 23,
+          end: 36,
+          image: mysteryImages[1],
+        },
+        {
+          label: "M3",
+          fullName: mysteryImages[2] ? "3rd Mystery" : "3rd Mystery",
+          start: 37,
+          end: 50,
+          image: mysteryImages[2],
+        },
+        {
+          label: "M4",
+          fullName: mysteryImages[3] ? "4th Mystery" : "4th Mystery",
+          start: 51,
+          end: 64,
+          image: mysteryImages[3],
+        },
+        {
+          label: "M5",
+          fullName: mysteryImages[4] ? "5th Mystery" : "5th Mystery",
+          start: 65,
+          end: 78,
+          image: mysteryImages[4],
+        },
+        {
+          label: "Closing",
+          fullName: "Closing Prayers",
+          start: 79,
+          end: 81,
+          image: null,
+        },
+      ];
+
+      const currentSegment = segments.find(
+        (seg) =>
+          currentPrayerIndex >= seg.start && currentPrayerIndex <= seg.end
+      );
+
+      return { segments, currentSegment };
+    };
+
+    const { segments, currentSegment } = getProgressSegments();
 
     /**
      * Expose scroll control methods to parent component
@@ -222,7 +300,7 @@ const ViewPrayers = forwardRef(
       baseImageUrl = AveMariaD;
     }
     const finalImageUrl = prayerImg ? prayerImg : baseImageUrl;
-    
+
     // Focus mode - show only image with discreet counter
     if (focusMode) {
       return (
@@ -315,21 +393,25 @@ const ViewPrayers = forwardRef(
             }}
           >
             <div style={{ fontSize: "48px", lineHeight: 1 }}>📿</div>
-            <div style={{ 
-              fontSize: "24px", 
-              fontWeight: "bold", 
-              color: "#d4af37",
-              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
-              fontFamily: "Cloister Black, serif"
-            }}>
+            <div
+              style={{
+                fontSize: "24px",
+                fontWeight: "bold",
+                color: "#d4af37",
+                textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
+                fontFamily: "Cloister Black, serif",
+              }}
+            >
               {hailMaryCount}
             </div>
-            <div style={{ 
-              fontSize: "12px", 
-              color: "#d4af37",
-              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
-              opacity: 0.8
-            }}>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#d4af37",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                opacity: 0.8,
+              }}
+            >
               Tap to show text
             </div>
           </div>
@@ -409,7 +491,9 @@ const ViewPrayers = forwardRef(
             maxHeight: "80vh",
             overflow: "auto",
             padding: window.innerWidth < 768 ? "16px" : "24px",
-            fontSize: `calc(${window.innerWidth < 768 ? "clamp(16px, 4vw, 20px)" : "1.4rem"} * var(--font-size-multiplier, 1.0))`,
+            fontSize: `calc(${
+              window.innerWidth < 768 ? "clamp(16px, 4vw, 20px)" : "1.4rem"
+            } * var(--font-size-multiplier, 1.0))`,
             background: "rgba(255, 255, 255, 0.08)",
             backdropFilter: "blur(8px)",
             border: "2px solid rgba(212, 175, 55, 0.3)",
@@ -460,6 +544,116 @@ const ViewPrayers = forwardRef(
             {prayer}
           </p>
         </div>
+
+        {/* Detailed Progress Bar - Only show if enabled */}
+        {showDetailedProgress && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "106px", // 10px (margin) + 88px (nav height) + 8px (gap)
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "calc(100% - 20px)",
+              maxWidth: "800px",
+              height: "60px",
+              background: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(8px)",
+              border: "2px solid rgba(212, 175, 55, 0.3)",
+              borderRadius: "12px",
+              padding: "8px",
+              display: "flex",
+              gap: "6px",
+              zIndex: 45, // Below sub-bar (99) but above other content
+              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            {segments.map((segment) => {
+              const isActive = currentSegment?.label === segment.label;
+              const isCompleted = currentPrayerIndex > segment.end;
+
+              return (
+                <div
+                  key={segment.label}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "4px",
+                    padding: "4px",
+                    background: "rgba(0, 0, 0, 0.3)",
+                    borderRadius: "8px",
+                    border: isActive
+                      ? "2px solid var(--catholic-gold)"
+                      : "1px solid rgba(212, 175, 55, 0.2)",
+                    cursor: "pointer", // For future interactivity
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {/* Thumbnail - grayscale if not completed, only for mysteries */}
+                  {segment.image && (
+                    <img
+                      src={segment.image}
+                      alt={segment.fullName}
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "4px",
+                        objectFit: "cover",
+                        filter: isCompleted ? "none" : "grayscale(100%)",
+                        opacity: isCompleted ? 1 : 0.6,
+                        transition: "filter 0.3s ease, opacity 0.3s ease",
+                        border: isActive
+                          ? "1px solid var(--catholic-gold)"
+                          : "none",
+                      }}
+                    />
+                  )}
+
+                  {/* Opening/Closing icon for non-mystery segments */}
+                  {!segment.image && (
+                    <div
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "4px",
+                        background: isCompleted
+                          ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))"
+                          : "rgba(212, 175, 55, 0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "18px",
+                        filter: isCompleted ? "none" : "grayscale(100%)",
+                        opacity: isCompleted ? 1 : 0.6,
+                        transition: "filter 0.3s ease, opacity 0.3s ease",
+                      }}
+                    >
+                      {segment.label === "Opening" ? "🌟" : "✨"}
+                    </div>
+                  )}
+
+                  {/* Mystery name */}
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      fontWeight: "bold",
+                      color: isActive
+                        ? "var(--catholic-gold)"
+                        : "var(--catholic-white)",
+                      textAlign: "center",
+                      lineHeight: 1.2,
+                      textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                    }}
+                  >
+                    {segment.fullName}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }

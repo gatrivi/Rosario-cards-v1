@@ -1,6 +1,5 @@
-import ThemeToggle from "../common/ThemeToggle";
 import "./PrayerButtons.css";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 function PrayerButtons({
   prayers,
   setPrayer,
@@ -19,7 +18,8 @@ function PrayerButtons({
   const [activeSection, setActiveSection] = useState("none");
   const [cycleIndex, setCycleIndex] = useState(0);
   const [subView, setSubView] = useState(null);
-
+  const [activeTooltip, setActiveTooltip] = useState(null);
+  const touchTimer = useRef(null);
 
   // Helper function to get prayer object by ID
   const getPrayerById = useCallback(
@@ -218,6 +218,33 @@ function PrayerButtons({
     handlePrayerAndCount,
   ]);
 
+  // Touch handlers for mobile tooltips
+  const handleTouchStart = (buttonKey) => {
+    if (touchTimer.current) clearTimeout(touchTimer.current);
+    touchTimer.current = setTimeout(() => {
+      setActiveTooltip(buttonKey);
+    }, 500); // Show after 500ms hold
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimer.current) clearTimeout(touchTimer.current);
+    // Keep tooltip visible for 2 seconds
+    if (activeTooltip) {
+      setTimeout(() => setActiveTooltip(null), 2000);
+    }
+  };
+
+  // Button descriptions for tooltips
+  const buttonDescriptions = {
+    prev: "Previous Prayer",
+    apertura: "Opening Prayers",
+    decada: "Decade Prayers",
+    misterios: "Select Mystery",
+    "misterio-type": "Cycle Mystery Type",
+    cierre: "Closing Prayers",
+    next: "Next Prayer",
+  };
+
   // Iconos simples (emoji)
   // Navigation buttons are ordered based on left-handed mode preference
   const navigationSegments = [
@@ -246,10 +273,11 @@ function PrayerButtons({
   const segments = leftHandedMode
     ? [...navigationSegments].reverse()
     : navigationSegments;
-  
+
   // Calculate progress using existing rosaryArray
   const totalPrayers = rosaryArray.length;
-  const progress = totalPrayers > 0 ? ((currentPrayerIndex + 1) / totalPrayers) * 100 : 0;
+  const progress =
+    totalPrayers > 0 ? ((currentPrayerIndex + 1) / totalPrayers) * 100 : 0;
 
   return (
     <div className="segmented-bar">
@@ -257,10 +285,7 @@ function PrayerButtons({
         {/* Progress bar row */}
         <div className="progress-row">
           <div className="integrated-progress">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${progress}%` }}
-            />
+            <div className="progress-fill" style={{ width: `${progress}%` }} />
             <div className="progress-text">
               {currentPrayerIndex + 1}/{totalPrayers} ({Math.round(progress)}%)
             </div>
@@ -273,54 +298,103 @@ function PrayerButtons({
             <button
               key={key}
               onClick={onClick}
-              className={`segment-btn ${activeSection === key ? "active" : ""} ${
-                disabled ? "disabled" : ""
-              }`}
+              onTouchStart={() => handleTouchStart(key)}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+              className={`segment-btn ${
+                activeSection === key ? "active" : ""
+              } ${disabled ? "disabled" : ""}`}
               disabled={disabled}
+              data-tooltip={buttonDescriptions[key]}
+              aria-label={buttonDescriptions[key]}
+              style={{ position: "relative" }}
             >
               <span className="icon">{icon}</span>
+              {activeTooltip === key && (
+                <div className="mobile-tooltip">{buttonDescriptions[key]}</div>
+              )}
             </button>
           ))}
         </div>
       </div>
 
       {/* Sub-bar para misterios específicos */}
-      {subView === "misterios" && (
-        <div className="sub-bar active">
-          <button
-            className="close-btn"
-            onClick={handleCloseSubBar}
-            title="Cerrar"
-          >
-            ✕
-          </button>
-          {prayers.mysteries?.[currentMystery]?.map((prayer, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setCycleIndex(idx);
-                handleJumpToPrayer(prayer.id);
-                setSubView(null); // Close sub-bar after selection
-              }}
-              className={`sub-btn ${cycleIndex === idx ? "active" : ""}`}
-            >
-              {idx + 1}
-            </button>
-          ))}
-        </div>
-      )}
+      {subView === "misterios" &&
+        (() => {
+          // Filter out string entries (default images) to get only mystery objects
+          const validMysteries =
+            prayers.mysteries?.[currentMystery]?.filter(
+              (m) => typeof m === "object" && m.id && m.title
+            ) || [];
 
-      {/* Preview actual oración */}
+          const mysteryTypeNames = {
+            gozosos: "Misterios Gozosos",
+            dolorosos: "Misterios Dolorosos",
+            gloriosos: "Misterios Gloriosos",
+            luminosos: "Misterios Luminosos",
+          };
+
+          return (
+            <div className="sub-bar active">
+              <button
+                className="close-btn"
+                onClick={handleCloseSubBar}
+                title="Cerrar"
+              >
+                ✕
+              </button>
+
+              {/* Mystery section title */}
+              <div className="sub-bar-title">
+                {mysteryTypeNames[currentMystery]}
+              </div>
+
+              {validMysteries.map((mystery, idx) => {
+                const isDark = localStorage.getItem("theme") === "dark";
+                const thumbnailSrc =
+                  isDark && mystery.imgmo ? mystery.imgmo : mystery.img;
+
+                // Extract short name from title (e.g., "MG1: La Anunciación..." -> "La Anunciación")
+                const shortName =
+                  mystery.title.split(":")[1]?.trim() || mystery.title;
+
+                // Check if this mystery has been visited
+                const rosaryArray = getRosarySequence();
+                const mysteryStartIndex = rosaryArray.findIndex(
+                  (id) => id === mystery.id
+                );
+                const isVisited = currentPrayerIndex > mysteryStartIndex;
+
+                return (
+                  <button
+                    key={mystery.id}
+                    onClick={() => {
+                      setCycleIndex(idx);
+                      handleJumpToPrayer(mystery.id);
+                      setSubView(null);
+                    }}
+                    className={`sub-btn ${cycleIndex === idx ? "active" : ""}`}
+                  >
+                    <img
+                      src={thumbnailSrc}
+                      alt={shortName}
+                      style={{
+                        filter: isVisited ? "none" : "grayscale(100%)",
+                        opacity: isVisited ? 1 : 0.7,
+                        transition: "filter 0.3s ease, opacity 0.3s ease",
+                      }}
+                    />
+                    <div className="mystery-name">{shortName}</div>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+      {/* Preview actual oración - moved inside bar to prevent off-screen */}
       <div className="preview">
         {currentRosaryItem?.title || "Listo para rezar"}
-      </div>
-
-      {/* Botones adicionales */}
-      <div className="additional-controls">
-        <button onClick={reset} className="control-btn">
-          Reset
-        </button>
-        <ThemeToggle />
       </div>
     </div>
   );
