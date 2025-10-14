@@ -341,21 +341,21 @@ const RosarioPrayerBook = {
       title: "Señal de la Cruz",
       img: "/gallery-images/misterios/senalcruz.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/francisco_de_asis_2.jpg",
-      text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+      text: "En el nombre del Padre,\n y del Hijo, \ny del Espíritu Santo. \n\nAmén.",
     },
     {
       id: "AC",
       title: "Acto de Contrición",
       img: "/gallery-images/misterios/latin-credo.jpeg",
       imgmo: "/gallery-images/misterios/modooscuro/contricion.jpg",
-      text: "Yo confieso ante Dios todopoderoso\ny ante vosotros, hermanos,\nque he pecado mucho\nde pensamiento, palabra, obra y omisión.\n\nPor mi culpa, por mi culpa, por mi gran culpa.\n\nPor eso ruego a Santa María, siempre Virgen,\na los ángeles, a los santos\ny a vosotros, hermanos,\nque intercedáis por mí\nante Dios, nuestro Señor.\n\nAmén.",
+      text: "Yo confieso ante Dios todopoderoso\ny ante vosotros, hermanos,\nque he pecado mucho\nde pensamiento, palabra, obra y omisión.\n\nPor mi culpa,\npor mi culpa,\npor mi gran culpa.\n\nPor eso ruego a Santa María, siempre Virgen,\na los ángeles, a los santos\ny a vosotros, hermanos,\nque intercedáis por mí\nante Dios, nuestro Señor.\n\nAmén.",
     },
     {
       id: "C",
       title: "Credo",
       img: "/gallery-images/misterios/latin-credo.jpeg",
       imgmo: "/gallery-images/misterios/modooscuro/credo.webp",
-      text: "Creo en Dios, Padre todopoderoso,\nCreador del cielo y de la tierra.\n\nCreo en Jesucristo, su único Hijo, nuestro Señor,\nque fue concebido por obra y gracia del Espíritu Santo,\nnació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos\ny está sentado a la derecha de Dios, Padre todopoderoso.\nDesde allí ha de venir a juzgar a vivos y muertos.\n\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna.\n\nAmén.",
+      text: "Creo en Dios,\nPadre todopoderoso,\nCreador del cielo y de la tierra.\n\nCreo en Jesucristo,\nsu único Hijo, nuestro Señor,\nque fue concebido por obra y gracia del Espíritu Santo,\nnació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos\ny está sentado a la derecha de Dios, Padre todopoderoso.\nDesde allí ha de venir a juzgar a vivos y muertos.\n\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna.\n\nAmén.",
     },
   ],
   decada: [
@@ -371,13 +371,13 @@ const RosarioPrayerBook = {
       title: "Ave María",
       img: "/gallery-images/misterios/latin-ave-maria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/ave-maria.jpg",
-      text: "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, Jesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, \npecadores, \nahora y en la hora de nuestra muerte. \nAmén.",
+      text: "Dios te salve, María,\nllena eres de gracia,\nel Señor es contigo.\nBendita tú eres entre todas las mujeres,\ny bendito es el fruto de tu vientre, Jesús.\nSanta María,\nMadre de Dios,\nruega por nosotros, pecadores,\nahora y en la hora de nuestra muerte.\nAmén.",
     },
     {
       id: "G",
       title: "Gloria",
       img: "/gallery-images/misterios/latin-gloria.jpg",
-      imgmo: "/gallery-images/misterios/modooscuro/gloria.webp",
+      imgmo: "/gallery-images/misterios/modooscuro/gloria2.webp",
       text: "Gloria al Padre,\ny al Hijo,\ny al Espíritu Santo.\n\nComo era en el principio,\nahora y siempre,\npor los siglos de los siglos.\n\nAmén.",
     },
     {
@@ -385,7 +385,7 @@ const RosarioPrayerBook = {
       title: "Oración de Fátima",
       img: "/gallery-images/misterios/latin-gloria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/roseLimaJuarez-870x1250.jpg",
-      text: "Oh Jesús mío,\nperdona nuestros pecados,\nlíbranos del fuego del infierno,\nlleva al cielo a todas las almas,\nespecialmente a las más necesitadas\nde tu misericordia.",
+      text: "Oh Jesús mío,\nperdona nuestros pecados,\nlíbranos del fuego del infierno,\nlleva al cielo a todas las almas,\nespecialmente a las más necesitadas\nde tu misericordia.\n\nAmén.",
     },
   ],
   mysteries: {
@@ -428,7 +428,7 @@ const RosarioPrayerBook = {
         title: "MG5: El Niño Jesús perdido y hallado en el Templo",
         img: "/gallery-images/misterios/misteriogozo5.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogozo5.webp",
-        text: "Y aconteció que tres días después le hallaron en el templo, sentado en medio de los doctores de la ley, oyéndoles y preguntándoles. Y todos los que le oían, se maravillaban de su inteligencia y de sus respuestas. Lucas 2:46-47\n\nLucas 2:49: Entonces él les dijo: ¿Por qué me buscabais? ¿No sabíais que en los negocios de mi Padre me es necesario estar?\n\nLucas 2:52: Y Jesús crecía en sabiduría y en estatura, y en gracia para con Dios y los hombres.",
+        text: "Y aconteció que tres días después le hallaron en el templo,\nsentado en medio de los doctores de la ley,\noyéndoles y preguntándoles.\nY todos los que le oían,\nse maravillaban de su inteligencia y de sus respuestas.\nLucas 2:46-47\n\nLucas 2:49: Entonces él les dijo:\n¿Por qué me buscabais?\n¿No sabíais que en los negocios de mi Padre\nme es necesario estar?\n\nLucas 2:52: Y Jesús crecía en sabiduría y en estatura,\ny en gracia para con Dios y los hombres.",
       },
     ],
     dolorosos: [
@@ -488,7 +488,7 @@ const RosarioPrayerBook = {
         img: "/gallery-images/misterios/misteriogloria1.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria1.webp",
 
-        text: "Mateo 28:6: No está aquí, pues ha resucitado, como dijo. Venid, ved el lugar donde fue puesto el Señor.\n1 Corintios 15:20: Mas ahora Cristo ha resucitado de los muertos; primicias de los que durmieron es hecho.\nRomanos 6:9: Sabiendo que Cristo, habiendo resucitado de los muertos, ya no muere; la muerte no se enseñorea más de él.",
+        text: "Mateo 28:6: No está aquí,\npues ha resucitado, como dijo.\nVenid, ved el lugar donde fue puesto el Señor.\n\n1 Corintios 15:20: Mas ahora Cristo ha resucitado de los muertos;\nprimicias de los que durmieron es hecho.\n\nRomanos 6:9: Sabiendo que Cristo,\nhabiendo resucitado de los muertos,\nya no muere;\nla muerte no se enseñorea más de él.",
       },
       {
         id: "MGl2",
@@ -497,7 +497,7 @@ const RosarioPrayerBook = {
         img: "/gallery-images/misterios/misteriogloria2.jpg",
 
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria2.webp",
-        text: "Hechos 1:9: Y habiendo dicho estas cosas, viéndolo ellos, fue alzado, y le recibió una nube que le ocultó de sus ojos.\nMarcos 16:19: Y el Señor, después que les habló, fue recibido arriba en el cielo, y se sentó a la diestra de Dios.\nEfesios 4:10: El que descendió, es el mismo que también subió por encima de todos los cielos para llenarlo todo.",
+        text: "Hechos 1:9: Y habiendo dicho estas cosas,\nviéndolo ellos, fue alzado,\ny le recibió una nube que le ocultó de sus ojos.\n\nMarcos 16:19: Y el Señor,\ndespués que les habló,\nfue recibido arriba en el cielo,\ny se sentó a la diestra de Dios.\n\nEfesios 4:10: El que descendió,\nes el mismo que también subió\npor encima de todos los cielos\npara llenarlo todo.",
       },
       {
         id: "MGl3",
@@ -506,7 +506,7 @@ const RosarioPrayerBook = {
         img: "/gallery-images/misterios/misteriogloria3.jpg",
 
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria3.webp",
-        text: "Hechos 2:4: Y fueron todos llenos del Espíritu Santo, y comenzaron a hablar en otras lenguas, según el Espíritu les daba que hablasen.\nJuan 14:26: Mas el Consolador, el Espíritu Santo, a quien el Padre enviará en mi nombre, él os enseñará todas las cosas, y os recordará todo lo que yo os he dicho.\nHechos 1:8: Pero recibiréis poder, cuando haya venido sobre vosotros el Espíritu Santo, y me seréis testigos en Jerusalén, en toda Judea, en Samaria, y hasta lo último de la tierra.",
+        text: "Hechos 2:4: Y fueron todos llenos del Espíritu Santo,\ny comenzaron a hablar en otras lenguas,\nsegún el Espíritu les daba que hablasen.\n\nJuan 14:26: Mas el Consolador,\nel Espíritu Santo,\na quien el Padre enviará en mi nombre,\nél os enseñará todas las cosas,\ny os recordará todo lo que yo os he dicho.\n\nHechos 1:8: Pero recibiréis poder,\ncuando haya venido sobre vosotros el Espíritu Santo,\ny me seréis testigos en Jerusalén,\nen toda Judea, en Samaria,\ny hasta lo último de la tierra.",
       },
       {
         id: "MGl4",
@@ -514,7 +514,7 @@ const RosarioPrayerBook = {
         title: "MG4: La Asunción de María Santísima",
         img: "/gallery-images/misterios/misteriogloria4.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria4.webp",
-        text: "Lucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\n¡Levántate, amada mía, hermosa mía, y vente! Porque, mira, ha pasado ya el invierno, han cesado las lluvias y se han ido. (...) Muéstrame tu semblante, déjame oír tu voz; porque tu voz es dulce, y bello tu semblante.\nLucas 1:48: Porque ha mirado la bajeza de su sierva; pues he aquí, desde ahora me dirán bienaventurada todas las generaciones.\nCantares 2:10: Mi amado habló, y me dijo: Levántate, oh amiga mía, hermosa mía, y ven.",
+        text: "Lucas 1:48: Porque ha mirado la bajeza de su sierva;\npues he aquí, desde ahora\nme dirán bienaventurada todas las generaciones.\n\n¡Levántate, amada mía, hermosa mía, y vente!\nPorque, mira, ha pasado ya el invierno,\nhan cesado las lluvias y se han ido.\n(...) Muéstrame tu semblante,\ndéjame oír tu voz;\nporque tu voz es dulce,\ny bello tu semblante.\n\nLucas 1:48: Porque ha mirado la bajeza de su sierva;\npues he aquí, desde ahora\nme dirán bienaventurada todas las generaciones.\n\nCantares 2:10: Mi amado habló, y me dijo:\nLevántate, oh amiga mía, hermosa mía, y ven.",
       },
       {
         id: "MGl5",
@@ -523,7 +523,7 @@ const RosarioPrayerBook = {
           "MG5: La Coronación de María como Reina del Cielo y de la Tierra",
         img: "/gallery-images/misterios/misteriogloria5.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misteriogloria5.webp",
-        text: "Apocalipsis 12:1: Apareció en el cielo una gran señal: una mujer vestida del sol, con la luna debajo de sus pies, y sobre su cabeza una corona de doce estrellas.\nSalmo 45:9: Está la reina a tu diestra con oro de Ofir.\nJeremías 13:18: Di al rey y a la reina: Humillaos, sentaos en tierra; porque la corona de vuestra gloria caerá de vuestras cabezas.",
+        text: "Apocalipsis 12:1: Apareció en el cielo una gran señal:\nuna mujer vestida del sol,\ncon la luna debajo de sus pies,\ny sobre su cabeza una corona de doce estrellas.\n\nSalmo 45:9: Está la reina a tu diestra con oro de Ofir.\n\nJeremías 13:18: Di al rey y a la reina:\nHumillaos, sentaos en tierra;\nporque la corona de vuestra gloria\ncaerá de vuestras cabezas.",
       },
     ],
     luminosos: [
@@ -534,7 +534,7 @@ const RosarioPrayerBook = {
         title: "ML1: El Bautismo de Jesús en el Jordán",
         img: "/gallery-images/misterios/misterioLUZ1.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misterioLUZ1.webp",
-        text: "En esos días Jesús vino de Nazaret, pueblo de Galilea, y se hizo bautizar por Juan en el río Jordán. CUando salió del agua, los Cielos se rsagaron para él y vio al Espíritu Santo que bajaba sobre él como paloma. Y del Cielo llegaron estas palabras: 'Tú eres mi Hijo, el Amado; tú eres mi Elegido'.\n\nY yo le vi, y he dado testimonio de que éste es el Hijo de Dios. Juan 1:34",
+        text: "En esos días Jesús vino de Nazaret,\npueblo de Galilea,\ny se hizo bautizar por Juan en el río Jordán.\nCuando salió del agua,\nlos Cielos se rasgaron para él\ny vio al Espíritu Santo que bajaba sobre él como paloma.\nY del Cielo llegaron estas palabras:\n'Tú eres mi Hijo, el Amado;\ntú eres mi Elegido'.\n\nY yo le vi, y he dado testimonio\nde que éste es el Hijo de Dios.\nJuan 1:34",
       },
       {
         id: "ML2",
@@ -542,7 +542,7 @@ const RosarioPrayerBook = {
         title: "ML2: Las Bodas de Caná",
         img: "/gallery-images/misterios/misterioLUZ2.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misterioLUZ2.webp",
-        text: "Su madre dijo a los que servían: Haced todo lo que él os dijere. Juan 2:5\n\nY faltando el vino, la madre de Jesús le dijo: No tienen vino. Jesús le dijo: ¿Qué tienes conmigo, mujer? Aún no ha venido mi hora. Juan 2:3-4\n\nJuan 2:11: Este principio de señales hizo Jesús en Caná de Galilea, y manifestó su gloria; y sus discípulos creyeron en él.",
+        text: "Su madre dijo a los que servían:\nHaced todo lo que él os dijere.\nJuan 2:5\n\nY faltando el vino,\nla madre de Jesús le dijo:\nNo tienen vino.\nJesús le dijo:\n¿Qué tienes conmigo, mujer?\nAún no ha venido mi hora.\nJuan 2:3-4\n\nJuan 2:11: Este principio de señales hizo Jesús en Caná de Galilea,\ny manifestó su gloria;\ny sus discípulos creyeron en él.",
       },
       {
         id: "ML3",
@@ -550,7 +550,7 @@ const RosarioPrayerBook = {
         title: "ML3: El Anuncio del Reino de Dios",
         img: "/gallery-images/misterios/misterioLUZ3.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misterioLUZ3.webp",
-        text: "Diciendo: El tiempo se ha cumplido, y el reino de Dios se ha acercado; arrepentíos, y creed en el evangelio. Marcos 1:15\n\nMateo 5:3: Bienaventurados los pobres en espíritu, porque de ellos es el reino de los cielos.\n\nLucas 4:43: Pero él les dijo: Es necesario que también a otras ciudades anuncie el evangelio del reino de Dios; porque para esto he sido enviado.",
+        text: "Diciendo:\nEl tiempo se ha cumplido,\ny el reino de Dios se ha acercado;\narrepentíos, y creed en el evangelio.\nMarcos 1:15\n\nMateo 5:3: Bienaventurados los pobres en espíritu,\nporque de ellos es el reino de los cielos.\n\nLucas 4:43: Pero él les dijo:\nEs necesario que también a otras ciudades\nanuncie el evangelio del reino de Dios;\nporque para esto he sido enviado.",
       },
       {
         id: "ML4",
@@ -558,7 +558,7 @@ const RosarioPrayerBook = {
         title: "ML4: La Transfiguración",
         img: "/gallery-images/misterios/misterioLUZ4.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misterioLUZ4.webp",
-        text: "Y se transfiguró delante de ellos, y resplandeció su rostro como el sol, y sus vestidos se hicieron blancos como la luz. Mateo 17:2\n\nMateo 17:5: Mientras él aún hablaba, una nube de luz los cubrió; y he aquí una voz desde la nube, que decía: Este es mi Hijo amado, en quien tengo complacencia; a él oíd.\n\n2 Pedro 1:17-18: Pues cuando él recibió de Dios Padre honra y gloria, le fue enviada desde la magnífica gloria una voz que decía: Este es mi Hijo amado, en el cual tengo complacencia. Y nosotros oímos esta voz enviada del cielo, cuando estábamos con él en el monte santo.",
+        text: "Y se transfiguró delante de ellos,\ny resplandeció su rostro como el sol,\ny sus vestidos se hicieron blancos como la luz.\nMateo 17:2\n\nMateo 17:5: Mientras él aún hablaba,\nuna nube de luz los cubrió;\ny he aquí una voz desde la nube,\nque decía:\nEste es mi Hijo amado,\nen quien tengo complacencia;\na él oíd.\n\n2 Pedro 1:17-18: Pues cuando él recibió de Dios Padre\nhonra y gloria,\nle fue enviada desde la magnífica gloria\nuna voz que decía:\nEste es mi Hijo amado,\nen el cual tengo complacencia.\nY nosotros oímos esta voz enviada del cielo,\ncuando estábamos con él en el monte santo.",
       },
       {
         id: "ML5",
@@ -566,7 +566,7 @@ const RosarioPrayerBook = {
         title: "ML5: La Institución de la Eucaristía",
         img: "/gallery-images/misterios/misterioLUZ5.jpg",
         imgmo: "/gallery-images/misterios/modooscuro/misterioLUZ5.webp",
-        text: "Yo soy el pan vivo que descendió del cielo; si alguno comiere de este pan, vivirá para siempre; y el pan que yo daré es mi carne, la cual yo daré por la vida del mundo. Juan 6:51\n\nY habiendo dado gracias, lo partió, y dijo: Tomad, comed; esto es mi cuerpo que por vosotros es partido; haced esto en memoria de mí. Asimismo tomó también la copa, después de haber cenado, diciendo: Esta copa es el nuevo pacto en mi sangre; haced esto todas las veces que la bebiereis, en memoria de mí. 1 Corintios 11:24-25\n\n Y mientras comían, tomó Jesús el pan, y bendijo, y lo partió, y dio a sus discípulos, y dijo: Tomad, comed; esto es mi cuerpo. Mateo 26:26",
+        text: "Yo soy el pan vivo que descendió del cielo;\nsi alguno comiere de este pan,\nvivirá para siempre;\ny el pan que yo daré es mi carne,\nla cual yo daré por la vida del mundo.\nJuan 6:51\n\nY habiendo dado gracias, lo partió, y dijo:\nTomad, comed;\nesto es mi cuerpo que por vosotros es partido;\nhaced esto en memoria de mí.\nAsimismo tomó también la copa,\ndespués de haber cenado, diciendo:\nEsta copa es el nuevo pacto en mi sangre;\nhaced esto todas las veces que la bebiereis,\nen memoria de mí.\n1 Corintios 11:24-25\n\nY mientras comían,\ntomó Jesús el pan,\ny bendijo, y lo partió,\ny dio a sus discípulos,\ny dijo:\nTomad, comed;\nesto es mi cuerpo.\nMateo 26:26",
       },
     ],
   },
@@ -583,14 +583,14 @@ const RosarioPrayerBook = {
       title: "Salve Regina",
       img: "/gallery-images/misterios/salve-regina.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/salve-regina.jpg",
-      text: "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra; Dios te salve. A Ti clamamos los desterrados hijos de Eva; a Ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos; y después de este destierro muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clemente, oh piadosa, oh dulce Virgen María! Ruega por nosotros, Santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.",
+      text: "Dios te salve, Reina y Madre de misericordia,\nvida, dulzura y esperanza nuestra;\nDios te salve.\nA Ti clamamos los desterrados hijos de Eva;\na Ti suspiramos,\ngimiendo y llorando en este valle de lágrimas.\nEa, pues, Señora, abogada nuestra,\nvuelve a nosotros esos tus ojos misericordiosos;\ny después de este destierro\nmuéstranos a Jesús,\nfruto bendito de tu vientre.\n¡Oh clemente, oh piadosa, oh dulce Virgen María!\nRuega por nosotros, Santa Madre de Dios,\npara que seamos dignos de alcanzar\nlas promesas de nuestro Señor Jesucristo.\nAmén.",
     },
     {
       id: "Papa",
       title: "Oración por el Papa",
       img: "/gallery-images/misterios/ezekielv.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/papa.jpg",
-      text: "Oh Dios, que has puesto la sede de Pedro como fundamento de la unidad de la Iglesia, concede al Papa Francisco, tu siervo, ser para todos los fieles principio y fundamento visible de la fe y de la comunión. Por Jesucristo, nuestro Señor. Amén. En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+      text: "Oh Dios,\nque has puesto la sede de Pedro\ncomo fundamento de la unidad de la Iglesia,\nconcede al Papa Francisco, tu siervo,\nser para todos los fieles\nprincipio y fundamento visible\nde la fe y de la comunión.\nPor Jesucristo, nuestro Señor.\nAmén.\n\nEn el nombre del Padre,\ny del Hijo,\ny del Espíritu Santo.\nAmén.",
     },
   ],
 };
