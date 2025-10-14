@@ -259,7 +259,7 @@ const ViewPrayers = forwardRef(
     // Handle touch end and determine swipe direction
     const handleTouchEnd = useCallback(() => {
       if (!touchStart || !touchEnd) return;
-      
+
       const distance = touchStart - touchEnd;
       const isLeftSwipe = distance > minSwipeDistance;
       const isRightSwipe = distance < -minSwipeDistance;
@@ -337,10 +337,16 @@ const ViewPrayers = forwardRef(
     useEffect(() => {
       const container = scrollContainerRef.current;
       if (container) {
-        container.addEventListener("touchstart", handleTouchStart, { passive: true });
-        container.addEventListener("touchmove", handleTouchMove, { passive: true });
-        container.addEventListener("touchend", handleTouchEnd, { passive: true });
-        
+        container.addEventListener("touchstart", handleTouchStart, {
+          passive: true,
+        });
+        container.addEventListener("touchmove", handleTouchMove, {
+          passive: true,
+        });
+        container.addEventListener("touchend", handleTouchEnd, {
+          passive: true,
+        });
+
         return () => {
           container.removeEventListener("touchstart", handleTouchStart);
           container.removeEventListener("touchmove", handleTouchMove);
@@ -682,7 +688,13 @@ const ViewPrayers = forwardRef(
             }}
           >
             <div style={{ fontSize: "32px", marginBottom: "16px" }}>📿</div>
-            <div style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>
+            <div
+              style={{
+                fontSize: "18px",
+                fontWeight: "bold",
+                marginBottom: "12px",
+              }}
+            >
               Navigation Guide
             </div>
             <div style={{ fontSize: "14px", lineHeight: 1.6, opacity: 0.9 }}>
@@ -702,7 +714,9 @@ const ViewPrayers = forwardRef(
             position: "absolute",
             top: "50%",
             left: "50%",
-            transform: `translate(-50%, -50%) ${isNavigating ? 'scale(0.98)' : 'scale(1)'}`,
+            transform: `translate(-50%, -50%) ${
+              isNavigating ? "scale(0.98)" : "scale(1)"
+            }`,
             width: window.innerWidth < 768 ? "90%" : "70%",
             maxWidth: "800px",
             maxHeight: "80vh",
