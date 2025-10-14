@@ -109,6 +109,52 @@ const ViewPrayers = forwardRef(
     const hailMaryCount = getHailMaryCount();
 
     /**
+     * Get current prayer object by index
+     * @returns {object|null} Prayer object if found, null otherwise
+     */
+    const getCurrentPrayer = () => {
+      if (!prayers) return null;
+
+      const rosarySequence = getRosarySequence();
+      const currentPrayerId = rosarySequence[currentPrayerIndex];
+      if (!currentPrayerId) return null;
+
+      // Check in apertura (opening prayers)
+      const aperturaPrayer = prayers.apertura?.find(
+        (p) => p.id === currentPrayerId
+      );
+      if (aperturaPrayer) return aperturaPrayer;
+
+      // Check in decada (decade prayers - Our Father, Hail Mary, etc.)
+      const decadaPrayer = prayers.decada?.find(
+        (p) => p.id === currentPrayerId
+      );
+      if (decadaPrayer) return decadaPrayer;
+
+      // Check in mysteries (mystery-specific prayers)
+      const mysteryPrayer = prayers.mysteries?.[currentMystery]?.find(
+        (p) => p.id === currentPrayerId
+      );
+      if (mysteryPrayer) return mysteryPrayer;
+
+      // Check in cierre (closing prayers)
+      const cierrePrayer = prayers.cierre?.find(
+        (p) => p.id === currentPrayerId
+      );
+      if (cierrePrayer) return cierrePrayer;
+
+      return null;
+    };
+
+    const currentPrayer = getCurrentPrayer();
+
+    // Calculate image zoom for Hail Mary prayers (1.0 to 1.1, resets each decade)
+    const rosarySequence = getRosarySequence();
+    const currentPrayerId = rosarySequence[currentPrayerIndex];
+    const isHailMary = currentPrayerId === "A";
+    const imageZoom = isHailMary ? 1.0 + hailMaryCount * 0.01 : 1.0;
+
+    /**
      * Get 7-segment progress data for rosary with mystery images
      */
     const getProgressSegments = () => {
@@ -425,6 +471,8 @@ const ViewPrayers = forwardRef(
                 objectFit: "cover",
                 objectPosition: "center",
                 filter: "brightness(0.8) contrast(1.1)",
+                transform: `scale(${imageZoom})`,
+                transition: "transform 0.5s ease-in-out",
               }}
             />
           </div>
@@ -501,7 +549,11 @@ const ViewPrayers = forwardRef(
                 fontFamily: "Cloister Black, serif",
               }}
             >
-              {hailMaryCount}
+              {currentPrayer
+                ? currentPrayer.id === "A"
+                  ? `${hailMaryCount}`
+                  : currentPrayer.title
+                : `${currentPrayerIndex}`}
             </div>
             <div
               style={{
@@ -511,7 +563,9 @@ const ViewPrayers = forwardRef(
                 opacity: 0.8,
               }}
             >
-              Tap to show text
+              {currentPrayer && currentPrayer.id === "A"
+                ? `of 10`
+                : `Tap to show text`}
             </div>
           </div>
         </div>
@@ -554,6 +608,8 @@ const ViewPrayers = forwardRef(
               objectFit: "cover",
               objectPosition: "center",
               filter: "brightness(0.7) contrast(1.1)",
+              transform: `scale(${imageZoom})`,
+              transition: "transform 0.5s ease-in-out",
             }}
           />
         </div>
@@ -764,7 +820,11 @@ const ViewPrayers = forwardRef(
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
               }}
             >
-              📿 Hail Marys: {hailMaryCount} (Index: {currentPrayerIndex})
+              {currentPrayer
+                ? currentPrayer.id === "A"
+                  ? `${currentPrayer.title} 📿 ${hailMaryCount}`
+                  : currentPrayer.title
+                : `Prayer ${currentPrayerIndex}`}
             </div>
           )}
           <p
@@ -773,6 +833,7 @@ const ViewPrayers = forwardRef(
               lineHeight: 1.8,
               letterSpacing: "1px",
               textAlign: "center",
+              whiteSpace: "pre-line",
             }}
           >
             {prayer}
