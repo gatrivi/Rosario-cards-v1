@@ -783,7 +783,7 @@ const ViewPrayers = forwardRef(
               padding: "8px",
               display: "flex",
               gap: "6px",
-              zIndex: 45, // Below sub-bar (99) but above other content
+              zIndex: 45, // Below navigation bar (1000) and sub-bar (999)
               boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
             }}
           >

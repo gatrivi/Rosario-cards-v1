@@ -19,7 +19,7 @@
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));
   box-sizing: border-box;
-  z-index: 100;
+  z-index: 1000;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.4),
     inset 0 0 20px rgba(212, 175, 55, 0.1);
 }
@@ -212,7 +212,7 @@
   border: 2px solid var(--glass-border);
   border-radius: 16px;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
-  z-index: 99; /* Just below the main bar */
+  z-index: 999; /* Just below the main bar */
   opacity: 0;
   pointer-events: none;
 }
