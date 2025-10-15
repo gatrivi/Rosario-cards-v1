@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import Matter from "matter-js";
 import "./InteractiveRosary.css";
+import soundEffects from "../../utils/soundEffects";
 
 /**
  * InteractiveRosary Component
@@ -30,8 +31,7 @@ const InteractiveRosary = ({
   const [developerMode, setDeveloperMode] = React.useState(false);
   const developerModeRef = React.useRef(false); // Track developer mode in a ref
 
-  const [collisionSoundsEnabled, setCollisionSoundsEnabled] =
-    React.useState(true);
+  const [, setCollisionSoundsEnabled] = React.useState(true);
   const collisionSoundsRef = React.useRef(true); // Track collision sounds in a ref
 
   // Update ref when currentPrayerIndex prop changes
@@ -44,29 +44,37 @@ const InteractiveRosary = ({
    */
   const getMysteryColors = (mystery) => {
     const colorSchemes = {
-      dolorosos: {
-        beads: "#D2B48C",
-        cross: "#8B4513",
-        chain: "#708090",
-        highlight: "#FFD700",
-      },
-      gloriosos: {
-        beads: "#2F2F2F",
-        cross: "#1C1C1C",
-        chain: "#708090",
-        highlight: "#FFD700",
-      },
+      // Joyful Mysteries - Warm, joyful colors
       gozosos: {
-        beads: "#FF7F7F",
-        cross: "#CD5C5C",
-        chain: "#708090",
-        highlight: "#FFD700",
+        beads: "#FFB6C1", // Light pink - joy and celebration
+        cross: "#FF69B4", // Hot pink - vibrant joy
+        chain: "#FFA07A", // Light salmon - warm connection
+        highlight: "#FFD700", // Gold - divine light
+        heart: "#FF1493", // Deep pink - love and devotion
       },
+      // Sorrowful Mysteries - Deep, somber colors
+      dolorosos: {
+        beads: "#8B4513", // Saddle brown - earth and suffering
+        cross: "#2F4F4F", // Dark slate gray - solemnity
+        chain: "#696969", // Dim gray - mourning
+        highlight: "#DC143C", // Crimson - blood and sacrifice
+        heart: "#B22222", // Fire brick - deep sorrow
+      },
+      // Glorious Mysteries - Rich, majestic colors
+      gloriosos: {
+        beads: "#4169E1", // Royal blue - heavenly majesty
+        cross: "#000080", // Navy blue - divine authority
+        chain: "#4682B4", // Steel blue - celestial connection
+        highlight: "#FFD700", // Gold - divine glory
+        heart: "#9370DB", // Medium purple - royal splendor
+      },
+      // Luminous Mysteries - Bright, illuminating colors
       luminosos: {
-        beads: "#F5F5DC",
-        cross: "#DEB887",
-        chain: "#C0C0C0",
-        highlight: "#FFD700",
+        beads: "#FFD700", // Gold - divine light
+        cross: "#FFA500", // Orange - illumination
+        chain: "#DAA520", // Goldenrod - radiant connection
+        highlight: "#FFFF00", // Yellow - pure light
+        heart: "#FF8C00", // Dark orange - divine revelation
       },
     };
     return colorSchemes[mystery] || colorSchemes.gozosos;
@@ -268,7 +276,7 @@ const InteractiveRosary = ({
       centerX,
       centerY - radius,
       centerBeadSize,
-      beadOptions(colors.beads, {
+      beadOptions(colors.heart, {
         beadNumber: 0, // Display number (or hide it)
         prayerIndex: null, // No prayer - decorative only
         prayerId: null,
@@ -674,7 +682,7 @@ const InteractiveRosary = ({
 
     // --- Collision Sound System ---
     const playCollisionSound = (collision) => {
-      const { bodyA, bodyB, collision: collisionData } = collision;
+      const { bodyA, bodyB } = collision;
 
       // Calculate collision properties
       const velocityA = bodyA.velocity;
@@ -712,10 +720,13 @@ const InteractiveRosary = ({
         bodyAConstraints.length + bodyBConstraints.length;
       dampeningFactor = Math.max(0.3, 1.0 - totalConstraints * 0.1);
 
-      // Generate sound parameters
-      const baseFrequency = 200 + momentum * 50; // 200-800 Hz based on momentum
-      const volume = Math.min(0.8, momentum * 0.1) * dampeningFactor;
-      const duration = Math.min(0.3, momentum * 0.05) * dampeningFactor;
+      // Get mystery-specific sound characteristics
+      const palette = soundEffects.getMysterySoundPalette(currentMystery);
+      
+      // Generate sound parameters using mystery-specific palette
+      const baseFrequency = palette.baseFrequency + momentum * (palette.frequencyRange / 10); // Mystery-based frequency range
+      const volume = Math.min(0.8, momentum * 0.1) * dampeningFactor * palette.volumeMultiplier;
+      const duration = Math.min(0.3, momentum * 0.05) * dampeningFactor * palette.durationMultiplier;
 
       // Create audio context if it doesn't exist
       if (!window.audioContext) {
@@ -749,13 +760,14 @@ const InteractiveRosary = ({
         audioContext.currentTime + duration
       );
 
-      // Set oscillator type based on collision type
+      // Set oscillator type based on collision type and mystery theme
       if (bodyA.isCrossComposite || bodyB.isCrossComposite) {
-        oscillator.type = "sawtooth"; // Metallic sound for cross
+        oscillator.type = "sawtooth"; // Metallic sound for cross (always metallic)
       } else if (bodyA.isHeartMedal || bodyB.isHeartMedal) {
-        oscillator.type = "triangle"; // Softer sound for heart
+        // Heart uses mystery-specific waveform but softer variant
+        oscillator.type = palette.waveform === 'sine' ? 'triangle' : palette.waveform;
       } else {
-        oscillator.type = "sine"; // Pure tone for beads
+        oscillator.type = palette.waveform; // Use mystery-specific waveform for beads
       }
 
       // Play the sound

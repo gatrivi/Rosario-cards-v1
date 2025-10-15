@@ -47,6 +47,11 @@ const ViewPrayers = forwardRef(
     const soundEffectsRef = useRef(new SoundEffects());
     const currentTheme = localStorage.getItem("theme");
 
+    // Update sound system when mystery changes
+    useEffect(() => {
+      soundEffectsRef.current.setMystery(currentMystery);
+    }, [currentMystery]);
+
     /**
      * Count Hail Marys based on current decade position
      * This function calculates which decade the user is in and counts the Hail Marys

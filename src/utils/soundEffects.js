@@ -13,6 +13,7 @@ class SoundEffects {
     this.audioContext = null;
     this.enabled = true;
     this.soundVariation = 0;
+    this.currentMystery = 'gozosos'; // Default mystery
 
     // Initialize AudioContext on first user interaction
     this.initAudioContext();
@@ -32,8 +33,61 @@ class SoundEffects {
   }
 
   /**
+   * Get mystery-specific sound characteristics
+   * Each mystery has its own "sound palette" with different frequencies and waveforms
+   */
+  getMysterySoundPalette(mystery) {
+    const soundPalettes = {
+      // Joyful Mysteries - Bright, cheerful sounds
+      gozosos: {
+        baseFrequency: 400, // Higher, more cheerful
+        frequencyRange: 80, // Wide range for joy
+        waveform: 'sine', // Pure, joyful tone
+        volumeMultiplier: 1.0, // Standard volume
+        durationMultiplier: 1.0, // Standard duration
+        description: 'Bright and joyful'
+      },
+      // Sorrowful Mysteries - Deep, solemn sounds
+      dolorosos: {
+        baseFrequency: 250, // Lower, more solemn
+        frequencyRange: 50, // Narrower range for solemnity
+        waveform: 'triangle', // Softer, more contemplative
+        volumeMultiplier: 0.8, // Quieter for reverence
+        durationMultiplier: 1.2, // Longer for contemplation
+        description: 'Deep and contemplative'
+      },
+      // Glorious Mysteries - Rich, majestic sounds
+      gloriosos: {
+        baseFrequency: 350, // Medium-high for majesty
+        frequencyRange: 100, // Wide range for grandeur
+        waveform: 'sine', // Pure, majestic tone
+        volumeMultiplier: 1.1, // Slightly louder for glory
+        durationMultiplier: 1.1, // Slightly longer for majesty
+        description: 'Rich and majestic'
+      },
+      // Luminous Mysteries - Bright, illuminating sounds
+      luminosos: {
+        baseFrequency: 500, // Highest for illumination
+        frequencyRange: 120, // Widest range for brightness
+        waveform: 'sine', // Pure, illuminating tone
+        volumeMultiplier: 1.2, // Brightest volume
+        durationMultiplier: 0.9, // Shorter, more energetic
+        description: 'Bright and illuminating'
+      }
+    };
+    return soundPalettes[mystery] || soundPalettes.gozosos;
+  }
+
+  /**
+   * Set the current mystery for sound theming
+   */
+  setMystery(mystery) {
+    this.currentMystery = mystery;
+  }
+
+  /**
    * Play a scroll sound - gentle bead tinkling like rosary navigation
-   * Multiple variations to avoid repetition
+   * Multiple variations to avoid repetition, themed by mystery
    */
   playScrollSound() {
     if (!this.enabled || !this.audioContext) return;
@@ -46,31 +100,37 @@ class SoundEffects {
         ctx.resume();
       }
 
+      // Get mystery-specific sound characteristics
+      const palette = this.getMysterySoundPalette(this.currentMystery);
+
       // Create oscillator for bead-like scroll sound
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Vary the frequency like bead collisions (higher, more musical)
-      const baseFreq = 400 + this.soundVariation * 80; // 400-640 Hz range
+      // Use mystery-specific frequency range
+      const baseFreq = palette.baseFrequency + this.soundVariation * (palette.frequencyRange / 4);
       oscillator.frequency.setValueAtTime(baseFreq, ctx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(
         baseFreq * 0.8,
-        ctx.currentTime + 0.08
+        ctx.currentTime + 0.08 * palette.durationMultiplier
       );
 
-      // Gentle volume like bead taps
+      // Use mystery-specific volume and duration
+      const baseVolume = 0.12 * palette.volumeMultiplier;
+      const duration = 0.08 * palette.durationMultiplier;
+      
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
-      // Use sine wave for pure bead-like tone
-      oscillator.type = "sine";
+      // Use mystery-specific waveform
+      oscillator.type = palette.waveform;
 
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
 
       oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.08);
+      oscillator.stop(ctx.currentTime + duration);
 
       // Cycle through 4 variations
       this.soundVariation = (this.soundVariation + 1) % 4;
@@ -81,7 +141,7 @@ class SoundEffects {
 
   /**
    * Play end-of-scroll sound - gentle bead tap like reaching rosary end
-   * Different sound to indicate no more content
+   * Different sound to indicate no more content, themed by mystery
    */
   playEndOfScrollSound() {
     if (!this.enabled || !this.audioContext) return;
@@ -93,32 +153,38 @@ class SoundEffects {
         ctx.resume();
       }
 
+      // Get mystery-specific sound characteristics
+      const palette = this.getMysterySoundPalette(this.currentMystery);
+
       // Create single oscillator for gentle bead tap
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Lower frequency for gentle "tap" sound (like heart bead)
-      const variation = this.soundVariation * 30;
-      const baseFreq = 300 + variation; // 300-390 Hz range
+      // Use mystery-specific frequency (lower for "end" indication)
+      const variation = this.soundVariation * (palette.frequencyRange / 6);
+      const baseFreq = palette.baseFrequency * 0.7 + variation; // Lower than scroll sound
       oscillator.frequency.setValueAtTime(baseFreq, ctx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(
         baseFreq * 0.6,
-        ctx.currentTime + 0.12
+        ctx.currentTime + 0.12 * palette.durationMultiplier
       );
 
-      // Gentle volume envelope like bead collision
+      // Use mystery-specific volume and duration
+      const baseVolume = 0.15 * palette.volumeMultiplier;
+      const duration = 0.12 * palette.durationMultiplier;
+      
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
-      // Use triangle wave for softer bead-like tone
-      oscillator.type = "triangle";
+      // Use mystery-specific waveform (triangle for softer end sound)
+      oscillator.type = palette.waveform === 'sine' ? 'triangle' : palette.waveform;
 
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
 
       oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.12);
+      oscillator.stop(ctx.currentTime + duration);
 
       // Cycle through variations
       this.soundVariation = (this.soundVariation + 1) % 4;
@@ -129,7 +195,7 @@ class SoundEffects {
 
   /**
    * Play prayer change sound - gentle bead transition like moving between prayers
-   * More distinct sound to indicate navigation
+   * More distinct sound to indicate navigation, themed by mystery
    */
   playPrayerChangeSound() {
     if (!this.enabled || !this.audioContext) return;
@@ -141,37 +207,49 @@ class SoundEffects {
         ctx.resume();
       }
 
+      // Get mystery-specific sound characteristics
+      const palette = this.getMysterySoundPalette(this.currentMystery);
+
       // Create two oscillators for gentle bead transition
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Variation for each prayer change
-      const variation = this.soundVariation * 40;
-
+      // Use mystery-specific frequency ranges
+      const variation = this.soundVariation * (palette.frequencyRange / 8);
+      
       // Gentle frequency sweep like bead collision
-      osc1.frequency.setValueAtTime(350 + variation, ctx.currentTime);
+      osc1.frequency.setValueAtTime(palette.baseFrequency * 0.9 + variation, ctx.currentTime);
       osc1.frequency.exponentialRampToValueAtTime(
-        500 + variation,
-        ctx.currentTime + 0.06
+        palette.baseFrequency * 1.3 + variation,
+        ctx.currentTime + 0.06 * palette.durationMultiplier
       );
-      osc1.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.15);
+      osc1.frequency.exponentialRampToValueAtTime(
+        palette.baseFrequency * 0.6,
+        ctx.currentTime + 0.15 * palette.durationMultiplier
+      );
 
-      osc2.frequency.setValueAtTime(450 + variation, ctx.currentTime);
+      osc2.frequency.setValueAtTime(palette.baseFrequency * 1.1 + variation, ctx.currentTime);
       osc2.frequency.exponentialRampToValueAtTime(
-        650 + variation,
-        ctx.currentTime + 0.06
+        palette.baseFrequency * 1.5 + variation,
+        ctx.currentTime + 0.06 * palette.durationMultiplier
       );
-      osc2.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.15);
+      osc2.frequency.exponentialRampToValueAtTime(
+        palette.baseFrequency * 0.7,
+        ctx.currentTime + 0.15 * palette.durationMultiplier
+      );
 
-      // Gentle envelope like bead collision
+      // Use mystery-specific volume and duration
+      const baseVolume = 0.18 * palette.volumeMultiplier;
+      const duration = 0.15 * palette.durationMultiplier;
+      
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
-      // Use sine waves for pure bead-like tones
-      osc1.type = "sine";
-      osc2.type = "sine";
+      // Use mystery-specific waveform
+      osc1.type = palette.waveform;
+      osc2.type = palette.waveform;
 
       osc1.connect(gainNode);
       osc2.connect(gainNode);
@@ -179,8 +257,8 @@ class SoundEffects {
 
       osc1.start(ctx.currentTime);
       osc2.start(ctx.currentTime);
-      osc1.stop(ctx.currentTime + 0.15);
-      osc2.stop(ctx.currentTime + 0.15);
+      osc1.stop(ctx.currentTime + duration);
+      osc2.stop(ctx.currentTime + duration);
 
       // Cycle through 5 variations for prayer changes
       this.soundVariation = (this.soundVariation + 1) % 5;
