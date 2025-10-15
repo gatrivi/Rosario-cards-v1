@@ -11,14 +11,19 @@ import React from "react";
  * @param {string} className - Additional CSS classes
  */
 const ProgressBar = ({ currentIndex, totalPrayers, className = "" }) => {
+  // Only count first cross (index 0) and 55 beads in main decades (indices 1-55)
+  // Total of 56 prayers for progress calculation
+  const maxProgressIndex = 55; // 0-55 inclusive = 56 prayers
+  const effectiveIndex = Math.min(currentIndex, maxProgressIndex);
+  const effectiveTotal = Math.min(totalPrayers, 56);
   const progress =
-    totalPrayers > 0 ? ((currentIndex + 1) / totalPrayers) * 100 : 0;
+    effectiveTotal > 0 ? ((effectiveIndex + 1) / effectiveTotal) * 100 : 0;
   const isDarkMode = document.body.classList.contains("dark");
 
-  // Calculate decade markers (every 10 prayers)
+  // Calculate decade markers (every 10 prayers) based on effective total
   const decadeMarkers = [];
-  for (let i = 1; i <= Math.floor(totalPrayers / 10); i++) {
-    decadeMarkers.push(((i * 10) / totalPrayers) * 100);
+  for (let i = 1; i <= Math.floor(effectiveTotal / 10); i++) {
+    decadeMarkers.push(((i * 10) / effectiveTotal) * 100);
   }
 
   return (
@@ -56,7 +61,7 @@ const ProgressBar = ({ currentIndex, totalPrayers, className = "" }) => {
         }}
       >
         <span>
-          {currentIndex + 1} / {totalPrayers}
+          {effectiveIndex + 1} / {effectiveTotal}
         </span>
         <span>{Math.round(progress)}%</span>
       </div>

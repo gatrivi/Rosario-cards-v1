@@ -40,5 +40,57 @@
   background: rgba(0, 0, 0, 0.8);
 }
 
+/* Completion animation effects */
+.rosary-completion-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.holy-energy-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  background: radial-gradient(circle at center, 
+    rgba(255, 215, 0, 0.1) 0%, 
+    rgba(255, 165, 0, 0.05) 30%, 
+    transparent 70%);
+  animation: holyEnergyPulse 4s ease-in-out infinite;
+}
+
+@keyframes holyEnergyPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+/* Bead glow effect */
+.bead-glow {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+  animation: beadGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes beadGlow {
+  0% {
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4));
+  }
+  100% {
+    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8));
+  }
+}
+
 
 

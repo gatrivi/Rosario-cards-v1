@@ -13,6 +13,7 @@ import LeftHandedToggle from "./components/common/LeftHandedToggle";
 import RosaryToggle from "./components/common/RosaryToggle";
 import PhysicsControls from "./components/common/PhysicsControls";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
+import { useRosaryProgress } from "./components/RosarioNube/useRosaryProgress";
 function App() {
   const [prayer, setPrayer] = useState(
     "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
@@ -54,6 +55,15 @@ function App() {
     navigateToIndex,
     getRosarySequence,
   } = useRosaryState(RosarioPrayerBook, currentMystery);
+
+  // Use the rosary progress hook for tracking and effects
+  const {
+    getProgress,
+    isBeadRecited,
+    isRosaryComplete,
+    showCompletionAnimation,
+    getActiveHolyEnergyEffects,
+  } = useRosaryProgress(RosarioPrayerBook, currentMystery, currentPrayerIndex);
 
   // Listen for scroll-based prayer navigation
   useEffect(() => {
@@ -187,6 +197,10 @@ function App() {
               onBeadClick={onBeadClick}
               prayers={RosarioPrayerBook}
               className="rosary-container"
+              isBeadRecited={isBeadRecited}
+              isRosaryComplete={isRosaryComplete}
+              showCompletionAnimation={showCompletionAnimation}
+              activeHolyEnergyEffects={getActiveHolyEnergyEffects()}
             />
           </div>
         )}
@@ -218,6 +232,7 @@ function App() {
       <ProgressBar
         currentIndex={currentPrayerIndex}
         totalPrayers={getRosarySequence().length}
+        progressData={getProgress()}
       />
 
       <PrayerButtons

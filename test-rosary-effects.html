@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosary Effects Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            transition: width 0.3s ease;
+        }
+        .bead {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ccc;
+            margin: 5px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .bead.recited {
+            background: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        .bead.current {
+            border: 3px solid #FF6B6B;
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.4); }
+            100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+        }
+        .completion-message {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: completionPulse 1s ease-in-out;
+        }
+        @keyframes completionPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .holy-energy {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at center, 
+                rgba(255, 215, 0, 0.1) 0%, 
+                rgba(255, 165, 0, 0.05) 30%, 
+                transparent 70%);
+            animation: holyEnergyPulse 4s ease-in-out infinite;
+            z-index: 1000;
+        }
+        @keyframes holyEnergyPulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Rosary Progress and Completion Effects Test</h1>
+    
+    <div class="test-section">
+        <h2>Progress Tracking (First Cross + 55 Main Decade Beads)</h2>
+        <p>Progress: <span id="progress-text">1 / 56</span> (<span id="progress-percent">1.8</span>%)</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 1.8%"></div>
+        </div>
+        <p><em>Only counting first cross and 55 beads in main decades for progress calculation</em></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Bead Glow Effects</h2>
+        <p>Click beads to mark them as recited (they will glow persistently):</p>
+        <div id="bead-container">
+            <!-- Beads will be generated here -->
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Completion Detection</h2>
+        <p>Current position: <span id="current-position">0</span></p>
+        <p>Rosary complete: <span id="completion-status">No</span></p>
+        <button onclick="simulateProgress()">Simulate Progress</button>
+        <button onclick="resetProgress()">Reset</button>
+    </div>
+
+    <div id="completion-message" class="completion-message" style="display: none;">
+        🎉 Rosary Complete! Holy energy effect activated for 6 hours! 🎉
+    </div>
+
+    <div id="holy-energy" class="holy-energy" style="display: none;"></div>
+
+    <script>
+        let currentPosition = 0;
+        let recitedBeads = new Set();
+        let isComplete = false;
+        let completedRosaries = [];
+
+        // Generate 56 beads (first cross + 55 main decade beads)
+        function generateBeads() {
+            const container = document.getElementById('bead-container');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 56; i++) {
+                const bead = document.createElement('div');
+                bead.className = 'bead';
+                bead.textContent = i + 1;
+                bead.id = `bead-${i}`;
+                bead.onclick = () => markBeadAsRecited(i);
+                container.appendChild(bead);
+            }
+        }
+
+        function markBeadAsRecited(index) {
+            recitedBeads.add(index);
+            const bead = document.getElementById(`bead-${index}`);
+            bead.classList.add('recited');
+        }
+
+        function updateProgress() {
+            const progress = Math.min(currentPosition + 1, 56);
+            const percentage = (progress / 56) * 100;
+            
+            document.getElementById('progress-text').textContent = `${progress} / 56`;
+            document.getElementById('progress-percent').textContent = percentage.toFixed(1);
+            document.getElementById('progress-fill').style.width = `${percentage}%`;
+            document.getElementById('current-position').textContent = currentPosition;
+            
+            // Update current bead highlighting
+            document.querySelectorAll('.bead').forEach((bead, index) => {
+                bead.classList.toggle('current', index === currentPosition);
+            });
+            
+            // Check for completion
+            if (progress >= 56 && !isComplete) {
+                isComplete = true;
+                document.getElementById('completion-status').textContent = 'Yes';
+                showCompletionAnimation();
+                activateHolyEnergyEffect();
+            }
+        }
+
+        function showCompletionAnimation() {
+            const message = document.getElementById('completion-message');
+            message.style.display = 'block';
+            message.style.animation = 'completionPulse 1s ease-in-out';
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+
+        function activateHolyEnergyEffect() {
+            const holyEnergy = document.getElementById('holy-energy');
+            holyEnergy.style.display = 'block';
+            
+            // Store completion time for 6-hour tracking
+            completedRosaries.push(Date.now());
+            
+            // Hide after 6 hours (for demo, we'll hide after 10 seconds)
+            setTimeout(() => {
+                holyEnergy.style.display = 'none';
+            }, 10000);
+        }
+
+        function simulateProgress() {
+            if (currentPosition < 55) {
+                currentPosition++;
+                markBeadAsRecited(currentPosition);
+                updateProgress();
+            }
+        }
+
+        function resetProgress() {
+            currentPosition = 0;
+            recitedBeads.clear();
+            isComplete = false;
+            document.getElementById('completion-status').textContent = 'No';
+            document.getElementById('holy-energy').style.display = 'none';
+            document.getElementById('completion-message').style.display = 'none';
+            
+            // Clear all bead effects
+            document.querySelectorAll('.bead').forEach(bead => {
+                bead.classList.remove('recited', 'current');
+            });
+            
+            updateProgress();
+        }
+
+        // Initialize
+        generateBeads();
+        markBeadAsRecited(0); // Mark first bead as recited
+        updateProgress();
+    </script>
+</body>
+</html>

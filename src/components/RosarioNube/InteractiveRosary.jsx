@@ -18,6 +18,10 @@ const InteractiveRosary = ({
   onBeadClick,
   prayers,
   className = "",
+  isBeadRecited = () => false,
+  isRosaryComplete = false,
+  showCompletionAnimation = false,
+  activeHolyEnergyEffects = [],
 }) => {
   const sceneRef = useRef(null);
   const matterInstance = useRef(null);
@@ -125,6 +129,7 @@ const InteractiveRosary = ({
       gravity: { x: 0, y: 0 }, // Zero gravity for floating rosary
     });
     const world = engine.world;
+
 
     // --- Renderer ---
     const render = Matter.Render.create({
@@ -418,6 +423,57 @@ const InteractiveRosary = ({
     Matter.Composite.add(world, mouseConstraint);
     render.mouse = mouse;
 
+    // --- Helper functions for effects ---
+    const renderHolyEnergyEffects = (context, render, effectCount) => {
+      const time = Date.now() * 0.001;
+      const particleCount = Math.min(effectCount * 3, 15); // Max 15 particles
+      
+      for (let i = 0; i < particleCount; i++) {
+        const angle = (i / particleCount) * Math.PI * 2 + time * 0.5;
+        const radius = 100 + Math.sin(time + i) * 30;
+        const x = render.canvas.width / 2 + Math.cos(angle) * radius;
+        const y = render.canvas.height / 2 + Math.sin(angle) * radius;
+        
+        // Create floating particle
+        context.save();
+        context.globalAlpha = 0.6 + Math.sin(time * 2 + i) * 0.3;
+        context.fillStyle = `hsl(${(time * 20 + i * 30) % 360}, 70%, 60%)`;
+        context.beginPath();
+        context.arc(x, y, 3 + Math.sin(time + i) * 2, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+      }
+    };
+
+    const renderCompletionAnimation = (context, render) => {
+      const time = Date.now() * 0.001;
+      const centerX = render.canvas.width / 2;
+      const centerY = render.canvas.height / 2;
+      
+      // Pulsing golden ring
+      context.save();
+      context.globalAlpha = 0.8;
+      context.strokeStyle = `hsl(45, 100%, ${50 + Math.sin(time * 3) * 30}%)`;
+      context.lineWidth = 4 + Math.sin(time * 4) * 2;
+      context.beginPath();
+      context.arc(centerX, centerY, 150 + Math.sin(time * 2) * 20, 0, Math.PI * 2);
+      context.stroke();
+      
+      // Sparkles
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 + time;
+        const sparkleRadius = 200 + Math.sin(time * 2 + i) * 50;
+        const x = centerX + Math.cos(angle) * sparkleRadius;
+        const y = centerY + Math.sin(angle) * sparkleRadius;
+        
+        context.fillStyle = `hsl(${(time * 50 + i * 45) % 360}, 100%, 80%)`;
+        context.beginPath();
+        context.arc(x, y, 2 + Math.sin(time * 5 + i) * 1, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.restore();
+    };
+
     // --- Event Listeners ---
     Matter.Events.on(mouseConstraint, "mousedown", (event) => {
       let clickedBody = event.source.body;
@@ -438,12 +494,35 @@ const InteractiveRosary = ({
       }
     });
 
-    // --- Render bead numbers ---
+    // --- Apply holy energy floating effect ---
+    if (activeHolyEnergyEffects.length > 0) {
+      const time = Date.now() * 0.001;
+      const floatStrength = Math.min(activeHolyEnergyEffects.length * 0.02, 0.1);
+      
+      // Apply gentle floating force to all beads
+      allBeads.forEach((bead, index) => {
+        const floatX = Math.sin(time + index * 0.5) * floatStrength;
+        const floatY = Math.cos(time + index * 0.3) * floatStrength;
+        Matter.Body.applyForce(bead, bead.position, { x: floatX, y: floatY });
+      });
+    }
+
+    // --- Render bead numbers and effects ---
     Matter.Events.on(render, "afterRender", () => {
       const context = render.context;
       context.fillStyle = "white";
       context.textAlign = "center";
       context.textBaseline = "middle";
+
+      // Render holy energy effects (floating particles)
+      if (activeHolyEnergyEffects.length > 0) {
+        renderHolyEnergyEffects(context, render, activeHolyEnergyEffects.length);
+      }
+
+      // Render completion animation
+      if (showCompletionAnimation) {
+        renderCompletionAnimation(context, render);
+      }
 
       matterInstance.current?.allBeads.forEach((bead) => {
         // Handle composite cross body separately
@@ -496,6 +575,27 @@ const InteractiveRosary = ({
             bead.position.x,
             bead.position.y
           );
+        }
+
+        // Render glow effect for recited beads
+        if (bead.prayerIndex !== undefined && isBeadRecited(bead.prayerIndex)) {
+          const time = Date.now() * 0.001;
+          context.save();
+          context.globalAlpha = 0.6 + Math.sin(time * 3 + bead.prayerIndex) * 0.3;
+          context.strokeStyle = `hsl(${(time * 30 + bead.prayerIndex * 10) % 360}, 80%, 60%)`;
+          context.lineWidth = 2 + Math.sin(time * 2 + bead.prayerIndex) * 1;
+          context.shadowColor = context.strokeStyle;
+          context.shadowBlur = 10;
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size + 3,
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+          context.restore();
         }
 
         // Highlight current prayer bead
