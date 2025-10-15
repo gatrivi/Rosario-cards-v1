@@ -361,8 +361,21 @@ const InteractiveRosary = ({
         // After each set of 10 beads: G and F prayers
         // Decade 1: indices 21, 22; Decade 2: 35, 36; etc.
         const prayerIndex = 21 + decadeNum * 14;
-        constraint.prayerIndex = prayerIndex; // This will be G or F
+        constraint.prayerIndex = prayerIndex; // This will be G prayer
         constraint.prayerId = rosarySequence[prayerIndex];
+        
+        // Add F prayer as a separate constraint (Fatima prayer)
+        const fatimaConstraint = Matter.Constraint.create({
+          ...springOptions(adjustedLength * 0.8), // Slightly shorter for visual distinction
+          bodyA: beadA,
+          bodyB: beadB,
+          pointA: getPoleOffset(beadA, beadB, beadSize),
+          pointB: getPoleOffset(beadB, beadA, beadSize),
+          prayerIndex: prayerIndex + 1, // F prayer (Fatima) - next index
+          prayerId: rosarySequence[prayerIndex + 1],
+          render: { visible: false }, // Hide this constraint visually
+        });
+        constraints.push(fatimaConstraint);
       }
 
       constraints.push(constraint);
@@ -404,6 +417,54 @@ const InteractiveRosary = ({
         prayerId: rosarySequence[77],
       })
     );
+
+    // Add Fatima prayer (index 78) as a separate constraint
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(mainToHeartLength * 0.8), // Slightly shorter for visual distinction
+        bodyA: mainLoopBeads[numMainBeads - 1],
+        bodyB: centerBead,
+        pointA: getPoleOffset(
+          mainLoopBeads[numMainBeads - 1],
+          centerBead,
+          beadSize
+        ),
+        pointB: getPoleOffset(
+          centerBead,
+          mainLoopBeads[numMainBeads - 1],
+          centerBeadSize
+        ),
+        prayerIndex: 78, // F prayer (Fatima) - index 78
+        prayerId: rosarySequence[78],
+        render: { visible: false }, // Hide this constraint visually
+      })
+    );
+
+    // Add closing prayers (indices 79, 80, 81) as separate constraints
+    // These are said "on the chain" after the rosary is complete
+    const closingPrayers = [79, 80, 81]; // LL, S, Papa
+    closingPrayers.forEach((prayerIndex, index) => {
+      constraints.push(
+        Matter.Constraint.create({
+          ...springOptions(mainToHeartLength * 0.6), // Even shorter for visual distinction
+          bodyA: mainLoopBeads[numMainBeads - 1],
+          bodyB: centerBead,
+          pointA: getPoleOffset(
+            mainLoopBeads[numMainBeads - 1],
+            centerBead,
+            beadSize
+          ),
+          pointB: getPoleOffset(
+            centerBead,
+            mainLoopBeads[numMainBeads - 1],
+            centerBeadSize
+          ),
+          prayerIndex: prayerIndex,
+          prayerId: rosarySequence[prayerIndex],
+          render: { visible: false }, // Hide these constraints visually
+        })
+      );
+    });
 
     // --- Create Tail Beads (5 beads: 1 lone + 3 beads + 1 lone) ---
     // Prayer indices: 9, 6, 5, 4, 2 (going DOWN from heart to cross)
@@ -458,6 +519,29 @@ const InteractiveRosary = ({
       })
     );
 
+    // Add Fatima prayer (index 8) as a separate constraint
+    // This represents the prayer said "on the chain" between Gloria and 1st Mystery
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(heartToTailLength * 0.8), // Slightly shorter for visual distinction
+        bodyA: centerBead,
+        bodyB: tailBeads[numTailBeads - 1], // Same connection as Gloria
+        pointA: getPoleOffset(
+          centerBead,
+          tailBeads[numTailBeads - 1],
+          centerBeadSize
+        ),
+        pointB: getOppositePoleOffset(
+          tailBeads[numTailBeads - 1],
+          centerBead,
+          beadSize
+        ),
+        prayerIndex: 8, // F prayer (Fatima) - index 8
+        prayerId: rosarySequence[8],
+        render: { visible: false }, // Hide this constraint visually
+      })
+    );
+
     // Connect tail beads with proper chain lengths and prayer indices
     // tailBeads[0] = Our Father bead (prayer index 3, closest to cross)
     // tailBeads[1] = first of 3 A beads (prayer index 4)
@@ -465,10 +549,11 @@ const InteractiveRosary = ({
     // tailBeads[3] = third of 3 A beads (prayer index 6)
     // tailBeads[4] = lone bead 1st Mystery (prayer index 9, closest to heart)
 
-    const tailChainPrayerIndices = [3, null, null, null];
-    // Chain 0 (C bead to first A): P (index 3)
-    // Chain 1-2 (between 3 A beads): none
-    // Chain 3 (last A to 1st Mystery bead): none (G prayer is on heart-to-tail chain)
+    const tailChainPrayerIndices = [1, 2, null, 7];
+    // Chain 0 (Cross to Our Father): AC (index 1)
+    // Chain 1 (Our Father to first A): C (index 2) - Credo
+    // Chain 2 (between 3 A beads): none
+    // Chain 3 (last A to 1st Mystery): G (index 7)
 
     for (let i = 0; i < numTailBeads - 1; i++) {
       let chainLength;
