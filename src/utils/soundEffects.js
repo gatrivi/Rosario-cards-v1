@@ -32,7 +32,7 @@ class SoundEffects {
   }
 
   /**
-   * Play a scroll sound - soft rustling like parchment
+   * Play a scroll sound - gentle bead tinkling like rosary navigation
    * Multiple variations to avoid repetition
    */
   playScrollSound() {
@@ -46,40 +46,41 @@ class SoundEffects {
         ctx.resume();
       }
 
-      // Create oscillator for scroll sound
+      // Create oscillator for bead-like scroll sound
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Vary the frequency slightly for each sound
-      const baseFreq = 200 + this.soundVariation * 50;
+      // Vary the frequency like bead collisions (higher, more musical)
+      const baseFreq = 400 + this.soundVariation * 80; // 400-640 Hz range
       oscillator.frequency.setValueAtTime(baseFreq, ctx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(
-        baseFreq * 0.7,
-        ctx.currentTime + 0.1
+        baseFreq * 0.8,
+        ctx.currentTime + 0.08
       );
 
-      // Soft volume for scrolling
-      gainNode.gain.setValueAtTime(0.08, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      // Gentle volume like bead taps
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
 
-      // Use noise-like waveform for parchment rustling
-      oscillator.type = "sawtooth";
+      // Use sine wave for pure bead-like tone
+      oscillator.type = "sine";
 
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
 
       oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.1);
+      oscillator.stop(ctx.currentTime + 0.08);
 
-      // Cycle through 3 variations
-      this.soundVariation = (this.soundVariation + 1) % 3;
+      // Cycle through 4 variations
+      this.soundVariation = (this.soundVariation + 1) % 4;
     } catch (e) {
       console.warn("Error playing scroll sound:", e);
     }
   }
 
   /**
-   * Play end-of-scroll sound - gentle bump like reaching scroll edge
+   * Play end-of-scroll sound - gentle bead tap like reaching rosary end
    * Different sound to indicate no more content
    */
   playEndOfScrollSound() {
@@ -92,34 +93,32 @@ class SoundEffects {
         ctx.resume();
       }
 
-      // Create two oscillators for a "thud" sound
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
+      // Create single oscillator for gentle bead tap
+      const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Lower frequencies for "bump" sound
-      const variation = this.soundVariation * 20;
-      osc1.frequency.setValueAtTime(150 + variation, ctx.currentTime);
-      osc1.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.15);
+      // Lower frequency for gentle "tap" sound (like heart bead)
+      const variation = this.soundVariation * 30;
+      const baseFreq = 300 + variation; // 300-390 Hz range
+      oscillator.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        baseFreq * 0.6,
+        ctx.currentTime + 0.12
+      );
 
-      osc2.frequency.setValueAtTime(100 + variation, ctx.currentTime);
-      osc2.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15);
+      // Gentle volume envelope like bead collision
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
 
-      // Quick decay for thud effect
-      gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      // Use triangle wave for softer bead-like tone
+      oscillator.type = "triangle";
 
-      osc1.type = "sine";
-      osc2.type = "triangle";
-
-      osc1.connect(gainNode);
-      osc2.connect(gainNode);
+      oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
 
-      osc1.start(ctx.currentTime);
-      osc2.start(ctx.currentTime);
-      osc1.stop(ctx.currentTime + 0.15);
-      osc2.stop(ctx.currentTime + 0.15);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.12);
 
       // Cycle through variations
       this.soundVariation = (this.soundVariation + 1) % 4;
@@ -129,7 +128,7 @@ class SoundEffects {
   }
 
   /**
-   * Play prayer change sound - like turning a page
+   * Play prayer change sound - gentle bead transition like moving between prayers
    * More distinct sound to indicate navigation
    */
   playPrayerChangeSound() {
@@ -142,35 +141,36 @@ class SoundEffects {
         ctx.resume();
       }
 
-      // Create multiple oscillators for page turn effect
+      // Create two oscillators for gentle bead transition
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Variation for each page turn
-      const variation = this.soundVariation * 30;
+      // Variation for each prayer change
+      const variation = this.soundVariation * 40;
 
-      // Rising then falling frequency for page flip
-      osc1.frequency.setValueAtTime(300 + variation, ctx.currentTime);
+      // Gentle frequency sweep like bead collision
+      osc1.frequency.setValueAtTime(350 + variation, ctx.currentTime);
       osc1.frequency.exponentialRampToValueAtTime(
-        600 + variation,
-        ctx.currentTime + 0.08
+        500 + variation,
+        ctx.currentTime + 0.06
       );
-      osc1.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.2);
+      osc1.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.15);
 
-      osc2.frequency.setValueAtTime(400 + variation, ctx.currentTime);
+      osc2.frequency.setValueAtTime(450 + variation, ctx.currentTime);
       osc2.frequency.exponentialRampToValueAtTime(
-        800 + variation,
-        ctx.currentTime + 0.08
+        650 + variation,
+        ctx.currentTime + 0.06
       );
-      osc2.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.2);
+      osc2.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.15);
 
-      // Envelope for page turn
-      gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.08);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      // Gentle envelope like bead collision
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
 
-      osc1.type = "triangle";
+      // Use sine waves for pure bead-like tones
+      osc1.type = "sine";
       osc2.type = "sine";
 
       osc1.connect(gainNode);
@@ -179,13 +179,13 @@ class SoundEffects {
 
       osc1.start(ctx.currentTime);
       osc2.start(ctx.currentTime);
-      osc1.stop(ctx.currentTime + 0.2);
-      osc2.stop(ctx.currentTime + 0.2);
+      osc1.stop(ctx.currentTime + 0.15);
+      osc2.stop(ctx.currentTime + 0.15);
 
-      // Cycle through 5 variations for page turns
+      // Cycle through 5 variations for prayer changes
       this.soundVariation = (this.soundVariation + 1) % 5;
     } catch (e) {
-      console.warn("Error playing page turn sound:", e);
+      console.warn("Error playing prayer change sound:", e);
     }
   }
 
