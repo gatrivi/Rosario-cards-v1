@@ -29,8 +29,9 @@ const InteractiveRosary = ({
 
   const [developerMode, setDeveloperMode] = React.useState(false);
   const developerModeRef = React.useRef(false); // Track developer mode in a ref
-  
-  const [collisionSoundsEnabled, setCollisionSoundsEnabled] = React.useState(true);
+
+  const [collisionSoundsEnabled, setCollisionSoundsEnabled] =
+    React.useState(true);
   const collisionSoundsRef = React.useRef(true); // Track collision sounds in a ref
 
   // Update ref when currentPrayerIndex prop changes
@@ -123,7 +124,10 @@ const InteractiveRosary = ({
       collisionSoundsRef.current = newMode; // Update ref immediately
     };
 
-    window.addEventListener("collisionSoundsChange", handleCollisionSoundsChange);
+    window.addEventListener(
+      "collisionSoundsChange",
+      handleCollisionSoundsChange
+    );
     return () =>
       window.removeEventListener(
         "collisionSoundsChange",
@@ -363,7 +367,7 @@ const InteractiveRosary = ({
         const prayerIndex = 21 + decadeNum * 14;
         constraint.prayerIndex = prayerIndex; // This will be G prayer
         constraint.prayerId = rosarySequence[prayerIndex];
-        
+
         // Add F prayer as a separate constraint (Fatima prayer)
         const fatimaConstraint = Matter.Constraint.create({
           ...springOptions(adjustedLength * 0.8), // Slightly shorter for visual distinction
@@ -671,74 +675,93 @@ const InteractiveRosary = ({
     // --- Collision Sound System ---
     const playCollisionSound = (collision) => {
       const { bodyA, bodyB, collision: collisionData } = collision;
-      
+
       // Calculate collision properties
       const velocityA = bodyA.velocity;
       const velocityB = bodyB.velocity;
       const relativeVelocity = {
         x: velocityA.x - velocityB.x,
-        y: velocityA.y - velocityB.y
+        y: velocityA.y - velocityB.y,
       };
-      
+
       // Calculate momentum magnitude
-      const momentum = Math.sqrt(relativeVelocity.x * relativeVelocity.x + relativeVelocity.y * relativeVelocity.y);
-      
+      const momentum = Math.sqrt(
+        relativeVelocity.x * relativeVelocity.x +
+          relativeVelocity.y * relativeVelocity.y
+      );
+
       // Calculate collision angle (0-360 degrees)
-      const angle = Math.atan2(relativeVelocity.y, relativeVelocity.x) * (180 / Math.PI);
+      const angle =
+        Math.atan2(relativeVelocity.y, relativeVelocity.x) * (180 / Math.PI);
       const normalizedAngle = ((angle % 360) + 360) % 360;
-      
+
       // Calculate dampening factor based on chain connections
       let dampeningFactor = 1.0;
       const allConstraints = Matter.Composite.allConstraints(world);
-      
-      // Check if either body is connected to chains
-      const bodyAConstraints = allConstraints.filter(c => c.bodyA.id === bodyA.id || c.bodyB.id === bodyA.id);
-      const bodyBConstraints = allConstraints.filter(c => c.bodyA.id === bodyB.id || c.bodyB.id === bodyB.id);
-      
+
+        // Check if either body is connected to chains
+        const bodyAConstraints = allConstraints.filter(
+          (c) => c && c.bodyA && c.bodyB && (c.bodyA.id === bodyA.id || c.bodyB.id === bodyA.id)
+        );
+        const bodyBConstraints = allConstraints.filter(
+          (c) => c && c.bodyA && c.bodyB && (c.bodyA.id === bodyB.id || c.bodyB.id === bodyB.id)
+        );
+
       // More chains = more dampening
-      const totalConstraints = bodyAConstraints.length + bodyBConstraints.length;
-      dampeningFactor = Math.max(0.3, 1.0 - (totalConstraints * 0.1));
-      
+      const totalConstraints =
+        bodyAConstraints.length + bodyBConstraints.length;
+      dampeningFactor = Math.max(0.3, 1.0 - totalConstraints * 0.1);
+
       // Generate sound parameters
-      const baseFrequency = 200 + (momentum * 50); // 200-800 Hz based on momentum
+      const baseFrequency = 200 + momentum * 50; // 200-800 Hz based on momentum
       const volume = Math.min(0.8, momentum * 0.1) * dampeningFactor;
       const duration = Math.min(0.3, momentum * 0.05) * dampeningFactor;
-      
+
       // Create audio context if it doesn't exist
       if (!window.audioContext) {
-        window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        window.audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
       }
-      
+
       const audioContext = window.audioContext;
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       // Connect nodes
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       // Set frequency based on collision angle and momentum
-      const angleFrequency = baseFrequency + (normalizedAngle * 2); // Angle affects pitch
-      oscillator.frequency.setValueAtTime(angleFrequency, audioContext.currentTime);
-      
+      const angleFrequency = baseFrequency + normalizedAngle * 2; // Angle affects pitch
+      oscillator.frequency.setValueAtTime(
+        angleFrequency,
+        audioContext.currentTime
+      );
+
       // Set volume with dampening
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-      
+      gainNode.gain.linearRampToValueAtTime(
+        volume,
+        audioContext.currentTime + 0.01
+      );
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + duration
+      );
+
       // Set oscillator type based on collision type
       if (bodyA.isCrossComposite || bodyB.isCrossComposite) {
-        oscillator.type = 'sawtooth'; // Metallic sound for cross
+        oscillator.type = "sawtooth"; // Metallic sound for cross
       } else if (bodyA.isHeartMedal || bodyB.isHeartMedal) {
-        oscillator.type = 'triangle'; // Softer sound for heart
+        oscillator.type = "triangle"; // Softer sound for heart
       } else {
-        oscillator.type = 'sine'; // Pure tone for beads
+        oscillator.type = "sine"; // Pure tone for beads
       }
-      
+
       // Play the sound
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + duration);
-      
+
       // Debug logging
       if (developerModeRef.current) {
         console.log(`🔊 Collision Sound:`, {
@@ -747,23 +770,27 @@ const InteractiveRosary = ({
           dampening: dampeningFactor.toFixed(2),
           frequency: angleFrequency.toFixed(1),
           volume: volume.toFixed(2),
-          duration: duration.toFixed(2)
+          duration: duration.toFixed(2),
         });
       }
     };
 
     // --- Collision Detection ---
-    Matter.Events.on(engine, 'collisionStart', (event) => {
+    Matter.Events.on(engine, "collisionStart", (event) => {
       // Only play sounds if collision sounds are enabled
       if (!collisionSoundsRef.current) return;
-      
-      event.pairs.forEach(pair => {
+
+      event.pairs.forEach((pair) => {
         const { bodyA, bodyB } = pair;
-        
+
         // Only play sounds for bead-to-bead collisions
-        const isBeadA = matterInstance.current?.allBeads.some(bead => bead.id === bodyA.id);
-        const isBeadB = matterInstance.current?.allBeads.some(bead => bead.id === bodyB.id);
-        
+        const isBeadA = matterInstance.current?.allBeads.some(
+          (bead) => bead.id === bodyA.id
+        );
+        const isBeadB = matterInstance.current?.allBeads.some(
+          (bead) => bead.id === bodyB.id
+        );
+
         if (isBeadA && isBeadB) {
           playCollisionSound(pair);
         }
