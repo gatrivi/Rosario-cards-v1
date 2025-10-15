@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import rosaryTracker from "../../utils/rosaryTracker";
 
 /**
  * useRosaryState Hook
@@ -84,6 +85,22 @@ export const useRosaryState = (prayers, currentMystery) => {
       setCurrentPrayerIndex(prayerIndex);
       setHighlightedBead(prayerIndex);
 
+      // Check for rosary completion (last prayer is index 84)
+      if (prayerIndex === 84) {
+        console.log("🎉 Rosary completed!");
+        rosaryTracker.recordCompletion();
+
+        // Dispatch custom event for other components to listen to
+        window.dispatchEvent(
+          new CustomEvent("rosaryCompleted", {
+            detail: {
+              mysteryType: currentMystery,
+              completionTime: new Date().toISOString(),
+            },
+          })
+        );
+      }
+
       const prayer = getPrayerById(prayerId);
       if (prayer) {
         console.log(`✅ handleBeadClick: Found prayer for ${prayerId}`);
@@ -96,7 +113,7 @@ export const useRosaryState = (prayers, currentMystery) => {
       console.log(`❌ handleBeadClick: No prayer found for ${prayerId}`);
       return null;
     },
-    [getPrayerById]
+    [getPrayerById, currentMystery]
   );
 
   /**
@@ -177,6 +194,22 @@ export const useRosaryState = (prayers, currentMystery) => {
         setCurrentPrayerIndex(index);
         setHighlightedBead(index);
 
+        // Check for rosary completion (last prayer is index 84)
+        if (index === 84) {
+          console.log("🎉 Rosary completed!");
+          rosaryTracker.recordCompletion();
+
+          // Dispatch custom event for other components to listen to
+          window.dispatchEvent(
+            new CustomEvent("rosaryCompleted", {
+              detail: {
+                mysteryType: currentMystery,
+                completionTime: new Date().toISOString(),
+              },
+            })
+          );
+        }
+
         if (prayer) {
           return {
             prayer: prayer.text,
@@ -187,7 +220,7 @@ export const useRosaryState = (prayers, currentMystery) => {
       }
       return null;
     },
-    [getRosarySequence, getPrayerById]
+    [getRosarySequence, getPrayerById, currentMystery]
   );
 
   // Return all state and handler functions for use in components

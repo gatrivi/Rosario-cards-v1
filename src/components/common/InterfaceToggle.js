@@ -35,6 +35,8 @@ const InterfaceToggle = ({
   onToggleDetailedProgress = () => {},
   developerMode = false,
   onToggleDeveloperMode = () => {},
+  showProgressBar = true,
+  onToggleProgressBar = () => {},
   className = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -167,7 +169,13 @@ const InterfaceToggle = ({
   return (
     <div
       className={`interface-toggle ${className}`}
-      style={{ position: "fixed", top: "10px", left: "10px", zIndex: 20 }}
+      style={{ 
+        position: "fixed", 
+        top: showProgressBar ? "70px" : "10px", 
+        left: "10px", 
+        zIndex: 20,
+        transition: "top 0.3s ease"
+      }}
     >
       {/* Main toggle button */}
       <button
@@ -366,6 +374,34 @@ const InterfaceToggle = ({
               />
               <span style={{ fontWeight: "bold", fontSize: "14px" }}>
                 📊 Detailed Progress
+              </span>
+            </label>
+
+            {/* Rosary Progress Bar Toggle */}
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showProgressBar}
+                onChange={onToggleProgressBar}
+                style={{
+                  marginRight: "12px",
+                  transform: "scale(1.2)",
+                  accentColor: "var(--catholic-gold)",
+                }}
+              />
+              <span style={{ fontWeight: "bold", fontSize: "14px" }}>
+                🏆 Rosary Progress Bar
               </span>
             </label>
 

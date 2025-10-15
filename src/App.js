@@ -6,6 +6,8 @@ import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
+import RosaryProgressBar from "./components/common/RosaryProgressBar";
+import HelpScreen from "./components/common/HelpScreen";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 
 /**
@@ -52,6 +54,15 @@ function App() {
 
   // Developer mode state - shows bead numbers and constraints
   const [developerMode, setDeveloperMode] = useState(false);
+
+  // Rosary progress bar state - default enabled
+  const [showProgressBar, setShowProgressBar] = useState(() => {
+    try {
+      return localStorage.getItem("showProgressBar") !== "false";
+    } catch (error) {
+      return true;
+    }
+  });
 
   // Listen for left-handed mode changes from toggle component
   useEffect(() => {
@@ -132,6 +143,17 @@ function App() {
       })
     );
   }, [developerMode]);
+
+  // Toggle rosary progress bar
+  const toggleProgressBar = useCallback(() => {
+    const newValue = !showProgressBar;
+    setShowProgressBar(newValue);
+    try {
+      localStorage.setItem("showProgressBar", newValue.toString());
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+    }
+  }, [showProgressBar]);
 
   // Listen for theme changes and update current prayer image
   useEffect(() => {
@@ -233,6 +255,8 @@ function App() {
         }
         developerMode={developerMode}
         onToggleDeveloperMode={toggleDeveloperMode}
+        showProgressBar={showProgressBar}
+        onToggleProgressBar={toggleProgressBar}
       />
 
       {/* Main content area with stained glass design */}
@@ -298,6 +322,15 @@ function App() {
         getRosarySequence={getRosarySequence}
         leftHandedMode={leftHandedMode}
       />
+
+      {/* Rosary Progress Bar */}
+      <RosaryProgressBar 
+        isVisible={showProgressBar}
+        onToggle={toggleProgressBar}
+      />
+
+      {/* Help Screen */}
+      <HelpScreen />
     </div>
   );
 }
