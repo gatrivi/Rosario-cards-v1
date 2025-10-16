@@ -1,0 +1,254 @@
+/* PrayerVisibilityMode.css */
+
+.prayer-visibility-mode {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 2px solid var(--catholic-gold, #d4af37);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 10px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  font-family: "Cloister Black", serif;
+}
+
+.prayer-visibility-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.prayer-visibility-header h3 {
+  color: var(--catholic-gold, #d4af37);
+  font-size: 20px;
+  margin: 0 0 8px 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.mode-description {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+  font-style: italic;
+}
+
+.mode-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mode-button {
+  background: rgba(212, 175, 55, 0.1);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 10px;
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: "Cloister Black", serif;
+}
+
+.mode-button:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mode-button.active {
+  background: rgba(212, 175, 55, 0.3);
+  border-color: var(--catholic-gold, #d4af37);
+  color: var(--catholic-gold, #d4af37);
+  font-weight: bold;
+}
+
+.mode-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.mode-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: inherit;
+}
+
+.custom-settings {
+  border-top: 2px solid rgba(212, 175, 55, 0.3);
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.custom-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.custom-settings-header h4 {
+  color: var(--catholic-gold, #d4af37);
+  font-size: 16px;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.reset-button {
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--catholic-gold, #d4af37);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--catholic-gold, #d4af37);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Cloister Black", serif;
+}
+
+.reset-button:hover {
+  background: rgba(212, 175, 55, 0.3);
+  transform: translateY(-1px);
+}
+
+.prayer-category {
+  margin-bottom: 20px;
+}
+
+.category-title {
+  color: var(--catholic-gold, #d4af37);
+  font-size: 14px;
+  margin: 0 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.prayer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.prayer-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.prayer-checkbox:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.prayer-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--catholic-gold, #d4af37);
+  cursor: pointer;
+}
+
+.checkbox-label {
+  font-size: 13px;
+  color: #333;
+  font-family: "Cloister Black", serif;
+  flex: 1;
+}
+
+.prayer-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  color: var(--catholic-gold, #d4af37);
+  font-weight: bold;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .prayer-visibility-mode {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: var(--catholic-gold, #d4af37);
+}
+
+[data-theme="dark"] .mode-description {
+  color: #ccc;
+}
+
+[data-theme="dark"] .checkbox-label {
+  color: #ccc;
+}
+
+[data-theme="dark"] .prayer-checkbox:hover {
+  background: rgba(212, 175, 55, 0.2);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .prayer-visibility-mode {
+    margin: 5px;
+    padding: 15px;
+  }
+
+  .mode-selector {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .mode-button {
+    padding: 10px 6px;
+  }
+
+  .mode-icon {
+    font-size: 20px;
+  }
+
+  .mode-label {
+    font-size: 12px;
+  }
+
+  .prayer-list {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-settings-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .mode-button,
+  .reset-button,
+  .prayer-checkbox {
+    transition: none;
+  }
+
+  .mode-button:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .prayer-visibility-mode {
+    border-width: 3px;
+    background: rgba(255, 255, 255, 0.98);
+  }
+
+  [data-theme="dark"] .prayer-visibility-mode {
+    background: rgba(0, 0, 0, 0.98);
+  }
+
+  .mode-button {
+    border-width: 3px;
+  }
+
+  .mode-button.active {
+    background: var(--catholic-gold, #d4af37);
+    color: white;
+  }
+}
+

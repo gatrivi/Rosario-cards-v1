@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import Matter from "matter-js";
 import "./InteractiveRosary.css";
 import soundEffects from "../../utils/soundEffects";
@@ -31,13 +31,55 @@ const InteractiveRosary = ({
   const [developerMode, setDeveloperMode] = React.useState(false);
   const developerModeRef = React.useRef(false); // Track developer mode in a ref
 
-  const [, setCollisionSoundsEnabled] = React.useState(true);
   const collisionSoundsRef = React.useRef(true); // Track collision sounds in a ref
+
+  const [rosaryZoom, setRosaryZoom] = React.useState(() => {
+    try {
+      return parseFloat(localStorage.getItem("rosaryZoom")) || 1.0;
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+      return 1.0;
+    }
+  });
+
+  // State for rosary position
+  const [rosaryPosition, setRosaryPosition] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem("rosaryPosition");
+      return saved ? JSON.parse(saved) : { x: 0, y: 0 };
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+      return { x: 0, y: 0 };
+    }
+  });
+  const [isDraggingRosary, setIsDraggingRosary] = React.useState(false);
+  const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
 
   // Update ref when currentPrayerIndex prop changes
   React.useEffect(() => {
     currentPrayerIndexRef.current = currentPrayerIndex;
   }, [currentPrayerIndex]);
+
+  // Save rosary position to localStorage
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("rosaryPosition", JSON.stringify(rosaryPosition));
+    } catch (error) {
+      console.warn("Failed to save rosary position:", error);
+    }
+  }, [rosaryPosition]);
+
+  // Listen for rosary position reset events
+  React.useEffect(() => {
+    const handleResetPosition = (event) => {
+      setRosaryPosition(event.detail);
+    };
+
+    window.addEventListener("resetRosaryPosition", handleResetPosition);
+    return () => {
+      window.removeEventListener("resetRosaryPosition", handleResetPosition);
+    };
+  }, []);
 
   /**
    * Get mystery-specific colors
@@ -51,6 +93,7 @@ const InteractiveRosary = ({
         chain: "#FFA07A", // Light salmon - warm connection
         highlight: "#FFD700", // Gold - divine light
         heart: "#FF1493", // Deep pink - love and devotion
+        completed: "#FFB6C1", // Light pink - completed prayers (faint)
       },
       // Sorrowful Mysteries - Deep, somber colors
       dolorosos: {
@@ -59,6 +102,7 @@ const InteractiveRosary = ({
         chain: "#696969", // Dim gray - mourning
         highlight: "#DC143C", // Crimson - blood and sacrifice
         heart: "#B22222", // Fire brick - deep sorrow
+        completed: "#8B4513", // Saddle brown - completed prayers (faint)
       },
       // Glorious Mysteries - Rich, majestic colors
       gloriosos: {
@@ -67,6 +111,7 @@ const InteractiveRosary = ({
         chain: "#4682B4", // Steel blue - celestial connection
         highlight: "#FFD700", // Gold - divine glory
         heart: "#9370DB", // Medium purple - royal splendor
+        completed: "#4169E1", // Royal blue - completed prayers (faint)
       },
       // Luminous Mysteries - Bright, illuminating colors
       luminosos: {
@@ -75,6 +120,7 @@ const InteractiveRosary = ({
         chain: "#DAA520", // Goldenrod - radiant connection
         highlight: "#FFFF00", // Yellow - pure light
         heart: "#FF8C00", // Dark orange - divine revelation
+        completed: "#FFD700", // Gold - completed prayers (faint)
       },
     };
     return colorSchemes[mystery] || colorSchemes.gozosos;
@@ -124,23 +170,18 @@ const InteractiveRosary = ({
       );
   }, []);
 
-  // Listen for collision sounds toggle events
+  // Listen for rosary zoom change events
   useEffect(() => {
-    const handleCollisionSoundsChange = (event) => {
-      const newMode = event.detail.collisionSoundsEnabled;
-      setCollisionSoundsEnabled(newMode);
-      collisionSoundsRef.current = newMode; // Update ref immediately
+    const handleRosaryZoomChange = (event) => {
+      const newZoom = event.detail.zoom;
+      setRosaryZoom(newZoom);
+      console.log("Rosary zoom changed to:", newZoom);
+      // The useEffect with initializePhysics dependency will handle recreation
     };
 
-    window.addEventListener(
-      "collisionSoundsChange",
-      handleCollisionSoundsChange
-    );
+    window.addEventListener("rosaryZoomChange", handleRosaryZoomChange);
     return () =>
-      window.removeEventListener(
-        "collisionSoundsChange",
-        handleCollisionSoundsChange
-      );
+      window.removeEventListener("rosaryZoomChange", handleRosaryZoomChange);
   }, []);
 
   // Update constraint visibility when developer mode changes
@@ -157,7 +198,18 @@ const InteractiveRosary = ({
     }
   }, [developerMode]);
 
+  // Use refs to avoid dependency issues
+  const getRosarySequenceRef = useRef(getRosarySequence);
+  const onBeadClickRef = useRef(onBeadClick);
+
+  // Update refs when functions change
   useEffect(() => {
+    getRosarySequenceRef.current = getRosarySequence;
+    onBeadClickRef.current = onBeadClick;
+  }, [getRosarySequence, onBeadClick]);
+
+  // Initialize physics world with current zoom
+  const initializePhysics = useCallback(() => {
     if (!sceneRef.current) return;
 
     const container = sceneRef.current;
@@ -168,6 +220,7 @@ const InteractiveRosary = ({
       width,
       height,
       currentMystery,
+      rosaryZoom,
     });
 
     // --- Cleanup previous instance if it exists ---
@@ -204,13 +257,16 @@ const InteractiveRosary = ({
 
     // --- Get Colors and Sequence ---
     const colors = getMysteryColors(currentMystery);
-    const rosarySequence = getRosarySequence();
+    const rosarySequence = getRosarySequenceRef.current();
     console.log("📿 Rosary sequence length:", rosarySequence.length);
 
     // --- Parameters ---
-    const beadSize = 8; // Regular beads
-    const crossBeadSize = 10; // Cross pieces
-    const centerBeadSize = 14; // Heart bead (increased from 12)
+    const baseBeadSize = 8; // Base bead size
+    const beadSize = baseBeadSize * rosaryZoom; // Apply zoom to bead size
+    const baseCrossBeadSize = 10; // Base cross pieces
+    const crossBeadSize = baseCrossBeadSize * rosaryZoom; // Apply zoom to cross beads
+    const baseCenterBeadSize = 14; // Base heart bead
+    const centerBeadSize = baseCenterBeadSize * rosaryZoom; // Apply zoom to center bead
 
     const allBeads = [];
     const constraints = [];
@@ -265,10 +321,13 @@ const InteractiveRosary = ({
     };
 
     // --- Layout & Bead Creation ---
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(width, height) / 3.5;
-    const chainSegmentLength = 15;
+    const centerX = width / 2 + rosaryPosition.x;
+    // Center the rosary in the full screen height
+    const centerY = height / 2 + rosaryPosition.y;
+    const baseRadius = Math.min(width, height) / 3.5;
+    const radius = baseRadius * rosaryZoom; // Apply zoom to radius
+    const baseChainSegmentLength = 15;
+    const chainSegmentLength = baseChainSegmentLength * rosaryZoom; // Apply zoom to chain length
 
     // --- Create Center Bead (Heart medal at top of loop) ---
     // This is decorative - holds image of Our Lady
@@ -353,7 +412,7 @@ const InteractiveRosary = ({
 
       // Every 11th connection is longer (Glory Be separator between decades)
       const isLongSpring = (i + 1) % 11 === 10 || (i + 1) % 11 === 0;
-      // Use bead-based chain lengths: beadSize = 8px
+      // Use bead-based chain lengths with zoom: beadSize = 8px * zoom
       const shortChain = beadSize * 0.6; // ~5px = 1 link (0.6 bead diameter)
       const longChain = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
       const adjustedLength = isLongSpring ? longChain : shortChain;
@@ -571,7 +630,7 @@ const InteractiveRosary = ({
       let chainLength;
       let prayerIndex = tailChainPrayerIndices[i];
 
-      // Use bead-based chain lengths: beadSize = 8px
+      // Use bead-based chain lengths with zoom: beadSize = 8px * zoom
       const shortChain = beadSize * 0.6; // ~5px = 1 link (0.6 bead diameter)
       const longChain = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
 
@@ -707,13 +766,21 @@ const InteractiveRosary = ({
       let dampeningFactor = 1.0;
       const allConstraints = Matter.Composite.allConstraints(world);
 
-        // Check if either body is connected to chains
-        const bodyAConstraints = allConstraints.filter(
-          (c) => c && c.bodyA && c.bodyB && (c.bodyA.id === bodyA.id || c.bodyB.id === bodyA.id)
-        );
-        const bodyBConstraints = allConstraints.filter(
-          (c) => c && c.bodyA && c.bodyB && (c.bodyA.id === bodyB.id || c.bodyB.id === bodyB.id)
-        );
+      // Check if either body is connected to chains
+      const bodyAConstraints = allConstraints.filter(
+        (c) =>
+          c &&
+          c.bodyA &&
+          c.bodyB &&
+          (c.bodyA.id === bodyA.id || c.bodyB.id === bodyA.id)
+      );
+      const bodyBConstraints = allConstraints.filter(
+        (c) =>
+          c &&
+          c.bodyA &&
+          c.bodyB &&
+          (c.bodyA.id === bodyB.id || c.bodyB.id === bodyB.id)
+      );
 
       // More chains = more dampening
       const totalConstraints =
@@ -722,11 +789,18 @@ const InteractiveRosary = ({
 
       // Get mystery-specific sound characteristics
       const palette = soundEffects.getMysterySoundPalette(currentMystery);
-      
+
       // Generate sound parameters using mystery-specific palette
-      const baseFrequency = palette.baseFrequency + momentum * (palette.frequencyRange / 10); // Mystery-based frequency range
-      const volume = Math.min(0.8, momentum * 0.1) * dampeningFactor * palette.volumeMultiplier;
-      const duration = Math.min(0.3, momentum * 0.05) * dampeningFactor * palette.durationMultiplier;
+      const baseFrequency =
+        palette.baseFrequency + momentum * (palette.frequencyRange / 10); // Mystery-based frequency range
+      const volume =
+        Math.min(0.8, momentum * 0.1) *
+        dampeningFactor *
+        palette.volumeMultiplier;
+      const duration =
+        Math.min(0.3, momentum * 0.05) *
+        dampeningFactor *
+        palette.durationMultiplier;
 
       // Create audio context if it doesn't exist
       if (!window.audioContext) {
@@ -765,7 +839,8 @@ const InteractiveRosary = ({
         oscillator.type = "sawtooth"; // Metallic sound for cross (always metallic)
       } else if (bodyA.isHeartMedal || bodyB.isHeartMedal) {
         // Heart uses mystery-specific waveform but softer variant
-        oscillator.type = palette.waveform === 'sine' ? 'triangle' : palette.waveform;
+        oscillator.type =
+          palette.waveform === "sine" ? "triangle" : palette.waveform;
       } else {
         oscillator.type = palette.waveform; // Use mystery-specific waveform for beads
       }
@@ -823,9 +898,81 @@ const InteractiveRosary = ({
         );
 
         // Call the onBeadClick callback
-        if (onBeadClick) {
-          onBeadClick(clickedBead.prayerIndex, clickedBead.prayerId);
-        }
+        onBeadClickRef.current(clickedBead.prayerIndex, clickedBead.prayerId);
+      }
+    });
+
+    // Track bead dragging for dynamic text positioning
+    let isDragging = false;
+    let draggedBead = null;
+
+    Matter.Events.on(mouseConstraint, "mousedown", (event) => {
+      let clickedBody = event.source.body;
+      if (!clickedBody) return;
+
+      const clickedBead = matterInstance.current?.allBeads.find(
+        (b) => b.id === clickedBody.id
+      );
+      if (!clickedBead) return;
+
+      isDragging = true;
+      draggedBead = clickedBead;
+    });
+
+    Matter.Events.on(mouseConstraint, "mousemove", (event) => {
+      if (!isDragging || !draggedBead) return;
+
+      const beadY = draggedBead.position.y;
+      const screenHeight = render.canvas.height;
+
+      // Calculate how far down the bead is (0 = top, 1 = bottom)
+      const beadPositionRatio = beadY / screenHeight;
+
+      // If bead is dragged below 70% of screen height, start pushing text up
+      if (beadPositionRatio > 0.7) {
+        const pushAmount = (beadPositionRatio - 0.7) * 3; // Scale factor for text movement
+        const maxPush = 0.3; // Maximum push (30% of screen height)
+        const actualPush = Math.min(pushAmount, maxPush);
+
+        // Emit event with bead position for ViewPrayers to listen
+        window.dispatchEvent(
+          new CustomEvent("beadDragPosition", {
+            detail: {
+              isDragging: true,
+              pushAmount: actualPush,
+              beadPositionRatio: beadPositionRatio,
+            },
+          })
+        );
+      } else {
+        // Reset text position when bead is not far down
+        window.dispatchEvent(
+          new CustomEvent("beadDragPosition", {
+            detail: {
+              isDragging: true,
+              pushAmount: 0,
+              beadPositionRatio: beadPositionRatio,
+            },
+          })
+        );
+      }
+    });
+
+    Matter.Events.on(mouseConstraint, "mouseup", (event) => {
+      if (isDragging) {
+        // Reset text position when dragging ends
+        window.dispatchEvent(
+          new CustomEvent("beadDragPosition", {
+            detail: {
+              isDragging: false,
+              pushAmount: 0,
+              beadPositionRatio: 0,
+            },
+          })
+        );
+
+        isDragging = false;
+        draggedBead = null;
       }
     });
 
@@ -840,6 +987,22 @@ const InteractiveRosary = ({
         // Handle composite cross body separately
         if (bead.isCrossComposite) {
           bead.crossParts.forEach((part) => {
+            // Show completed prayers with faint outline FIRST (behind the cross)
+            if (bead.prayerIndex < currentPrayerIndexRef.current) {
+              context.strokeStyle = colors.completed || colors.cross;
+              context.lineWidth = 1;
+              context.globalAlpha = 0.3; // Faint outline
+              context.beginPath();
+              context.rect(
+                part.position.x - crossBeadSize / 2 - 1,
+                part.position.y - crossBeadSize / 2 - 1,
+                crossBeadSize + 2,
+                crossBeadSize + 2
+              );
+              context.stroke();
+              context.globalAlpha = 1; // Reset alpha
+            }
+
             // Only show prayer index in developer mode
             if (developerModeRef.current) {
               context.font = `bold ${crossBeadSize * 1.2}px Arial`;
@@ -858,7 +1021,7 @@ const InteractiveRosary = ({
               );
             }
 
-            // Highlight entire cross if prayer index 0 is current
+            // Highlight entire cross if prayer index 0 is current (on top)
             if (currentPrayerIndexRef.current === 0) {
               context.strokeStyle = colors.highlight;
               context.lineWidth = 3;
@@ -955,6 +1118,23 @@ const InteractiveRosary = ({
           );
         }
 
+        // Show completed prayers with faint outline (rosary fitness)
+        if (bead.prayerIndex < currentPrayerIndexRef.current) {
+          context.strokeStyle = colors.completed || colors.beads;
+          context.lineWidth = 1;
+          context.globalAlpha = 0.3; // Faint outline
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size + 1,
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+          context.globalAlpha = 1; // Reset alpha
+        }
+
         // Highlight current prayer bead (always shown)
         if (bead.prayerIndex === currentPrayerIndexRef.current) {
           context.strokeStyle = colors.highlight;
@@ -1038,13 +1218,95 @@ const InteractiveRosary = ({
     };
 
     console.log("✅ InteractiveRosary: Initialization complete!");
+  }, [
+    currentMystery,
+    rosaryZoom,
+    developerMode,
+    rosaryPosition.x,
+    rosaryPosition.y,
+  ]);
 
-    // --- Cleanup on component unmount ---
+  // Main useEffect that calls initializePhysics
+  useEffect(() => {
+    initializePhysics();
+
+    // Cleanup on component unmount
     return () => {
       console.log("🧹 InteractiveRosary: Component unmounting");
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array - only run once! Do NOT add dependencies or it will break.
+  }, [initializePhysics]);
+
+  // Handle rosary dragging
+  const handleRosaryMouseDown = (e) => {
+    // Only start dragging if clicking on empty space or the rosary background
+    if (e.target === sceneRef.current) {
+      setIsDraggingRosary(true);
+      setDragStart({
+        x: e.clientX - rosaryPosition.x,
+        y: e.clientY - rosaryPosition.y,
+      });
+      e.preventDefault();
+    }
+  };
+
+  const handleRosaryMouseMove = (e) => {
+    if (isDraggingRosary) {
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+
+      // Constrain to screen bounds
+      const container = sceneRef.current;
+      if (container) {
+        const maxX = container.clientWidth / 2;
+        const maxY = container.clientHeight / 2;
+        const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
+        const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
+
+        setRosaryPosition({ x: constrainedX, y: constrainedY });
+      }
+    }
+  };
+
+  const handleRosaryMouseUp = () => {
+    setIsDraggingRosary(false);
+  };
+
+  // Touch event handlers
+  const handleRosaryTouchStart = (e) => {
+    if (e.touches.length === 1 && e.target === sceneRef.current) {
+      const touch = e.touches[0];
+      setIsDraggingRosary(true);
+      setDragStart({
+        x: touch.clientX - rosaryPosition.x,
+        y: touch.clientY - rosaryPosition.y,
+      });
+      e.preventDefault();
+    }
+  };
+
+  const handleRosaryTouchMove = (e) => {
+    if (isDraggingRosary && e.touches.length === 1) {
+      const touch = e.touches[0];
+      const newX = touch.clientX - dragStart.x;
+      const newY = touch.clientY - dragStart.y;
+
+      // Constrain to screen bounds
+      const container = sceneRef.current;
+      if (container) {
+        const maxX = container.clientWidth / 2;
+        const maxY = container.clientHeight / 2;
+        const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
+        const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
+
+        setRosaryPosition({ x: constrainedX, y: constrainedY });
+      }
+      e.preventDefault();
+    }
+  };
+
+  const handleRosaryTouchEnd = () => {
+    setIsDraggingRosary(false);
+  };
 
   if (!isVisible) {
     return null;
@@ -1061,7 +1323,16 @@ const InteractiveRosary = ({
         top: 0,
         left: 0,
         pointerEvents: "all",
+        cursor: isDraggingRosary ? "grabbing" : "grab",
       }}
+      onMouseDown={handleRosaryMouseDown}
+      onMouseMove={handleRosaryMouseMove}
+      onMouseUp={handleRosaryMouseUp}
+      onMouseLeave={handleRosaryMouseUp}
+      onTouchStart={handleRosaryTouchStart}
+      onTouchMove={handleRosaryTouchMove}
+      onTouchEnd={handleRosaryTouchEnd}
+      onTouchCancel={handleRosaryTouchEnd}
     />
   );
 };

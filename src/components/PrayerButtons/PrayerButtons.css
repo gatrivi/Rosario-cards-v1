@@ -54,9 +54,6 @@
 .segment-btn {
   width: 44px;
   height: 44px;
-  border: 2px solid var(--glass-border);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
   color: var(--text-color);
   cursor: pointer;
   display: flex;

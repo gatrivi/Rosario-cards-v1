@@ -1,0 +1,241 @@
+/* LitanyProgressBars.css - Boss-style Health Bars */
+
+.litany-progress-container {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 20px);
+  max-width: 400px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  pointer-events: none; /* Don't block interactions */
+}
+
+.litany-progress-title {
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--catholic-gold);
+  font-family: "Cloister Black", serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  margin-bottom: 6px;
+}
+
+.litany-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.litany-bar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: var(--catholic-gold);
+  font-family: "Cloister Black", serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.bar-count {
+  font-size: 9px;
+  opacity: 0.8;
+}
+
+.litany-bar-container {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.litany-bar-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.1) 0%,
+    rgba(212, 175, 55, 0.2) 50%,
+    rgba(212, 175, 55, 0.1) 100%
+  );
+  border-radius: 10px;
+}
+
+.litany-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 10px;
+  transition: all 0.5s ease;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+}
+
+.litany-bar-fill.active {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.litany-bar-fill.completed {
+  animation: boss-complete 2s ease-in-out;
+}
+
+.litany-bar-glow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 12px;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleX(1.02);
+  }
+}
+
+@keyframes boss-complete {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+    box-shadow: 0 0 30px currentColor;
+  }
+  75% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 20px currentColor;
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .litany-progress-container {
+    top: 10px;
+    width: calc(100% - 20px);
+    padding: 12px;
+  }
+
+  .litany-progress-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .litany-bars {
+    gap: 10px;
+  }
+
+  .litany-bar-section {
+    gap: 4px;
+  }
+
+  .bar-label {
+    font-size: 12px;
+  }
+
+  .bar-count {
+    font-size: 10px;
+  }
+
+  .litany-bar-container {
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .litany-progress-container {
+    top: 5px;
+    width: calc(100% - 10px);
+    padding: 8px;
+  }
+
+  .litany-progress-title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .litany-bars {
+    gap: 8px;
+  }
+
+  .litany-bar-container {
+    height: 14px;
+  }
+}
+
+/* Entrance animation */
+.litany-progress-container {
+  animation: slideDown 0.8s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

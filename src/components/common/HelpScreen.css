@@ -37,8 +37,9 @@
   align-items: center;
   padding: 20px 25px;
   border-bottom: 2px solid var(--glass-border);
-  background: linear-gradient(135deg, 
-    rgba(212, 175, 55, 0.1), 
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.1),
     rgba(139, 0, 0, 0.1)
   );
 }
@@ -139,19 +140,19 @@
 }
 
 .mystery-color.coral {
-  background: linear-gradient(135deg, #FF7F7F, #FF6B6B);
+  background: linear-gradient(135deg, #ff7f7f, #ff6b6b);
 }
 
 .mystery-color.brown {
-  background: linear-gradient(135deg, #D2B48C, #CD853F);
+  background: linear-gradient(135deg, #d2b48c, #cd853f);
 }
 
 .mystery-color.blue {
-  background: linear-gradient(135deg, #36454F, #2C3E50);
+  background: linear-gradient(135deg, #36454f, #2c3e50);
 }
 
 .mystery-color.gold {
-  background: linear-gradient(135deg, #FFD700, #DAA520);
+  background: linear-gradient(135deg, #ffd700, #daa520);
 }
 
 .tier-info {
@@ -180,19 +181,19 @@
 }
 
 .tier-color.coral {
-  background: linear-gradient(135deg, #FF7F7F, #FF6B6B);
+  background: linear-gradient(135deg, #ff7f7f, #ff6b6b);
 }
 
 .tier-color.brown {
-  background: linear-gradient(135deg, #D2B48C, #CD853F);
+  background: linear-gradient(135deg, #d2b48c, #cd853f);
 }
 
 .tier-color.onyx {
-  background: linear-gradient(135deg, #36454F, #2C3E50);
+  background: linear-gradient(135deg, #36454f, #2c3e50);
 }
 
 .tier-color.pearl {
-  background: linear-gradient(135deg, #F8F8FF, #E6E6FA);
+  background: linear-gradient(135deg, #f8f8ff, #e6e6fa);
 }
 
 .help-footer {
@@ -210,7 +211,11 @@
 }
 
 .help-got-it-button {
-  background: linear-gradient(135deg, var(--catholic-gold), var(--catholic-red));
+  background: linear-gradient(
+    135deg,
+    var(--catholic-gold),
+    var(--catholic-red)
+  );
   color: var(--catholic-white);
   border: 2px solid var(--glass-border);
   border-radius: 12px;
@@ -257,7 +262,11 @@
 }
 
 .help-button:hover {
-  background: linear-gradient(135deg, var(--catholic-gold), var(--catholic-red));
+  background: linear-gradient(
+    135deg,
+    var(--catholic-gold),
+    var(--catholic-red)
+  );
   color: var(--catholic-white);
   border-color: var(--catholic-gold);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
@@ -290,36 +299,36 @@
   .help-screen-overlay {
     padding: 10px;
   }
-  
+
   .help-screen {
     max-height: 95vh;
   }
-  
+
   .help-header {
     padding: 15px 20px;
   }
-  
+
   .help-header h2 {
     font-size: 20px;
   }
-  
+
   .help-content {
     padding: 20px;
   }
-  
+
   .help-section h3 {
     font-size: 16px;
   }
-  
+
   .help-section p,
   .help-section li {
     font-size: 13px;
   }
-  
+
   .mystery-types {
     grid-template-columns: 1fr;
   }
-  
+
   .tier-info {
     grid-template-columns: 1fr;
   }
@@ -329,28 +338,28 @@
   .help-screen-overlay {
     padding: 5px;
   }
-  
+
   .help-header {
     padding: 12px 15px;
   }
-  
+
   .help-header h2 {
     font-size: 18px;
   }
-  
+
   .help-content {
     padding: 15px;
   }
-  
+
   .help-section {
     margin-bottom: 20px;
   }
-  
+
   .help-button-container {
     bottom: 15px;
     right: 15px;
   }
-  
+
   .help-button {
     width: 45px;
     height: 45px;

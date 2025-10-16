@@ -8,6 +8,9 @@ import React, {
 } from "react";
 import AveMariaD from "../../data/assets/img/AllMary17thLith.jpeg";
 import { SoundEffects } from "../../utils/soundEffects";
+import LitanyDisplay from "../Litany/LitanyDisplay";
+import LitanyProgressBars from "../Litany/LitanyProgressBars";
+import LitanyEntrance from "../Litany/LitanyEntrance";
 
 /**
  * ViewPrayers Component
@@ -40,6 +43,12 @@ const ViewPrayers = forwardRef(
       onToggleFocusMode = () => {},
       getRosarySequence = () => [],
       showDetailedProgress = false,
+      // Litany-specific props
+      litanyVerseIndex = 0,
+      isInLitany = false,
+      getLitanyData = () => null,
+      nextLitanyVerse = () => false,
+      prevLitanyVerse = () => false,
     },
     ref
   ) => {
@@ -47,10 +56,174 @@ const ViewPrayers = forwardRef(
     const soundEffectsRef = useRef(new SoundEffects());
     const currentTheme = localStorage.getItem("theme");
 
+    // Litany entrance animation state
+    const [showLitanyEntrance, setShowLitanyEntrance] = useState(false);
+    const [hasShownEntrance, setHasShownEntrance] = useState(false);
+
+    // Dynamic text positioning state
+    const [textPushAmount, setTextPushAmount] = useState(0);
+    const [stainedGlassTransparent, setStainedGlassTransparent] = useState(
+      () => {
+        try {
+          return localStorage.getItem("stainedGlassTransparent") === "true";
+        } catch (error) {
+          return false;
+        }
+      }
+    );
+    const [showLargeNavButtons, setShowLargeNavButtons] = useState(false);
+    const [navButtonsTimer, setNavButtonsTimer] = useState(null);
+
+    // Save stained glass transparency state
+    useEffect(() => {
+      try {
+        localStorage.setItem(
+          "stainedGlassTransparent",
+          stainedGlassTransparent.toString()
+        );
+      } catch (error) {
+        console.warn("Failed to save stained glass transparency:", error);
+      }
+    }, [stainedGlassTransparent]);
+
+    // Listen for help button press to show large nav buttons temporarily
+    useEffect(() => {
+      const handleShowNavButtons = () => {
+        // Clear existing timer if any
+        if (navButtonsTimer) {
+          clearTimeout(navButtonsTimer);
+        }
+
+        // Show the buttons
+        setShowLargeNavButtons(true);
+
+        // Hide after 5 seconds
+        const timer = setTimeout(() => {
+          setShowLargeNavButtons(false);
+        }, 5000);
+
+        setNavButtonsTimer(timer);
+      };
+
+      window.addEventListener("showNavigationButtons", handleShowNavButtons);
+
+      return () => {
+        window.removeEventListener(
+          "showNavigationButtons",
+          handleShowNavButtons
+        );
+        if (navButtonsTimer) {
+          clearTimeout(navButtonsTimer);
+        }
+      };
+    }, [navButtonsTimer]);
+
+    // Listen for keyboard shortcuts
+    useEffect(() => {
+      const handleKeyDown = (event) => {
+        // Only handle keyboard shortcuts if no input is focused
+        if (
+          document.activeElement &&
+          document.activeElement.tagName === "INPUT"
+        ) {
+          return;
+        }
+
+        switch (event.key) {
+          case "ArrowLeft":
+          case "ArrowUp":
+            event.preventDefault();
+            if (isInLitany) {
+              const moved = prevLitanyVerse();
+              if (!moved) {
+                window.dispatchEvent(
+                  new CustomEvent("prayerScrollPrev", {
+                    detail: { direction: "prev" },
+                  })
+                );
+              }
+            } else {
+              window.dispatchEvent(
+                new CustomEvent("prayerScrollPrev", {
+                  detail: { direction: "prev" },
+                })
+              );
+            }
+            soundEffectsRef.current.playEndOfScrollSound();
+            break;
+
+          case "ArrowRight":
+          case "ArrowDown":
+          case " ":
+            event.preventDefault();
+            if (isInLitany) {
+              const moved = nextLitanyVerse();
+              if (!moved) {
+                window.dispatchEvent(
+                  new CustomEvent("prayerScrollNext", {
+                    detail: { direction: "next" },
+                  })
+                );
+              }
+            } else {
+              window.dispatchEvent(
+                new CustomEvent("prayerScrollNext", {
+                  detail: { direction: "next" },
+                })
+              );
+            }
+            soundEffectsRef.current.playEndOfScrollSound();
+            break;
+
+          case "f":
+          case "F":
+            event.preventDefault();
+            onToggleFocusMode();
+            break;
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isInLitany, nextLitanyVerse, prevLitanyVerse, onToggleFocusMode]);
+
+    // Listen for bead drag position changes
+    useEffect(() => {
+      const handleBeadDragPosition = (event) => {
+        const { isDragging, pushAmount } = event.detail;
+
+        if (isDragging) {
+          setTextPushAmount(pushAmount);
+
+          // Play subtle sound effect when pushing text
+          if (pushAmount > 0) {
+            soundEffectsRef.current.playScrollSound();
+          }
+        } else {
+          // Reset position when dragging ends
+          setTextPushAmount(0);
+        }
+      };
+
+      window.addEventListener("beadDragPosition", handleBeadDragPosition);
+      return () =>
+        window.removeEventListener("beadDragPosition", handleBeadDragPosition);
+    }, []);
+
     // Update sound system when mystery changes
     useEffect(() => {
       soundEffectsRef.current.setMystery(currentMystery);
     }, [currentMystery]);
+
+    // Trigger litany entrance animation when entering litany
+    useEffect(() => {
+      if (isInLitany && !hasShownEntrance) {
+        setShowLitanyEntrance(true);
+        setHasShownEntrance(true);
+      } else if (!isInLitany) {
+        setHasShownEntrance(false);
+      }
+    }, [isInLitany, hasShownEntrance]);
 
     /**
      * Count Hail Marys based on current decade position
@@ -315,28 +488,67 @@ const ViewPrayers = forwardRef(
       const isLeftSwipe = distance > minSwipeDistance;
       const isRightSwipe = distance < -minSwipeDistance;
 
-      if (isLeftSwipe) {
-        // Swipe left = next prayer
-        soundEffectsRef.current.playEndOfScrollSound();
-        window.dispatchEvent(
-          new CustomEvent("prayerScrollNext", {
-            detail: { direction: "next" },
-          })
-        );
+      if (isInLitany) {
+        // Handle litany verse navigation
+        if (isLeftSwipe) {
+          // Swipe left = next verse
+          const moved = nextLitanyVerse();
+          if (!moved) {
+            // At end of litany, go to next prayer
+            window.dispatchEvent(
+              new CustomEvent("prayerScrollNext", {
+                detail: { direction: "next" },
+              })
+            );
+          }
+          soundEffectsRef.current.playEndOfScrollSound();
+        } else if (isRightSwipe) {
+          // Swipe right = previous verse
+          const moved = prevLitanyVerse();
+          if (!moved) {
+            // At beginning of litany, go to previous prayer
+            window.dispatchEvent(
+              new CustomEvent("prayerScrollPrev", {
+                detail: { direction: "prev" },
+              })
+            );
+          }
+          soundEffectsRef.current.playEndOfScrollSound();
+        }
         setIsNavigating(true);
         setTimeout(() => setIsNavigating(false), 300);
-      } else if (isRightSwipe) {
-        // Swipe right = previous prayer
-        soundEffectsRef.current.playEndOfScrollSound();
-        window.dispatchEvent(
-          new CustomEvent("prayerScrollPrev", {
-            detail: { direction: "prev" },
-          })
-        );
-        setIsNavigating(true);
-        setTimeout(() => setIsNavigating(false), 300);
+      } else {
+        // Handle normal prayer navigation
+        if (isLeftSwipe) {
+          // Swipe left = next prayer
+          soundEffectsRef.current.playEndOfScrollSound();
+          window.dispatchEvent(
+            new CustomEvent("prayerScrollNext", {
+              detail: { direction: "next" },
+            })
+          );
+          setIsNavigating(true);
+          setTimeout(() => setIsNavigating(false), 300);
+        } else if (isRightSwipe) {
+          // Swipe right = previous prayer
+          soundEffectsRef.current.playEndOfScrollSound();
+          window.dispatchEvent(
+            new CustomEvent("prayerScrollPrev", {
+              detail: { direction: "prev" },
+            })
+          );
+          setIsNavigating(true);
+          setTimeout(() => setIsNavigating(false), 300);
+        }
       }
-    }, [touchStart, touchEnd, minSwipeDistance]);
+    }, [
+      touchStart,
+      touchEnd,
+      minSwipeDistance,
+      isInLitany,
+      nextLitanyVerse,
+      prevLitanyVerse,
+    ]);
 
     // Handle wheel events for scroll-based navigation
     useEffect(() => {
@@ -351,29 +563,64 @@ const ViewPrayers = forwardRef(
         const isAtTop = scrollTop <= 10;
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
 
-        if (deltaY > 0 && isAtBottom) {
-          // Scrolling down at bottom - trigger prayer navigation
-          event.preventDefault();
-          soundEffectsRef.current.playEndOfScrollSound();
-          // Dispatch custom event for parent to handle prayer navigation
-          window.dispatchEvent(
-            new CustomEvent("prayerScrollNext", {
-              detail: { direction: "next" },
-            })
-          );
-        } else if (deltaY < 0 && isAtTop) {
-          // Scrolling up at top - trigger prayer navigation
-          event.preventDefault();
-          soundEffectsRef.current.playEndOfScrollSound();
-          // Dispatch custom event for parent to handle prayer navigation
-          window.dispatchEvent(
-            new CustomEvent("prayerScrollPrev", {
-              detail: { direction: "prev" },
-            })
-          );
+        if (isInLitany) {
+          // Handle litany verse navigation
+          if (deltaY > 0 && isAtBottom) {
+            // Scrolling down at bottom - next verse
+            event.preventDefault();
+            const moved = nextLitanyVerse();
+            if (!moved) {
+              // At end of litany, go to next prayer
+              window.dispatchEvent(
+                new CustomEvent("prayerScrollNext", {
+                  detail: { direction: "next" },
+                })
+              );
+            }
+            soundEffectsRef.current.playEndOfScrollSound();
+          } else if (deltaY < 0 && isAtTop) {
+            // Scrolling up at top - previous verse
+            event.preventDefault();
+            const moved = prevLitanyVerse();
+            if (!moved) {
+              // At beginning of litany, go to previous prayer
+              window.dispatchEvent(
+                new CustomEvent("prayerScrollPrev", {
+                  detail: { direction: "prev" },
+                })
+              );
+            }
+            soundEffectsRef.current.playEndOfScrollSound();
+          } else {
+            // Normal scrolling within content
+            soundEffectsRef.current.playScrollSound();
+          }
         } else {
-          // Normal scrolling within content
-          soundEffectsRef.current.playScrollSound();
+          // Handle normal prayer navigation
+          if (deltaY > 0 && isAtBottom) {
+            // Scrolling down at bottom - trigger prayer navigation
+            event.preventDefault();
+            soundEffectsRef.current.playEndOfScrollSound();
+            // Dispatch custom event for parent to handle prayer navigation
+            window.dispatchEvent(
+              new CustomEvent("prayerScrollNext", {
+                detail: { direction: "next" },
+              })
+            );
+          } else if (deltaY < 0 && isAtTop) {
+            // Scrolling up at top - trigger prayer navigation
+            event.preventDefault();
+            soundEffectsRef.current.playEndOfScrollSound();
+            // Dispatch custom event for parent to handle prayer navigation
+            window.dispatchEvent(
+              new CustomEvent("prayerScrollPrev", {
+                detail: { direction: "prev" },
+              })
+            );
+          } else {
+            // Normal scrolling within content
+            soundEffectsRef.current.playScrollSound();
+          }
         }
       };
 
@@ -382,7 +629,7 @@ const ViewPrayers = forwardRef(
         container.addEventListener("wheel", handleWheel, { passive: false });
         return () => container.removeEventListener("wheel", handleWheel);
       }
-    }, []);
+    }, [isInLitany, nextLitanyVerse, prevLitanyVerse]);
 
     // Add touch event listeners
     useEffect(() => {
@@ -451,36 +698,83 @@ const ViewPrayers = forwardRef(
             overflow: "hidden",
           }}
         >
-          {/* Full-screen background image */}
-          <div
-            className="page-right"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              zIndex: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <img
-              className="prayer-image"
-              src={finalImageUrl}
-              alt={`${prayer.name} illustration`}
+          {/* Full-screen background image - litany or normal prayer */}
+          {!isInLitany ? (
+            <div
+              className="page-right"
               style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                objectPosition: "center",
-                filter: "brightness(0.8) contrast(1.1)",
-                transform: `scale(${imageZoom})`,
-                transition: "transform 0.5s ease-in-out",
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                zIndex: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
-            />
-          </div>
+            >
+              <img
+                className="prayer-image"
+                src={finalImageUrl}
+                alt={`${prayer.name} illustration`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "center",
+                  filter: "brightness(0.8) contrast(1.1)",
+                  transform: `scale(${imageZoom})`,
+                  transition: "transform 0.5s ease-in-out",
+                }}
+              />
+            </div>
+          ) : (
+            // Litany background image with theme support
+            (() => {
+              const currentVerse = getLitanyData()?.verses?.[litanyVerseIndex];
+              if (!currentVerse) return null;
+
+              // Theme-based image selection (same as other prayers)
+              const theme = localStorage.getItem("theme");
+              const isDark = theme === "dark";
+              const selectedImage =
+                isDark && currentVerse.imgmo
+                  ? currentVerse.imgmo
+                  : currentVerse.img;
+
+              return selectedImage ? (
+                <div
+                  className="page-right"
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    zIndex: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <img
+                    className="prayer-image"
+                    src={selectedImage}
+                    alt={`Litany verse ${litanyVerseIndex + 1} illustration`}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center",
+                      filter: "brightness(0.7) contrast(1.1)",
+                      transition: "all 0.5s ease-in-out",
+                    }}
+                  />
+                </div>
+              ) : null;
+            })()
+          )}
 
           {/* Stained glass overlay */}
           <div
@@ -491,13 +785,22 @@ const ViewPrayers = forwardRef(
               left: 0,
               right: 0,
               bottom: 0,
-              background: "rgba(255, 255, 255, 0.03)",
-              backdropFilter: "blur(0.5px)",
-              border: "3px solid rgba(212, 175, 55, 0.2)",
+              background: stainedGlassTransparent
+                ? "rgba(255, 255, 255, 0.005)"
+                : "rgba(255, 255, 255, 0.03)",
+              backdropFilter: stainedGlassTransparent
+                ? "blur(0px)"
+                : "blur(0.5px)",
+              border: stainedGlassTransparent
+                ? "3px solid rgba(212, 175, 55, 0.05)"
+                : "3px solid rgba(212, 175, 55, 0.2)",
               borderRadius: "20px",
-              boxShadow: "inset 0 0 30px rgba(212, 175, 55, 0.05)",
+              boxShadow: stainedGlassTransparent
+                ? "inset 0 0 10px rgba(212, 175, 55, 0.02)"
+                : "inset 0 0 30px rgba(212, 175, 55, 0.05)",
               pointerEvents: "none",
               zIndex: 1,
+              transition: "all 0.3s ease",
             }}
           />
 
@@ -588,36 +891,83 @@ const ViewPrayers = forwardRef(
           overflow: "hidden",
         }}
       >
-        {/* Full-screen background image */}
-        <div
-          className="page-right"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            zIndex: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            className="prayer-image"
-            src={finalImageUrl}
-            alt={`${prayer.name} illustration`}
+        {/* Full-screen background image - litany or normal prayer */}
+        {!isInLitany ? (
+          <div
+            className="page-right"
             style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "center",
-              filter: "brightness(0.7) contrast(1.1)",
-              transform: `scale(${imageZoom})`,
-              transition: "transform 0.5s ease-in-out",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              zIndex: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
-        </div>
+          >
+            <img
+              className="prayer-image"
+              src={finalImageUrl}
+              alt={`${prayer.name} illustration`}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                filter: "brightness(0.7) contrast(1.1)",
+                transform: `scale(${imageZoom})`,
+                transition: "transform 0.5s ease-in-out",
+              }}
+            />
+          </div>
+        ) : (
+          // Litany background image with theme support
+          (() => {
+            const currentVerse = getLitanyData()?.verses?.[litanyVerseIndex];
+            if (!currentVerse) return null;
+
+            // Theme-based image selection (same as other prayers)
+            const theme = localStorage.getItem("theme");
+            const isDark = theme === "dark";
+            const selectedImage =
+              isDark && currentVerse.imgmo
+                ? currentVerse.imgmo
+                : currentVerse.img;
+
+            return selectedImage ? (
+              <div
+                className="page-right"
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  zIndex: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <img
+                  className="prayer-image"
+                  src={selectedImage}
+                  alt={`Litany verse ${litanyVerseIndex + 1} illustration`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center",
+                    filter: "brightness(0.6) contrast(1.1)",
+                    transition: "all 0.5s ease-in-out",
+                  }}
+                />
+              </div>
+            ) : null;
+          })()
+        )}
 
         {/* Stained glass overlay */}
         <div
@@ -628,104 +978,203 @@ const ViewPrayers = forwardRef(
             left: 0,
             right: 0,
             bottom: 0,
-            background: "rgba(255, 255, 255, 0.05)",
-            backdropFilter: "blur(1px)",
-            border: "3px solid rgba(212, 175, 55, 0.3)",
+            background: stainedGlassTransparent
+              ? "rgba(255, 255, 255, 0.01)"
+              : "rgba(255, 255, 255, 0.05)",
+            backdropFilter: stainedGlassTransparent ? "blur(0px)" : "blur(1px)",
+            border: stainedGlassTransparent
+              ? "3px solid rgba(212, 175, 55, 0.1)"
+              : "3px solid rgba(212, 175, 55, 0.3)",
             borderRadius: "20px",
-            boxShadow: "inset 0 0 50px rgba(212, 175, 55, 0.1)",
+            boxShadow: stainedGlassTransparent
+              ? "inset 0 0 20px rgba(212, 175, 55, 0.05)"
+              : "inset 0 0 50px rgba(212, 175, 55, 0.1)",
             pointerEvents: "none",
             zIndex: 1,
+            transition: "all 0.3s ease",
           }}
         />
 
-        {/* Navigation edge indicators */}
+        {/* Stained Glass Transparency Toggle */}
         <div
           style={{
             position: "absolute",
-            left: "20px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 5,
-            pointerEvents: "none",
-            opacity: 0.6,
-            transition: "opacity 0.3s ease",
+            top: "20px",
+            right: "20px",
+            zIndex: 15,
+            pointerEvents: "auto",
           }}
         >
-          <div
+          <button
+            onClick={() => setStainedGlassTransparent(!stainedGlassTransparent)}
             style={{
-              background: "rgba(212, 175, 55, 0.3)",
+              background: "rgba(212, 175, 55, 0.4)",
               backdropFilter: "blur(8px)",
               borderRadius: "50%",
-              width: "60px",
-              height: "60px",
+              width: "50px",
+              height: "50px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "24px",
+              fontSize: "20px",
               color: "var(--catholic-gold)",
-              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
-              border: "2px solid rgba(212, 175, 55, 0.5)",
+              boxShadow: "0 6px 20px rgba(0, 0, 0, 0.4)",
+              border: "3px solid rgba(212, 175, 55, 0.6)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
             }}
-          >
-            ←
-          </div>
-          <div
-            style={{
-              fontSize: "12px",
-              color: "var(--catholic-gold)",
-              textAlign: "center",
-              marginTop: "8px",
-              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
-              fontFamily: "Cloister Black, serif",
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.1)";
+              e.target.style.background = "rgba(212, 175, 55, 0.6)";
+              e.target.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.6)";
             }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.background = "rgba(212, 175, 55, 0.4)";
+              e.target.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.4)";
+            }}
+            title={
+              stainedGlassTransparent
+                ? "Show stained glass overlay"
+                : "Hide stained glass overlay"
+            }
           >
-            Swipe
-          </div>
+            {stainedGlassTransparent ? "🔍" : "🪟"}
+          </button>
         </div>
 
-        <div
-          style={{
-            position: "absolute",
-            right: "20px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 5,
-            pointerEvents: "none",
-            opacity: 0.6,
-            transition: "opacity 0.3s ease",
-          }}
-        >
-          <div
-            style={{
-              background: "rgba(212, 175, 55, 0.3)",
-              backdropFilter: "blur(8px)",
-              borderRadius: "50%",
-              width: "60px",
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "24px",
-              color: "var(--catholic-gold)",
-              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
-              border: "2px solid rgba(212, 175, 55, 0.5)",
-            }}
-          >
-            →
-          </div>
-          <div
-            style={{
-              fontSize: "12px",
-              color: "var(--catholic-gold)",
-              textAlign: "center",
-              marginTop: "8px",
-              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
-              fontFamily: "Cloister Black, serif",
-            }}
-          >
-            Swipe
-          </div>
-        </div>
+        {/* Navigation edge indicators - only show when showLargeNavButtons is true */}
+        {showLargeNavButtons && (
+          <>
+            <div
+              style={{
+                position: "absolute",
+                left: "20px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 5,
+                pointerEvents: "auto",
+                opacity: 0.8,
+                transition: "opacity 0.3s ease, transform 0.2s ease",
+              }}
+              className="swipe-button-left"
+            >
+              <div
+                style={{
+                  background: "rgba(212, 175, 55, 0.4)",
+                  backdropFilter: "blur(8px)",
+                  borderRadius: "50%",
+                  width: "70px",
+                  height: "70px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "28px",
+                  color: "var(--catholic-gold)",
+                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.4)",
+                  border: "3px solid rgba(212, 175, 55, 0.6)",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = "scale(1.1)";
+                  e.target.style.background = "rgba(212, 175, 55, 0.6)";
+                  e.target.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.6)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.background = "rgba(212, 175, 55, 0.4)";
+                  e.target.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.4)";
+                }}
+                onClick={() => {
+                  if (isInLitany) {
+                    const moved = prevLitanyVerse();
+                    if (!moved) {
+                      window.dispatchEvent(
+                        new CustomEvent("prayerScrollPrev", {
+                          detail: { direction: "prev" },
+                        })
+                      );
+                    }
+                  } else {
+                    window.dispatchEvent(
+                      new CustomEvent("prayerScrollPrev", {
+                        detail: { direction: "prev" },
+                      })
+                    );
+                  }
+                  soundEffectsRef.current.playEndOfScrollSound();
+                }}
+              >
+                ←
+              </div>
+            </div>
+
+            <div
+              style={{
+                position: "absolute",
+                right: "20px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 5,
+                pointerEvents: "auto",
+                opacity: 0.8,
+                transition: "opacity 0.3s ease, transform 0.2s ease",
+              }}
+              className="swipe-button-right"
+            >
+              <div
+                style={{
+                  background: "rgba(212, 175, 55, 0.4)",
+                  backdropFilter: "blur(8px)",
+                  borderRadius: "50%",
+                  width: "70px",
+                  height: "70px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "28px",
+                  color: "var(--catholic-gold)",
+                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.4)",
+                  border: "3px solid rgba(212, 175, 55, 0.6)",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = "scale(1.1)";
+                  e.target.style.background = "rgba(212, 175, 55, 0.6)";
+                  e.target.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.6)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.background = "rgba(212, 175, 55, 0.4)";
+                  e.target.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.4)";
+                }}
+                onClick={() => {
+                  if (isInLitany) {
+                    const moved = nextLitanyVerse();
+                    if (!moved) {
+                      window.dispatchEvent(
+                        new CustomEvent("prayerScrollNext", {
+                          detail: { direction: "next" },
+                        })
+                      );
+                    }
+                  } else {
+                    window.dispatchEvent(
+                      new CustomEvent("prayerScrollNext", {
+                        detail: { direction: "next" },
+                      })
+                    );
+                  }
+                  soundEffectsRef.current.playEndOfScrollSound();
+                }}
+              >
+                →
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Navigation hint overlay */}
         {showNavigationHint && (
@@ -760,27 +1209,47 @@ const ViewPrayers = forwardRef(
             </div>
             <div style={{ fontSize: "14px", lineHeight: 1.6, opacity: 0.9 }}>
               <div>👆 Swipe left/right to navigate prayers</div>
-              <div>⌨️ Use arrow keys or space bar</div>
-              <div>👆 Double-tap for focus mode</div>
+              <div>⌨️ Use arrow keys (← →) or space bar</div>
+              <div>🖱️ Click the navigation buttons on sides</div>
+              <div>👆 Double-tap for focus mode (or press F)</div>
               <div>🎯 Tap bottom buttons for controls</div>
             </div>
           </div>
         )}
 
-        {/* Prayer text overlay */}
+        {/* Litany Entrance Animation */}
+        {showLitanyEntrance && (
+          <LitanyEntrance
+            onComplete={() => setShowLitanyEntrance(false)}
+            currentMystery={currentMystery}
+            duration={3000}
+          />
+        )}
+
+        {/* Litany Progress Bars - Show when in litany */}
+        {isInLitany && (
+          <LitanyProgressBars
+            currentVerseIndex={litanyVerseIndex}
+            sections={getLitanyData()?.sections || []}
+            currentMystery={currentMystery}
+          />
+        )}
+
+        {/* Prayer text overlay - positioned at top, compact */}
         <div
           className="page-left"
           ref={scrollContainerRef}
           style={{
             position: "absolute",
-            top: "50%",
+            top: "0px",
             left: "50%",
-            transform: `translate(-50%, -50%) ${
-              isNavigating ? "scale(0.98)" : "scale(1)"
-            }`,
-            width: window.innerWidth < 768 ? "90%" : "70%",
-            maxWidth: "800px",
-            maxHeight: "80vh",
+            transform: `translateX(-50%) translateY(${
+              -textPushAmount * 100
+            }px) ${isNavigating ? "scale(0.98)" : "scale(1)"}`,
+            transition: "transform 0.1s ease-out",
+            width: window.innerWidth < 768 ? "95%" : "80%",
+            maxWidth: "900px",
+            maxHeight: "calc(100vh - 120px)", // Leave space for footer
             overflow: "auto",
             padding: window.innerWidth < 768 ? "16px" : "24px",
             fontSize: `calc(${
@@ -813,36 +1282,32 @@ const ViewPrayers = forwardRef(
           }}
           title="Swipe left/right to navigate • Double-tap for focus mode"
         >
-          {showCounters && (
-            <div
-              style={{
-                color: "#d4af37",
-                fontSize: window.innerWidth < 768 ? "16px" : "20px",
-                fontWeight: "bold",
-                display: "block",
-                marginBottom: "16px",
-                textAlign: "center",
-                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
-              }}
-            >
-              {currentPrayer
-                ? currentPrayer.id === "A"
-                  ? `${currentPrayer.title} 📿 ${hailMaryCount}`
-                  : currentPrayer.title
-                : `Prayer ${currentPrayerIndex}`}
-            </div>
+          {isInLitany ? (
+            // Render litany display
+            <LitanyDisplay
+              verse={getLitanyData()?.verses?.[litanyVerseIndex]}
+              verseIndex={litanyVerseIndex}
+              totalVerses={getLitanyData()?.verses?.length || 0}
+              currentMystery={currentMystery}
+              onNextVerse={nextLitanyVerse}
+              onPrevVerse={prevLitanyVerse}
+            />
+          ) : (
+            // Render normal prayer display
+            <>
+              <p
+                style={{
+                  margin: 0,
+                  lineHeight: 1.8,
+                  letterSpacing: "1px",
+                  textAlign: "center",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {prayer}
+              </p>
+            </>
           )}
-          <p
-            style={{
-              margin: 0,
-              lineHeight: 1.8,
-              letterSpacing: "1px",
-              textAlign: "center",
-              whiteSpace: "pre-line",
-            }}
-          >
-            {prayer}
-          </p>
         </div>
 
         {/* Detailed Progress Bar - Only show if enabled */}

@@ -11,7 +11,12 @@ import "./RosaryProgressBar.css";
  * - Days remaining in current 14-day period
  * - Toggleable via settings
  */
-const RosaryProgressBar = ({ className = "", isVisible = true, onToggle }) => {
+const RosaryProgressBar = ({
+  className = "",
+  isVisible = true,
+  onToggle,
+  currentPrayerTitle,
+}) => {
   const [stats, setStats] = useState(null);
 
   // Update stats when component mounts or when rosary completions change
@@ -85,8 +90,17 @@ const RosaryProgressBar = ({ className = "", isVisible = true, onToggle }) => {
   return (
     <div className={`rosary-progress-bar ${className}`}>
       <div className="progress-container">
-        {/* Tier Title */}
-        <div className="tier-title">{getTierText()}</div>
+        {/* Tier Title and Current Prayer */}
+        <div className="tier-title">
+          {currentPrayerTitle && (
+            <span
+              style={{ fontSize: "14px", opacity: 0.8, marginRight: "12px" }}
+            >
+              {currentPrayerTitle}
+            </span>
+          )}
+          {getTierText()}
+        </div>
 
         {/* Progress Bar */}
         <div className="progress-bar-wrapper">

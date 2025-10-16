@@ -17,15 +17,144 @@ import rosaryTracker from "../../utils/rosaryTracker";
  * @returns {object} Object containing state and handler functions
  */
 export const useRosaryState = (prayers, currentMystery) => {
-  // State for tracking current position in rosary sequence
-  const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0);
-  const [highlightedBead, setHighlightedBead] = useState(0);
+  // Load initial state from localStorage
+  const getInitialState = () => {
+    try {
+      const saved = localStorage.getItem("rosaryState");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Only restore if it's for the same mystery
+        if (parsed.mystery === currentMystery) {
+          return {
+            prayerIndex: parsed.prayerIndex || 0,
+            litanyVerseIndex: parsed.litanyVerseIndex || 0,
+            isInLitany: parsed.isInLitany || false,
+          };
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to load rosary state from localStorage:", error);
+    }
+    return { prayerIndex: 0, litanyVerseIndex: 0, isInLitany: false };
+  };
+
+  const initialState = getInitialState();
+
+  // Core rosary state
+  const [currentPrayerIndex, setCurrentPrayerIndex] = useState(
+    initialState.prayerIndex
+  );
+  const [highlightedBead, setHighlightedBead] = useState(
+    initialState.prayerIndex
+  );
+
+  // Prayer visibility mode state
+  const [prayerVisibilityMode, setPrayerVisibilityMode] = useState(() => {
+    return localStorage.getItem("prayerVisibilityMode") || "full";
+  });
+
+  const [customPrayerVisibility, setCustomPrayerVisibility] = useState(() => {
+    const saved = localStorage.getItem("customPrayerVisibility");
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // Filter prayers based on visibility mode
+  const getFilteredPrayerSequence = useCallback(
+    (sequence) => {
+      if (!sequence) return [];
+
+      switch (prayerVisibilityMode) {
+        case "full":
+          return sequence; // Show all prayers
+
+        case "mysteries":
+          // Show only mysteries, Litany, Salve Regina, Papa prayer
+          return sequence.filter((prayerId) => {
+            return (
+              prayerId.startsWith("M") || // Mysteries
+              prayerId === "LL" || // Litany
+              prayerId === "S" || // Salve Regina
+              prayerId === "Papa"
+            ); // Papa prayer
+          });
+
+        case "dedicated":
+          // Show only mysteries
+          return sequence.filter((prayerId) => prayerId.startsWith("M"));
+
+        case "custom":
+          // Use custom settings
+          return sequence.filter(
+            (prayerId) => customPrayerVisibility[prayerId] !== false
+          );
+
+        default:
+          return sequence;
+      }
+    },
+    [prayerVisibilityMode, customPrayerVisibility]
+  );
+
+  // Listen for prayer visibility mode changes
+  useEffect(() => {
+    const handleModeChange = (event) => {
+      setPrayerVisibilityMode(event.detail.mode);
+    };
+
+    const handleCustomChange = (event) => {
+      setCustomPrayerVisibility(event.detail.settings);
+    };
+
+    window.addEventListener("prayerVisibilityModeChange", handleModeChange);
+    window.addEventListener("customPrayerVisibilityChange", handleCustomChange);
+
+    return () => {
+      window.removeEventListener(
+        "prayerVisibilityModeChange",
+        handleModeChange
+      );
+      window.removeEventListener(
+        "customPrayerVisibilityChange",
+        handleCustomChange
+      );
+    };
+  }, []);
+
+  // State for litany verse tracking
+  const [litanyVerseIndex, setLitanyVerseIndex] = useState(
+    initialState.litanyVerseIndex
+  );
+  const [isInLitany, setIsInLitany] = useState(initialState.isInLitany);
+
+  /**
+   * Save current state to localStorage
+   */
+  const saveStateToStorage = useCallback(() => {
+    try {
+      const stateToSave = {
+        mystery: currentMystery,
+        prayerIndex: currentPrayerIndex,
+        litanyVerseIndex: litanyVerseIndex,
+        isInLitany: isInLitany,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem("rosaryState", JSON.stringify(stateToSave));
+    } catch (error) {
+      console.warn("Failed to save rosary state to localStorage:", error);
+    }
+  }, [currentMystery, currentPrayerIndex, litanyVerseIndex, isInLitany]);
+
+  // Save state whenever it changes
+  useEffect(() => {
+    saveStateToStorage();
+  }, [saveStateToStorage]);
 
   /**
    * Get the rosary sequence based on current mystery type
    * Maps mystery types to their corresponding prayer sequences
+   * Applies prayer visibility filtering based on current mode
    *
-   * @returns {array} Array of prayer IDs in the correct rosary sequence
+   * @returns {array} Array of prayer IDs in the correct rosary sequence (filtered)
    */
   const getRosarySequence = useCallback(() => {
     const mysteryToArray = {
@@ -34,8 +163,13 @@ export const useRosaryState = (prayers, currentMystery) => {
       gloriosos: "RGl",
       luminosos: "RL",
     };
-    return prayers[mysteryToArray[currentMystery]] || [];
-  }, [prayers, currentMystery]);
+
+    const arrayKey = mysteryToArray[currentMystery];
+    const fullSequence = prayers[arrayKey] || [];
+
+    // Apply prayer visibility filtering
+    return getFilteredPrayerSequence(fullSequence);
+  }, [prayers, currentMystery, getFilteredPrayerSequence]);
 
   /**
    * Get prayer object by ID from any section of the prayer book
@@ -223,6 +357,89 @@ export const useRosaryState = (prayers, currentMystery) => {
     [getRosarySequence, getPrayerById, currentMystery]
   );
 
+  /**
+   * Get litany data for current prayer if it's the Litany of Loreto
+   * @returns {object|null} Litany data object or null if not litany
+   */
+  const getLitanyData = useCallback(() => {
+    const rosarySequence = getRosarySequence();
+    const currentPrayerId = rosarySequence[currentPrayerIndex];
+
+    if (currentPrayerId === "LL") {
+      const litanyPrayer = prayers.cierre?.find((p) => p.id === "LL");
+      return litanyPrayer;
+    }
+    return null;
+  }, [getRosarySequence, currentPrayerIndex, prayers]);
+
+  /**
+   * Navigate to next verse within the litany
+   * @returns {boolean} True if moved to next verse, false if at end
+   */
+  const nextLitanyVerse = useCallback(() => {
+    const litanyData = getLitanyData();
+    if (!litanyData || !litanyData.verses) return false;
+
+    if (litanyVerseIndex < litanyData.verses.length - 1) {
+      setLitanyVerseIndex((prev) => prev + 1);
+      return true;
+    }
+    return false;
+  }, [getLitanyData, litanyVerseIndex]);
+
+  /**
+   * Navigate to previous verse within the litany
+   * @returns {boolean} True if moved to previous verse, false if at beginning
+   */
+  const prevLitanyVerse = useCallback(() => {
+    if (litanyVerseIndex > 0) {
+      setLitanyVerseIndex((prev) => prev - 1);
+      return true;
+    }
+    return false;
+  }, [litanyVerseIndex]);
+
+  /**
+   * Reset litany state when entering or exiting litany
+   */
+  const resetLitanyState = useCallback(() => {
+    setLitanyVerseIndex(0);
+    setIsInLitany(false);
+  }, []);
+
+  /**
+   * Reset rosary state (start fresh)
+   */
+  const resetRosaryState = useCallback(() => {
+    setCurrentPrayerIndex(0);
+    setHighlightedBead(0);
+    resetLitanyState();
+    // Clear localStorage
+    try {
+      localStorage.removeItem("rosaryState");
+    } catch (error) {
+      console.warn("Failed to clear rosary state from localStorage:", error);
+    }
+  }, [resetLitanyState]);
+
+  // Check if we're currently in the litany and update state accordingly
+  useEffect(() => {
+    const rosarySequence = getRosarySequence();
+    const currentPrayerId = rosarySequence[currentPrayerIndex];
+
+    if (currentPrayerId === "LL") {
+      if (!isInLitany) {
+        setIsInLitany(true);
+        setLitanyVerseIndex(0); // Reset to first verse when entering
+      }
+    } else {
+      if (isInLitany) {
+        setIsInLitany(false);
+        setLitanyVerseIndex(0); // Reset when exiting
+      }
+    }
+  }, [currentPrayerIndex, getRosarySequence, isInLitany]);
+
   // Return all state and handler functions for use in components
   return {
     currentPrayerIndex, // Current position in rosary sequence
@@ -232,5 +449,18 @@ export const useRosaryState = (prayers, currentMystery) => {
     navigateToIndex, // Function to navigate to specific index
     getCurrentMysteryNumber, // Function to get current mystery number
     getRosarySequence, // Function to get current rosary sequence
+    // Prayer visibility functions
+    prayerVisibilityMode, // Current prayer visibility mode
+    customPrayerVisibility, // Custom prayer visibility settings
+    getFilteredPrayerSequence, // Function to get filtered prayer sequence
+    // Litany-specific state and functions
+    litanyVerseIndex, // Current verse index within litany
+    isInLitany, // Whether currently in litany prayer
+    getLitanyData, // Function to get litany data
+    nextLitanyVerse, // Function to go to next litany verse
+    prevLitanyVerse, // Function to go to previous litany verse
+    resetLitanyState, // Function to reset litany state
+    // State management functions
+    resetRosaryState, // Function to reset entire rosary state
   };
 };

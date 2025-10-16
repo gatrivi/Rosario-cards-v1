@@ -13,6 +13,10 @@ function PrayerButtons({
   navigateToIndex,
   getRosarySequence,
   leftHandedMode = false,
+  // Litany-specific props
+  isInLitany = false,
+  nextLitanyVerse = () => false,
+  prevLitanyVerse = () => false,
 }) {
   // Estados para la botonera segmentada
   const [activeSection, setActiveSection] = useState("none");
@@ -118,40 +122,83 @@ function PrayerButtons({
   };
 
   const handlePrev = () => {
-    const rosaryArray = getRosarySequence();
-    if (rosaryArray.length > 0) {
-      const prevIndex =
-        (currentPrayerIndex - 1 + rosaryArray.length) % rosaryArray.length;
-      const result = navigateToIndex(prevIndex);
-      if (result) {
-        setPrayer(result.prayer);
-
-        // Handle theme-based image selection
-        const theme = localStorage.getItem("theme");
-        const isDark = theme === "dark";
-        const prayerObj = result.prayerImg;
-        const selectedImage =
-          isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
-        setPrayerImg(selectedImage);
+    // If in litany, navigate through litany verses
+    if (isInLitany) {
+      const moved = prevLitanyVerse();
+      if (!moved) {
+        // If at beginning of litany, go to previous prayer
+        const rosaryArray = getRosarySequence();
+        if (rosaryArray.length > 0) {
+          const prevIndex =
+            (currentPrayerIndex - 1 + rosaryArray.length) % rosaryArray.length;
+          const result = navigateToIndex(prevIndex);
+          if (result) {
+            setPrayer(result.prayer);
+            const theme = localStorage.getItem("theme");
+            const isDark = theme === "dark";
+            const prayerObj = result.prayerImg;
+            const selectedImage =
+              isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+            setPrayerImg(selectedImage);
+          }
+        }
+      }
+    } else {
+      // Normal prayer navigation
+      const rosaryArray = getRosarySequence();
+      if (rosaryArray.length > 0) {
+        const prevIndex =
+          (currentPrayerIndex - 1 + rosaryArray.length) % rosaryArray.length;
+        const result = navigateToIndex(prevIndex);
+        if (result) {
+          setPrayer(result.prayer);
+          const theme = localStorage.getItem("theme");
+          const isDark = theme === "dark";
+          const prayerObj = result.prayerImg;
+          const selectedImage =
+            isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+          setPrayerImg(selectedImage);
+        }
       }
     }
   };
 
   const handleNext = () => {
-    const rosaryArray = getRosarySequence();
-    if (rosaryArray.length > 0) {
-      const nextIndex = (currentPrayerIndex + 1) % rosaryArray.length;
-      const result = navigateToIndex(nextIndex);
-      if (result) {
-        setPrayer(result.prayer);
-
-        // Handle theme-based image selection
-        const theme = localStorage.getItem("theme");
-        const isDark = theme === "dark";
-        const prayerObj = result.prayerImg;
-        const selectedImage =
-          isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
-        setPrayerImg(selectedImage);
+    // If in litany, navigate through litany verses
+    if (isInLitany) {
+      const moved = nextLitanyVerse();
+      if (!moved) {
+        // If at end of litany, go to next prayer
+        const rosaryArray = getRosarySequence();
+        if (rosaryArray.length > 0) {
+          const nextIndex = (currentPrayerIndex + 1) % rosaryArray.length;
+          const result = navigateToIndex(nextIndex);
+          if (result) {
+            setPrayer(result.prayer);
+            const theme = localStorage.getItem("theme");
+            const isDark = theme === "dark";
+            const prayerObj = result.prayerImg;
+            const selectedImage =
+              isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+            setPrayerImg(selectedImage);
+          }
+        }
+      }
+    } else {
+      // Normal prayer navigation
+      const rosaryArray = getRosarySequence();
+      if (rosaryArray.length > 0) {
+        const nextIndex = (currentPrayerIndex + 1) % rosaryArray.length;
+        const result = navigateToIndex(nextIndex);
+        if (result) {
+          setPrayer(result.prayer);
+          const theme = localStorage.getItem("theme");
+          const isDark = theme === "dark";
+          const prayerObj = result.prayerImg;
+          const selectedImage =
+            isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+          setPrayerImg(selectedImage);
+        }
       }
     }
   };
@@ -393,9 +440,6 @@ function PrayerButtons({
         })()}
 
       {/* Preview actual oración - moved inside bar to prevent off-screen */}
-      <div className="preview">
-        {currentRosaryItem?.title || "Listo para rezar"}
-      </div>
     </div>
   );
 }

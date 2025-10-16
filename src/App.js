@@ -8,34 +8,151 @@ import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
 import InterfaceToggle from "./components/common/InterfaceToggle";
 import RosaryProgressBar from "./components/common/RosaryProgressBar";
 import HelpScreen from "./components/common/HelpScreen";
+import CornerFadeControls from "./components/common/CornerFadeControls";
 import { useRosaryState } from "./components/RosarioNube/useRosaryState";
 
 /**
- * Get random unused mystery image for starting display
+ * Get default fallback images for prayers without images
+ * @param {boolean} isDark - Whether dark theme is active
+ * @returns {array} Array of fallback image URLs
+ */
+const getDefaultFallbackImages = (isDark) => {
+  if (isDark) {
+    return [
+      "/gallery-images/misterios/modooscuro/vitral0.jpg",
+      "/gallery-images/misterios/modooscuro/vitral3.jpg",
+      "/gallery-images/misterios/modooscuro/crucis-14.jpg",
+      "/gallery-images/misterios/modooscuro/crucis12.jpg",
+      "/gallery-images/misterios/modooscuro/crucis120.jpg",
+      "/gallery-images/misterios/modooscuro/crucis2.jpg",
+      "/gallery-images/misterios/modooscuro/crucis4.jpg",
+      "/gallery-images/misterios/modooscuro/crucis5.jpg",
+      "/gallery-images/misterios/modooscuro/crucis6.jpg",
+      "/gallery-images/misterios/modooscuro/crucis7.jpg",
+      "/gallery-images/misterios/modooscuro/crucis8.jpg",
+      "/gallery-images/misterios/modooscuro/crucis9.jpg",
+      "/gallery-images/misterios/modooscuro/angel.jpg",
+      "/gallery-images/misterios/modooscuro/espiritu-santo.jpg",
+      "/gallery-images/misterios/modooscuro/espiritu-santo-2.jpg",
+      "/gallery-images/misterios/modooscuro/sagrado-corazon.jpg",
+      "/gallery-images/misterios/modooscuro/sagrado-corazon-2.jpg",
+      "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+    ];
+  } else {
+    return [
+      "/gallery-images/misterios/2009CB6706.jpg",
+      "/gallery-images/misterios/3cba1b824516102b46a555a4072bac1c.jpg",
+      "/gallery-images/misterios/6abc3cfdf8ec007ce9c0bc62311e44fb.jpg",
+      "/gallery-images/misterios/aa467f240417f15f248d1cfeae4ca620.jpg",
+      "/gallery-images/misterios/b9b27aaa6e3dfec776a95253720ed82e.jpg",
+      "/gallery-images/misterios/c92bf9b0a5b3eccbfc0a20906f42c869.jpg",
+      "/gallery-images/misterios/cfb748a76418c7615d1c4d0c75c489b1.jpg",
+      "/gallery-images/misterios/ezekielv.jpg",
+      "/gallery-images/misterios/salve-regina.jpg",
+      "/gallery-images/misterios/salve-regina.png",
+      "/gallery-images/gloria.jpg",
+      "/gallery-images/misterios/latin-gloria.jpg",
+      "/gallery-images/misterios/latin-credo.jpeg",
+      "/gallery-images/misterios/latin-pater-noster.jpg",
+      "/gallery-images/misterios/latin-ave-maria.jpg",
+      "/gallery-images/misterios/ave-maria.webp",
+    ];
+  }
+};
+
+/**
+ * Select appropriate image from prayer object based on theme with robust fallback
+ * @param {object} prayerObj - Prayer object with img/imgmo properties
+ * @param {boolean} isDark - Whether dark theme is active
+ * @returns {string} Selected image URL
+ */
+const selectPrayerImage = (prayerObj, isDark) => {
+  if (!prayerObj) {
+    // No prayer object - use rotating fallback
+    const fallbackImages = getDefaultFallbackImages(isDark);
+    const randomIndex = Math.floor(Math.random() * fallbackImages.length);
+    return fallbackImages[randomIndex];
+  }
+
+  // Handle array-based images (new system)
+  if (Array.isArray(prayerObj.img) || Array.isArray(prayerObj.imgmo)) {
+    const lightImages = Array.isArray(prayerObj.img)
+      ? prayerObj.img
+      : [prayerObj.img];
+    const darkImages = Array.isArray(prayerObj.imgmo)
+      ? prayerObj.imgmo
+      : [prayerObj.imgmo];
+
+    // Select random image from appropriate array
+    const imageArray =
+      isDark && darkImages.length > 0 ? darkImages : lightImages;
+
+    // If array is empty or has invalid images, use fallback
+    if (
+      imageArray.length === 0 ||
+      imageArray.every((img) => !img || img === "")
+    ) {
+      const fallbackImages = getDefaultFallbackImages(isDark);
+      const randomIndex = Math.floor(Math.random() * fallbackImages.length);
+      return fallbackImages[randomIndex];
+    }
+
+    const randomIndex = Math.floor(Math.random() * imageArray.length);
+    return imageArray[randomIndex];
+  } else {
+    // Handle single image (current system)
+    const selectedImage =
+      isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
+
+    // If no image or empty string, use fallback
+    if (!selectedImage || selectedImage === "") {
+      const fallbackImages = getDefaultFallbackImages(isDark);
+      const randomIndex = Math.floor(Math.random() * fallbackImages.length);
+      return fallbackImages[randomIndex];
+    }
+
+    // For single images, also randomly use fallback sometimes for variety
+    // This gives us the rotating effect even with single images
+    const shouldUseFallback = Math.random() < 0.3; // 30% chance to use fallback
+    if (shouldUseFallback) {
+      const fallbackImages = getDefaultFallbackImages(isDark);
+      const randomIndex = Math.floor(Math.random() * fallbackImages.length);
+      return fallbackImages[randomIndex];
+    }
+
+    return selectedImage;
+  }
+};
+
+/**
+ * Get St. Teresa of Avila as default background for her feast day
+ * TODO: Revert to random mystery images after October 15th
  * @param {string} currentMystery - Current mystery type to exclude
- * @returns {object} Random mystery image object
+ * @returns {object} St. Teresa image object
  */
 const getRandomUnusedMysteryImage = (currentMystery) => {
-  const allMysteries = ["gozosos", "dolorosos", "gloriosos", "luminosos"];
-  const unusedMysteries = allMysteries.filter((m) => m !== currentMystery);
-  const randomMystery =
-    unusedMysteries[Math.floor(Math.random() * unusedMysteries.length)];
-  const mysteryImages = RosarioPrayerBook.mysteries[randomMystery].filter(
-    (m) => typeof m === "object" && m.img
-  );
-  const randomIndex = Math.floor(Math.random() * mysteryImages.length);
-  return mysteryImages[randomIndex];
+  // Return St. Teresa of Avila as default background for her feast day
+  return {
+    img: "/gallery-images/saints/santa-teresa-de-avila.jpg",
+    imgmo: "/gallery-images/saints/santa-teresa-de-avila.jpg",
+    title: "Santa Teresa de Ávila",
+    description: "Doctora de la Iglesia - Feast Day: October 15th",
+  };
 };
 
 function App() {
   const [prayer, setPrayer] = useState(
-    "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
+    "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza.\n\nEn honor a Santa Teresa de Ávila,\nDoctora de la Iglesia, cuya fiesta celebramos hoy."
   );
   const [currentMystery, setcurrentMystery] = useState(getDefaultMystery);
   const [prayerImg, setPrayerImg] = useState(() =>
     getRandomUnusedMysteryImage(getDefaultMystery())
   );
   const [count, setCount] = useState(0);
+
+  // State for tracking current image index in array-based prayers
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageRotationTimer, setImageRotationTimer] = useState(null);
 
   // Interface visibility states for clean prayer mode
   const [showRosary, setShowRosary] = useState(true);
@@ -85,6 +202,15 @@ function App() {
     jumpToPrayer,
     navigateToIndex,
     getRosarySequence,
+    // Litany-specific state and functions
+    litanyVerseIndex,
+    isInLitany,
+    getLitanyData,
+    nextLitanyVerse,
+    prevLitanyVerse,
+    resetLitanyState,
+    // State management functions
+    resetRosaryState,
   } = useRosaryState(RosarioPrayerBook, currentMystery);
 
   // Listen for scroll-based prayer navigation
@@ -155,6 +281,61 @@ function App() {
     }
   }, [showProgressBar]);
 
+  // Image rotation effect - cycle through array images every 12 seconds
+  useEffect(() => {
+    // Clear existing timer
+    if (imageRotationTimer) {
+      clearInterval(imageRotationTimer);
+    }
+
+    // Only start rotation if prayerImg is an object with array-based images
+    if (
+      prayerImg &&
+      typeof prayerImg === "object" &&
+      (Array.isArray(prayerImg.img) || Array.isArray(prayerImg.imgmo))
+    ) {
+      const timer = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => {
+          const theme = localStorage.getItem("theme");
+          const isDark = theme === "dark";
+          const imageArray =
+            isDark && Array.isArray(prayerImg.imgmo)
+              ? prayerImg.imgmo
+              : prayerImg.img;
+
+          if (Array.isArray(imageArray) && imageArray.length > 1) {
+            const nextIndex = (prevIndex + 1) % imageArray.length;
+            const selectedImage = imageArray[nextIndex];
+            setPrayerImg(selectedImage);
+            return nextIndex;
+          }
+          return prevIndex;
+        });
+      }, 12000); // 12 seconds
+
+      setImageRotationTimer(timer);
+    } else if (typeof prayerImg === "string") {
+      // Handle fallback images - rotate through default images
+      const timer = setInterval(() => {
+        const theme = localStorage.getItem("theme");
+        const isDark = theme === "dark";
+        const fallbackImages = getDefaultFallbackImages(isDark);
+        const randomIndex = Math.floor(Math.random() * fallbackImages.length);
+        const selectedImage = fallbackImages[randomIndex];
+        setPrayerImg(selectedImage);
+      }, 12000); // 12 seconds
+
+      setImageRotationTimer(timer);
+    }
+
+    // Cleanup timer on unmount or when prayerImg changes
+    return () => {
+      if (imageRotationTimer) {
+        clearInterval(imageRotationTimer);
+      }
+    };
+  }, [prayerImg]);
+
   // Listen for theme changes and update current prayer image
   useEffect(() => {
     const handleThemeChange = () => {
@@ -166,8 +347,7 @@ function App() {
 
       // If we have the prayer object with img/imgmo properties
       if (prayerImg.img || prayerImg.imgmo) {
-        const selectedImage =
-          isDark && prayerImg.imgmo ? prayerImg.imgmo : prayerImg.img;
+        const selectedImage = selectPrayerImage(prayerImg, isDark);
         setPrayerImg(selectedImage);
       }
     };
@@ -220,19 +400,81 @@ function App() {
 
   // Handle bead click from rosary
   const onBeadClick = (prayerIndex, prayerId) => {
-    const result = handleBeadClick(prayerIndex, prayerId);
-    if (result) {
-      setPrayer(result.prayer);
-
-      // Handle theme-based image selection
-      const theme = localStorage.getItem("theme");
-      const isDark = theme === "dark";
-      const prayerObj = result.prayerImg;
-      const selectedImage =
-        isDark && prayerObj.imgmo ? prayerObj.imgmo : prayerObj.img;
-      setPrayerImg(selectedImage);
+    // If clicking the litany bead and we're already in litany, advance through verses
+    if (prayerId === "LL" && isInLitany) {
+      const moved = nextLitanyVerse();
+      if (!moved) {
+        // If at end of litany, go to next prayer
+        const result = handleBeadClick(prayerIndex, prayerId);
+        if (result) {
+          setPrayer(result.prayer);
+          const theme = localStorage.getItem("theme");
+          const isDark = theme === "dark";
+          const prayerObj = result.prayerImg;
+          const selectedImage = selectPrayerImage(prayerObj, isDark);
+          setPrayerImg(selectedImage);
+          setCurrentImageIndex(0); // Reset image index for new prayer
+        }
+      }
+    } else {
+      // Normal bead click behavior
+      const result = handleBeadClick(prayerIndex, prayerId);
+      if (result) {
+        setPrayer(result.prayer);
+        const theme = localStorage.getItem("theme");
+        const isDark = theme === "dark";
+        const prayerObj = result.prayerImg;
+        const selectedImage = selectPrayerImage(prayerObj, isDark);
+        setPrayerImg(selectedImage);
+        setCurrentImageIndex(0); // Reset image index for new prayer
+      }
     }
   };
+
+  /**
+   * Get prayer object by ID from any section of the prayer book
+   * @param {string} id - Prayer ID to search for
+   * @returns {object|null} Prayer object if found, null otherwise
+   */
+  const getPrayerById = (id) => {
+    // Check in apertura (opening prayers)
+    const aperturaPrayer = RosarioPrayerBook.apertura?.find((p) => p.id === id);
+    if (aperturaPrayer) return aperturaPrayer;
+
+    // Check in decada (decade prayers - Our Father, Hail Mary, etc.)
+    const decadaPrayer = RosarioPrayerBook.decada?.find((p) => p.id === id);
+    if (decadaPrayer) return decadaPrayer;
+
+    // Check in mysteries (mystery-specific prayers)
+    const mysteryPrayer = RosarioPrayerBook.mysteries?.[currentMystery]?.find(
+      (p) => p.id === id
+    );
+    if (mysteryPrayer) return mysteryPrayer;
+
+    // Check in cierre (closing prayers)
+    const cierrePrayer = RosarioPrayerBook.cierre?.find((p) => p.id === id);
+    if (cierrePrayer) return cierrePrayer;
+
+    return null;
+  };
+
+  // Get current prayer title for progress bar
+  const getCurrentPrayerTitle = () => {
+    const rosarySequence = getRosarySequence();
+    const currentPrayerId = rosarySequence[currentPrayerIndex];
+    if (!currentPrayerId) return null;
+
+    // Get prayer object from prayer book
+    const prayerObj = getPrayerById(currentPrayerId);
+    return prayerObj ? prayerObj.title : null;
+  };
+
+  // Handle corner fade state changes
+  const handleFadeChange = useCallback((isFading, fadeIntensity) => {
+    // This callback can be used to trigger additional effects if needed
+    // For now, the CornerFadeControls component handles the fade directly
+    console.log("Fade state changed:", { isFading, fadeIntensity });
+  }, []);
 
   return (
     <div className="app">
@@ -249,6 +491,7 @@ function App() {
         onEnterFocusMode={enterFocusMode}
         onExitFocusMode={exitFocusMode}
         onReset={handleResetClick}
+        onResetRosary={resetRosaryState}
         showDetailedProgress={showDetailedProgress}
         onToggleDetailedProgress={() =>
           setShowDetailedProgress(!showDetailedProgress)
@@ -259,6 +502,9 @@ function App() {
         onToggleProgressBar={toggleProgressBar}
       />
 
+      {/* Corner fade controls */}
+      <CornerFadeControls onFadeChange={handleFadeChange} />
+
       {/* Main content area with stained glass design */}
       <div
         style={{
@@ -268,7 +514,7 @@ function App() {
           overflow: "hidden",
         }}
       >
-        {/* Interactive Rosary - Forefront (highest priority) */}
+        {/* Interactive Rosary - Full screen */}
         {showRosary && (
           <div
             style={{
@@ -304,6 +550,12 @@ function App() {
           onToggleFocusMode={toggleFocusMode}
           getRosarySequence={getRosarySequence}
           showDetailedProgress={showDetailedProgress}
+          // Litany-specific props
+          litanyVerseIndex={litanyVerseIndex}
+          isInLitany={isInLitany}
+          getLitanyData={getLitanyData}
+          nextLitanyVerse={nextLitanyVerse}
+          prevLitanyVerse={prevLitanyVerse}
         />
       </div>
 
@@ -321,12 +573,17 @@ function App() {
         navigateToIndex={navigateToIndex}
         getRosarySequence={getRosarySequence}
         leftHandedMode={leftHandedMode}
+        // Litany-specific props
+        isInLitany={isInLitany}
+        nextLitanyVerse={nextLitanyVerse}
+        prevLitanyVerse={prevLitanyVerse}
       />
 
-      {/* Rosary Progress Bar */}
-      <RosaryProgressBar 
-        isVisible={showProgressBar}
+      {/* Rosary Progress Bar - hidden when in litany */}
+      <RosaryProgressBar
+        isVisible={showProgressBar && !isInLitany}
         onToggle={toggleProgressBar}
+        currentPrayerTitle={getCurrentPrayerTitle()}
       />
 
       {/* Help Screen */}

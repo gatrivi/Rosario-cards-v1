@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ThemeToggle from "./ThemeToggle";
+import PrayerVisibilityMode from "./PrayerVisibilityMode";
 
 /**
  * InterfaceToggle Component
@@ -31,6 +32,7 @@ const InterfaceToggle = ({
   onEnterFocusMode = () => {},
   onExitFocusMode = () => {},
   onReset = () => {}, // NEW: Reset counter function
+  onResetRosary = () => {}, // NEW: Reset rosary function
   showDetailedProgress = false,
   onToggleDetailedProgress = () => {},
   developerMode = false,
@@ -46,6 +48,31 @@ const InterfaceToggle = ({
     } catch (error) {
       console.warn("localStorage not available:", error);
       return "medium";
+    }
+  });
+
+  const [rosaryZoom, setRosaryZoom] = useState(() => {
+    try {
+      return parseFloat(localStorage.getItem("rosaryZoom")) || 1.0;
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+      return 1.0;
+    }
+  });
+
+  const [showHelpButton, setShowHelpButton] = useState(() => {
+    try {
+      return localStorage.getItem("showHelpButton") !== "false";
+    } catch (error) {
+      return true;
+    }
+  });
+
+  const [showZoomButtons, setShowZoomButtons] = useState(() => {
+    try {
+      return localStorage.getItem("showZoomButtons") !== "false";
+    } catch (error) {
+      return true;
     }
   });
 
@@ -135,6 +162,25 @@ const InterfaceToggle = ({
   };
 
   /**
+   * Handle rosary zoom change
+   */
+  const handleRosaryZoomChange = (zoom) => {
+    setRosaryZoom(zoom);
+    try {
+      localStorage.setItem("rosaryZoom", zoom.toString());
+    } catch (error) {
+      console.warn("localStorage not available:", error);
+    }
+
+    // Dispatch event for InteractiveRosary to listen
+    window.dispatchEvent(
+      new CustomEvent("rosaryZoomChange", {
+        detail: { zoom },
+      })
+    );
+  };
+
+  /**
    * Get font size multiplier based on size name
    */
   const getFontSizeMultiplier = (size) => {
@@ -169,12 +215,12 @@ const InterfaceToggle = ({
   return (
     <div
       className={`interface-toggle ${className}`}
-      style={{ 
-        position: "fixed", 
-        top: showProgressBar ? "70px" : "10px", 
-        left: "10px", 
+      style={{
+        position: "fixed",
+        top: showProgressBar ? "70px" : "10px",
+        left: "10px",
         zIndex: 20,
-        transition: "top 0.3s ease"
+        transition: "top 0.3s ease",
       }}
     >
       {/* Main toggle button */}
@@ -561,6 +607,245 @@ const InterfaceToggle = ({
               </div>
             </div>
 
+            {/* Prayer Visibility Mode */}
+            <PrayerVisibilityMode
+              onModeChange={(mode) => {
+                console.log("Prayer visibility mode changed:", mode);
+                // Dispatch event for other components to listen
+                window.dispatchEvent(
+                  new CustomEvent("prayerVisibilityModeChange", {
+                    detail: { mode },
+                  })
+                );
+              }}
+              onCustomSettingsChange={(settings) => {
+                console.log("Custom prayer settings changed:", settings);
+                // Dispatch event for other components to listen
+                window.dispatchEvent(
+                  new CustomEvent("customPrayerVisibilityChange", {
+                    detail: { settings },
+                  })
+                );
+              }}
+            />
+
+            {/* Rosary Zoom Control */}
+            <div
+              style={{
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                marginTop: "8px",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  color: "var(--catholic-gold)",
+                }}
+              >
+                🔍 Rosary Zoom
+              </div>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <button
+                  onClick={() =>
+                    handleRosaryZoomChange(Math.max(0.5, rosaryZoom - 0.1))
+                  }
+                  style={{
+                    background: "rgba(212, 175, 55, 0.3)",
+                    border: "1px solid var(--catholic-gold)",
+                    borderRadius: "4px",
+                    color: "var(--catholic-gold)",
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                  title="Zoom out"
+                >
+                  −
+                </button>
+                <span style={{ fontSize: "12px", color: "#666" }}>50%</span>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.1"
+                  value={rosaryZoom}
+                  onChange={(e) =>
+                    handleRosaryZoomChange(parseFloat(e.target.value))
+                  }
+                  style={{
+                    flex: 1,
+                    height: "6px",
+                    background: "rgba(212, 175, 55, 0.3)",
+                    borderRadius: "3px",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                />
+                <span style={{ fontSize: "12px", color: "#666" }}>150%</span>
+                <button
+                  onClick={() =>
+                    handleRosaryZoomChange(Math.min(1.5, rosaryZoom + 0.1))
+                  }
+                  style={{
+                    background: "rgba(212, 175, 55, 0.3)",
+                    border: "1px solid var(--catholic-gold)",
+                    borderRadius: "4px",
+                    color: "var(--catholic-gold)",
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                  title="Zoom in"
+                >
+                  +
+                </button>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    color: "var(--catholic-gold)",
+                    minWidth: "35px",
+                    textAlign: "center",
+                  }}
+                >
+                  {Math.round(rosaryZoom * 100)}%
+                </span>
+              </div>
+            </div>
+
+            {/* UI Elements Toggle */}
+            <div
+              style={{
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid var(--glass-border)",
+                marginTop: "8px",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  color: "var(--catholic-gold)",
+                }}
+              >
+                🔘 Show/Hide UI
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              >
+                {/* Help Button Toggle */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px",
+                    borderRadius: "8px",
+                    background: "rgba(0, 0, 0, 0.2)",
+                  }}
+                >
+                  <span style={{ fontSize: "13px", fontWeight: "bold" }}>
+                    ❓ Help Button
+                  </span>
+                  <button
+                    onClick={() => {
+                      const newValue = !showHelpButton;
+                      setShowHelpButton(newValue);
+                      try {
+                        localStorage.setItem(
+                          "showHelpButton",
+                          newValue.toString()
+                        );
+                      } catch (error) {
+                        console.warn("localStorage not available:", error);
+                      }
+                      // Dispatch event to toggle help button visibility
+                      window.dispatchEvent(
+                        new CustomEvent("toggleHelpButton", {
+                          detail: { visible: newValue },
+                        })
+                      );
+                    }}
+                    style={{
+                      background: showHelpButton
+                        ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))"
+                        : "rgba(128, 128, 128, 0.3)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "20px",
+                      padding: "6px 16px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      transition: "all 0.3s ease",
+                      minWidth: "60px",
+                    }}
+                  >
+                    {showHelpButton ? "Visible" : "Hidden"}
+                  </button>
+                </div>
+
+                {/* Zoom Button Toggle */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px",
+                    borderRadius: "8px",
+                    background: "rgba(0, 0, 0, 0.2)",
+                  }}
+                >
+                  <span style={{ fontSize: "13px", fontWeight: "bold" }}>
+                    🔍 Zoom Controls
+                  </span>
+                  <button
+                    onClick={() => {
+                      const newValue = !showZoomButtons;
+                      setShowZoomButtons(newValue);
+                      try {
+                        localStorage.setItem(
+                          "showZoomButtons",
+                          newValue.toString()
+                        );
+                      } catch (error) {
+                        console.warn("localStorage not available:", error);
+                      }
+                      // Note: Zoom controls are within this panel, this is for future external zoom controls
+                    }}
+                    style={{
+                      background: showZoomButtons
+                        ? "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))"
+                        : "rgba(128, 128, 128, 0.3)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "20px",
+                      padding: "6px 16px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      transition: "all 0.3s ease",
+                      minWidth: "60px",
+                    }}
+                  >
+                    {showZoomButtons ? "Visible" : "Hidden"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Actions Section */}
             <div
               style={{
@@ -614,6 +899,77 @@ const InterfaceToggle = ({
                   }}
                 >
                   🔄 Reset Counter
+                </button>
+
+                {/* Start Fresh Rosary Button */}
+                <button
+                  onClick={onResetRosary}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "2px solid var(--glass-border)",
+                    background: "var(--glass-bg)",
+                    color: "var(--text-color)",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: "bold",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background =
+                      "linear-gradient(135deg, var(--catholic-blue), var(--catholic-gold))";
+                    e.target.style.color = "var(--catholic-white)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "var(--glass-bg)";
+                    e.target.style.color = "var(--text-color)";
+                  }}
+                >
+                  🌟 Start Fresh Rosary
+                </button>
+
+                {/* Reset Rosary Position Button */}
+                <button
+                  onClick={() => {
+                    // Dispatch event to reset rosary position
+                    window.dispatchEvent(
+                      new CustomEvent("resetRosaryPosition", {
+                        detail: { x: 0, y: 0 },
+                      })
+                    );
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "2px solid var(--glass-border)",
+                    background: "var(--glass-bg)",
+                    color: "var(--text-color)",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: "bold",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background =
+                      "linear-gradient(135deg, var(--catholic-gold), var(--catholic-blue))";
+                    e.target.style.color = "var(--catholic-white)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "var(--glass-bg)";
+                    e.target.style.color = "var(--text-color)";
+                  }}
+                >
+                  📍 Reset Rosary Position
                 </button>
 
                 {/* Theme Toggle */}
