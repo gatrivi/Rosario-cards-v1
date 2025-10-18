@@ -277,41 +277,54 @@ const ViewPrayers = forwardRef(
           soundEffectsRef.current.playScrollSound();
         } else {
           // At bottom, can't scroll more
-          // Check if chain prayers follow (Gloria/Fatima or Our Father)
+          // Check if chain prayers follow (any prayers on chains: AC, C, G, F)
           const rosarySequence = getRosarySequence();
 
           if (
             rosarySequence &&
-            currentPrayerIndex < rosarySequence.length - 2
+            currentPrayerIndex < rosarySequence.length - 1
           ) {
-            const nextPrayer = rosarySequence[currentPrayerIndex + 1];
-            const nextNextPrayer = rosarySequence[currentPrayerIndex + 2];
+            // Look ahead to find all consecutive chain prayers
+            // Chain prayers are: AC, C, G, F (prayers said "on the chain")
+            // Stop when we hit a bead prayer: SC, P, A, M*, LL, S, Papa
+            const beadPrayers = ["SC", "P", "A", "LL", "S", "Papa"];
+            const chainIndices = [];
+            const chainPrayers = [];
 
-            // Check for chain prayer patterns
-            if (nextPrayer === "G" && nextNextPrayer === "F") {
-              // Gloria → Fatima chain
-              window.dispatchEvent(
-                new CustomEvent("enterChainPrayers", {
-                  detail: {
-                    prayerIndex: currentPrayerIndex,
-                    chainIndices: [
-                      currentPrayerIndex + 1,
-                      currentPrayerIndex + 2,
-                    ],
-                    chainPrayers: ["G", "F"],
-                  },
-                })
+            for (
+              let i = currentPrayerIndex + 1;
+              i < rosarySequence.length;
+              i++
+            ) {
+              const nextPrayer = rosarySequence[i];
+
+              // Check if this is a mystery prayer (starts with M)
+              if (nextPrayer && nextPrayer.startsWith("M")) {
+                break; // Stop at mystery beads
+              }
+
+              // Check if this is a bead prayer
+              if (beadPrayers.includes(nextPrayer)) {
+                break; // Stop at bead prayers
+              }
+
+              // This is a chain prayer (AC, C, G, or F)
+              chainIndices.push(i);
+              chainPrayers.push(nextPrayer);
+            }
+
+            if (chainIndices.length > 0) {
+              // Found chain prayers - dispatch event
+              console.log(
+                `⛓️ Content exhausted, found ${chainIndices.length} chain prayers:`,
+                chainPrayers
               );
-              // Don't play end sound, enterChainPrayers handler will play chime
-              return;
-            } else if (nextPrayer === "P") {
-              // Our Father chain (single prayer)
               window.dispatchEvent(
                 new CustomEvent("enterChainPrayers", {
                   detail: {
                     prayerIndex: currentPrayerIndex,
-                    chainIndices: [currentPrayerIndex + 1],
-                    chainPrayers: ["P"],
+                    chainIndices: chainIndices,
+                    chainPrayers: chainPrayers,
                   },
                 })
               );

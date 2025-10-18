@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback } from "react";
 import Matter from "matter-js";
 import "./InteractiveRosary.css";
 import soundEffects from "../../utils/soundEffects";
+import prayerHistory from "../../utils/prayerHistory";
 
 /**
  * InteractiveRosary Component
@@ -279,6 +280,27 @@ const InteractiveRosary = ({
         setPressSameBeadId(currentBead.id);
         setChainBeadHighlight(currentBead.id);
 
+        // CRITICAL: Reset touch count to 1 so next tap starts chain navigation at index 0
+        // This is because user already tapped to scroll (touch 2+), so we need to reset
+        // for chain navigation to start fresh: next tap will be touch 2 = chain index 0
+        touchCountRef.current.set(currentBead.id, 1);
+        console.log(`🔄 Reset touch count to 1 for chain navigation`);
+
+        // Find and highlight the invisible bead in the chain section
+        // This makes it visually obvious that the chain is tappable
+        const invisibleChainBead = matterInstance.current.allBeads.find(
+          (b) => b.isInvisible && chainIndices.includes(b.prayerIndex)
+        );
+
+        if (invisibleChainBead) {
+          console.log(
+            `✨ Found invisible bead in chain section at prayer index ${invisibleChainBead.prayerIndex}`
+          );
+          setEnhancedBeadId(invisibleChainBead.id); // Make it visually prominent
+          // Also reset touch count for invisible bead
+          touchCountRef.current.set(invisibleChainBead.id, 1);
+        }
+
         // Play history-modulated enter chain prayer chime
         const { prayerHistory } = require("../../utils/soundEffects");
         soundEffects.playEnterChainPrayerChime(prayerHistory);
@@ -286,6 +308,7 @@ const InteractiveRosary = ({
         // Clear after 5 seconds if not interacted with
         setTimeout(() => {
           setPressSameBeadId(null);
+          setEnhancedBeadId(null);
         }, 5000);
       }
     };
@@ -359,12 +382,29 @@ const InteractiveRosary = ({
     const allBeads = [];
     const constraints = [];
 
+    // --- VITALITY SYSTEM: Calculate rosary vitality based on prayer history ---
+    const vitality = prayerHistory.getTotalVitality(); // 0.0 to 1.0
+    console.log(
+      `✨ Rosary Vitality: ${vitality.toFixed(2)} (${
+        vitality < 0.3
+          ? "sad/heavy"
+          : vitality < 0.7
+          ? "neutral"
+          : "buoyant/glorious"
+      })`
+    );
+
+    // Modulate physics based on vitality
+    const baseRestitution = 0.3 + vitality * 0.65; // 0.3 (sad) → 0.95 (glorious)
+    const vitalityFriction = rosaryFriction * (1.2 - vitality * 0.2); // Slight decrease at high vitality
+
     // --- Helper function for bead options ---
     // Using working MatterScene.tsx values to fix slingshot dragging
+    // Now with vitality-based restitution for "living rosary" effect
     const beadOptions = (color, extraOptions = {}) => ({
-      restitution: 0.8,
+      restitution: baseRestitution, // Vitality-based bounciness
       friction: 0.5, // Increased from 0.1 (fixes slingshot)
-      frictionAir: rosaryFriction, // Air resistance - controlled by slider (0.001-0.1)
+      frictionAir: vitalityFriction, // Vitality-modulated air resistance
       density: 0.001,
       render: { fillStyle: color, strokeStyle: colors.chain, lineWidth: 1 },
       ...extraOptions,
@@ -383,6 +423,34 @@ const InteractiveRosary = ({
         anchors: developerMode, // Only show anchor points in developer mode
       },
     });
+
+    // --- Helper function to create invisible beads ---
+    // Invisible beads are placed in the middle of long chains to make them clickable
+    // They are anchored through their CENTER (not poles) to avoid broken chain appearance
+    const createInvisibleBead = (x, y, prayerIndex, prayerId) => {
+      return Matter.Bodies.circle(
+        x,
+        y,
+        beadSize * 0.8, // Slightly smaller than regular beads
+        beadOptions("rgba(0,0,0,0)", {
+          // Transparent
+          beadNumber: null, // No visible number
+          prayerIndex: prayerIndex,
+          prayerId: prayerId,
+          isInvisible: true, // Flag for rendering/interaction
+          // COLLISION FILTERING: Make invisible beads non-collidable
+          collisionFilter: {
+            category: 0x0002, // Invisible bead category
+            mask: 0x0000, // Don't collide with anything
+          },
+          render: {
+            fillStyle: "rgba(0,0,0,0)", // Fully transparent
+            strokeStyle: "rgba(0,0,0,0)",
+            lineWidth: 0,
+          },
+        })
+      );
+    };
 
     // --- Helper function to calculate pole connection offsets ---
     // This makes constraints connect to bead edges instead of centers
@@ -542,57 +610,107 @@ const InteractiveRosary = ({
 
     // --- Close the loop via the center/heart bead (with long springs and pole connections) ---
     // Heart to first bead of first decade (P prayer, index 10) - LONG chain around lone bead
+    // NOW WITH INVISIBLE BEAD: heart → invisible bead → first main bead
+
+    // Calculate invisible bead diameter for proper chain length
+    const invisibleBeadDiameter = beadSize * 0.8 * 2; // Full diameter (radius * 2)
+
     const heartToMainLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
+    const heartToMainChainHalf =
+      (heartToMainLength - invisibleBeadDiameter) / 2; // Corrected length
+    const heartToMainMidX =
+      (centerBead.position.x + mainLoopBeads[0].position.x) / 2;
+    const heartToMainMidY =
+      (centerBead.position.y + mainLoopBeads[0].position.y) / 2;
+    const heartToMainInvisible = createInvisibleBead(
+      heartToMainMidX,
+      heartToMainMidY,
+      10,
+      rosarySequence[10]
+    );
+    allBeads.push(heartToMainInvisible);
+
+    // First half: heart to invisible bead
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(heartToMainLength),
+        ...springOptions(heartToMainChainHalf),
         bodyA: centerBead,
+        bodyB: heartToMainInvisible,
+        pointA: getPoleOffset(centerBead, heartToMainInvisible, centerBeadSize),
+        pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        prayerIndex: 10,
+        prayerId: rosarySequence[10],
+      })
+    );
+
+    // Second half: invisible bead to first main bead
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(heartToMainChainHalf),
+        bodyA: heartToMainInvisible,
         bodyB: mainLoopBeads[0],
-        pointA: getPoleOffset(centerBead, mainLoopBeads[0], centerBeadSize),
-        pointB: getPoleOffset(mainLoopBeads[0], centerBead, beadSize),
-        prayerIndex: 10, // P (Our Father) before 1st decade
+        pointA: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        pointB: getPoleOffset(mainLoopBeads[0], heartToMainInvisible, beadSize),
+        prayerIndex: 10,
         prayerId: rosarySequence[10],
       })
     );
 
     // Last bead of 5th decade back to heart (G and F prayers, indices 77, 78) - LONG chain around lone bead
+    // NOW WITH INVISIBLE BEAD: last main bead → invisible bead → heart
     const mainToHeartLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
+    const mainToHeartChainHalf =
+      (mainToHeartLength - invisibleBeadDiameter) / 2; // Corrected length
+    const mainToHeartMidX =
+      (mainLoopBeads[numMainBeads - 1].position.x + centerBead.position.x) / 2;
+    const mainToHeartMidY =
+      (mainLoopBeads[numMainBeads - 1].position.y + centerBead.position.y) / 2;
+    const mainToHeartInvisible = createInvisibleBead(
+      mainToHeartMidX,
+      mainToHeartMidY,
+      77,
+      rosarySequence[77]
+    );
+    allBeads.push(mainToHeartInvisible);
+
+    // First half: last main bead to invisible bead
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(mainToHeartLength),
+        ...springOptions(mainToHeartChainHalf),
         bodyA: mainLoopBeads[numMainBeads - 1],
-        bodyB: centerBead,
+        bodyB: mainToHeartInvisible,
         pointA: getPoleOffset(
           mainLoopBeads[numMainBeads - 1],
-          centerBead,
+          mainToHeartInvisible,
           beadSize
         ),
-        pointB: getPoleOffset(
-          centerBead,
-          mainLoopBeads[numMainBeads - 1],
-          centerBeadSize
-        ),
-        prayerIndex: 77, // G prayer (Glory Be) - index 77
+        pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        prayerIndex: 77,
         prayerId: rosarySequence[77],
       })
     );
 
-    // Add Fatima prayer (index 78) as a separate constraint
+    // Second half: invisible bead to heart
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(mainToHeartLength * 0.8), // Slightly shorter for visual distinction
-        bodyA: mainLoopBeads[numMainBeads - 1],
+        ...springOptions(mainToHeartChainHalf),
+        bodyA: mainToHeartInvisible,
         bodyB: centerBead,
-        pointA: getPoleOffset(
-          mainLoopBeads[numMainBeads - 1],
-          centerBead,
-          beadSize
-        ),
-        pointB: getPoleOffset(
-          centerBead,
-          mainLoopBeads[numMainBeads - 1],
-          centerBeadSize
-        ),
+        pointA: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        pointB: getPoleOffset(centerBead, mainToHeartInvisible, centerBeadSize),
+        prayerIndex: 77,
+        prayerId: rosarySequence[77],
+      })
+    );
+
+    // Add Fatima prayer (index 78) as a separate constraint on the invisible bead
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(mainToHeartLength * 0.4), // Shorter for visual distinction
+        bodyA: mainToHeartInvisible,
+        bodyB: centerBead,
+        pointA: { x: 0, y: 0 }, // CENTER anchor
+        pointB: getPoleOffset(centerBead, mainToHeartInvisible, centerBeadSize),
         prayerIndex: 78, // F prayer (Fatima) - index 78
         prayerId: rosarySequence[78],
         render: { visible: false }, // Hide this constraint visually
@@ -657,42 +775,63 @@ const InteractiveRosary = ({
     // Heart bead to first tail bead (long chain) - prayers G (7) and F (8)
     // Heart medal to last tail bead (5th bead with 1st mystery at index 9)
     // Heart to last tail bead (1st Mystery bead at index 9) - LONG chain around lone bead
+    // NOW WITH INVISIBLE BEAD: heart → invisible bead → last tail bead
     const heartToTailLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
+    const heartToTailChainHalf =
+      (heartToTailLength - invisibleBeadDiameter) / 2; // Corrected length
+    const heartToTailMidX =
+      (centerBead.position.x + tailBeads[numTailBeads - 1].position.x) / 2;
+    const heartToTailMidY =
+      (centerBead.position.y + tailBeads[numTailBeads - 1].position.y) / 2;
+    const heartToTailInvisible = createInvisibleBead(
+      heartToTailMidX,
+      heartToTailMidY,
+      7,
+      rosarySequence[7]
+    );
+    allBeads.push(heartToTailInvisible);
+
+    // First half: heart to invisible bead
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(heartToTailLength),
+        ...springOptions(heartToTailChainHalf),
         bodyA: centerBead,
-        bodyB: tailBeads[numTailBeads - 1], // tailBeads[4] = index 9 (1st mystery)
-        pointA: getPoleOffset(
-          centerBead,
-          tailBeads[numTailBeads - 1],
-          centerBeadSize
-        ),
-        pointB: getOppositePoleOffset(
-          tailBeads[numTailBeads - 1],
-          centerBead,
-          beadSize
-        ), // Opposite pole for lone bead
-        prayerIndex: 7, // G prayer (Glory Be) - index 7
+        bodyB: heartToTailInvisible,
+        pointA: getPoleOffset(centerBead, heartToTailInvisible, centerBeadSize),
+        pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        prayerIndex: 7,
         prayerId: rosarySequence[7],
       })
     );
 
-    // Add Fatima prayer (index 8) as a separate constraint
+    // Second half: invisible bead to last tail bead
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(heartToTailChainHalf),
+        bodyA: heartToTailInvisible,
+        bodyB: tailBeads[numTailBeads - 1],
+        pointA: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        pointB: getOppositePoleOffset(
+          tailBeads[numTailBeads - 1],
+          heartToTailInvisible,
+          beadSize
+        ),
+        prayerIndex: 7,
+        prayerId: rosarySequence[7],
+      })
+    );
+
+    // Add Fatima prayer (index 8) as a separate constraint on the invisible bead
     // This represents the prayer said "on the chain" between Gloria and 1st Mystery
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(heartToTailLength * 0.8), // Slightly shorter for visual distinction
-        bodyA: centerBead,
-        bodyB: tailBeads[numTailBeads - 1], // Same connection as Gloria
-        pointA: getPoleOffset(
-          centerBead,
-          tailBeads[numTailBeads - 1],
-          centerBeadSize
-        ),
+        ...springOptions(heartToTailLength * 0.4), // Shorter for visual distinction
+        bodyA: heartToTailInvisible,
+        bodyB: tailBeads[numTailBeads - 1],
+        pointA: { x: 0, y: 0 }, // CENTER anchor
         pointB: getOppositePoleOffset(
           tailBeads[numTailBeads - 1],
-          centerBead,
+          heartToTailInvisible,
           beadSize
         ),
         prayerIndex: 8, // F prayer (Fatima) - index 8
@@ -756,13 +895,18 @@ const InteractiveRosary = ({
       tailBeads[numTailBeads - 1].position.y + chainSegmentLength * 2;
     const cbs = crossBeadSize;
 
+    // Cross layout matching MD diagram:
+    //     1 (head)
+    // 6 - 2 - 5 (left arm, center, right arm)
+    //     3 (upper legs)
+    //     4 (feet)
     const crossPositions = [
-      { x: crossCenterX - cbs * 1.5, y: crossCenterY, num: 1 }, // 1
-      { x: crossCenterX - cbs * 0.5, y: crossCenterY, num: 2 }, // 2 (center piece)
-      { x: crossCenterX + cbs * 0.5, y: crossCenterY, num: 3 }, // 3
-      { x: crossCenterX + cbs * 1.5, y: crossCenterY, num: 4 }, // 4
-      { x: crossCenterX - cbs * 0.5, y: crossCenterY + cbs, num: 5 }, // 5
-      { x: crossCenterX - cbs * 0.5, y: crossCenterY - cbs, num: 6 }, // 6
+      { x: crossCenterX, y: crossCenterY - cbs, num: 1 }, // 1: head (index 0) - ABOVE center
+      { x: crossCenterX, y: crossCenterY, num: 2 }, // 2: center (index 1) - CENTER
+      { x: crossCenterX, y: crossCenterY + cbs, num: 3 }, // 3: upper legs (index 2) - BELOW center
+      { x: crossCenterX, y: crossCenterY + cbs * 2, num: 4 }, // 4: feet (index 3) - FURTHER BELOW
+      { x: crossCenterX + cbs, y: crossCenterY, num: 5 }, // 5: right arm (index 4) - RIGHT of center
+      { x: crossCenterX - cbs, y: crossCenterY, num: 6 }, // 6: left arm (index 5) - LEFT of center
     ];
 
     crossPositions.forEach((pos) => {
@@ -776,8 +920,8 @@ const InteractiveRosary = ({
     const crossBody = Matter.Body.create({
       parts: crossParts,
       friction: 0.5,
-      frictionAir: rosaryFriction, // Use slider-controlled friction
-      restitution: 0.8,
+      frictionAir: vitalityFriction, // Use vitality-modulated friction
+      restitution: Math.min(baseRestitution, 0.5), // Cap at 0.5 for cross stability
       isCrossComposite: true, // Custom flag
       crossParts: crossParts, // Store reference for rendering
       beadNumber: 0, // Entire cross is bead number 0
@@ -788,25 +932,51 @@ const InteractiveRosary = ({
 
     // Cross to first tail bead (Our Father bead at index 3)
     // This chain has AC prayer (index 1) - LONG chain around lone bead
-    const crossToTailLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
+    // NOW WITH INVISIBLE BEAD: cross → invisible bead → first tail bead
+    const crossToTailLength = beadSize * 1.6 * 2; // DOUBLED as placeholder fix - ~26px = 6 links
+    const crossToTailChainHalf =
+      (crossToTailLength - invisibleBeadDiameter) / 2; // Corrected length
 
-    // Calculate proper pole connection point on cross TOP (like a real rosary!)
-    // Connect to the TOP side (north edge) of cross square #6 (head of the cross)
-    // This represents the cross being held up from above, by heaven
-    const crossPoleOffset = {
-      // Start with vector to center of square #6, then move UP by half a square's height
-      x: crossParts[5].position.x - crossBody.position.x, // Square #6 is at index 5
-      y: crossParts[5].position.y - crossBody.position.y - cbs / 2, // Move to top edge (north)
-    };
+    // Attach chain directly to the head square (crossParts[0])
+    const crossToTailMidX =
+      (crossParts[0].position.x + tailBeads[0].position.x) / 2;
+    const crossToTailMidY =
+      (crossParts[0].position.y + tailBeads[0].position.y) / 2;
+    const crossToTailInvisible = createInvisibleBead(
+      crossToTailMidX,
+      crossToTailMidY,
+      1,
+      rosarySequence[1]
+    );
+    allBeads.push(crossToTailInvisible);
 
+    // First half: head square to invisible bead
+    // Attach to TOP (NORTH) edge of head square
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(crossToTailLength),
-        bodyA: tailBeads[0], // tailBeads[0] = index 3 (Our Father bead)
-        bodyB: crossBody,
-        pointA: getOppositePoleOffset(tailBeads[0], crossBody, beadSize), // Opposite pole for lone bead
-        pointB: crossPoleOffset,
-        prayerIndex: 1, // AC prayer (Apostles' Creed)
+        ...springOptions(crossToTailChainHalf),
+        bodyA: crossParts[0], // Attach directly to head square
+        bodyB: crossToTailInvisible,
+        pointA: { x: 0, y: -cbs / 2 }, // TOP edge of head square (north)
+        pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        prayerIndex: 1,
+        prayerId: rosarySequence[1],
+      })
+    );
+
+    // Second half: invisible bead to first tail bead
+    constraints.push(
+      Matter.Constraint.create({
+        ...springOptions(crossToTailChainHalf),
+        bodyA: crossToTailInvisible,
+        bodyB: tailBeads[0],
+        pointA: { x: 0, y: 0 }, // CENTER anchor on invisible bead
+        pointB: getOppositePoleOffset(
+          tailBeads[0],
+          crossToTailInvisible,
+          beadSize
+        ),
+        prayerIndex: 1,
         prayerId: rosarySequence[1],
       })
     );
@@ -1033,27 +1203,33 @@ const InteractiveRosary = ({
         // Check if this bead has chain prayers
         const rosarySequence = getRosarySequenceRef.current();
         const hasChainPrayers = (prayerIndex) => {
-          if (prayerIndex >= rosarySequence.length - 2) return false;
+          if (prayerIndex >= rosarySequence.length - 1) return false;
 
-          const prayerId = rosarySequence[prayerIndex];
-          const nextPrayer = rosarySequence[prayerIndex + 1];
-          const nextNextPrayer = rosarySequence[prayerIndex + 2];
+          const chainPrayers = [];
 
-          // Last Hail Mary → Gloria → Fatima
-          if (
-            prayerId === "A" &&
-            nextPrayer === "G" &&
-            nextNextPrayer === "F"
-          ) {
-            return [prayerIndex + 1, prayerIndex + 2];
+          // Look ahead to find all consecutive chain prayers
+          // Chain prayers are: AC, C, G, F (prayers said "on the chain")
+          // Stop when we hit a bead prayer: SC, P, A, M*, LL, S, Papa
+          const beadPrayers = ["SC", "P", "A", "LL", "S", "Papa"];
+
+          for (let i = prayerIndex + 1; i < rosarySequence.length; i++) {
+            const nextPrayer = rosarySequence[i];
+
+            // Check if this is a mystery prayer (starts with M)
+            if (nextPrayer && nextPrayer.startsWith("M")) {
+              break; // Stop at mystery beads
+            }
+
+            // Check if this is a bead prayer
+            if (beadPrayers.includes(nextPrayer)) {
+              break; // Stop at bead prayers
+            }
+
+            // This is a chain prayer (AC, C, G, or F)
+            chainPrayers.push(i);
           }
 
-          // Mystery → Our Father
-          if (prayerId && prayerId.startsWith("M") && nextPrayer === "P") {
-            return [prayerIndex + 1];
-          }
-
-          return false;
+          return chainPrayers.length > 0 ? chainPrayers : false;
         };
 
         if (newCount === 1) {
@@ -1061,34 +1237,103 @@ const InteractiveRosary = ({
           console.log(`🎯 First touch - navigating to prayer`);
           onBeadClickRef.current(clickedBead.prayerIndex, clickedBead.prayerId);
 
-          // Check for chain prayers
+          // Record prayer in history for vitality tracking
+          prayerHistory.recordPrayer(clickedBead.prayerIndex, currentMystery);
+
+          // Clear scroll-triggered chain entry indicators
+          // This handles both tapping the original bead again OR tapping the invisible bead
+          setPressSameBeadId(null);
+          if (clickedBead.isInvisible) {
+            console.log(
+              `✨ Invisible bead tapped - clearing chain entry indicators`
+            );
+            setEnhancedBeadId(null);
+          }
+
+          // Check for chain prayers (but don't set chainBeadHighlight yet)
+          // Chain mode will be entered via scroll-triggered enterChainPrayers event
           const chainPrayers = hasChainPrayers(clickedBead.prayerIndex);
+          console.log(
+            `🔍 Chain prayer check for index ${clickedBead.prayerIndex} (${clickedBead.prayerId}):`,
+            chainPrayers
+              ? `Found ${chainPrayers.length} chain prayers at indices ${chainPrayers}`
+              : "None found"
+          );
+
           if (chainPrayers) {
-            // This bead has chain prayers - keep touch count active for chain navigation
-            console.log(`⛓️ Bead has chain prayers: ${chainPrayers}`);
-            setChainBeadHighlight(beadId);
+            // This bead has chain prayers - keep touch count active
+            // Next taps will scroll text, and when scroll ends, enterChainPrayers will trigger
+            console.log(
+              `⛓️ Bead has chain prayers at indices: [${chainPrayers.join(
+                ", "
+              )}] - waiting for scroll to end`
+            );
           } else {
             // No chain prayers - reset touch count
+            console.log(`✅ No chain prayers, resetting touch count`);
             touchCountRef.current.set(beadId, 0);
           }
 
           // Clear blinking state if any
           setBlinkingBeadId(null);
         } else {
-          // SECOND+ TOUCH: Navigate through chain prayers
+          // SECOND+ TOUCH: Could be scrolling OR chain navigation
+          //
+          // FLOW:
+          // 1. User taps bead (1st time) - shows prayer
+          // 2. User taps bead (2nd+ time) - dispatches beadRepeatTouch for scrolling
+          // 3. If scroll reaches bottom AND chain prayers exist:
+          //    - ViewPrayers dispatches enterChainPrayers event
+          //    - Event handler sets pressSameBeadId and highlights invisible bead
+          // 4. User taps bead again - NOW we're in chain mode, navigate through chain prayers
+          //
+          // USER CAN TAP EITHER:
+          // - The original bead (simple, works like before)
+          // - The highlighted invisible bead (new, more intuitive for touch)
           const chainPrayers = hasChainPrayers(clickedBead.prayerIndex);
 
-          if (chainPrayers && newCount <= 1 + chainPrayers.length) {
-            // Navigate to chain prayer
+          console.log(
+            `🔄 Touch ${newCount} on bead #${clickedBead.beadNumber} (index ${clickedBead.prayerIndex}, ${clickedBead.prayerId})`
+          );
+          console.log(`   Chain prayers available:`, chainPrayers || "None");
+
+          // Check if this bead was highlighted for chain navigation (from scroll-triggered entry)
+          // This can be triggered by:
+          // 1. Tapping the original bead after enterChainPrayers event (chainBeadHighlight === beadId)
+          // 2. Tapping an invisible bead that was highlighted (clickedBead.isInvisible && enhancedBeadId === beadId)
+          // 3. Simply having chain prayers and continuing to tap the same bead (pressSameBeadId === beadId)
+          const isInChainMode =
+            chainBeadHighlight === beadId ||
+            pressSameBeadId === beadId ||
+            (clickedBead.isInvisible && enhancedBeadId === beadId);
+
+          if (
+            chainPrayers &&
+            isInChainMode &&
+            newCount <= 1 + chainPrayers.length
+          ) {
+            // IN CHAIN MODE: Navigate through chain prayers
             const chainIndex = newCount - 2; // 2nd touch = first chain prayer (index 0)
+            console.log(
+              `   Chain mode active - Calculating: newCount ${newCount} - 2 = chainIndex ${chainIndex}`
+            );
+            console.log(
+              `   Chain prayers array length: ${chainPrayers.length}`
+            );
+
             if (chainIndex < chainPrayers.length) {
               const chainPrayerIndex = chainPrayers[chainIndex];
               const prayerId = rosarySequence[chainPrayerIndex];
 
               console.log(
-                `⛓️ Navigating to chain prayer ${chainIndex + 1}: ${prayerId}`
+                `⛓️ Navigating to chain prayer ${chainIndex + 1}/${
+                  chainPrayers.length
+                }: ${prayerId} (index ${chainPrayerIndex})`
               );
               onBeadClickRef.current(chainPrayerIndex, prayerId);
+
+              // Record chain prayer in history for vitality tracking
+              prayerHistory.recordPrayer(chainPrayerIndex, currentMystery);
 
               // Clear "press same bead" indicator on first chain prayer
               if (chainIndex === 0) {
@@ -1131,7 +1376,11 @@ const InteractiveRosary = ({
               }
             }
           } else {
-            // No more chain prayers - scroll through text content
+            // NOT IN CHAIN MODE: Dispatch beadRepeatTouch for text scrolling
+            // ViewPrayers will handle scroll detection and dispatch enterChainPrayers when scroll ends
+            console.log(
+              `📜 Dispatching beadRepeatTouch for text scrolling (touch ${newCount})`
+            );
             window.dispatchEvent(
               new CustomEvent("beadRepeatTouch", {
                 detail: {
@@ -1253,6 +1502,14 @@ const InteractiveRosary = ({
     // --- Render bead numbers ---
     Matter.Events.on(render, "afterRender", () => {
       const context = render.context;
+
+      // VITALITY VISUAL FEEDBACK: Subtle golden glow at high vitality (optional enhancement)
+      if (vitality > 0.7) {
+        const glowAlpha = ((vitality - 0.7) / 0.3) * 0.1; // 0 to 0.1 (very subtle)
+        context.fillStyle = `rgba(255, 245, 200, ${glowAlpha})`;
+        context.fillRect(0, 0, width, height); // Subtle golden overlay
+      }
+
       context.fillStyle = "white";
       context.textAlign = "center";
       context.textBaseline = "middle";
@@ -1330,6 +1587,92 @@ const InteractiveRosary = ({
           }
 
           return; // Skip normal rendering for composite body
+        }
+
+        // Render invisible beads in developer mode or when highlighted
+        if (bead.isInvisible) {
+          // Show when in developer mode OR when highlighted for chain navigation
+          const isHighlighted = bead.id === enhancedBeadId;
+
+          if (developerModeRef.current || isHighlighted) {
+            if (isHighlighted) {
+              // HIGHLIGHTED for chain navigation - golden pulsing circle
+              const pulseAlpha =
+                Math.abs(Math.sin(Date.now() / 400)) * 0.4 + 0.6; // 0.6 to 1.0
+              const pulseSize = Math.abs(Math.sin(Date.now() / 400)) * 2; // 0 to 2px
+
+              // Outer glow ring
+              context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha * 0.6})`;
+              context.lineWidth = 3;
+              context.shadowColor = `rgba(255, 215, 0, ${pulseAlpha * 0.8})`;
+              context.shadowBlur = 15 + pulseSize;
+              context.beginPath();
+              context.arc(
+                bead.position.x,
+                bead.position.y,
+                beadSize * 0.8 + pulseSize,
+                0,
+                2 * Math.PI
+              );
+              context.stroke();
+              context.shadowBlur = 0; // Reset shadow
+
+              // Inner translucent golden circle
+              context.fillStyle = `rgba(255, 215, 0, ${pulseAlpha * 0.3})`;
+              context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+              context.lineWidth = 2;
+              context.beginPath();
+              context.arc(
+                bead.position.x,
+                bead.position.y,
+                beadSize * 0.6,
+                0,
+                2 * Math.PI
+              );
+              context.fill();
+              context.stroke();
+
+              // "TAP" text hint - always show when highlighted
+              context.font = `bold ${beadSize * 0.7}px Arial`;
+              context.fillStyle = "rgba(255, 215, 0, 1)";
+              context.strokeStyle = "rgba(0, 0, 0, 0.8)";
+              context.lineWidth = 2;
+              context.strokeText("TAP", bead.position.x, bead.position.y);
+              context.fillText("TAP", bead.position.x, bead.position.y);
+            } else {
+              // Developer mode - show as translucent magenta ghost
+              context.fillStyle = "rgba(255, 0, 255, 0.3)"; // Magenta ghost
+              context.strokeStyle = "rgba(255, 0, 255, 0.5)";
+              context.lineWidth = 1;
+              context.beginPath();
+              context.arc(
+                bead.position.x,
+                bead.position.y,
+                beadSize * 0.5,
+                0,
+                2 * Math.PI
+              );
+              context.fill();
+              context.stroke();
+
+              // Show prayer index
+              context.font = `bold ${beadSize * 0.8}px Arial`;
+              context.fillStyle = "#FF00FF";
+              context.strokeStyle = "#FFFFFF";
+              context.lineWidth = 1;
+              context.strokeText(
+                `${bead.prayerIndex}`,
+                bead.position.x,
+                bead.position.y
+              );
+              context.fillText(
+                `${bead.prayerIndex}`,
+                bead.position.x,
+                bead.position.y
+              );
+            }
+          }
+          return; // Skip normal rendering for invisible beads
         }
 
         // Render heart medal with Our Lady image
@@ -1815,12 +2158,35 @@ const InteractiveRosary = ({
             const posA = constraint.bodyA.position;
             const posB = constraint.bodyB.position;
 
-            context.strokeStyle = colors.highlight;
-            context.lineWidth = 5;
-            context.beginPath();
-            context.moveTo(posA.x, posA.y);
-            context.lineTo(posB.x, posB.y);
-            context.stroke();
+            // Check if this chain connects to an invisible bead - make it EXTRA prominent
+            const isInvisibleBeadChain =
+              constraint.bodyA.isInvisible || constraint.bodyB.isInvisible;
+
+            if (isInvisibleBeadChain) {
+              // EXTRA PROMINENT for invisible bead chains
+              // Add pulsing glow effect
+              const pulseAlpha =
+                Math.abs(Math.sin(Date.now() / 600)) * 0.3 + 0.7; // 0.7 to 1.0
+              context.strokeStyle = colors.highlight;
+              context.lineWidth = 8;
+              context.shadowColor = colors.highlight;
+              context.shadowBlur = 15;
+              context.globalAlpha = pulseAlpha;
+              context.beginPath();
+              context.moveTo(posA.x, posA.y);
+              context.lineTo(posB.x, posB.y);
+              context.stroke();
+              context.shadowBlur = 0;
+              context.globalAlpha = 1;
+            } else {
+              // Normal chain highlight
+              context.strokeStyle = colors.highlight;
+              context.lineWidth = 5;
+              context.beginPath();
+              context.moveTo(posA.x, posA.y);
+              context.lineTo(posB.x, posB.y);
+              context.stroke();
+            }
           }
         }
 
