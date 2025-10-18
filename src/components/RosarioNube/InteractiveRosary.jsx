@@ -1390,21 +1390,21 @@ const InteractiveRosary = ({
           context.globalAlpha = 1; // Reset alpha
         }
 
-        // NEW: Subtle silver aura for beads that have been pressed (recited) - 10% splendor
+        // NEW: Subtle silver afterglow for beads that have been pressed (recited) - 25% splendor
         // Gentle fade in/out through sine wave animation for peaceful, meditative feel
         if (
           bead.prayerIndex !== undefined &&
           pressedBeads.has(bead.prayerIndex)
         ) {
-          context.strokeStyle = "rgba(192, 192, 192, 0.1)"; // Very subtle silver (10% opacity)
-          context.lineWidth = 1.5;
-          context.shadowColor = "rgba(192, 192, 192, 0.15)";
-          context.shadowBlur = 4;
+          context.strokeStyle = "rgba(192, 192, 192, 0.25)"; // Subtle silver (25% opacity)
+          context.lineWidth = 2;
+          context.shadowColor = "rgba(192, 192, 192, 0.3)";
+          context.shadowBlur = 6;
           context.beginPath();
           context.arc(
             bead.position.x,
             bead.position.y,
-            size + 1,
+            size + 1.5,
             0,
             2 * Math.PI
           );
@@ -1412,7 +1412,7 @@ const InteractiveRosary = ({
           context.shadowBlur = 0; // Reset shadow
         }
 
-        // NEW: Very subtle, slow glow for next bead (for orientation, not focus)
+        // NEW: Gentle slow glow for next bead (orientation hint) - 35% of current bead intensity
         // Works automatically for cross → tail transition and all other sections
         const rosarySequence = getRosarySequenceRef.current();
         const nextBeadIndex = currentPrayerIndexRef.current + 1;
@@ -1420,20 +1420,20 @@ const InteractiveRosary = ({
           bead.prayerIndex === nextBeadIndex &&
           nextBeadIndex < rosarySequence.length
         ) {
-          // Very gentle, slow pulsing glow - less prominent than current bead
+          // Gentle, slow pulsing glow - 35% of current bead's 60-100% = 21-35%
           // 1800ms period = very slow, peaceful animation
-          const pulseAlpha = Math.abs(Math.sin(Date.now() / 1800)) * 0.15 + 0.1; // 0.1 to 0.25 (very subtle, slow)
-          const pulseSize = Math.abs(Math.sin(Date.now() / 1800)) * 0.8; // 0 to 0.8px (smaller)
+          const pulseAlpha = Math.abs(Math.sin(Date.now() / 1800)) * 0.14 + 0.21; // 0.21 to 0.35 (35% of current)
+          const pulseSize = Math.abs(Math.sin(Date.now() / 1800)) * 1.2; // 0 to 1.2px
 
-          context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha})`; // Gold glow, very transparent
-          context.lineWidth = 2;
+          context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha})`; // Gold glow, moderate transparency
+          context.lineWidth = 2.5;
           context.shadowColor = `rgba(255, 215, 0, ${pulseAlpha * 0.8})`;
-          context.shadowBlur = 6 + pulseSize;
+          context.shadowBlur = 8 + pulseSize;
           context.beginPath();
           context.arc(
             bead.position.x,
             bead.position.y,
-            size + 2 + pulseSize,
+            size + 2.5 + pulseSize,
             0,
             2 * Math.PI
           );

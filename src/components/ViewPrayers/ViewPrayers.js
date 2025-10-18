@@ -802,6 +802,7 @@ const ViewPrayers = forwardRef(
                 className="prayer-image"
                 src={finalImageUrl}
                 alt={`${prayer.name} illustration`}
+                key={finalImageUrl}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -809,7 +810,8 @@ const ViewPrayers = forwardRef(
                   objectPosition: "center",
                   filter: "brightness(0.8) contrast(1.1)",
                   transform: `scale(${imageZoom})`,
-                  transition: "transform 0.5s ease-in-out",
+                  transition: "opacity 2.5s ease-in-out, transform 3.0s ease-in-out, filter 2.5s ease-in-out",
+                  animation: "gentleCameraPan 3s ease-in-out forwards"
                 }}
               />
             </div>
@@ -995,6 +997,7 @@ const ViewPrayers = forwardRef(
               className="prayer-image"
               src={finalImageUrl}
               alt={`${prayer.name} illustration`}
+              key={finalImageUrl}
               style={{
                 width: "100%",
                 height: "100%",
@@ -1002,7 +1005,8 @@ const ViewPrayers = forwardRef(
                 objectPosition: "center",
                 filter: "brightness(0.7) contrast(1.1)",
                 transform: `scale(${imageZoom})`,
-                transition: "transform 0.5s ease-in-out",
+                transition: "opacity 2.5s ease-in-out, transform 3.0s ease-in-out, filter 2.5s ease-in-out",
+                animation: "gentleCameraPan 3s ease-in-out forwards"
               }}
             />
           </div>

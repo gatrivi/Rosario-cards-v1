@@ -274,6 +274,28 @@ button:hover {
   }
 }
 
+/* ==================== Peaceful Image Transitions ==================== */
+/* Gentle camera pan like gazing from one chapel painting to another */
+@keyframes gentleCameraPan {
+  0% {
+    opacity: 0;
+    transform: scale(1.05) translate(1%, 1%);
+    filter: brightness(0.5) contrast(1.1);
+  }
+  15% {
+    opacity: 0.4;
+  }
+  40% {
+    opacity: 1;
+    filter: brightness(0.7) contrast(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate(0%, 0%);
+    filter: brightness(0.7) contrast(1.1);
+  }
+}
+
 /* ==================== Stylish Scrollbar ==================== */
 /* For Webkit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
