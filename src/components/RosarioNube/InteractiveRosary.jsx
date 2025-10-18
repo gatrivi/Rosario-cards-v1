@@ -1180,7 +1180,7 @@ const InteractiveRosary = ({
           // Play gentle "not available" sound
           soundEffects.playBeadCollision(400, 0.1, 0.05); // Low, soft sound
         }
-        
+
         return; // Don't process as normal bead
       }
 
@@ -1191,20 +1191,22 @@ const InteractiveRosary = ({
       // When closing prayers are unlocked, tail beads (indices 5, 6, 9) should show closing prayers (79, 80, 81)
       let effectivePrayerIndex = clickedBead.prayerIndex;
       let effectivePrayerId = clickedBead.prayerId;
-      
+
       if (areClosingPrayersUnlocked) {
         // Map tail beads to closing prayers: indices 5→79 (LL), 6→80 (S), 9→81 (Papa)
         const tailToClosingMap = {
-          5: 79,  // Third Ave Maria → Litany of Loreto (LL)
-          6: 80,  // Third Ave Maria → Salve Regina (S)
-          9: 81,  // First Mystery → Pope's Prayer (Papa)
+          5: 79, // Third Ave Maria → Litany of Loreto (LL)
+          6: 80, // Third Ave Maria → Salve Regina (S)
+          9: 81, // First Mystery → Pope's Prayer (Papa)
         };
-        
+
         if (tailToClosingMap[clickedBead.prayerIndex] !== undefined) {
           const rosarySequence = getRosarySequenceRef.current();
           effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
           effectivePrayerId = rosarySequence[effectivePrayerIndex];
-          console.log(`🎯 Closing prayers unlocked - redirecting tail bead ${clickedBead.prayerIndex} → ${effectivePrayerIndex} (${effectivePrayerId})`);
+          console.log(
+            `🎯 Closing prayers unlocked - redirecting tail bead ${clickedBead.prayerIndex} → ${effectivePrayerIndex} (${effectivePrayerId})`
+          );
         }
       }
 
@@ -1941,7 +1943,9 @@ const InteractiveRosary = ({
         // Tail beads with indices 5, 6, 9 glow golden to show they're now clickable for closing prayers
         if (
           areClosingPrayersUnlocked &&
-          (bead.prayerIndex === 5 || bead.prayerIndex === 6 || bead.prayerIndex === 9)
+          (bead.prayerIndex === 5 ||
+            bead.prayerIndex === 6 ||
+            bead.prayerIndex === 9)
         ) {
           const unlockPulseAlpha =
             Math.abs(Math.sin(Date.now() / 1200)) * 0.25 + 0.35; // 0.35 to 0.6 (subtle)
@@ -1969,8 +1973,16 @@ const InteractiveRosary = ({
             context.strokeStyle = "rgba(0, 0, 0, 0.8)";
             context.lineWidth = 2;
             const hintText = "CLOSE";
-            context.strokeText(hintText, bead.position.x, bead.position.y + size * 1.5);
-            context.fillText(hintText, bead.position.x, bead.position.y + size * 1.5);
+            context.strokeText(
+              hintText,
+              bead.position.x,
+              bead.position.y + size * 1.5
+            );
+            context.fillText(
+              hintText,
+              bead.position.x,
+              bead.position.y + size * 1.5
+            );
           }
         }
 

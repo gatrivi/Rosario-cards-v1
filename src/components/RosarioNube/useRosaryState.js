@@ -260,8 +260,10 @@ export const useRosaryState = (prayers, currentMystery) => {
         setVisitedMysteries((prev) => {
           const newSet = new Set(prev);
           newSet.add(prayerId);
-          console.log(`📿 Mystery visited: ${prayerId} (${newSet.size}/5 mysteries)`);
-          
+          console.log(
+            `📿 Mystery visited: ${prayerId} (${newSet.size}/5 mysteries)`
+          );
+
           // Dispatch event if closing prayers just unlocked
           if (newSet.size === 5 && prev.size === 4) {
             console.log("🎉 Closing prayers and litany unlocked!");
@@ -271,7 +273,7 @@ export const useRosaryState = (prayers, currentMystery) => {
               })
             );
           }
-          
+
           return newSet;
         });
       }
@@ -543,7 +545,10 @@ export const useRosaryState = (prayers, currentMystery) => {
     try {
       localStorage.removeItem("visitedMysteries");
     } catch (error) {
-      console.warn("Failed to clear visited mysteries from localStorage:", error);
+      console.warn(
+        "Failed to clear visited mysteries from localStorage:",
+        error
+      );
     }
   }, []);
 

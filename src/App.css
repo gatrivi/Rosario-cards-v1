@@ -67,7 +67,7 @@
 
 /* Preload next image to prevent flash */
 .page-right::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

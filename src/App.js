@@ -148,13 +148,17 @@ function App() {
   const getInitialPrayer = () => {
     const today = new Date();
     const isStTeresaDay = today.getMonth() === 9 && today.getDate() === 15; // October 15
-    
-    const basePrayer = "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza.";
-    
+
+    const basePrayer =
+      "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza.";
+
     if (isStTeresaDay) {
-      return basePrayer + "\n\nEn honor a Santa Teresa de Ávila,\nDoctora de la Iglesia, cuya fiesta celebramos hoy.";
+      return (
+        basePrayer +
+        "\n\nEn honor a Santa Teresa de Ávila,\nDoctora de la Iglesia, cuya fiesta celebramos hoy."
+      );
     }
-    
+
     return basePrayer;
   };
 
