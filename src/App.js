@@ -557,7 +557,7 @@ function App() {
     const handleBeadDragStart = () => {
       const rosary = document.querySelector(".interactive-rosary");
       if (rosary) {
-        rosary.style.transition = "opacity 0.2s ease";
+        rosary.style.transition = "opacity 1.0s ease-in-out"; // Slow, peaceful fade (was 0.2s)
         rosary.style.opacity = "0.5"; // Semi-transparent while dragging (was 0.25 - too transparent)
       }
     };
@@ -568,7 +568,7 @@ function App() {
       if (rosary) {
         const configuredOpacity =
           parseFloat(localStorage.getItem("rosaryOpacity")) || 1.0;
-        rosary.style.transition = "opacity 0.3s ease";
+        rosary.style.transition = "opacity 1.2s ease-in-out"; // Slow, gentle restoration (was 0.3s)
         // Ensure minimum 20% opacity so beads remain visible and clickable
         rosary.style.opacity = Math.max(0.2, configuredOpacity);
       }
@@ -576,7 +576,7 @@ function App() {
       // Restore navigation buttons opacity
       const navButtons = document.querySelector(".segmented-bar");
       if (navButtons) {
-        navButtons.style.transition = "opacity 0.3s ease";
+        navButtons.style.transition = "opacity 1.2s ease-in-out"; // Slow, gentle restoration (was 0.3s)
         navButtons.style.opacity = "1";
       }
     };
