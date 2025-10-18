@@ -525,7 +525,6 @@ function App() {
   const handleFadeChange = useCallback((isFading, fadeIntensity) => {
     // This callback can be used to trigger additional effects if needed
     // For now, the CornerFadeControls component handles the fade directly
-    console.log("Fade state changed:", { isFading, fadeIntensity });
   }, []);
 
   // Listen for opacity changes from settings
