@@ -1444,13 +1444,18 @@ const InteractiveRosary = ({
         // Highlight current prayer bead (always shown) - PROMINENT FOCUS with gentle pulsing glow
         if (bead.prayerIndex === currentPrayerIndexRef.current) {
           // Pulsing glow effect - slower and more prominent than next bead
-          const currentPulseAlpha = Math.abs(Math.sin(Date.now() / 1200)) * 0.4 + 0.6; // 0.6 to 1.0 (strong)
+          const currentPulseAlpha =
+            Math.abs(Math.sin(Date.now() / 1200)) * 0.4 + 0.6; // 0.6 to 1.0 (strong)
           const currentPulseSize = Math.abs(Math.sin(Date.now() / 1200)) * 2; // 0 to 2px
-          
+
           // Outer glow ring
-          context.strokeStyle = `rgba(${colors.highlight === '#FFD700' ? '255, 215, 0' : '212, 175, 55'}, ${currentPulseAlpha * 0.6})`;
+          context.strokeStyle = `rgba(${
+            colors.highlight === "#FFD700" ? "255, 215, 0" : "212, 175, 55"
+          }, ${currentPulseAlpha * 0.6})`;
           context.lineWidth = 4;
-          context.shadowColor = `rgba(${colors.highlight === '#FFD700' ? '255, 215, 0' : '212, 175, 55'}, ${currentPulseAlpha * 0.5})`;
+          context.shadowColor = `rgba(${
+            colors.highlight === "#FFD700" ? "255, 215, 0" : "212, 175, 55"
+          }, ${currentPulseAlpha * 0.5})`;
           context.shadowBlur = 15 + currentPulseSize * 2;
           context.beginPath();
           context.arc(
@@ -1462,7 +1467,7 @@ const InteractiveRosary = ({
           );
           context.stroke();
           context.shadowBlur = 0; // Reset shadow
-          
+
           // Inner bright ring (always visible)
           context.strokeStyle = colors.highlight;
           context.lineWidth = 3;
