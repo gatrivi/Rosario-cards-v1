@@ -23,6 +23,7 @@ const InteractiveRosary = ({
   rosaryFriction = 0.05, // Air resistance - controls coasting time
   isInLitany = false, // Whether currently in litany mode (for heart bead visual)
   pressedBeads = new Set(), // Set of pressed bead indices for visual feedback
+  areClosingPrayersUnlocked = false, // Whether 5 mysteries have been visited (unlocks tail beads & litany)
 }) => {
   const sceneRef = useRef(null);
   const matterInstance = useRef(null);
@@ -144,7 +145,7 @@ const InteractiveRosary = ({
   /**
    * Get rosary sequence for current mystery
    */
-  const getRosarySequence = () => {
+  const getRosarySequence = React.useCallback(() => {
     if (!prayers) return [];
     const mysteryToArray = {
       gozosos: "RGo",
@@ -153,7 +154,7 @@ const InteractiveRosary = ({
       luminosos: "RL",
     };
     return prayers[mysteryToArray[currentMystery]] || [];
-  };
+  }, [prayers, currentMystery]);
 
   // Listen for visibility toggle events
   useEffect(() => {
@@ -1163,20 +1164,49 @@ const InteractiveRosary = ({
       if (clickedBead.isHeartMedal) {
         console.log(`❤️ Heart bead touched`);
 
-        // Check if currently in litany mode
-        window.dispatchEvent(
-          new CustomEvent("heartBeadPressed", {
-            detail: { beadId: clickedBead.id },
-          })
-        );
+        // Check if closing prayers are unlocked (5 mysteries visited)
+        if (areClosingPrayersUnlocked) {
+          // Litany access is unlocked - dispatch event
+          window.dispatchEvent(
+            new CustomEvent("heartBeadPressed", {
+              detail: { beadId: clickedBead.id },
+            })
+          );
 
-        // Play soft chime for litany progression
-        soundEffects.playChainPrayerChime();
+          // Play soft chime for litany progression
+          soundEffects.playChainPrayerChime();
+        } else {
+          console.log(`❤️ Litany not yet unlocked - need 5 mysteries`);
+          // Play gentle "not available" sound
+          soundEffects.playBeadCollision(400, 0.1, 0.05); // Low, soft sound
+        }
+        
         return; // Don't process as normal bead
       }
 
       // Now check for prayerIndex (heart bead doesn't have one)
       if (clickedBead.prayerIndex === undefined) return;
+
+      // TAIL BEADS CLOSING PRAYERS REDIRECT
+      // When closing prayers are unlocked, tail beads (indices 5, 6, 9) should show closing prayers (79, 80, 81)
+      let effectivePrayerIndex = clickedBead.prayerIndex;
+      let effectivePrayerId = clickedBead.prayerId;
+      
+      if (areClosingPrayersUnlocked) {
+        // Map tail beads to closing prayers: indices 5→79 (LL), 6→80 (S), 9→81 (Papa)
+        const tailToClosingMap = {
+          5: 79,  // Third Ave Maria → Litany of Loreto (LL)
+          6: 80,  // Third Ave Maria → Salve Regina (S)
+          9: 81,  // First Mystery → Pope's Prayer (Papa)
+        };
+        
+        if (tailToClosingMap[clickedBead.prayerIndex] !== undefined) {
+          const rosarySequence = getRosarySequenceRef.current();
+          effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
+          effectivePrayerId = rosarySequence[effectivePrayerIndex];
+          console.log(`🎯 Closing prayers unlocked - redirecting tail bead ${clickedBead.prayerIndex} → ${effectivePrayerIndex} (${effectivePrayerId})`);
+        }
+      }
 
       const now = Date.now();
       const beadId = clickedBead.id;
@@ -1235,10 +1265,10 @@ const InteractiveRosary = ({
         if (newCount === 1) {
           // FIRST TOUCH: Navigate to main prayer immediately
           console.log(`🎯 First touch - navigating to prayer`);
-          onBeadClickRef.current(clickedBead.prayerIndex, clickedBead.prayerId);
+          onBeadClickRef.current(effectivePrayerIndex, effectivePrayerId);
 
           // Record prayer in history for vitality tracking
-          prayerHistory.recordPrayer(clickedBead.prayerIndex, currentMystery);
+          prayerHistory.recordPrayer(effectivePrayerIndex, currentMystery);
 
           // Clear scroll-triggered chain entry indicators
           // This handles both tapping the original bead again OR tapping the invisible bead
@@ -1252,9 +1282,9 @@ const InteractiveRosary = ({
 
           // Check for chain prayers (but don't set chainBeadHighlight yet)
           // Chain mode will be entered via scroll-triggered enterChainPrayers event
-          const chainPrayers = hasChainPrayers(clickedBead.prayerIndex);
+          const chainPrayers = hasChainPrayers(effectivePrayerIndex);
           console.log(
-            `🔍 Chain prayer check for index ${clickedBead.prayerIndex} (${clickedBead.prayerId}):`,
+            `🔍 Chain prayer check for index ${effectivePrayerIndex} (${effectivePrayerId}):`,
             chainPrayers
               ? `Found ${chainPrayers.length} chain prayers at indices ${chainPrayers}`
               : "None found"
@@ -1290,10 +1320,10 @@ const InteractiveRosary = ({
           // USER CAN TAP EITHER:
           // - The original bead (simple, works like before)
           // - The highlighted invisible bead (new, more intuitive for touch)
-          const chainPrayers = hasChainPrayers(clickedBead.prayerIndex);
+          const chainPrayers = hasChainPrayers(effectivePrayerIndex);
 
           console.log(
-            `🔄 Touch ${newCount} on bead #${clickedBead.beadNumber} (index ${clickedBead.prayerIndex}, ${clickedBead.prayerId})`
+            `🔄 Touch ${newCount} on bead #${clickedBead.beadNumber} (index ${effectivePrayerIndex}, ${effectivePrayerId})`
           );
           console.log(`   Chain prayers available:`, chainPrayers || "None");
 
@@ -1385,8 +1415,8 @@ const InteractiveRosary = ({
               new CustomEvent("beadRepeatTouch", {
                 detail: {
                   beadId,
-                  prayerIndex: clickedBead.prayerIndex,
-                  prayerId: clickedBead.prayerId,
+                  prayerIndex: effectivePrayerIndex,
+                  prayerId: effectivePrayerId,
                   touchCount: newCount,
                 },
               })
@@ -1754,6 +1784,37 @@ const InteractiveRosary = ({
                 context.strokeText(hintText, bead.position.x, bead.position.y);
                 context.fillText(hintText, bead.position.x, bead.position.y);
               }
+            } else if (areClosingPrayersUnlocked) {
+              // UNLOCKED: Gentle golden pulse to show litany is now accessible
+              const pulseAlpha =
+                Math.abs(Math.sin(Date.now() / 1500)) * 0.3 + 0.4; // 0.4 to 0.7 (subtler)
+              const pulseSize = Math.abs(Math.sin(Date.now() / 1500)) * 1.5; // 0 to 1.5
+
+              context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+              context.lineWidth = 2.5;
+              context.shadowColor = `rgba(255, 215, 0, ${pulseAlpha * 0.6})`;
+              context.shadowBlur = 10 + pulseSize;
+              context.beginPath();
+              context.arc(
+                bead.position.x,
+                bead.position.y,
+                centerBeadSize + 2 + pulseSize,
+                0,
+                2 * Math.PI
+              );
+              context.stroke();
+              context.shadowBlur = 0; // Reset shadow
+
+              // Show "unlocked" indicator in developer mode
+              if (developerModeRef.current) {
+                context.font = `bold ${centerBeadSize * 0.4}px Arial`;
+                context.fillStyle = "rgba(255, 215, 0, 1)";
+                context.strokeStyle = "rgba(0, 0, 0, 0.8)";
+                context.lineWidth = 2;
+                const hintText = "LITANY";
+                context.strokeText(hintText, bead.position.x, bead.position.y);
+                context.fillText(hintText, bead.position.x, bead.position.y);
+              }
             }
           }
 
@@ -1874,6 +1935,43 @@ const InteractiveRosary = ({
             2 * Math.PI
           );
           context.stroke();
+        }
+
+        // NEW: Tail beads glow when closing prayers unlocked
+        // Tail beads with indices 5, 6, 9 glow golden to show they're now clickable for closing prayers
+        if (
+          areClosingPrayersUnlocked &&
+          (bead.prayerIndex === 5 || bead.prayerIndex === 6 || bead.prayerIndex === 9)
+        ) {
+          const unlockPulseAlpha =
+            Math.abs(Math.sin(Date.now() / 1200)) * 0.25 + 0.35; // 0.35 to 0.6 (subtle)
+          const unlockPulseSize = Math.abs(Math.sin(Date.now() / 1200)) * 1.5; // 0 to 1.5
+
+          context.strokeStyle = `rgba(255, 215, 0, ${unlockPulseAlpha})`;
+          context.lineWidth = 2.5;
+          context.shadowColor = `rgba(255, 215, 0, ${unlockPulseAlpha * 0.7})`;
+          context.shadowBlur = 8 + unlockPulseSize;
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size + 3 + unlockPulseSize,
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+          context.shadowBlur = 0; // Reset shadow
+
+          // Show "CLOSING" label in developer mode
+          if (developerModeRef.current) {
+            context.font = `bold ${size * 0.5}px Arial`;
+            context.fillStyle = "rgba(255, 215, 0, 1)";
+            context.strokeStyle = "rgba(0, 0, 0, 0.8)";
+            context.lineWidth = 2;
+            const hintText = "CLOSE";
+            context.strokeText(hintText, bead.position.x, bead.position.y + size * 1.5);
+            context.fillText(hintText, bead.position.x, bead.position.y + size * 1.5);
+          }
         }
 
         // NEW: Gentle slow glow for next bead (orientation hint) - 35% of current bead intensity
@@ -2239,6 +2337,7 @@ const InteractiveRosary = ({
     };
 
     console.log("✅ InteractiveRosary: Initialization complete!");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentMystery,
     rosaryZoom,
@@ -2246,6 +2345,8 @@ const InteractiveRosary = ({
     rosaryPosition.x,
     rosaryPosition.y,
     rosaryFriction,
+    // Note: UI state like blinkingBeadId, chainBeadHighlight, etc. are intentionally
+    // excluded to avoid unnecessary physics reinitialization on UI updates
   ]);
 
   // Main useEffect that calls initializePhysics

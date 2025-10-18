@@ -1,7 +1,7 @@
 import "./App.css";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; // Adjust path as needed
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import InteractiveRosary from "./components/RosarioNube/InteractiveRosary";
@@ -111,48 +111,62 @@ const selectPrayerImage = (prayerObj, isDark) => {
       return fallbackImages[randomIndex];
     }
 
-    // For single images, also randomly use fallback sometimes for variety
-    // This gives us the rotating effect even with single images
-    const shouldUseFallback = Math.random() < 0.3; // 30% chance to use fallback
-    if (shouldUseFallback) {
-      const fallbackImages = getDefaultFallbackImages(isDark);
-      const randomIndex = Math.floor(Math.random() * fallbackImages.length);
-      return fallbackImages[randomIndex];
-    }
-
+    // Return the actual prayer image (no random fallback)
     return selectedImage;
   }
 };
 
 /**
- * Get St. Teresa of Avila as default background for her feast day
- * TODO: Revert to random mystery images after October 15th
+ * Get background image based on date - St. Teresa on her feast day, random mystery images otherwise
  * @param {string} currentMystery - Current mystery type to exclude
- * @returns {object} St. Teresa image object
+ * @returns {object} Image object with img, imgmo, title, and description
  */
 const getRandomUnusedMysteryImage = (currentMystery) => {
-  // Return St. Teresa of Avila as default background for her feast day
-  return {
-    img: "/gallery-images/saints/santa-teresa-de-avila.jpg",
-    imgmo: "/gallery-images/saints/santa-teresa-de-avila.jpg",
-    title: "Santa Teresa de Ávila",
-    description: "Doctora de la Iglesia - Feast Day: October 15th",
-  };
+  const today = new Date();
+  const isStTeresaDay = today.getMonth() === 9 && today.getDate() === 15; // October 15
+
+  // Show St. Teresa on her feast day
+  if (isStTeresaDay) {
+    return {
+      img: "/gallery-images/saints/santa-teresa-de-avila.jpg",
+      imgmo: "/gallery-images/saints/santa-teresa-de-avila.jpg",
+      title: "Santa Teresa de Ávila",
+      description: "Doctora de la Iglesia - Feast Day: October 15th",
+    };
+  }
+
+  // Otherwise return random fallback image
+  const theme = localStorage.getItem("theme");
+  const isDark = theme === "dark";
+  const fallbackImages = getDefaultFallbackImages(isDark);
+  const randomIndex = Math.floor(Math.random() * fallbackImages.length);
+  return fallbackImages[randomIndex];
 };
 
 function App() {
-  const [prayer, setPrayer] = useState(
-    "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza.\n\nEn honor a Santa Teresa de Ávila,\nDoctora de la Iglesia, cuya fiesta celebramos hoy."
-  );
+  // Initial prayer text - includes St. Teresa reference only on her feast day
+  const getInitialPrayer = () => {
+    const today = new Date();
+    const isStTeresaDay = today.getMonth() === 9 && today.getDate() === 15; // October 15
+    
+    const basePrayer = "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza.";
+    
+    if (isStTeresaDay) {
+      return basePrayer + "\n\nEn honor a Santa Teresa de Ávila,\nDoctora de la Iglesia, cuya fiesta celebramos hoy.";
+    }
+    
+    return basePrayer;
+  };
+
+  const [prayer, setPrayer] = useState(getInitialPrayer());
   const [currentMystery, setcurrentMystery] = useState(getDefaultMystery);
   const [prayerImg, setPrayerImg] = useState(() =>
     getRandomUnusedMysteryImage(getDefaultMystery())
   );
   const [count, setCount] = useState(0);
 
-  // State for tracking current image index in array-based prayers
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [imageRotationTimer, setImageRotationTimer] = useState(null);
+  // State for tracking image rotation timer
+  const imageRotationTimerRef = useRef(null);
 
   // Interface visibility states for clean prayer mode
   const [showRosary, setShowRosary] = useState(true);
@@ -234,11 +248,12 @@ function App() {
     getLitanyData,
     nextLitanyVerse,
     prevLitanyVerse,
-    resetLitanyState,
     // Pressed beads tracking (NEW)
     pressedBeads,
     getPressedBeadCount,
     markBeadPressed,
+    // Mystery tracking (NEW)
+    areClosingPrayersUnlocked,
     // State management functions
     resetRosaryState,
   } = useRosaryState(RosarioPrayerBook, currentMystery);
@@ -341,40 +356,15 @@ function App() {
     }
   }, [showProgressBar]);
 
-  // Image rotation effect - cycle through array images every 12 seconds
+  // Image rotation effect - cycle through images every 45 seconds for contemplative prayer
   useEffect(() => {
     // Clear existing timer
-    if (imageRotationTimer) {
-      clearInterval(imageRotationTimer);
+    if (imageRotationTimerRef.current) {
+      clearInterval(imageRotationTimerRef.current);
     }
 
-    // Only start rotation if prayerImg is an object with array-based images
-    if (
-      prayerImg &&
-      typeof prayerImg === "object" &&
-      (Array.isArray(prayerImg.img) || Array.isArray(prayerImg.imgmo))
-    ) {
-      const timer = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => {
-          const theme = localStorage.getItem("theme");
-          const isDark = theme === "dark";
-          const imageArray =
-            isDark && Array.isArray(prayerImg.imgmo)
-              ? prayerImg.imgmo
-              : prayerImg.img;
-
-          if (Array.isArray(imageArray) && imageArray.length > 1) {
-            const nextIndex = (prevIndex + 1) % imageArray.length;
-            const selectedImage = imageArray[nextIndex];
-            setPrayerImg(selectedImage);
-            return nextIndex;
-          }
-          return prevIndex;
-        });
-      }, 12000); // 12 seconds
-
-      setImageRotationTimer(timer);
-    } else if (typeof prayerImg === "string") {
+    // Only rotate if prayerImg is string (fallback images) - prayers with images stay fixed
+    if (typeof prayerImg === "string") {
       // Handle fallback images - rotate through default images
       const timer = setInterval(() => {
         const theme = localStorage.getItem("theme");
@@ -383,15 +373,16 @@ function App() {
         const randomIndex = Math.floor(Math.random() * fallbackImages.length);
         const selectedImage = fallbackImages[randomIndex];
         setPrayerImg(selectedImage);
-      }, 12000); // 12 seconds
+      }, 45000); // 45 seconds - slower for contemplative prayer
 
-      setImageRotationTimer(timer);
+      imageRotationTimerRef.current = timer;
     }
 
     // Cleanup timer on unmount or when prayerImg changes
     return () => {
-      if (imageRotationTimer) {
-        clearInterval(imageRotationTimer);
+      if (imageRotationTimerRef.current) {
+        clearInterval(imageRotationTimerRef.current);
+        imageRotationTimerRef.current = null;
       }
     };
   }, [prayerImg]);
@@ -476,7 +467,6 @@ function App() {
           const prayerObj = result.prayerImg;
           const selectedImage = selectPrayerImage(prayerObj, isDark);
           setPrayerImg(selectedImage);
-          setCurrentImageIndex(0); // Reset image index for new prayer
         }
       }
     } else {
@@ -489,7 +479,6 @@ function App() {
         const prayerObj = result.prayerImg;
         const selectedImage = selectPrayerImage(prayerObj, isDark);
         setPrayerImg(selectedImage);
-        setCurrentImageIndex(0); // Reset image index for new prayer
       }
     }
   };
@@ -691,6 +680,7 @@ function App() {
               rosaryFriction={rosaryFriction}
               isInLitany={isInLitany}
               pressedBeads={pressedBeads}
+              areClosingPrayersUnlocked={areClosingPrayersUnlocked}
             />
           </div>
         )}

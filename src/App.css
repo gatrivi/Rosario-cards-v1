@@ -45,19 +45,40 @@
   height: 100vh;
   overflow: hidden;
   z-index: 0;
+  /* Ensure no purple flash - use dark background as fallback */
+  background: #0d0a1a;
 }
 
 .page-right img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transition: transform 0.3s ease-in-out;
+  /* Smooth crossfade on image change - slower for contemplative prayer */
+  transition: opacity 1.5s ease-in-out, transform 0.3s ease-in-out;
   transform: scale(1);
   filter: brightness(0.9) contrast(1.1);
+  /* Ensure image is always visible during transition */
+  opacity: 1;
 }
 
 .page-right img:hover {
   transform: scale(1.05);
+}
+
+/* Preload next image to prevent flash */
+.page-right::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+  z-index: -1;
 }
 
 img#logo {

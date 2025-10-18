@@ -55,6 +55,32 @@ export const useRosaryState = (prayers, currentMystery) => {
   // Track pressed beads in current session (for progress bar)
   const [pressedBeads, setPressedBeads] = useState(new Set());
 
+  // Mystery tracking - track which mysteries have been visited in this session
+  const [visitedMysteries, setVisitedMysteries] = useState(() => {
+    try {
+      const saved = localStorage.getItem("visitedMysteries");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch (error) {
+      console.warn("Failed to load visited mysteries:", error);
+      return new Set();
+    }
+  });
+
+  // Save visited mysteries to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "visitedMysteries",
+        JSON.stringify(Array.from(visitedMysteries))
+      );
+    } catch (error) {
+      console.warn("Failed to save visited mysteries:", error);
+    }
+  }, [visitedMysteries]);
+
+  // Check if closing prayers and litany are unlocked (5 mysteries visited)
+  const areClosingPrayersUnlocked = visitedMysteries.size >= 5;
+
   // Prayer visibility mode state
   const [prayerVisibilityMode, setPrayerVisibilityMode] = useState(() => {
     return localStorage.getItem("prayerVisibilityMode") || "full";
@@ -228,6 +254,27 @@ export const useRosaryState = (prayers, currentMystery) => {
 
       // Record bead press in prayer history for sound/visual evolution
       prayerHistory.recordBeadPress(prayerIndex, currentMystery);
+
+      // Track mystery visits - if this is a mystery prayer, add it to visited set
+      if (prayerId && prayerId.startsWith("M")) {
+        setVisitedMysteries((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(prayerId);
+          console.log(`📿 Mystery visited: ${prayerId} (${newSet.size}/5 mysteries)`);
+          
+          // Dispatch event if closing prayers just unlocked
+          if (newSet.size === 5 && prev.size === 4) {
+            console.log("🎉 Closing prayers and litany unlocked!");
+            window.dispatchEvent(
+              new CustomEvent("closingPrayersUnlocked", {
+                detail: { mysteriesCount: 5 },
+              })
+            );
+          }
+          
+          return newSet;
+        });
+      }
 
       // Check for rosary completion (last prayer is index 84)
       if (prayerIndex === 84) {
@@ -489,19 +536,33 @@ export const useRosaryState = (prayers, currentMystery) => {
   }, []);
 
   /**
+   * Reset visited mysteries (start new session)
+   */
+  const resetVisitedMysteries = useCallback(() => {
+    setVisitedMysteries(new Set());
+    try {
+      localStorage.removeItem("visitedMysteries");
+    } catch (error) {
+      console.warn("Failed to clear visited mysteries from localStorage:", error);
+    }
+  }, []);
+
+  /**
    * Reset rosary state (start fresh)
    */
   const resetRosaryState = useCallback(() => {
     setCurrentPrayerIndex(0);
     setHighlightedBead(0);
     resetLitanyState();
+    resetPressedBeads();
+    resetVisitedMysteries();
     // Clear localStorage
     try {
       localStorage.removeItem("rosaryState");
     } catch (error) {
       console.warn("Failed to clear rosary state from localStorage:", error);
     }
-  }, [resetLitanyState]);
+  }, [resetLitanyState, resetPressedBeads, resetVisitedMysteries]);
 
   // Check if we're currently in the litany and update state accordingly
   useEffect(() => {
@@ -550,6 +611,10 @@ export const useRosaryState = (prayers, currentMystery) => {
     markBeadPressed, // Function to mark a bead as pressed
     resetPressedBeads, // Function to reset pressed beads
     getPressedBeadCount, // Function to get count of pressed beads
+    // Mystery tracking (NEW)
+    visitedMysteries, // Set of visited mystery IDs
+    areClosingPrayersUnlocked, // Boolean - whether closing prayers are unlocked (5 mysteries visited)
+    resetVisitedMysteries, // Function to reset visited mysteries
     // State management functions
     resetRosaryState, // Function to reset entire rosary state
   };
