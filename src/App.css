@@ -98,10 +98,7 @@ button {
   border-radius: 12px;
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 2px solid var(--glass-border);
   outline: none;
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px);
   color: var(--text-color);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   position: relative;

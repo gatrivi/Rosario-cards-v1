@@ -13,7 +13,7 @@ class SoundEffects {
     this.audioContext = null;
     this.enabled = true;
     this.soundVariation = 0;
-    this.currentMystery = 'gozosos'; // Default mystery
+    this.currentMystery = "gozosos"; // Default mystery
 
     // Initialize AudioContext on first user interaction
     this.initAudioContext();
@@ -42,38 +42,38 @@ class SoundEffects {
       gozosos: {
         baseFrequency: 400, // Higher, more cheerful
         frequencyRange: 80, // Wide range for joy
-        waveform: 'sine', // Pure, joyful tone
+        waveform: "sine", // Pure, joyful tone
         volumeMultiplier: 1.0, // Standard volume
         durationMultiplier: 1.0, // Standard duration
-        description: 'Bright and joyful'
+        description: "Bright and joyful",
       },
       // Sorrowful Mysteries - Deep, solemn sounds
       dolorosos: {
         baseFrequency: 250, // Lower, more solemn
         frequencyRange: 50, // Narrower range for solemnity
-        waveform: 'triangle', // Softer, more contemplative
+        waveform: "triangle", // Softer, more contemplative
         volumeMultiplier: 0.8, // Quieter for reverence
         durationMultiplier: 1.2, // Longer for contemplation
-        description: 'Deep and contemplative'
+        description: "Deep and contemplative",
       },
       // Glorious Mysteries - Rich, majestic sounds
       gloriosos: {
         baseFrequency: 350, // Medium-high for majesty
         frequencyRange: 100, // Wide range for grandeur
-        waveform: 'sine', // Pure, majestic tone
+        waveform: "sine", // Pure, majestic tone
         volumeMultiplier: 1.1, // Slightly louder for glory
         durationMultiplier: 1.1, // Slightly longer for majesty
-        description: 'Rich and majestic'
+        description: "Rich and majestic",
       },
       // Luminous Mysteries - Bright, illuminating sounds
       luminosos: {
         baseFrequency: 500, // Highest for illumination
         frequencyRange: 120, // Widest range for brightness
-        waveform: 'sine', // Pure, illuminating tone
+        waveform: "sine", // Pure, illuminating tone
         volumeMultiplier: 1.2, // Brightest volume
         durationMultiplier: 0.9, // Shorter, more energetic
-        description: 'Bright and illuminating'
-      }
+        description: "Bright and illuminating",
+      },
     };
     return soundPalettes[mystery] || soundPalettes.gozosos;
   }
@@ -108,7 +108,9 @@ class SoundEffects {
       const gainNode = ctx.createGain();
 
       // Use mystery-specific frequency range
-      const baseFreq = palette.baseFrequency + this.soundVariation * (palette.frequencyRange / 4);
+      const baseFreq =
+        palette.baseFrequency +
+        this.soundVariation * (palette.frequencyRange / 4);
       oscillator.frequency.setValueAtTime(baseFreq, ctx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(
         baseFreq * 0.8,
@@ -118,10 +120,13 @@ class SoundEffects {
       // Use mystery-specific volume and duration
       const baseVolume = 0.12 * palette.volumeMultiplier;
       const duration = 0.08 * palette.durationMultiplier;
-      
+
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
       gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
 
       // Use mystery-specific waveform
       oscillator.type = palette.waveform;
@@ -172,13 +177,17 @@ class SoundEffects {
       // Use mystery-specific volume and duration
       const baseVolume = 0.15 * palette.volumeMultiplier;
       const duration = 0.12 * palette.durationMultiplier;
-      
+
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
       gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
 
       // Use mystery-specific waveform (triangle for softer end sound)
-      oscillator.type = palette.waveform === 'sine' ? 'triangle' : palette.waveform;
+      oscillator.type =
+        palette.waveform === "sine" ? "triangle" : palette.waveform;
 
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
@@ -217,9 +226,12 @@ class SoundEffects {
 
       // Use mystery-specific frequency ranges
       const variation = this.soundVariation * (palette.frequencyRange / 8);
-      
+
       // Gentle frequency sweep like bead collision
-      osc1.frequency.setValueAtTime(palette.baseFrequency * 0.9 + variation, ctx.currentTime);
+      osc1.frequency.setValueAtTime(
+        palette.baseFrequency * 0.9 + variation,
+        ctx.currentTime
+      );
       osc1.frequency.exponentialRampToValueAtTime(
         palette.baseFrequency * 1.3 + variation,
         ctx.currentTime + 0.06 * palette.durationMultiplier
@@ -229,7 +241,10 @@ class SoundEffects {
         ctx.currentTime + 0.15 * palette.durationMultiplier
       );
 
-      osc2.frequency.setValueAtTime(palette.baseFrequency * 1.1 + variation, ctx.currentTime);
+      osc2.frequency.setValueAtTime(
+        palette.baseFrequency * 1.1 + variation,
+        ctx.currentTime
+      );
       osc2.frequency.exponentialRampToValueAtTime(
         palette.baseFrequency * 1.5 + variation,
         ctx.currentTime + 0.06 * palette.durationMultiplier
@@ -242,10 +257,13 @@ class SoundEffects {
       // Use mystery-specific volume and duration
       const baseVolume = 0.18 * palette.volumeMultiplier;
       const duration = 0.15 * palette.durationMultiplier;
-      
+
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
       gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
 
       // Use mystery-specific waveform
       osc1.type = palette.waveform;
@@ -264,6 +282,136 @@ class SoundEffects {
       this.soundVariation = (this.soundVariation + 1) % 5;
     } catch (e) {
       console.warn("Error playing prayer change sound:", e);
+    }
+  }
+
+  /**
+   * Play chain prayer chime - soft chime when advancing within same bead
+   * Different from prayer change, indicates sub-prayer progression (Gloria → Fatima)
+   */
+  playChainPrayerChime() {
+    if (!this.enabled || !this.audioContext) return;
+
+    try {
+      const ctx = this.audioContext;
+
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      // Get mystery-specific sound characteristics
+      const palette = this.getMysterySoundPalette(this.currentMystery);
+
+      // Create gentle bell-like sound for chain prayer
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      // Higher frequency for lighter "continue on same bead" feeling
+      const baseFreq = palette.baseFrequency * 1.5;
+      osc1.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(
+        baseFreq * 0.95,
+        ctx.currentTime + 0.2 * palette.durationMultiplier
+      );
+
+      // Add harmonic for richer sound
+      osc2.frequency.setValueAtTime(baseFreq * 2, ctx.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(
+        baseFreq * 1.9,
+        ctx.currentTime + 0.2 * palette.durationMultiplier
+      );
+
+      // Soft, gentle volume
+      const baseVolume = 0.1 * palette.volumeMultiplier;
+      const duration = 0.2 * palette.durationMultiplier;
+
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
+
+      // Use sine for pure bell tone
+      osc1.type = "sine";
+      osc2.type = "sine";
+
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc1.start(ctx.currentTime);
+      osc2.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + duration);
+      osc2.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Error playing chain prayer chime:", e);
+    }
+  }
+
+  /**
+   * Play move-to-next-bead chime - distinctive chime when ready to move to next bead
+   * Lower pitch than chain prayer, signals completion of current bead's prayers
+   */
+  playMoveToNextBeadChime() {
+    if (!this.enabled || !this.audioContext) return;
+
+    try {
+      const ctx = this.audioContext;
+
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      // Get mystery-specific sound characteristics
+      const palette = this.getMysterySoundPalette(this.currentMystery);
+
+      // Create descending tone to signal "move on"
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      // Lower frequency for "completion" feeling
+      const baseFreq = palette.baseFrequency * 0.8;
+      osc1.frequency.setValueAtTime(baseFreq * 1.2, ctx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(
+        baseFreq,
+        ctx.currentTime + 0.25 * palette.durationMultiplier
+      );
+
+      // Second oscillator for richness
+      osc2.frequency.setValueAtTime(baseFreq * 1.5, ctx.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(
+        baseFreq * 1.25,
+        ctx.currentTime + 0.25 * palette.durationMultiplier
+      );
+
+      // Medium volume
+      const baseVolume = 0.14 * palette.volumeMultiplier;
+      const duration = 0.25 * palette.durationMultiplier;
+
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
+
+      // Use triangle for softer completion sound
+      osc1.type = palette.waveform === "sine" ? "triangle" : palette.waveform;
+      osc2.type = "sine";
+
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc1.start(ctx.currentTime);
+      osc2.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + duration);
+      osc2.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Error playing move to next bead chime:", e);
     }
   }
 

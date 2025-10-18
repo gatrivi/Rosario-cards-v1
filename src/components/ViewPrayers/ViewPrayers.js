@@ -62,6 +62,7 @@ const ViewPrayers = forwardRef(
 
     // Dynamic text positioning state
     const [textPushAmount, setTextPushAmount] = useState(0);
+    const [textHeightPercentage, setTextHeightPercentage] = useState(50);
     const [stainedGlassTransparent, setStainedGlassTransparent] = useState(
       () => {
         try {
@@ -187,21 +188,64 @@ const ViewPrayers = forwardRef(
       return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isInLitany, nextLitanyVerse, prevLitanyVerse, onToggleFocusMode]);
 
-    // Listen for bead drag position changes
+    // Listen for bead drag position changes (BIDIRECTIONAL)
     useEffect(() => {
       const handleBeadDragPosition = (event) => {
-        const { isDragging, pushAmount } = event.detail;
+        const {
+          isDragging,
+          pushAmount,
+          textHeightPercentage: newTextHeight,
+          beadPositionRatio,
+          scrollDirection,
+        } = event.detail;
 
         if (isDragging) {
           setTextPushAmount(pushAmount);
 
-          // Play subtle sound effect when pushing text
-          if (pushAmount > 0) {
+          // Update text height if provided (analog controller feature)
+          if (newTextHeight !== undefined) {
+            setTextHeightPercentage(newTextHeight);
+          }
+
+          // Bidirectional auto-scroll based on bead position
+          if (scrollContainerRef.current && scrollDirection) {
+            const maxScroll =
+              scrollContainerRef.current.scrollHeight -
+              scrollContainerRef.current.clientHeight;
+
+            if (scrollDirection === "down" && beadPositionRatio > 0.55) {
+              // Bead in bottom 45% - scroll text downward
+              const scrollRatio = (beadPositionRatio - 0.55) / 0.45; // 0 to 1
+              const targetScroll = maxScroll * scrollRatio;
+
+              scrollContainerRef.current.scrollTo({
+                top: targetScroll,
+                behavior: "auto", // Immediate response during drag
+              });
+            } else if (scrollDirection === "up" && beadPositionRatio < 0.45) {
+              // Bead in top 45% - scroll text upward
+              const scrollRatio = (0.45 - beadPositionRatio) / 0.45; // 0 to 1
+              const targetScroll = maxScroll * (1 - scrollRatio);
+
+              scrollContainerRef.current.scrollTo({
+                top: targetScroll,
+                behavior: "auto", // Immediate response during drag
+              });
+            }
+            // Neutral zone (45-55%) - no scrolling change
+          }
+
+          // Play subtle sound effect when scrolling
+          if (pushAmount > 0 || scrollDirection === "up") {
             soundEffectsRef.current.playScrollSound();
           }
         } else {
           // Reset position when dragging ends
           setTextPushAmount(0);
+          setTextHeightPercentage(50); // Reset to default 50%
+
+          // Keep scroll position on release (don't reset to top)
+          // User can navigate naturally by dragging bead up/down
         }
       };
 
@@ -209,6 +253,46 @@ const ViewPrayers = forwardRef(
       return () =>
         window.removeEventListener("beadDragPosition", handleBeadDragPosition);
     }, []);
+
+    // Listen for repeated bead touches (3rd+ touch) to scroll through text
+    useEffect(() => {
+      const handleBeadRepeatTouch = (event) => {
+        const { touchCount } = event.detail;
+
+        if (!scrollContainerRef.current) return;
+
+        const container = scrollContainerRef.current;
+        const scrollStep = container.clientHeight * 0.5; // Scroll half a screen
+        const currentScroll = container.scrollTop;
+        const maxScroll = container.scrollHeight - container.clientHeight;
+
+        if (currentScroll < maxScroll) {
+          // Still have content to scroll
+          const newScroll = Math.min(currentScroll + scrollStep, maxScroll);
+          container.scrollTo({
+            top: newScroll,
+            behavior: "smooth",
+          });
+
+          soundEffectsRef.current.playScrollSound();
+        } else {
+          // At bottom, can't scroll more - signal next bead should be active
+          // Dispatch event for rosary to handle
+          window.dispatchEvent(
+            new CustomEvent("contentExhausted", {
+              detail: { prayerIndex: currentPrayerIndex },
+            })
+          );
+
+          // Play faint chime
+          soundEffectsRef.current.playEndOfScrollSound();
+        }
+      };
+
+      window.addEventListener("beadRepeatTouch", handleBeadRepeatTouch);
+      return () =>
+        window.removeEventListener("beadRepeatTouch", handleBeadRepeatTouch);
+    }, [currentPrayerIndex]);
 
     // Update sound system when mystery changes
     useEffect(() => {
@@ -1246,10 +1330,10 @@ const ViewPrayers = forwardRef(
             transform: `translateX(-50%) translateY(${
               -textPushAmount * 100
             }px) ${isNavigating ? "scale(0.98)" : "scale(1)"}`,
-            transition: "transform 0.1s ease-out",
+            transition: "transform 0.1s ease-out, max-height 0.2s ease",
             width: window.innerWidth < 768 ? "95%" : "80%",
             maxWidth: "900px",
-            maxHeight: "calc(100vh - 120px)", // Leave space for footer
+            maxHeight: `${textHeightPercentage}vh`, // Dynamic height based on bead position
             overflow: "auto",
             padding: window.innerWidth < 768 ? "16px" : "24px",
             fontSize: `calc(${

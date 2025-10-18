@@ -181,6 +181,15 @@ function App() {
     }
   });
 
+  // Rosary friction state - controls air resistance for coasting behavior
+  const [rosaryFriction, setRosaryFriction] = useState(() => {
+    try {
+      return parseFloat(localStorage.getItem("rosaryFriction")) || 0.05;
+    } catch (error) {
+      return 0.05;
+    }
+  });
+
   // Listen for left-handed mode changes from toggle component
   useEffect(() => {
     const handleLeftHandedModeChange = (event) => {
@@ -191,6 +200,20 @@ function App() {
       window.removeEventListener(
         "leftHandedModeChange",
         handleLeftHandedModeChange
+      );
+    };
+  }, []);
+
+  // Listen for friction changes from settings
+  useEffect(() => {
+    const handleRosaryFrictionChange = (event) => {
+      setRosaryFriction(event.detail.friction);
+    };
+    window.addEventListener("rosaryFrictionChange", handleRosaryFrictionChange);
+    return () => {
+      window.removeEventListener(
+        "rosaryFrictionChange",
+        handleRosaryFrictionChange
       );
     };
   }, []);
@@ -209,6 +232,9 @@ function App() {
     nextLitanyVerse,
     prevLitanyVerse,
     resetLitanyState,
+    // Pressed beads tracking (NEW)
+    getPressedBeadCount,
+    markBeadPressed,
     // State management functions
     resetRosaryState,
   } = useRosaryState(RosarioPrayerBook, currentMystery);
@@ -236,6 +262,36 @@ function App() {
       window.removeEventListener("prayerScrollPrev", handlePrayerScrollPrev);
     };
   }, [currentPrayerIndex, navigateToIndex, getRosarySequence]);
+
+  // Listen for heart bead press (litany navigation)
+  useEffect(() => {
+    const handleHeartBeadPress = () => {
+      if (isInLitany) {
+        // Advance to next litany verse
+        const moved = nextLitanyVerse();
+        if (!moved) {
+          // At end of litany, move to next prayer
+          const sequence = getRosarySequence();
+          if (currentPrayerIndex < sequence.length - 1) {
+            navigateToIndex(currentPrayerIndex + 1);
+          }
+        }
+      }
+      // If not in litany, heart bead does nothing (decorative)
+    };
+
+    window.addEventListener("heartBeadPressed", handleHeartBeadPress);
+
+    return () => {
+      window.removeEventListener("heartBeadPressed", handleHeartBeadPress);
+    };
+  }, [
+    isInLitany,
+    nextLitanyVerse,
+    currentPrayerIndex,
+    navigateToIndex,
+    getRosarySequence,
+  ]);
 
   // Focus mode handlers
   const toggleFocusMode = useCallback(() => {
@@ -400,6 +456,9 @@ function App() {
 
   // Handle bead click from rosary
   const onBeadClick = (prayerIndex, prayerId) => {
+    // Mark this bead as pressed for progress tracking
+    markBeadPressed(prayerIndex);
+
     // If clicking the litany bead and we're already in litany, advance through verses
     if (prayerId === "LL" && isInLitany) {
       const moved = nextLitanyVerse();
@@ -476,6 +535,98 @@ function App() {
     console.log("Fade state changed:", { isFading, fadeIntensity });
   }, []);
 
+  // Listen for opacity changes from settings
+  useEffect(() => {
+    const handlePrayerTextOpacity = (event) => {
+      const prayerText = document.querySelector(".page-left");
+      if (prayerText) {
+        prayerText.style.opacity = event.detail.opacity;
+      }
+    };
+
+    const handleRosaryOpacity = (event) => {
+      const rosary = document.querySelector(".interactive-rosary");
+      if (rosary) {
+        // Ensure minimum 20% opacity so beads remain visible and clickable
+        rosary.style.opacity = Math.max(0.2, event.detail.opacity);
+      }
+    };
+
+    // Handle bead drag - make rosary semi-transparent so prayer text is readable
+    const handleBeadDragStart = () => {
+      const rosary = document.querySelector(".interactive-rosary");
+      if (rosary) {
+        rosary.style.transition = "opacity 0.2s ease";
+        rosary.style.opacity = "0.5"; // Semi-transparent while dragging (was 0.25 - too transparent)
+      }
+    };
+
+    // Handle bead drag end - restore configured opacity
+    const handleBeadDragEnd = () => {
+      const rosary = document.querySelector(".interactive-rosary");
+      if (rosary) {
+        const configuredOpacity =
+          parseFloat(localStorage.getItem("rosaryOpacity")) || 1.0;
+        rosary.style.transition = "opacity 0.3s ease";
+        // Ensure minimum 20% opacity so beads remain visible and clickable
+        rosary.style.opacity = Math.max(0.2, configuredOpacity);
+      }
+
+      // Restore navigation buttons opacity
+      const navButtons = document.querySelector(".segmented-bar");
+      if (navButtons) {
+        navButtons.style.transition = "opacity 0.3s ease";
+        navButtons.style.opacity = "1";
+      }
+    };
+
+    // Handle navigation button opacity during bead drag
+    const handleBeadDragPosition = (event) => {
+      const { navButtonOpacity } = event.detail;
+      if (navButtonOpacity !== undefined) {
+        const navButtons = document.querySelector(".segmented-bar");
+        if (navButtons) {
+          navButtons.style.transition = "opacity 0.1s ease";
+          navButtons.style.opacity = navButtonOpacity;
+        }
+      }
+    };
+
+    window.addEventListener("prayerTextOpacityChange", handlePrayerTextOpacity);
+    window.addEventListener("rosaryOpacityChange", handleRosaryOpacity);
+    window.addEventListener("beadDragStart", handleBeadDragStart);
+    window.addEventListener("beadDragEnd", handleBeadDragEnd);
+    window.addEventListener("beadDragPosition", handleBeadDragPosition);
+
+    // Set initial opacity from localStorage
+    const initialPrayerTextOpacity =
+      parseFloat(localStorage.getItem("prayerTextOpacity")) || 1.0;
+    const initialRosaryOpacity =
+      parseFloat(localStorage.getItem("rosaryOpacity")) || 1.0;
+
+    const prayerText = document.querySelector(".page-left");
+    const rosary = document.querySelector(".interactive-rosary");
+
+    if (prayerText) {
+      prayerText.style.opacity = initialPrayerTextOpacity;
+    }
+    if (rosary) {
+      // Ensure minimum 20% opacity so beads remain visible and clickable
+      rosary.style.opacity = Math.max(0.2, initialRosaryOpacity);
+    }
+
+    return () => {
+      window.removeEventListener(
+        "prayerTextOpacityChange",
+        handlePrayerTextOpacity
+      );
+      window.removeEventListener("rosaryOpacityChange", handleRosaryOpacity);
+      window.removeEventListener("beadDragStart", handleBeadDragStart);
+      window.removeEventListener("beadDragEnd", handleBeadDragEnd);
+      window.removeEventListener("beadDragPosition", handleBeadDragPosition);
+    };
+  }, []);
+
   return (
     <div className="app">
       {/* Settings Panel - Consolidated controls */}
@@ -500,11 +651,11 @@ function App() {
         onToggleDeveloperMode={toggleDeveloperMode}
         showProgressBar={showProgressBar}
         onToggleProgressBar={toggleProgressBar}
-      />
-
+      />{" "}
+      {/* Help Screen */}
+      <HelpScreen />
       {/* Corner fade controls */}
       <CornerFadeControls onFadeChange={handleFadeChange} />
-
       {/* Main content area with stained glass design */}
       <div
         style={{
@@ -533,6 +684,8 @@ function App() {
               onBeadClick={onBeadClick}
               prayers={RosarioPrayerBook}
               className="rosary-container"
+              rosaryFriction={rosaryFriction}
+              isInLitany={isInLitany}
             />
           </div>
         )}
@@ -558,7 +711,6 @@ function App() {
           prevLitanyVerse={prevLitanyVerse}
         />
       </div>
-
       {/* Prayer Buttons with stained glass styling */}
       <PrayerButtons
         prayers={RosarioPrayerBook}
@@ -578,16 +730,14 @@ function App() {
         nextLitanyVerse={nextLitanyVerse}
         prevLitanyVerse={prevLitanyVerse}
       />
-
       {/* Rosary Progress Bar - hidden when in litany */}
       <RosaryProgressBar
         isVisible={showProgressBar && !isInLitany}
         onToggle={toggleProgressBar}
         currentPrayerTitle={getCurrentPrayerTitle()}
+        pressedBeadCount={getPressedBeadCount()}
+        totalBeads={60}
       />
-
-      {/* Help Screen */}
-      <HelpScreen />
     </div>
   );
 }

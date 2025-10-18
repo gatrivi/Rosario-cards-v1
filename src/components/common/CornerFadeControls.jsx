@@ -18,49 +18,63 @@ const CornerFadeControls = ({
   onFadeChange = () => {}, // Callback when fade state changes
 }) => {
   const [isFading, setIsFading] = useState(false);
-  const [fadeIntensity, setFadeIntensity] = useState(1); // 1 = normal, 0.1 = faded
+  const [originalOpacities, setOriginalOpacities] = useState({
+    text: 1,
+    rosary: 1,
+  });
 
   // Handle fade state changes
   useEffect(() => {
-    onFadeChange(isFading, fadeIntensity);
-  }, [isFading, fadeIntensity, onFadeChange]);
+    onFadeChange(isFading, isFading ? 0.1 : 1);
+  }, [isFading, onFadeChange]);
 
-  // Apply fade effect to prayer text and rosary
-  useEffect(() => {
+  const handleStart = () => {
     const prayerText = document.querySelector(".page-left");
     const rosary = document.querySelector(".interactive-rosary");
 
+    // Store current opacities
+    const currentTextOpacity = prayerText
+      ? parseFloat(window.getComputedStyle(prayerText).opacity) || 1
+      : 1;
+    const currentRosaryOpacity = rosary
+      ? parseFloat(window.getComputedStyle(rosary).opacity) || 1
+      : 1;
+
+    setOriginalOpacities({
+      text: currentTextOpacity,
+      rosary: currentRosaryOpacity,
+    });
+
+    // Apply fade
     if (prayerText) {
-      prayerText.style.opacity = fadeIntensity;
       prayerText.style.transition = "opacity 0.3s ease";
+      prayerText.style.opacity = "0.1";
     }
 
     if (rosary) {
-      rosary.style.opacity = fadeIntensity;
       rosary.style.transition = "opacity 0.3s ease";
+      rosary.style.opacity = "0.1";
     }
 
-    // Cleanup function to restore opacity
-    return () => {
-      if (prayerText) {
-        prayerText.style.opacity = "";
-        prayerText.style.transition = "";
-      }
-      if (rosary) {
-        rosary.style.opacity = "";
-        rosary.style.transition = "";
-      }
-    };
-  }, [fadeIntensity]);
-
-  const handleStart = () => {
     setIsFading(true);
-    setFadeIntensity(0.1);
   };
 
   const handleEnd = () => {
+    const prayerText = document.querySelector(".page-left");
+    const rosary = document.querySelector(".interactive-rosary");
+
+    // Restore original opacities
+    if (prayerText) {
+      prayerText.style.transition = "opacity 0.3s ease";
+      prayerText.style.opacity = originalOpacities.text;
+    }
+
+    if (rosary) {
+      rosary.style.transition = "opacity 0.3s ease";
+      rosary.style.opacity = originalOpacities.rosary;
+    }
+
     setIsFading(false);
-    setFadeIntensity(1);
   };
 
   return (
@@ -114,4 +128,3 @@ const CornerFadeControls = ({
 };
 
 export default CornerFadeControls;
-

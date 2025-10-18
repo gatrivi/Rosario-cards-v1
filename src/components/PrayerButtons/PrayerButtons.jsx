@@ -24,6 +24,7 @@ function PrayerButtons({
   const [subView, setSubView] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const touchTimer = useRef(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   // Helper function to get prayer object by ID
   const getPrayerById = useCallback(
@@ -265,6 +266,48 @@ function PrayerButtons({
     handlePrayerAndCount,
   ]);
 
+  // Listen for toggle navigation buttons event
+  useEffect(() => {
+    const handleToggleNavigation = (event) => {
+      const { action } = event.detail;
+      if (action === "hide") {
+        setIsVisible(false);
+      } else if (action === "show") {
+        setIsVisible(true);
+      }
+    };
+
+    window.addEventListener("toggleNavigationButtons", handleToggleNavigation);
+
+    return () => {
+      window.removeEventListener(
+        "toggleNavigationButtons",
+        handleToggleNavigation
+      );
+    };
+  }, []);
+
+  // Listen for taps on bottom edge of screen to show navigation
+  useEffect(() => {
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const screenHeight = window.innerHeight;
+
+        // If tap is in bottom 10% of screen, show navigation
+        if (touch.clientY > screenHeight * 0.9) {
+          setIsVisible(true);
+        }
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, []);
+
   // Touch handlers for mobile tooltips
   const handleTouchStart = (buttonKey) => {
     if (touchTimer.current) clearTimeout(touchTimer.current);
@@ -327,7 +370,15 @@ function PrayerButtons({
     totalPrayers > 0 ? ((currentPrayerIndex + 1) / totalPrayers) * 100 : 0;
 
   return (
-    <div className="segmented-bar">
+    <div
+      className="segmented-bar"
+      style={{
+        transform: isVisible
+          ? "translateY(0)"
+          : "translateY(calc(100% + 20px))",
+        transition: "transform 0.3s ease-in-out",
+      }}
+    >
       <div className="segments-container">
         {/* Progress bar row */}
         <div className="progress-row">

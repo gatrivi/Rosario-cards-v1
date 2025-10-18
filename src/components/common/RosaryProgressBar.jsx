@@ -6,7 +6,8 @@ import "./RosaryProgressBar.css";
  * Rosary Progress Bar Component
  *
  * Displays a progress bar at the top of the screen showing:
- * - Current tier and progress towards next tier
+ * - Current session bead progress (beads pressed / 60 total beads)
+ * - Current tier and progress towards next tier (based on rosary completions)
  * - Daily average rosaries completed
  * - Days remaining in current 14-day period
  * - Toggleable via settings
@@ -16,6 +17,8 @@ const RosaryProgressBar = ({
   isVisible = true,
   onToggle,
   currentPrayerTitle,
+  pressedBeadCount = 0, // NEW: Track pressed beads in current session
+  totalBeads = 60, // Total beads in a rosary (excluding chain prayers)
 }) => {
   const [stats, setStats] = useState(null);
 
@@ -59,6 +62,10 @@ const RosaryProgressBar = ({
     totalCompletions,
   } = stats;
 
+  // Calculate bead progress for current session
+  const beadProgress =
+    totalBeads > 0 ? (pressedBeadCount / totalBeads) * 100 : 0;
+
   // Determine colors and text based on current tier
   const getBarColor = () => {
     if (currentTier) {
@@ -90,8 +97,17 @@ const RosaryProgressBar = ({
   return (
     <div className={`rosary-progress-bar ${className}`}>
       <div className="progress-container">
-        {/* Tier Title and Current Prayer */}
+        {/* Current Session Bead Progress */}
         <div className="tier-title">
+          <span
+            style={{
+              fontSize: "16px",
+              fontWeight: "bold",
+              marginRight: "12px",
+            }}
+          >
+            Beads: {pressedBeadCount}/{totalBeads} ({Math.round(beadProgress)}%)
+          </span>
           {currentPrayerTitle && (
             <span
               style={{ fontSize: "14px", opacity: 0.8, marginRight: "12px" }}
@@ -99,19 +115,27 @@ const RosaryProgressBar = ({
               {currentPrayerTitle}
             </span>
           )}
-          {getTierText()}
         </div>
 
-        {/* Progress Bar */}
+        {/* Bead Progress Bar (current session) */}
         <div className="progress-bar-wrapper">
           <div
             className="progress-bar"
             style={{
-              width: `${Math.max(5, progressToNextTier)}%`,
+              width: `${Math.max(5, beadProgress)}%`,
               backgroundColor: getBarColor(),
+              transition: "width 0.3s ease",
             }}
           />
           <div className="progress-bar-background" />
+        </div>
+
+        {/* Tier Progress (rosary completions) */}
+        <div
+          className="tier-title"
+          style={{ fontSize: "12px", marginTop: "4px", opacity: 0.9 }}
+        >
+          {getTierText()}
         </div>
 
         {/* Stats Text */}

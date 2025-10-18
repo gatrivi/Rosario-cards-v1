@@ -48,6 +48,12 @@ export const useRosaryState = (prayers, currentMystery) => {
     initialState.prayerIndex
   );
 
+  // Chain prayer sub-index state (for multi-prayer beads like Gloria → Fatima)
+  const [chainPrayerSubIndex, setChainPrayerSubIndex] = useState(0);
+
+  // Track pressed beads in current session (for progress bar)
+  const [pressedBeads, setPressedBeads] = useState(new Set());
+
   // Prayer visibility mode state
   const [prayerVisibilityMode, setPrayerVisibilityMode] = useState(() => {
     return localStorage.getItem("prayerVisibilityMode") || "full";
@@ -303,13 +309,84 @@ export const useRosaryState = (prayers, currentMystery) => {
   }, [currentPrayerIndex, currentMystery, prayers, getRosarySequence]);
 
   /**
+   * Get chain prayers for a given prayer index
+   * Returns array of prayer indices that should be accessed by re-pressing same bead
+   * @param {number} prayerIndex - Index of the prayer to check
+   * @returns {array} Array of chain prayer indices (empty if none)
+   */
+  const getChainPrayers = useCallback(
+    (prayerIndex) => {
+      const rosarySequence = getRosarySequence();
+      const prayerId = rosarySequence[prayerIndex];
+
+      // Chain prayers are typically Gloria (G) and Fatima (F) after 10th Hail Mary
+      // They follow each decade and are on the "chain" between beads
+
+      // Check if this is the last Hail Mary of a decade (prayer before Gloria)
+      // Pattern: 10th A (Hail Mary) → G (Gloria) → F (Fatima)
+      if (prayerId === "A" && prayerIndex < rosarySequence.length - 2) {
+        const nextPrayer = rosarySequence[prayerIndex + 1];
+        const nextNextPrayer = rosarySequence[prayerIndex + 2];
+        if (nextPrayer === "G" && nextNextPrayer === "F") {
+          return [prayerIndex + 1, prayerIndex + 2]; // Return indices of Gloria and Fatima
+        }
+      }
+
+      // Check if this is a mystery lone bead (mystery → Our Father pattern)
+      // Pattern: M (Mystery) → P (Our Father)
+      if (
+        prayerId &&
+        prayerId.startsWith("M") &&
+        prayerIndex < rosarySequence.length - 1
+      ) {
+        const nextPrayer = rosarySequence[prayerIndex + 1];
+        if (nextPrayer === "P") {
+          return [prayerIndex + 1]; // Return index of Our Father
+        }
+      }
+
+      return [];
+    },
+    [getRosarySequence]
+  );
+
+  /**
+   * Mark a bead as pressed (for progress tracking)
+   * @param {number} prayerIndex - Index of the pressed bead
+   */
+  const markBeadPressed = useCallback((prayerIndex) => {
+    setPressedBeads((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(prayerIndex);
+      return newSet;
+    });
+  }, []);
+
+  /**
+   * Reset pressed beads (for new rosary session)
+   */
+  const resetPressedBeads = useCallback(() => {
+    setPressedBeads(new Set());
+  }, []);
+
+  /**
+   * Get count of pressed beads (excluding chain prayers)
+   * @returns {number} Number of unique beads pressed
+   */
+  const getPressedBeadCount = useCallback(() => {
+    return pressedBeads.size;
+  }, [pressedBeads]);
+
+  /**
    * Reset rosary state when mystery type changes
    * This effect ensures the rosary starts from the beginning when switching mysteries
    */
   useEffect(() => {
     setCurrentPrayerIndex(0);
     setHighlightedBead(0);
-  }, [currentMystery]);
+    setChainPrayerSubIndex(0);
+    resetPressedBeads();
+  }, [currentMystery, resetPressedBeads]);
 
   /**
    * Navigate to a specific index in the rosary sequence
@@ -460,6 +537,15 @@ export const useRosaryState = (prayers, currentMystery) => {
     nextLitanyVerse, // Function to go to next litany verse
     prevLitanyVerse, // Function to go to previous litany verse
     resetLitanyState, // Function to reset litany state
+    // Chain prayer functions (NEW)
+    chainPrayerSubIndex, // Current sub-index within chain prayers
+    setChainPrayerSubIndex, // Function to set chain prayer sub-index
+    getChainPrayers, // Function to get chain prayers for a bead
+    // Pressed beads tracking (NEW)
+    pressedBeads, // Set of pressed bead indices
+    markBeadPressed, // Function to mark a bead as pressed
+    resetPressedBeads, // Function to reset pressed beads
+    getPressedBeadCount, // Function to get count of pressed beads
     // State management functions
     resetRosaryState, // Function to reset entire rosary state
   };
