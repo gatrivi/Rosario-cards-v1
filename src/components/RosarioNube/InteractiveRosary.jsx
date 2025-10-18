@@ -21,6 +21,7 @@ const InteractiveRosary = ({
   className = "",
   rosaryFriction = 0.05, // Air resistance - controls coasting time
   isInLitany = false, // Whether currently in litany mode (for heart bead visual)
+  pressedBeads = new Set(), // Set of pressed bead indices for visual feedback
 }) => {
   const sceneRef = useRef(null);
   const matterInstance = useRef(null);
@@ -1387,6 +1388,51 @@ const InteractiveRosary = ({
           );
           context.stroke();
           context.globalAlpha = 1; // Reset alpha
+        }
+
+        // NEW: Silver aura for beads that have been pressed (recited)
+        if (bead.prayerIndex !== undefined && pressedBeads.has(bead.prayerIndex)) {
+          context.strokeStyle = "rgba(192, 192, 192, 0.5)"; // Soft silver
+          context.lineWidth = 2;
+          context.shadowColor = "rgba(192, 192, 192, 0.6)";
+          context.shadowBlur = 8;
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size + 2,
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+          context.shadowBlur = 0; // Reset shadow
+        }
+
+        // NEW: Gentle glow for next bead to press
+        const rosarySequence = getRosarySequenceRef.current();
+        const nextBeadIndex = currentPrayerIndexRef.current + 1;
+        if (
+          bead.prayerIndex === nextBeadIndex &&
+          nextBeadIndex < rosarySequence.length
+        ) {
+          // Gentle pulsing glow
+          const pulseAlpha = Math.abs(Math.sin(Date.now() / 800)) * 0.3 + 0.3; // 0.3 to 0.6 (gentle)
+          const pulseSize = Math.abs(Math.sin(Date.now() / 800)) * 1.5; // 0 to 1.5px
+          
+          context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha})`; // Gold glow
+          context.lineWidth = 3;
+          context.shadowColor = `rgba(255, 215, 0, ${pulseAlpha})`;
+          context.shadowBlur = 12 + pulseSize * 2;
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size + 4 + pulseSize,
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+          context.shadowBlur = 0; // Reset shadow
         }
 
         // Highlight current prayer bead (always shown)

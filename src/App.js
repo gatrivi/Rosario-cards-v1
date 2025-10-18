@@ -233,6 +233,7 @@ function App() {
     prevLitanyVerse,
     resetLitanyState,
     // Pressed beads tracking (NEW)
+    pressedBeads,
     getPressedBeadCount,
     markBeadPressed,
     // State management functions
@@ -686,6 +687,7 @@ function App() {
               className="rosary-container"
               rosaryFriction={rosaryFriction}
               isInLitany={isInLitany}
+              pressedBeads={pressedBeads}
             />
           </div>
         )}
