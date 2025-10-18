@@ -941,9 +941,9 @@ const InteractiveRosary = ({
         (b) => b.id === clickedBody.id
       );
 
-      if (!clickedBead || clickedBead.prayerIndex === undefined) return;
+      if (!clickedBead) return;
 
-      // HEART BEAD LITANY NAVIGATION
+      // HEART BEAD LITANY NAVIGATION (check before prayerIndex check)
       if (clickedBead.isHeartMedal) {
         console.log(`❤️ Heart bead touched`);
 
@@ -958,6 +958,9 @@ const InteractiveRosary = ({
         soundEffects.playChainPrayerChime();
         return; // Don't process as normal bead
       }
+
+      // Now check for prayerIndex (heart bead doesn't have one)
+      if (clickedBead.prayerIndex === undefined) return;
 
       const now = Date.now();
       const beadId = clickedBead.id;
