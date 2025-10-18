@@ -728,7 +728,7 @@ const InteractiveRosary = ({
     crossPositions.forEach((pos) => {
       const part = Matter.Bodies.rectangle(pos.x, pos.y, cbs, cbs, {
         crossNumber: pos.num,
-        render: { fillStyle: colors.cross },
+        render: { fillStyle: colors.beads }, // Match bead color for consistency
       });
       crossParts.push(part);
     });
@@ -750,12 +750,12 @@ const InteractiveRosary = ({
     // This chain has AC prayer (index 1) - LONG chain around lone bead
     const crossToTailLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
 
-    // Calculate proper pole connection point on cross (left edge of leftmost block)
-    // Connect to the outermost side of cross square #1 (leftmost square)
+    // Calculate proper pole connection point on cross BOTTOM (like a real rosary!)
+    // Connect to the BOTTOM side (south edge) of cross square #6 (bottom square)
     const crossPoleOffset = {
-      // Start with vector to center of square #1, then move left by half a square's width
-      x: crossParts[0].position.x - crossBody.position.x - cbs / 2,
-      y: crossParts[0].position.y - crossBody.position.y,
+      // Start with vector to center of square #6, then move DOWN by half a square's height
+      x: crossParts[5].position.x - crossBody.position.x, // Square #6 is at index 5
+      y: crossParts[5].position.y - crossBody.position.y + cbs / 2, // Move to bottom edge
     };
 
     constraints.push(
@@ -1316,8 +1316,8 @@ const InteractiveRosary = ({
 
             context.restore();
 
-            // Draw gold border around medal
-            context.strokeStyle = colors.highlight;
+            // Draw border around medal (matches bead color)
+            context.strokeStyle = colors.beads;
             context.lineWidth = 2;
             context.beginPath();
             context.arc(
