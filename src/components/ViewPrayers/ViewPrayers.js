@@ -1141,54 +1141,6 @@ const ViewPrayers = forwardRef(
           }}
         />
 
-        {/* Stained Glass Transparency Toggle */}
-        <div
-          style={{
-            position: "absolute",
-            top: "20px",
-            right: "20px",
-            zIndex: 15,
-            pointerEvents: "auto",
-          }}
-        >
-          <button
-            onClick={() => setStainedGlassTransparent(!stainedGlassTransparent)}
-            style={{
-              background: "rgba(212, 175, 55, 0.4)",
-              backdropFilter: "blur(8px)",
-              borderRadius: "50%",
-              width: "50px",
-              height: "50px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "20px",
-              color: "var(--catholic-gold)",
-              boxShadow: "0 6px 20px rgba(0, 0, 0, 0.4)",
-              border: "3px solid rgba(212, 175, 55, 0.6)",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.1)";
-              e.target.style.background = "rgba(212, 175, 55, 0.6)";
-              e.target.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.6)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.background = "rgba(212, 175, 55, 0.4)";
-              e.target.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.4)";
-            }}
-            title={
-              stainedGlassTransparent
-                ? "Show stained glass overlay"
-                : "Hide stained glass overlay"
-            }
-          >
-            {stainedGlassTransparent ? "🔍" : "🪟"}
-          </button>
-        </div>
-
         {/* Navigation edge indicators - only show when showLargeNavButtons is true */}
         {showLargeNavButtons && (
           <>
