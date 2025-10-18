@@ -19,6 +19,8 @@ const RosaryProgressBar = ({
   currentPrayerTitle,
   pressedBeadCount = 0, // NEW: Track pressed beads in current session
   totalBeads = 60, // Total beads in a rosary (excluding chain prayers)
+  showNavigation = false, // Navigation bar visibility
+  onToggleNavigation, // Navigation bar toggle callback
 }) => {
   const [stats, setStats] = useState(null);
 
@@ -144,6 +146,40 @@ const RosaryProgressBar = ({
           <span className="days-remaining">{daysRemaining} days left</span>
           <span className="total-completions">{totalCompletions} total</span>
         </div>
+
+        {/* Navigation Toggle Button */}
+        {onToggleNavigation && (
+          <button
+            className="nav-toggle-button"
+            onClick={onToggleNavigation}
+            title={showNavigation ? "Hide navigation buttons" : "Show navigation buttons"}
+            style={{
+              position: "absolute",
+              right: "45px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              border: "2px solid rgba(212, 175, 55, 0.6)",
+              background: showNavigation 
+                ? "rgba(212, 175, 55, 0.3)" 
+                : "rgba(0, 0, 0, 0.3)",
+              color: "rgba(212, 175, 55, 0.9)",
+              fontSize: "14px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.3s ease",
+              backdropFilter: "blur(4px)",
+              zIndex: 100,
+            }}
+          >
+            {showNavigation ? "🔽" : "🔼"}
+          </button>
+        )}
 
         {/* Close Button */}
         <button

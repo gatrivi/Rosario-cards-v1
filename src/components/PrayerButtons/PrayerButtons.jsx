@@ -17,6 +17,8 @@ function PrayerButtons({
   isInLitany = false,
   nextLitanyVerse = () => false,
   prevLitanyVerse = () => false,
+  // Navigation bar visibility control
+  showNavigation = false,
 }) {
   // Estados para la botonera segmentada
   const [activeSection, setActiveSection] = useState("none");
@@ -24,7 +26,12 @@ function PrayerButtons({
   const [subView, setSubView] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const touchTimer = useRef(null);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(showNavigation);
+
+  // Update visibility when showNavigation prop changes
+  useEffect(() => {
+    setIsVisible(showNavigation);
+  }, [showNavigation]);
 
   // Helper function to get prayer object by ID
   const getPrayerById = useCallback(

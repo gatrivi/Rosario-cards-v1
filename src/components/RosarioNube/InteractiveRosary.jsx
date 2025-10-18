@@ -1211,55 +1211,70 @@ const InteractiveRosary = ({
       matterInstance.current?.allBeads.forEach((bead) => {
         // Handle composite cross body separately
         if (bead.isCrossComposite) {
-          bead.crossParts.forEach((part) => {
-            // Show completed prayers with faint outline FIRST (behind the cross)
-            if (bead.prayerIndex < currentPrayerIndexRef.current) {
-              context.strokeStyle = colors.completed || colors.cross;
-              context.lineWidth = 1;
-              context.globalAlpha = 0.3; // Faint outline
-              context.beginPath();
-              context.rect(
-                part.position.x - crossBeadSize / 2 - 1,
-                part.position.y - crossBeadSize / 2 - 1,
-                crossBeadSize + 2,
-                crossBeadSize + 2
-              );
-              context.stroke();
-              context.globalAlpha = 1; // Reset alpha
-            }
+          // Calculate cross center position (average of all parts)
+          const crossCenter = {
+            x: bead.crossParts.reduce((sum, p) => sum + p.position.x, 0) / bead.crossParts.length,
+            y: bead.crossParts.reduce((sum, p) => sum + p.position.y, 0) / bead.crossParts.length
+          };
 
-            // Only show prayer index in developer mode
-            if (developerModeRef.current) {
-              context.font = `bold ${crossBeadSize * 1.2}px Arial`;
-              context.fillStyle = "#000000";
-              context.strokeStyle = "#FFFFFF";
-              context.lineWidth = 2;
-              context.strokeText(
-                `${bead.prayerIndex}`,
-                part.position.x,
-                part.position.y
-              );
-              context.fillText(
-                `${bead.prayerIndex}`,
-                part.position.x,
-                part.position.y
-              );
-            }
+          // Draw circular glow BEHIND the cross when current or completed
+          // This glow stays centered and doesn't rotate with individual squares
+          if (currentPrayerIndexRef.current === 0) {
+            // Current prayer - sacred golden glow
+            const pulseAlpha = Math.abs(Math.sin(Date.now() / 1200)) * 0.4 + 0.6; // 0.6 to 1.0
+            const pulseSize = Math.abs(Math.sin(Date.now() / 1200)) * 3; // 0 to 3px
+            
+            // Outer glow ring (behind cross)
+            context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha * 0.5})`;
+            context.lineWidth = 5;
+            context.shadowColor = `rgba(255, 215, 0, ${pulseAlpha * 0.6})`;
+            context.shadowBlur = 18 + pulseSize * 2;
+            context.beginPath();
+            context.arc(
+              crossCenter.x,
+              crossCenter.y,
+              crossBeadSize * 2.2 + pulseSize, // Circular glow around entire cross
+              0,
+              2 * Math.PI
+            );
+            context.stroke();
+            context.shadowBlur = 0; // Reset shadow
+          } else if (bead.prayerIndex < currentPrayerIndexRef.current) {
+            // Completed - faint circular aura
+            context.strokeStyle = "rgba(192, 192, 192, 0.2)";
+            context.lineWidth = 2;
+            context.shadowColor = "rgba(192, 192, 192, 0.25)";
+            context.shadowBlur = 8;
+            context.beginPath();
+            context.arc(
+              crossCenter.x,
+              crossCenter.y,
+              crossBeadSize * 2,
+              0,
+              2 * Math.PI
+            );
+            context.stroke();
+            context.shadowBlur = 0;
+          }
 
-            // Highlight entire cross if prayer index 0 is current (on top)
-            if (currentPrayerIndexRef.current === 0) {
-              context.strokeStyle = colors.highlight;
-              context.lineWidth = 3;
-              context.beginPath();
-              context.rect(
-                part.position.x - crossBeadSize / 2,
-                part.position.y - crossBeadSize / 2,
-                crossBeadSize,
-                crossBeadSize
-              );
-              context.stroke();
-            }
-          });
+          // Developer mode: show prayer index on center square only
+          if (developerModeRef.current) {
+            context.font = `bold ${crossBeadSize * 1.2}px Arial`;
+            context.fillStyle = "#000000";
+            context.strokeStyle = "#FFFFFF";
+            context.lineWidth = 2;
+            context.strokeText(
+              `${bead.prayerIndex}`,
+              crossCenter.x,
+              crossCenter.y
+            );
+            context.fillText(
+              `${bead.prayerIndex}`,
+              crossCenter.x,
+              crossCenter.y
+            );
+          }
+
           return; // Skip normal rendering for composite body
         }
 
@@ -1412,6 +1427,54 @@ const InteractiveRosary = ({
           context.shadowBlur = 0; // Reset shadow
         }
 
+        // ===== BEAD DECORATIONS - Handcrafted Look =====
+        // Add subtle details to make beads look like real, lovingly crafted objects
+        if (bead.prayerIndex !== undefined && !bead.isHeartMedal) {
+          // 1. Subtle shimmer highlight (top-left, like light reflection on polished bead)
+          const highlightX = bead.position.x - size * 0.35;
+          const highlightY = bead.position.y - size * 0.35;
+          const highlightRadius = size * 0.3;
+          
+          const gradient = context.createRadialGradient(
+            highlightX, highlightY, 0,
+            highlightX, highlightY, highlightRadius
+          );
+          gradient.addColorStop(0, "rgba(255, 255, 255, 0.4)");
+          gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.15)");
+          gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+          
+          context.fillStyle = gradient;
+          context.beginPath();
+          context.arc(highlightX, highlightY, highlightRadius, 0, 2 * Math.PI);
+          context.fill();
+
+          // 2. Tiny bright reflection dot (like polished glass or wood)
+          const dotSize = size * 0.12;
+          context.fillStyle = "rgba(255, 255, 255, 0.6)";
+          context.beginPath();
+          context.arc(
+            bead.position.x - size * 0.3,
+            bead.position.y - size * 0.3,
+            dotSize,
+            0,
+            2 * Math.PI
+          );
+          context.fill();
+
+          // 3. Subtle darker edge (gives depth, like a real 3D bead)
+          context.strokeStyle = "rgba(0, 0, 0, 0.15)";
+          context.lineWidth = 1;
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size - 0.5,
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+        }
+
         // NEW: Gentle slow glow for next bead (orientation hint) - 35% of current bead intensity
         // Works automatically for cross → tail transition and all other sections
         const rosarySequence = getRosarySequenceRef.current();
@@ -1422,7 +1485,8 @@ const InteractiveRosary = ({
         ) {
           // Gentle, slow pulsing glow - 35% of current bead's 60-100% = 21-35%
           // 1800ms period = very slow, peaceful animation
-          const pulseAlpha = Math.abs(Math.sin(Date.now() / 1800)) * 0.14 + 0.21; // 0.21 to 0.35 (35% of current)
+          const pulseAlpha =
+            Math.abs(Math.sin(Date.now() / 1800)) * 0.14 + 0.21; // 0.21 to 0.35 (35% of current)
           const pulseSize = Math.abs(Math.sin(Date.now() / 1800)) * 1.2; // 0 to 1.2px
 
           context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha})`; // Gold glow, moderate transparency

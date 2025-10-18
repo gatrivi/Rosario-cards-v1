@@ -166,6 +166,9 @@ function App() {
     return localStorage.getItem("leftHandedMode") === "true";
   });
 
+  // Navigation bar visibility state - default hidden since bead navigation works well
+  const [showNavigation, setShowNavigation] = useState(false);
+
   // Detailed progress bar state - default disabled
   const [showDetailedProgress, setShowDetailedProgress] = useState(false);
 
@@ -731,6 +734,8 @@ function App() {
         isInLitany={isInLitany}
         nextLitanyVerse={nextLitanyVerse}
         prevLitanyVerse={prevLitanyVerse}
+        // Navigation bar visibility
+        showNavigation={showNavigation}
       />
       {/* Rosary Progress Bar - hidden when in litany */}
       <RosaryProgressBar
@@ -739,6 +744,8 @@ function App() {
         currentPrayerTitle={getCurrentPrayerTitle()}
         pressedBeadCount={getPressedBeadCount()}
         totalBeads={60}
+        showNavigation={showNavigation}
+        onToggleNavigation={() => setShowNavigation(!showNavigation)}
       />
     </div>
   );

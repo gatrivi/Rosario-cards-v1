@@ -810,8 +810,9 @@ const ViewPrayers = forwardRef(
                   objectPosition: "center",
                   filter: "brightness(0.8) contrast(1.1)",
                   transform: `scale(${imageZoom})`,
-                  transition: "opacity 2.5s ease-in-out, transform 3.0s ease-in-out, filter 2.5s ease-in-out",
-                  animation: "gentleCameraPan 3s ease-in-out forwards"
+                  transition:
+                    "opacity 2.5s ease-in-out, transform 3.0s ease-in-out, filter 2.5s ease-in-out",
+                  animation: "gentleCameraPan 3s ease-in-out forwards",
                 }}
               />
             </div>
@@ -1005,8 +1006,9 @@ const ViewPrayers = forwardRef(
                 objectPosition: "center",
                 filter: "brightness(0.7) contrast(1.1)",
                 transform: `scale(${imageZoom})`,
-                transition: "opacity 2.5s ease-in-out, transform 3.0s ease-in-out, filter 2.5s ease-in-out",
-                animation: "gentleCameraPan 3s ease-in-out forwards"
+                transition:
+                  "opacity 2.5s ease-in-out, transform 3.0s ease-in-out, filter 2.5s ease-in-out",
+                animation: "gentleCameraPan 3s ease-in-out forwards",
               }}
             />
           </div>
