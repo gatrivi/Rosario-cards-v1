@@ -1,7 +1,7 @@
 # Rosario Cards - Current Status
 **Last Updated**: October 18, 2025
 
-## ✅ All Features Complete!
+## ✅ All Features Complete + Peaceful Visual Refinements! 🕊️
 
 ### 🎯 Bead Navigation System (8/8 Complete)
 
@@ -15,10 +15,11 @@
    - Mystery beads: Press again → Our Father
    - Distinct chime sounds for each transition
 
-3. **✅ Visual Progress Feedback** 🌟 *NEW!*
-   - **Next bead**: Gentle pulsing gold glow
-   - **Completed beads**: Soft silver aura that persists
-   - Clear visual trail of your progress
+3. **✅ Visual Progress Feedback** 🌟 *REFINED!*
+   - **Current bead**: Prominent pulsing glow (60-100% opacity, 1200ms)
+   - **Next bead**: Very subtle orientation hint (10-25% opacity, 1800ms)
+   - **Completed beads**: Faint 10% silver aura (peaceful memory)
+   - All glows fade in/out gently for meditative feel
 
 4. **✅ Chain Prayer Visual Indicators**
    - Concentric animated outline on beads with chain prayers
@@ -47,16 +48,17 @@
    - Move-to-next-bead chime (descending)
    - Collision sounds with mystery colors
 
-## 🎨 Visual Features
+## 🎨 Visual Features (Refined for Peaceful Meditation)
 
-| Feature | Description | Color | Animation |
-|---------|-------------|-------|-----------|
-| Next Bead Glow | Guides you to the next prayer | Gold (255, 215, 0) | Gentle pulse (800ms) |
-| Completed Beads | Shows prayers you've recited | Silver (192, 192, 192) | Steady glow |
-| Current Bead | Currently active prayer | Theme color | Bright outline |
-| Chain Prayer Bead | Multi-press indicator | Theme color | Rotating dashed ring |
-| Blinking Next | After chain prayers | Silver | Fast pulse (300ms) |
-| Heart Bead (Litany) | During Litany of Loreto | Gold | Pulsing outline |
+| Feature | Description | Opacity | Animation | Purpose |
+|---------|-------------|---------|-----------|---------|
+| **Current Bead** | Currently active prayer | 60-100% | Prominent pulse (1200ms) | **PRIMARY FOCUS** |
+| Next Bead Glow | Subtle orientation hint | 10-25% | Very slow pulse (1800ms) | Gentle guidance |
+| Completed Beads | Prayers you've recited | 10% | Static (no pulse) | Peaceful memory |
+| Chain Prayer Bead | Multi-press indicator | Theme | Rotating dashed ring | Action needed |
+| Blinking Next | After chain prayers | 40-100% | Fast pulse (300ms) | Attention signal |
+| Heart Bead (Litany) | During Litany of Loreto | Gold | Pulsing outline | Litany mode |
+| Rosary Fade | When dragging beads | 50% | Slow (1.0-1.2s) | Peaceful transition |
 
 ## 🔊 Sound System
 
@@ -124,9 +126,24 @@ None! All critical bugs have been fixed:
 - ✅ Touch timeout optimized (300ms)
 - ✅ Rosary transparency fixed (0.5 instead of 0.25)
 
+## 🕊️ Peaceful Visual Refinements (NEW!)
+
+All visual feedback refined for meditative, calming experience:
+
+1. **Focus Hierarchy**: Current bead is now PRIMARY FOCUS (60-100% opacity)
+2. **Subtle Orientation**: Next bead is barely visible hint (10-25% opacity)
+3. **Gentle Memory**: Completed beads retain 10% silver aura
+4. **Slow Transitions**: Rosary fades in/out slowly (1.0-1.2s, not 0.2-0.3s)
+5. **Peaceful Animations**: All glows use slow sine waves (1200-1800ms periods)
+6. **Cross→Tail**: Next section automatically glows when cross ends
+
+> **Philosophy**: "Focus on the present moment, with gentle awareness of past and future."
+
 ## 🚀 Recent Commits
 
 ```
+c370705 - Add comprehensive documentation for peaceful visual refinements
+ee8c77f - Refine visual feedback for peaceful meditation: slower transitions, subtle glows
 0832b11 - Add visual progress feedback: Next bead glows gold, completed beads have silver aura
 cc3a2a3 - CRITICAL FIX v2: Beads now navigate on FIRST click (was requiring 2 clicks)
 6cbab2d - CRITICAL FIX: Beads can be clicked again - Moved heart bead check before prayerIndex
