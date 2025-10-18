@@ -8,6 +8,149 @@
  * - Multiple variations to avoid repetition
  */
 
+/**
+ * Prayer History Tracker
+ *
+ * Tracks prayer activity over time to create personalized sound and visual feedback.
+ * Each rosary creates an "echo" of your prayer evolution through subtle variations.
+ */
+class PrayerHistory {
+  constructor() {
+    this.loadHistory();
+  }
+
+  loadHistory() {
+    try {
+      const saved = localStorage.getItem("prayerHistory");
+      if (saved) {
+        this.history = JSON.parse(saved);
+      } else {
+        this.history = this.getDefaultHistory();
+      }
+    } catch (error) {
+      console.warn("Error loading prayer history:", error);
+      this.history = this.getDefaultHistory();
+    }
+  }
+
+  getDefaultHistory() {
+    return {
+      totalBeadsPrayed: 0,
+      rosariesCompleted: 0,
+      lastPrayerDate: Date.now(),
+      firstPrayerDate: Date.now(),
+      mysteryPreferences: {
+        gozosos: 0,
+        dolorosos: 0,
+        gloriosos: 0,
+        luminosos: 0,
+      },
+      sessionDurations: [], // Array of session lengths in minutes
+    };
+  }
+
+  saveHistory() {
+    try {
+      localStorage.setItem("prayerHistory", JSON.stringify(this.history));
+    } catch (error) {
+      console.warn("Error saving prayer history:", error);
+    }
+  }
+
+  recordBeadPress(prayerIndex, mystery) {
+    this.history.totalBeadsPrayed++;
+    this.history.lastPrayerDate = Date.now();
+
+    if (mystery && this.history.mysteryPreferences[mystery] !== undefined) {
+      this.history.mysteryPreferences[mystery]++;
+    }
+
+    // Check if rosary completed (82 prayers in full sequence)
+    if (prayerIndex === 81) {
+      this.history.rosariesCompleted++;
+    }
+
+    this.saveHistory();
+  }
+
+  /**
+   * Get a deterministic seed based on total prayer history
+   * Creates a "rosary through time" effect by using position in eternal rosary
+   * @returns {number} 0-1 value representing position in history cycle
+   */
+  getHistorySeed() {
+    // Use modulo 82 (full rosary length) to create cyclical pattern
+    // This makes your sound evolve in a rosary-shaped pattern over time
+    const position = this.history.totalBeadsPrayed % 82;
+    return position / 82;
+  }
+
+  /**
+   * Get frequency modulation based on prayer regularity
+   * More frequent prayer = brighter, higher tones
+   * Sparse prayer = softer, lower tones
+   * @returns {number} 0.8-1.2 multiplier
+   */
+  getFrequencyModulation() {
+    const now = Date.now();
+    const daysSinceLastPrayer =
+      (now - this.history.lastPrayerDate) / (1000 * 60 * 60 * 24);
+    const totalDaysPraying =
+      (now - this.history.firstPrayerDate) / (1000 * 60 * 60 * 24);
+
+    // Calculate consistency score (0-1)
+    let consistencyScore = 0.5; // Default middle value
+
+    if (this.history.totalBeadsPrayed > 82) {
+      // If praying daily or more: 1.0
+      // If once a week: 0.5
+      // If once a month or less: 0.2
+      const averageBeadsPerDay =
+        this.history.totalBeadsPrayed / Math.max(totalDaysPraying, 1);
+      consistencyScore = Math.min(averageBeadsPerDay / 82, 1.0);
+    }
+
+    // Recent activity bonus
+    if (daysSinceLastPrayer < 1) {
+      consistencyScore = Math.min(consistencyScore + 0.2, 1.0);
+    } else if (daysSinceLastPrayer > 7) {
+      consistencyScore = Math.max(consistencyScore - 0.2, 0.2);
+    }
+
+    // Map 0-1 to 0.8-1.2 range
+    return 0.8 + consistencyScore * 0.4;
+  }
+
+  /**
+   * Get volume modulation based on experience level
+   * More rosaries completed = slightly more confident volume
+   * @returns {number} 0.9-1.1 multiplier
+   */
+  getVolumeModulation() {
+    const rosariesCompleted = this.history.rosariesCompleted;
+
+    if (rosariesCompleted === 0) return 0.9; // Gentle for beginners
+    if (rosariesCompleted < 10) return 0.95;
+    if (rosariesCompleted < 50) return 1.0;
+    if (rosariesCompleted < 100) return 1.05;
+    return 1.1; // Confident for experienced
+  }
+
+  /**
+   * Get total beads prayed for display/debugging
+   */
+  getTotalBeadsPrayed() {
+    return this.history.totalBeadsPrayed;
+  }
+
+  /**
+   * Get completed rosaries count
+   */
+  getRosariesCompleted() {
+    return this.history.rosariesCompleted;
+  }
+}
+
 class SoundEffects {
   constructor() {
     this.audioContext = null;
@@ -416,6 +559,171 @@ class SoundEffects {
   }
 
   /**
+   * Play enter chain prayer chime - gentle upward chime when content exhausted with chain prayers ahead
+   * Signals "stay on this bead, press again"
+   * History-modulated for personalized prayer evolution
+   * @param {PrayerHistory} prayerHistory - Prayer history instance for personalization
+   */
+  playEnterChainPrayerChime(prayerHistory = null) {
+    if (!this.enabled || !this.audioContext) return;
+
+    try {
+      const ctx = this.audioContext;
+
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      // Get mystery-specific sound characteristics
+      const palette = this.getMysterySoundPalette(this.currentMystery);
+
+      // Get history-based modulation if available
+      let historySeed = 0.5; // Default middle value
+      let freqModulation = 1.0; // Default no change
+      let volumeModulation = 1.0;
+
+      if (prayerHistory) {
+        historySeed = prayerHistory.getHistorySeed();
+        freqModulation = prayerHistory.getFrequencyModulation();
+        volumeModulation = prayerHistory.getVolumeModulation();
+      }
+
+      // Create gentle ascending bell-like sound
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      // Use history seed to vary base frequency (creates "rosary through time" effect)
+      // historySeed ranges 0-1 based on position in eternal rosary (mod 82)
+      const historyVariation = 1.4 + historySeed * 0.2; // 1.4 to 1.6
+      const baseFreq =
+        palette.baseFrequency * historyVariation * freqModulation;
+
+      // Gentle ascending chime
+      osc1.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(
+        baseFreq * 1.15,
+        ctx.currentTime + 0.18 * palette.durationMultiplier
+      );
+
+      // Add harmonic for richness
+      osc2.frequency.setValueAtTime(baseFreq * 1.5, ctx.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(
+        baseFreq * 1.725,
+        ctx.currentTime + 0.18 * palette.durationMultiplier
+      );
+
+      // Soft, gentle volume with history modulation
+      const baseVolume = 0.12 * palette.volumeMultiplier * volumeModulation;
+      const duration = 0.18 * palette.durationMultiplier;
+
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
+
+      // Use sine for pure bell tone
+      osc1.type = "sine";
+      osc2.type = "sine";
+
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc1.start(ctx.currentTime);
+      osc2.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + duration);
+      osc2.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Error playing enter chain prayer chime:", e);
+    }
+  }
+
+  /**
+   * Play complete chain prayers chime - descending resolution chime after last chain prayer
+   * Signals "chain prayers complete, ready to move to next bead"
+   * History-modulated for personalized prayer evolution
+   * @param {PrayerHistory} prayerHistory - Prayer history instance for personalization
+   */
+  playCompleteChainPrayersChime(prayerHistory = null) {
+    if (!this.enabled || !this.audioContext) return;
+
+    try {
+      const ctx = this.audioContext;
+
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      // Get mystery-specific sound characteristics
+      const palette = this.getMysterySoundPalette(this.currentMystery);
+
+      // Get history-based modulation if available
+      let historySeed = 0.5;
+      let freqModulation = 1.0;
+      let volumeModulation = 1.0;
+
+      if (prayerHistory) {
+        historySeed = prayerHistory.getHistorySeed();
+        freqModulation = prayerHistory.getFrequencyModulation();
+        volumeModulation = prayerHistory.getVolumeModulation();
+      }
+
+      // Create descending resolution tone
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      // Use history for base frequency (slightly lower than enter chime)
+      const historyVariation = 0.9 + historySeed * 0.2; // 0.9 to 1.1
+      const baseFreq =
+        palette.baseFrequency * historyVariation * freqModulation;
+
+      // Descending "resolution" chime
+      osc1.frequency.setValueAtTime(baseFreq * 1.3, ctx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(
+        baseFreq,
+        ctx.currentTime + 0.22 * palette.durationMultiplier
+      );
+
+      // Second oscillator for richness
+      osc2.frequency.setValueAtTime(baseFreq * 1.6, ctx.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(
+        baseFreq * 1.25,
+        ctx.currentTime + 0.22 * palette.durationMultiplier
+      );
+
+      // Medium volume with history modulation
+      const baseVolume = 0.15 * palette.volumeMultiplier * volumeModulation;
+      const duration = 0.22 * palette.durationMultiplier;
+
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
+
+      // Use triangle for softer completion sound
+      osc1.type = palette.waveform === "sine" ? "triangle" : palette.waveform;
+      osc2.type = "sine";
+
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc1.start(ctx.currentTime);
+      osc2.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + duration);
+      osc2.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Error playing complete chain prayers chime:", e);
+    }
+  }
+
+  /**
    * Enable or disable sound effects
    */
   setEnabled(enabled) {
@@ -430,6 +738,7 @@ class SoundEffects {
   }
 }
 
-// Export singleton instance and class
-export { SoundEffects };
+// Export singleton instances and classes
+export { SoundEffects, PrayerHistory };
 export default new SoundEffects();
+export const prayerHistory = new PrayerHistory();

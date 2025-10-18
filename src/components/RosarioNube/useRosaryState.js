@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import rosaryTracker from "../../utils/rosaryTracker";
+import { prayerHistory } from "../../utils/soundEffects";
 
 /**
  * useRosaryState Hook
@@ -224,6 +225,9 @@ export const useRosaryState = (prayers, currentMystery) => {
       );
       setCurrentPrayerIndex(prayerIndex);
       setHighlightedBead(prayerIndex);
+
+      // Record bead press in prayer history for sound/visual evolution
+      prayerHistory.recordBeadPress(prayerIndex, currentMystery);
 
       // Check for rosary completion (last prayer is index 84)
       if (prayerIndex === 84) {

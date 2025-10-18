@@ -276,8 +276,51 @@ const ViewPrayers = forwardRef(
 
           soundEffectsRef.current.playScrollSound();
         } else {
-          // At bottom, can't scroll more - signal next bead should be active
-          // Dispatch event for rosary to handle
+          // At bottom, can't scroll more
+          // Check if chain prayers follow (Gloria/Fatima or Our Father)
+          const rosarySequence = getRosarySequence();
+
+          if (
+            rosarySequence &&
+            currentPrayerIndex < rosarySequence.length - 2
+          ) {
+            const nextPrayer = rosarySequence[currentPrayerIndex + 1];
+            const nextNextPrayer = rosarySequence[currentPrayerIndex + 2];
+
+            // Check for chain prayer patterns
+            if (nextPrayer === "G" && nextNextPrayer === "F") {
+              // Gloria → Fatima chain
+              window.dispatchEvent(
+                new CustomEvent("enterChainPrayers", {
+                  detail: {
+                    prayerIndex: currentPrayerIndex,
+                    chainIndices: [
+                      currentPrayerIndex + 1,
+                      currentPrayerIndex + 2,
+                    ],
+                    chainPrayers: ["G", "F"],
+                  },
+                })
+              );
+              // Don't play end sound, enterChainPrayers handler will play chime
+              return;
+            } else if (nextPrayer === "P") {
+              // Our Father chain (single prayer)
+              window.dispatchEvent(
+                new CustomEvent("enterChainPrayers", {
+                  detail: {
+                    prayerIndex: currentPrayerIndex,
+                    chainIndices: [currentPrayerIndex + 1],
+                    chainPrayers: ["P"],
+                  },
+                })
+              );
+              // Don't play end sound, enterChainPrayers handler will play chime
+              return;
+            }
+          }
+
+          // No chain prayers, dispatch standard contentExhausted
           window.dispatchEvent(
             new CustomEvent("contentExhausted", {
               detail: { prayerIndex: currentPrayerIndex },

@@ -67,6 +67,7 @@ const InteractiveRosary = ({
 
   // Chain prayer navigation state
   const [chainBeadHighlight, setChainBeadHighlight] = React.useState(null); // Bead ID to show chain prayer indicator
+  const [pressSameBeadId, setPressSameBeadId] = React.useState(null); // Bead ID showing "press same bead" indicator
 
   // Update ref when currentPrayerIndex prop changes
   React.useEffect(() => {
@@ -255,6 +256,45 @@ const InteractiveRosary = ({
       window.removeEventListener("contentExhausted", handleContentExhausted);
     };
   }, [getRosarySequence]);
+
+  // Listen for enter chain prayers event (content exhausted with chain prayers ahead)
+  useEffect(() => {
+    const handleEnterChainPrayers = (event) => {
+      const { prayerIndex, chainIndices } = event.detail;
+
+      if (!matterInstance.current) return;
+
+      // Find the current bead
+      const currentBead = matterInstance.current.allBeads.find(
+        (b) => b.prayerIndex === prayerIndex
+      );
+
+      if (currentBead) {
+        console.log(
+          `⛓️ Enter chain prayers at bead ${currentBead.beadNumber}, indices:`,
+          chainIndices
+        );
+
+        // Set "press same bead" visual indicator
+        setPressSameBeadId(currentBead.id);
+        setChainBeadHighlight(currentBead.id);
+
+        // Play history-modulated enter chain prayer chime
+        const { prayerHistory } = require("../../utils/soundEffects");
+        soundEffects.playEnterChainPrayerChime(prayerHistory);
+
+        // Clear after 5 seconds if not interacted with
+        setTimeout(() => {
+          setPressSameBeadId(null);
+        }, 5000);
+      }
+    };
+
+    window.addEventListener("enterChainPrayers", handleEnterChainPrayers);
+    return () => {
+      window.removeEventListener("enterChainPrayers", handleEnterChainPrayers);
+    };
+  }, []);
 
   // Initialize physics world with current zoom
   const initializePhysics = useCallback(() => {
@@ -750,12 +790,13 @@ const InteractiveRosary = ({
     // This chain has AC prayer (index 1) - LONG chain around lone bead
     const crossToTailLength = beadSize * 1.6; // ~13px = 3 links (1.6 bead diameter)
 
-    // Calculate proper pole connection point on cross BOTTOM (like a real rosary!)
-    // Connect to the BOTTOM side (south edge) of cross square #6 (bottom square)
+    // Calculate proper pole connection point on cross TOP (like a real rosary!)
+    // Connect to the TOP side (north edge) of cross square #6 (head of the cross)
+    // This represents the cross being held up from above, by heaven
     const crossPoleOffset = {
-      // Start with vector to center of square #6, then move DOWN by half a square's height
+      // Start with vector to center of square #6, then move UP by half a square's height
       x: crossParts[5].position.x - crossBody.position.x, // Square #6 is at index 5
-      y: crossParts[5].position.y - crossBody.position.y + cbs / 2, // Move to bottom edge
+      y: crossParts[5].position.y - crossBody.position.y - cbs / 2, // Move to top edge (north)
     };
 
     constraints.push(
@@ -1049,6 +1090,11 @@ const InteractiveRosary = ({
               );
               onBeadClickRef.current(chainPrayerIndex, prayerId);
 
+              // Clear "press same bead" indicator on first chain prayer
+              if (chainIndex === 0) {
+                setPressSameBeadId(null);
+              }
+
               // Play chain prayer chime
               soundEffects.playChainPrayerChime();
 
@@ -1057,7 +1103,10 @@ const InteractiveRosary = ({
                 console.log(
                   `✅ Last chain prayer - ready to move to next bead`
                 );
-                soundEffects.playMoveToNextBeadChime();
+
+                // Play completion chime with history modulation
+                const { prayerHistory } = require("../../utils/soundEffects");
+                soundEffects.playCompleteChainPrayersChime(prayerHistory);
 
                 // Reset touch count
                 touchCountRef.current.set(beadId, 0);
@@ -1213,17 +1262,22 @@ const InteractiveRosary = ({
         if (bead.isCrossComposite) {
           // Calculate cross center position (average of all parts)
           const crossCenter = {
-            x: bead.crossParts.reduce((sum, p) => sum + p.position.x, 0) / bead.crossParts.length,
-            y: bead.crossParts.reduce((sum, p) => sum + p.position.y, 0) / bead.crossParts.length
+            x:
+              bead.crossParts.reduce((sum, p) => sum + p.position.x, 0) /
+              bead.crossParts.length,
+            y:
+              bead.crossParts.reduce((sum, p) => sum + p.position.y, 0) /
+              bead.crossParts.length,
           };
 
           // Draw circular glow BEHIND the cross when current or completed
           // This glow stays centered and doesn't rotate with individual squares
           if (currentPrayerIndexRef.current === 0) {
             // Current prayer - sacred golden glow
-            const pulseAlpha = Math.abs(Math.sin(Date.now() / 1200)) * 0.4 + 0.6; // 0.6 to 1.0
+            const pulseAlpha =
+              Math.abs(Math.sin(Date.now() / 1200)) * 0.4 + 0.6; // 0.6 to 1.0
             const pulseSize = Math.abs(Math.sin(Date.now() / 1200)) * 3; // 0 to 3px
-            
+
             // Outer glow ring (behind cross)
             context.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha * 0.5})`;
             context.lineWidth = 5;
@@ -1434,15 +1488,19 @@ const InteractiveRosary = ({
           const highlightX = bead.position.x - size * 0.35;
           const highlightY = bead.position.y - size * 0.35;
           const highlightRadius = size * 0.3;
-          
+
           const gradient = context.createRadialGradient(
-            highlightX, highlightY, 0,
-            highlightX, highlightY, highlightRadius
+            highlightX,
+            highlightY,
+            0,
+            highlightX,
+            highlightY,
+            highlightRadius
           );
           gradient.addColorStop(0, "rgba(255, 255, 255, 0.4)");
           gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.15)");
           gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-          
+
           context.fillStyle = gradient;
           context.beginPath();
           context.arc(highlightX, highlightY, highlightRadius, 0, 2 * Math.PI);
@@ -1506,20 +1564,82 @@ const InteractiveRosary = ({
         }
 
         // Highlight current prayer bead (always shown) - PROMINENT FOCUS with gentle pulsing glow
+        // WITH HISTORY-BASED COLOR EVOLUTION
         if (bead.prayerIndex === currentPrayerIndexRef.current) {
           // Pulsing glow effect - slower and more prominent than next bead
           const currentPulseAlpha =
             Math.abs(Math.sin(Date.now() / 1200)) * 0.4 + 0.6; // 0.6 to 1.0 (strong)
           const currentPulseSize = Math.abs(Math.sin(Date.now() / 1200)) * 2; // 0 to 2px
 
-          // Outer glow ring
-          context.strokeStyle = `rgba(${
-            colors.highlight === "#FFD700" ? "255, 215, 0" : "212, 175, 55"
-          }, ${currentPulseAlpha * 0.6})`;
+          // Get history-based color modulation for subtle evolution
+          const { prayerHistory } = require("../../utils/soundEffects");
+          const historySeed = prayerHistory.getHistorySeed(); // 0-1
+          const freqModulation = prayerHistory.getFrequencyModulation(); // 0.8-1.2
+
+          // Calculate subtle hue shift based on prayer history (max ±15 degrees)
+          const hueShift = (historySeed - 0.5) * 30; // -15 to +15 degrees
+          // Calculate brightness based on prayer frequency (0.95-1.05)
+          const brightnessMultiplier =
+            0.95 + ((freqModulation - 0.8) / 0.4) * 0.1;
+
+          // Apply history modulation to base color
+          let glowR, glowG, glowB;
+          if (colors.highlight === "#FFD700") {
+            // Gold: RGB(255, 215, 0)
+            // Apply subtle hue shift in HSL space
+            const baseHue = 51; // Gold hue
+            const newHue = (baseHue + hueShift + 360) % 360;
+            const saturation = 100;
+            const lightness = 50 * brightnessMultiplier;
+
+            // Convert HSL to RGB for canvas
+            const hslToRgb = (h, s, l) => {
+              s /= 100;
+              l /= 100;
+              const k = (n) => (n + h / 30) % 12;
+              const a = s * Math.min(l, 1 - l);
+              const f = (n) =>
+                l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+              return [
+                Math.round(255 * f(0)),
+                Math.round(255 * f(8)),
+                Math.round(255 * f(4)),
+              ];
+            };
+
+            [glowR, glowG, glowB] = hslToRgb(newHue, saturation, lightness);
+          } else {
+            // Goldenrod: RGB(212, 175, 55)
+            const baseHue = 43;
+            const newHue = (baseHue + hueShift + 360) % 360;
+            const saturation = 64;
+            const lightness = 52 * brightnessMultiplier;
+
+            const hslToRgb = (h, s, l) => {
+              s /= 100;
+              l /= 100;
+              const k = (n) => (n + h / 30) % 12;
+              const a = s * Math.min(l, 1 - l);
+              const f = (n) =>
+                l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+              return [
+                Math.round(255 * f(0)),
+                Math.round(255 * f(8)),
+                Math.round(255 * f(4)),
+              ];
+            };
+
+            [glowR, glowG, glowB] = hslToRgb(newHue, saturation, lightness);
+          }
+
+          // Outer glow ring with history-modulated color
+          context.strokeStyle = `rgba(${glowR}, ${glowG}, ${glowB}, ${
+            currentPulseAlpha * 0.6
+          })`;
           context.lineWidth = 4;
-          context.shadowColor = `rgba(${
-            colors.highlight === "#FFD700" ? "255, 215, 0" : "212, 175, 55"
-          }, ${currentPulseAlpha * 0.5})`;
+          context.shadowColor = `rgba(${glowR}, ${glowG}, ${glowB}, ${
+            currentPulseAlpha * 0.5
+          })`;
           context.shadowBlur = 15 + currentPulseSize * 2;
           context.beginPath();
           context.arc(
@@ -1532,8 +1652,8 @@ const InteractiveRosary = ({
           context.stroke();
           context.shadowBlur = 0; // Reset shadow
 
-          // Inner bright ring (always visible)
-          context.strokeStyle = colors.highlight;
+          // Inner bright ring with history-modulated color (always visible)
+          context.strokeStyle = `rgb(${glowR}, ${glowG}, ${glowB})`;
           context.lineWidth = 3;
           context.beginPath();
           context.arc(
@@ -1596,6 +1716,30 @@ const InteractiveRosary = ({
             2 * Math.PI
           );
           context.stroke();
+        }
+
+        // "PRESS SAME BEAD" indicator - large pulsing expanding ring
+        // Shows when content exhausted with chain prayers ahead
+        if (bead.id === pressSameBeadId) {
+          const pressPulseAlpha =
+            Math.abs(Math.sin(Date.now() / 500)) * 0.4 + 0.6; // 0.6 to 1.0 (brighter)
+          const pressPulseSize = Math.abs(Math.sin(Date.now() / 500)) * 4; // 0 to 4px (larger expansion)
+
+          // Use cyan/blue color to distinguish from current bead gold
+          context.strokeStyle = `rgba(100, 200, 255, ${pressPulseAlpha})`;
+          context.lineWidth = 3;
+          context.shadowColor = `rgba(100, 200, 255, ${pressPulseAlpha * 0.8})`;
+          context.shadowBlur = 12 + pressPulseSize;
+          context.beginPath();
+          context.arc(
+            bead.position.x,
+            bead.position.y,
+            size + 8 + pressPulseSize, // Larger radius (8-12px outside bead)
+            0,
+            2 * Math.PI
+          );
+          context.stroke();
+          context.shadowBlur = 0; // Reset shadow
         }
 
         // CHAIN PRAYER INDICATOR: Concentric animated outline for beads with chain prayers
