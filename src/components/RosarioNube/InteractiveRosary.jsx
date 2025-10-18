@@ -933,6 +933,10 @@ const InteractiveRosary = ({
 
     // --- Event Listeners ---
     // Multi-touch bead interaction system with chain prayer support
+    // TOUCH LOGIC:
+    // - 1st click: Navigate to bead's main prayer
+    // - 2nd+ clicks (if chain prayers exist): Navigate through Gloria/Fatima or Mystery/Our Father
+    // - Multi-touch detection: Touches must be >300ms apart (not drags)
     Matter.Events.on(mouseConstraint, "mousedown", (event) => {
       let clickedBody = event.source.body;
       if (!clickedBody) return;
@@ -969,9 +973,10 @@ const InteractiveRosary = ({
       // Get current touch count for this bead
       const currentCount = touchCountRef.current.get(beadId) || 0;
 
-      // Only count as new touch if >500ms since last touch (not a drag)
+      // Only count as new touch if >300ms since last touch (not a drag)
+      // Reduced from 500ms to make interaction more responsive
       const isNewTouch =
-        timeSinceLastTouch > 500 || lastTouchedBeadId !== beadId;
+        timeSinceLastTouch > 300 || lastTouchedBeadId !== beadId;
 
       if (isNewTouch) {
         const newCount = lastTouchedBeadId === beadId ? currentCount + 1 : 1;
@@ -1010,33 +1015,14 @@ const InteractiveRosary = ({
         };
 
         if (newCount === 1) {
-          // FIRST TOUCH: Silver highlight, don't navigate
-          // Set enhanced radius on current active bead for 5 seconds
-          const activePrayerId = rosarySequence[currentPrayerIndexRef.current];
-          const activeBead = matterInstance.current?.allBeads.find(
-            (b) => b.prayerId === activePrayerId
-          );
-
-          if (activeBead) {
-            setEnhancedBeadId(activeBead.id);
-            // Clear enhanced state after 5 seconds
-            setTimeout(() => setEnhancedBeadId(null), 5000);
-          }
-
-          // Dispatch event for silver highlight
-          window.dispatchEvent(
-            new CustomEvent("beadFirstTouch", {
-              detail: { beadId, beadNumber: clickedBead.beadNumber },
-            })
-          );
-        } else if (newCount === 2) {
-          // SECOND TOUCH: Activate bead, navigate to main prayer
+          // FIRST TOUCH: Navigate to main prayer immediately
+          console.log(`🎯 First touch - navigating to prayer`);
           onBeadClickRef.current(clickedBead.prayerIndex, clickedBead.prayerId);
 
           // Check for chain prayers
           const chainPrayers = hasChainPrayers(clickedBead.prayerIndex);
           if (chainPrayers) {
-            // This bead has chain prayers - keep touch count active
+            // This bead has chain prayers - keep touch count active for chain navigation
             console.log(`⛓️ Bead has chain prayers: ${chainPrayers}`);
             setChainBeadHighlight(beadId);
           } else {
@@ -1047,12 +1033,12 @@ const InteractiveRosary = ({
           // Clear blinking state if any
           setBlinkingBeadId(null);
         } else {
-          // THIRD+ TOUCH: Navigate through chain prayers or scroll text
+          // SECOND+ TOUCH: Navigate through chain prayers
           const chainPrayers = hasChainPrayers(clickedBead.prayerIndex);
 
-          if (chainPrayers && newCount <= 2 + chainPrayers.length) {
+          if (chainPrayers && newCount <= 1 + chainPrayers.length) {
             // Navigate to chain prayer
-            const chainIndex = newCount - 3; // 3rd touch = first chain prayer (index 0)
+            const chainIndex = newCount - 2; // 2nd touch = first chain prayer (index 0)
             if (chainIndex < chainPrayers.length) {
               const chainPrayerIndex = chainPrayers[chainIndex];
               const prayerId = rosarySequence[chainPrayerIndex];
