@@ -168,7 +168,7 @@ function App() {
     getRandomUnusedMysteryImage(getDefaultMystery())
   );
   const [count, setCount] = useState(0);
-
+  const [navigationButtons, setNavigationButtons] = useState(false);
   // State for tracking image rotation timer
   const imageRotationTimerRef = useRef(null);
 
