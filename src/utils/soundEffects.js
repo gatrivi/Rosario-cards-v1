@@ -235,6 +235,10 @@ class SoundEffects {
   playScrollSound() {
     if (!this.enabled || !this.audioContext) return;
 
+    // Throttle: only play every 3rd scroll sound to reduce frequency
+    this.scrollSoundCounter = (this.scrollSoundCounter || 0) + 1;
+    if (this.scrollSoundCounter % 3 !== 0) return;
+
     try {
       const ctx = this.audioContext;
 
@@ -243,36 +247,31 @@ class SoundEffects {
         ctx.resume();
       }
 
-      // Get mystery-specific sound characteristics
-      const palette = this.getMysterySoundPalette(this.currentMystery);
-
-      // Create oscillator for bead-like scroll sound
+      // Create oscillator for subtle scroll sound (not chime-like)
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Use mystery-specific frequency range
-      const baseFreq =
-        palette.baseFrequency +
-        this.soundVariation * (palette.frequencyRange / 4);
+      // Lower frequency range for subtle scroll sound instead of chime
+      const baseFreq = 150 + this.soundVariation * 20;
       oscillator.frequency.setValueAtTime(baseFreq, ctx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(
-        baseFreq * 0.8,
-        ctx.currentTime + 0.08 * palette.durationMultiplier
+      oscillator.frequency.linearRampToValueAtTime(
+        baseFreq * 0.95,
+        ctx.currentTime + 0.03
       );
 
-      // Use mystery-specific volume and duration
-      const baseVolume = 0.12 * palette.volumeMultiplier;
-      const duration = 0.08 * palette.durationMultiplier;
+      // Much quieter and shorter for scroll effect
+      const baseVolume = 0.03;
+      const duration = 0.03;
 
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.01);
+      gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.005);
       gainNode.gain.exponentialRampToValueAtTime(
         0.001,
         ctx.currentTime + duration
       );
 
-      // Use mystery-specific waveform
-      oscillator.type = palette.waveform;
+      // Sawtooth for more "paper-like" scroll sound
+      oscillator.type = "sawtooth";
 
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);

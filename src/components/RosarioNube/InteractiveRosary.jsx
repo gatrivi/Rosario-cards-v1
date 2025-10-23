@@ -3,6 +3,12 @@ import Matter from "matter-js";
 import "./InteractiveRosary.css";
 import soundEffects from "../../utils/soundEffects";
 import prayerHistory from "../../utils/prayerHistory";
+import { getMysteryColors } from "./utils/mysteryColors";
+import { useRosarySequence } from "./hooks/useRosarySequence";
+import { useRosaryPosition } from "./hooks/useRosaryPosition";
+import { useRosaryDragging } from "./hooks/useRosaryDragging";
+import { useBeadInteraction } from "./hooks/useBeadInteraction";
+import { useRosaryState } from "./hooks/useRosaryState";
 
 /**
  * InteractiveRosary Component
@@ -20,188 +26,56 @@ const InteractiveRosary = ({
   onBeadClick,
   prayers,
   className = "",
-  rosaryFriction = 0.05, // Air resistance - controls coasting time
-  isInLitany = false, // Whether currently in litany mode (for heart bead visual)
-  pressedBeads = new Set(), // Set of pressed bead indices for visual feedback
-  areClosingPrayersUnlocked = false, // Whether 5 mysteries have been visited (unlocks tail beads & litany)
+  rosaryFriction = 0.05,
+  isInLitany = false,
+  pressedBeads = new Set(),
+  areClosingPrayersUnlocked = false,
 }) => {
   const sceneRef = useRef(null);
   const matterInstance = useRef(null);
-  const currentPrayerIndexRef = useRef(currentPrayerIndex); // Ref to track current prayer
-  const [isVisible, setIsVisible] = React.useState(() => {
-    const saved = localStorage.getItem("rosaryVisible");
-    return saved !== "false"; // Default to visible
-  });
+  const currentPrayerIndexRef = useRef(currentPrayerIndex);
+  const developerModeRef = useRef(false);
+  const collisionSoundsRef = useRef(true);
 
-  const [developerMode, setDeveloperMode] = React.useState(false);
-  const developerModeRef = React.useRef(false); // Track developer mode in a ref
+  // Use custom hooks for state management
+  const { isVisible, developerMode, rosaryZoom } = useRosaryState();
+  const {
+    rosaryPosition,
+    setRosaryPosition,
+    isDraggingRosary,
+    setIsDraggingRosary,
+    dragStart,
+    setDragStart,
+  } = useRosaryPosition();
 
-  const collisionSoundsRef = React.useRef(true); // Track collision sounds in a ref
+  const getRosarySequence = useRosarySequence(prayers, currentMystery);
 
-  const [rosaryZoom, setRosaryZoom] = React.useState(() => {
-    try {
-      return parseFloat(localStorage.getItem("rosaryZoom")) || 1.0;
-    } catch (error) {
-      console.warn("localStorage not available:", error);
-      return 1.0;
-    }
-  });
+  const {
+    lastTouchedBeadId,
+    setLastTouchedBeadId,
+    touchTimestamp,
+    setTouchTimestamp,
+    enhancedBeadId,
+    setEnhancedBeadId,
+    blinkingBeadId,
+    setBlinkingBeadId,
+    touchCountRef,
+    chainBeadHighlight,
+    setChainBeadHighlight,
+    pressSameBeadId,
+    setPressSameBeadId,
+  } = useBeadInteraction(getRosarySequence);
 
-  // State for rosary position
-  const [rosaryPosition, setRosaryPosition] = React.useState(() => {
-    try {
-      const saved = localStorage.getItem("rosaryPosition");
-      return saved ? JSON.parse(saved) : { x: 0, y: 0 };
-    } catch (error) {
-      console.warn("localStorage not available:", error);
-      return { x: 0, y: 0 };
-    }
-  });
-  const [isDraggingRosary, setIsDraggingRosary] = React.useState(false);
-  const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
-
-  // Multi-touch interaction state
-  const [lastTouchedBeadId, setLastTouchedBeadId] = React.useState(null);
-  const [touchTimestamp, setTouchTimestamp] = React.useState(0);
-  const [enhancedBeadId, setEnhancedBeadId] = React.useState(null); // Bead with enhanced radius
-  const [blinkingBeadId, setBlinkingBeadId] = React.useState(null); // Bead that should blink
-  const touchCountRef = React.useRef(new Map()); // Track touches per bead
-
-  // Chain prayer navigation state
-  const [chainBeadHighlight, setChainBeadHighlight] = React.useState(null); // Bead ID to show chain prayer indicator
-  const [pressSameBeadId, setPressSameBeadId] = React.useState(null); // Bead ID showing "press same bead" indicator
+  const [cursorStyle, setCursorStyle] = React.useState("grab");
 
   // Update ref when currentPrayerIndex prop changes
   React.useEffect(() => {
     currentPrayerIndexRef.current = currentPrayerIndex;
   }, [currentPrayerIndex]);
 
-  // Save rosary position to localStorage
-  React.useEffect(() => {
-    try {
-      localStorage.setItem("rosaryPosition", JSON.stringify(rosaryPosition));
-    } catch (error) {
-      console.warn("Failed to save rosary position:", error);
-    }
-  }, [rosaryPosition]);
-
-  // Listen for rosary position reset events
-  React.useEffect(() => {
-    const handleResetPosition = (event) => {
-      setRosaryPosition(event.detail);
-    };
-
-    window.addEventListener("resetRosaryPosition", handleResetPosition);
-    return () => {
-      window.removeEventListener("resetRosaryPosition", handleResetPosition);
-    };
-  }, []);
-
-  /**
-   * Get mystery-specific colors
-   */
-  const getMysteryColors = (mystery) => {
-    const colorSchemes = {
-      // Joyful Mysteries - Warm, joyful colors
-      gozosos: {
-        beads: "#FFB6C1", // Light pink - joy and celebration
-        cross: "#FF69B4", // Hot pink - vibrant joy
-        chain: "#FFA07A", // Light salmon - warm connection
-        highlight: "#FFD700", // Gold - divine light
-        heart: "#FF1493", // Deep pink - love and devotion
-        completed: "#FFB6C1", // Light pink - completed prayers (faint)
-      },
-      // Sorrowful Mysteries - Deep, somber colors
-      dolorosos: {
-        beads: "#8B4513", // Saddle brown - earth and suffering
-        cross: "#2F4F4F", // Dark slate gray - solemnity
-        chain: "#696969", // Dim gray - mourning
-        highlight: "#DC143C", // Crimson - blood and sacrifice
-        heart: "#B22222", // Fire brick - deep sorrow
-        completed: "#8B4513", // Saddle brown - completed prayers (faint)
-      },
-      // Glorious Mysteries - Rich, majestic colors
-      gloriosos: {
-        beads: "#4169E1", // Royal blue - heavenly majesty
-        cross: "#000080", // Navy blue - divine authority
-        chain: "#4682B4", // Steel blue - celestial connection
-        highlight: "#FFD700", // Gold - divine glory
-        heart: "#9370DB", // Medium purple - royal splendor
-        completed: "#4169E1", // Royal blue - completed prayers (faint)
-      },
-      // Luminous Mysteries - Bright, illuminating colors
-      luminosos: {
-        beads: "#FFD700", // Gold - divine light
-        cross: "#FFA500", // Orange - illumination
-        chain: "#DAA520", // Goldenrod - radiant connection
-        highlight: "#FFFF00", // Yellow - pure light
-        heart: "#FF8C00", // Dark orange - divine revelation
-        completed: "#FFD700", // Gold - completed prayers (faint)
-      },
-    };
-    return colorSchemes[mystery] || colorSchemes.gozosos;
-  };
-
-  /**
-   * Get rosary sequence for current mystery
-   */
-  const getRosarySequence = React.useCallback(() => {
-    if (!prayers) return [];
-    const mysteryToArray = {
-      gozosos: "RGo",
-      dolorosos: "RDo",
-      gloriosos: "RGl",
-      luminosos: "RL",
-    };
-    return prayers[mysteryToArray[currentMystery]] || [];
-  }, [prayers, currentMystery]);
-
-  // Listen for visibility toggle events
+  // Sync developerModeRef with developerMode
   useEffect(() => {
-    const handleVisibilityChange = (event) => {
-      setIsVisible(event.detail.visible);
-    };
-
-    window.addEventListener("rosaryVisibilityChange", handleVisibilityChange);
-    return () =>
-      window.removeEventListener(
-        "rosaryVisibilityChange",
-        handleVisibilityChange
-      );
-  }, []);
-
-  // Listen for developer mode toggle events
-  useEffect(() => {
-    const handleDeveloperModeChange = (event) => {
-      const newMode = event.detail.developerMode;
-      setDeveloperMode(newMode);
-      developerModeRef.current = newMode; // Update ref immediately
-    };
-
-    window.addEventListener("developerModeChange", handleDeveloperModeChange);
-    return () =>
-      window.removeEventListener(
-        "developerModeChange",
-        handleDeveloperModeChange
-      );
-  }, []);
-
-  // Listen for rosary zoom change events
-  useEffect(() => {
-    const handleRosaryZoomChange = (event) => {
-      const newZoom = event.detail.zoom;
-      setRosaryZoom(newZoom);
-      console.log("Rosary zoom changed to:", newZoom);
-      // The useEffect with initializePhysics dependency will handle recreation
-    };
-
-    window.addEventListener("rosaryZoomChange", handleRosaryZoomChange);
-    return () =>
-      window.removeEventListener("rosaryZoomChange", handleRosaryZoomChange);
-  }, []);
-
-  // Update constraint visibility when developer mode changes
-  useEffect(() => {
+    developerModeRef.current = developerMode;
     if (matterInstance.current?.world) {
       const allConstraints = Matter.Composite.allConstraints(
         matterInstance.current.world
@@ -214,111 +88,10 @@ const InteractiveRosary = ({
     }
   }, [developerMode]);
 
-  // Use refs to avoid dependency issues
-  const getRosarySequenceRef = useRef(getRosarySequence);
   const onBeadClickRef = useRef(onBeadClick);
-
-  // Update refs when functions change
   useEffect(() => {
-    getRosarySequenceRef.current = getRosarySequence;
     onBeadClickRef.current = onBeadClick;
-  }, [getRosarySequence, onBeadClick]);
-
-  // Listen for content exhausted event to trigger next bead blinking
-  useEffect(() => {
-    const handleContentExhausted = (event) => {
-      const { prayerIndex } = event.detail;
-
-      // Find the next bead in sequence
-      const rosarySequence = getRosarySequence();
-      const nextPrayerIndex = prayerIndex + 1;
-
-      if (nextPrayerIndex < rosarySequence.length && matterInstance.current) {
-        const nextPrayerId = rosarySequence[nextPrayerIndex];
-        const nextBead = matterInstance.current.allBeads.find(
-          (b) => b.prayerId === nextPrayerId
-        );
-
-        if (nextBead) {
-          // Trigger blinking effect
-          setBlinkingBeadId(nextBead.id);
-          setEnhancedBeadId(nextBead.id);
-
-          // Clear blinking after 3 seconds
-          setTimeout(() => {
-            setBlinkingBeadId(null);
-            setEnhancedBeadId(null);
-          }, 3000);
-        }
-      }
-    };
-
-    window.addEventListener("contentExhausted", handleContentExhausted);
-    return () => {
-      window.removeEventListener("contentExhausted", handleContentExhausted);
-    };
-  }, [getRosarySequence]);
-
-  // Listen for enter chain prayers event (content exhausted with chain prayers ahead)
-  useEffect(() => {
-    const handleEnterChainPrayers = (event) => {
-      const { prayerIndex, chainIndices } = event.detail;
-
-      if (!matterInstance.current) return;
-
-      // Find the current bead
-      const currentBead = matterInstance.current.allBeads.find(
-        (b) => b.prayerIndex === prayerIndex
-      );
-
-      if (currentBead) {
-        console.log(
-          `⛓️ Enter chain prayers at bead ${currentBead.beadNumber}, indices:`,
-          chainIndices
-        );
-
-        // Set "press same bead" visual indicator
-        setPressSameBeadId(currentBead.id);
-        setChainBeadHighlight(currentBead.id);
-
-        // CRITICAL: Reset touch count to 1 so next tap starts chain navigation at index 0
-        // This is because user already tapped to scroll (touch 2+), so we need to reset
-        // for chain navigation to start fresh: next tap will be touch 2 = chain index 0
-        touchCountRef.current.set(currentBead.id, 1);
-        console.log(`🔄 Reset touch count to 1 for chain navigation`);
-
-        // Find and highlight the invisible bead in the chain section
-        // This makes it visually obvious that the chain is tappable
-        const invisibleChainBead = matterInstance.current.allBeads.find(
-          (b) => b.isInvisible && chainIndices.includes(b.prayerIndex)
-        );
-
-        if (invisibleChainBead) {
-          console.log(
-            `✨ Found invisible bead in chain section at prayer index ${invisibleChainBead.prayerIndex}`
-          );
-          setEnhancedBeadId(invisibleChainBead.id); // Make it visually prominent
-          // Also reset touch count for invisible bead
-          touchCountRef.current.set(invisibleChainBead.id, 1);
-        }
-
-        // Play history-modulated enter chain prayer chime
-        const { prayerHistory } = require("../../utils/soundEffects");
-        soundEffects.playEnterChainPrayerChime(prayerHistory);
-
-        // Clear after 5 seconds if not interacted with
-        setTimeout(() => {
-          setPressSameBeadId(null);
-          setEnhancedBeadId(null);
-        }, 5000);
-      }
-    };
-
-    window.addEventListener("enterChainPrayers", handleEnterChainPrayers);
-    return () => {
-      window.removeEventListener("enterChainPrayers", handleEnterChainPrayers);
-    };
-  }, []);
+  }, [onBeadClick]);
 
   // Initialize physics world with current zoom
   const initializePhysics = useCallback(() => {
@@ -369,7 +142,7 @@ const InteractiveRosary = ({
 
     // --- Get Colors and Sequence ---
     const colors = getMysteryColors(currentMystery);
-    const rosarySequence = getRosarySequenceRef.current();
+    const rosarySequence = getRosarySequence();
     console.log("📿 Rosary sequence length:", rosarySequence.length);
 
     // --- Parameters ---
@@ -1166,7 +939,7 @@ const InteractiveRosary = ({
 
         // Check if closing prayers are unlocked (5 mysteries visited)
         if (areClosingPrayersUnlocked) {
-          // Litany access is unlocked - dispatch event
+          // Litany acchowess is unlocked - dispatch event
           window.dispatchEvent(
             new CustomEvent("heartBeadPressed", {
               detail: { beadId: clickedBead.id },
@@ -1201,7 +974,7 @@ const InteractiveRosary = ({
         };
 
         if (tailToClosingMap[clickedBead.prayerIndex] !== undefined) {
-          const rosarySequence = getRosarySequenceRef.current();
+          const rosarySequence = getRosarySequence();
           effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
           effectivePrayerId = rosarySequence[effectivePrayerIndex];
           console.log(
@@ -1233,7 +1006,7 @@ const InteractiveRosary = ({
         );
 
         // Check if this bead has chain prayers
-        const rosarySequence = getRosarySequenceRef.current();
+        const rosarySequence = getRosarySequence();
         const hasChainPrayers = (prayerIndex) => {
           if (prayerIndex >= rosarySequence.length - 1) return false;
 
@@ -1460,36 +1233,41 @@ const InteractiveRosary = ({
 
       // Calculate how far down the bead is (0 = top, 1 = bottom)
       const beadPositionRatio = beadY / screenHeight;
-
-      // BIDIRECTIONAL ANALOG CONTROLLER
-      // Top 45%: scroll up
-      // Middle 10% (45-55%): neutral zone
-      // Bottom 45%: scroll down
-      let textHeightPercentage = 50; // Default: 50% of screen
-      let navButtonOpacity = 1; // Default: fully visible
+      
+      // Mobile-optimized scroll zones:
+      // - Top 50%: scroll up (thumb can't reach there easily)
+      // - Middle neutral zone
+      // - Bottom 44px (~15% on typical phone): scroll down (thumb resting area)
+      const bottomScrollHeight = 44; // Fixed pixel height for bottom scroll zone
+      const bottomScrollThreshold = 1 - (bottomScrollHeight / screenHeight);
+      const topScrollThreshold = 0.5; // Top 50% for scroll up
+      
+      let textHeightPercentage = 50;
+      let navButtonOpacity = 1;
       let pushAmount = 0;
       let scrollDirection = "neutral";
 
-      if (beadPositionRatio < 0.45) {
-        // SCROLL UP: Bead in top 45% of screen
+      if (beadPositionRatio < topScrollThreshold) {
+        // SCROLL UP: Top 50% of screen
         scrollDirection = "up";
-        const upRatio = (0.45 - beadPositionRatio) / 0.45; // 0 to 1
+        const upRatio = (topScrollThreshold - beadPositionRatio) / topScrollThreshold;
 
-        // Expand text upward (keeping text at top)
         textHeightPercentage = 50 + upRatio * 30; // 50% to 80%
-        pushAmount = -upRatio * 2; // Negative for upward movement
+        pushAmount = -upRatio * 2;
         navButtonOpacity = Math.max(0.2, 1 - upRatio * 0.6);
-      } else if (beadPositionRatio > 0.55) {
-        // SCROLL DOWN: Bead in bottom 45% of screen
+        setCursorStyle("n-resize");
+      } else if (beadPositionRatio > bottomScrollThreshold) {
+        // SCROLL DOWN: Bottom 44px of screen
         scrollDirection = "down";
-        const downRatio = (beadPositionRatio - 0.55) / 0.45; // 0 to 1
+        const downRatio = (beadPositionRatio - bottomScrollThreshold) / (1 - bottomScrollThreshold);
 
-        // Expand text downward (existing behavior)
         textHeightPercentage = 50 + downRatio * 40; // 50% to 90%
-        pushAmount = downRatio * 2; // Positive for downward movement
+        pushAmount = downRatio * 2;
         navButtonOpacity = Math.max(0.1, 1 - downRatio);
+        setCursorStyle("s-resize");
+      } else {
+        setCursorStyle("grabbing");
       }
-      // Else: Neutral zone (45-55%), no changes
 
       // Emit event with all positioning data including scroll direction
       window.dispatchEvent(
@@ -1528,6 +1306,7 @@ const InteractiveRosary = ({
 
         isDragging = false;
         draggedBead = null;
+        setCursorStyle("grab");
       }
     });
 
@@ -1540,6 +1319,38 @@ const InteractiveRosary = ({
         const glowAlpha = ((vitality - 0.7) / 0.3) * 0.1; // 0 to 0.1 (very subtle)
         context.fillStyle = `rgba(255, 245, 200, ${glowAlpha})`;
         context.fillRect(0, 0, width, height); // Subtle golden overlay
+      }
+
+      // SCROLL ZONE INDICATORS: Show subtle indicators for scroll trigger areas
+      // Only show when a bead is being dragged
+      if (mouseConstraint.body) {
+        const bottomScrollHeight = 44;
+        const topScrollY = height * 0.5;
+        const bottomScrollY = height - bottomScrollHeight;
+        
+        // Top scroll zone indicator (scroll up)
+        context.fillStyle = "rgba(100, 150, 255, 0.08)";
+        context.fillRect(0, 0, width, topScrollY);
+        
+        // Top zone icon/hint
+        context.save();
+        context.fillStyle = "rgba(100, 150, 255, 0.3)";
+        context.font = "20px sans-serif";
+        context.textAlign = "center";
+        context.fillText("↑", width / 2, topScrollY / 2);
+        context.restore();
+        
+        // Bottom scroll zone indicator (scroll down)
+        context.fillStyle = "rgba(100, 255, 150, 0.08)";
+        context.fillRect(0, bottomScrollY, width, bottomScrollHeight);
+        
+        // Bottom zone icon/hint
+        context.save();
+        context.fillStyle = "rgba(100, 255, 150, 0.3)";
+        context.font = "20px sans-serif";
+        context.textAlign = "center";
+        context.fillText("↓", width / 2, bottomScrollY + bottomScrollHeight / 2);
+        context.restore();
       }
 
       context.fillStyle = "white";
@@ -1988,7 +1799,7 @@ const InteractiveRosary = ({
 
         // NEW: Gentle slow glow for next bead (orientation hint) - 35% of current bead intensity
         // Works automatically for cross → tail transition and all other sections
-        const rosarySequence = getRosarySequenceRef.current();
+        const rosarySequence = getRosarySequence();
         const nextBeadIndex = currentPrayerIndexRef.current + 1;
         if (
           bead.prayerIndex === nextBeadIndex &&
@@ -2371,105 +2182,23 @@ const InteractiveRosary = ({
     };
   }, [initializePhysics]);
 
-  // Handle rosary dragging
-  const handleRosaryMouseDown = (e) => {
-    // Only start dragging if clicking on empty space or the rosary background
-    if (e.target === sceneRef.current) {
-      setIsDraggingRosary(true);
-      setDragStart({
-        x: e.clientX - rosaryPosition.x,
-        y: e.clientY - rosaryPosition.y,
-      });
-      e.preventDefault();
-    }
-  };
-
-  const handleRosaryMouseMove = (e) => {
-    if (isDraggingRosary) {
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
-
-      // Constrain to screen bounds
-      const container = sceneRef.current;
-      if (container) {
-        const maxX = container.clientWidth / 2;
-        const maxY = container.clientHeight / 2;
-        const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
-        const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
-
-        setRosaryPosition({ x: constrainedX, y: constrainedY });
-      }
-    }
-  };
-
-  const handleRosaryMouseUp = () => {
-    setIsDraggingRosary(false);
-  };
-
-  // Touch event handlers
-  const [touchStartTime, setTouchStartTime] = React.useState(0);
-  const [touchStartPos, setTouchStartPos] = React.useState({ x: 0, y: 0 });
-  const [hasMoved, setHasMoved] = React.useState(false);
-
-  const handleRosaryTouchStart = (e) => {
-    if (e.touches.length === 1 && e.target === sceneRef.current) {
-      const touch = e.touches[0];
-      setIsDraggingRosary(true);
-      setDragStart({
-        x: touch.clientX - rosaryPosition.x,
-        y: touch.clientY - rosaryPosition.y,
-      });
-      setTouchStartTime(Date.now());
-      setTouchStartPos({ x: touch.clientX, y: touch.clientY });
-      setHasMoved(false);
-      e.preventDefault();
-    }
-  };
-
-  const handleRosaryTouchMove = (e) => {
-    if (isDraggingRosary && e.touches.length === 1) {
-      const touch = e.touches[0];
-      const newX = touch.clientX - dragStart.x;
-      const newY = touch.clientY - dragStart.y;
-
-      // Check if user has moved finger significantly
-      const moveDistance = Math.sqrt(
-        Math.pow(touch.clientX - touchStartPos.x, 2) +
-          Math.pow(touch.clientY - touchStartPos.y, 2)
-      );
-      if (moveDistance > 10) {
-        setHasMoved(true);
-      }
-
-      // Constrain to screen bounds
-      const container = sceneRef.current;
-      if (container) {
-        const maxX = container.clientWidth / 2;
-        const maxY = container.clientHeight / 2;
-        const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
-        const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
-
-        setRosaryPosition({ x: constrainedX, y: constrainedY });
-      }
-      e.preventDefault();
-    }
-  };
-
-  const handleRosaryTouchEnd = () => {
-    const touchDuration = Date.now() - touchStartTime;
-
-    // If touch was quick (<300ms) and didn't move much, treat as tap
-    if (touchDuration < 300 && !hasMoved) {
-      // Dispatch event to hide navigation buttons
-      window.dispatchEvent(
-        new CustomEvent("toggleNavigationButtons", {
-          detail: { action: "hide" },
-        })
-      );
-    }
-
-    setIsDraggingRosary(false);
-  };
+  // Use dragging hook for mouse and touch handlers
+  const {
+    handleRosaryMouseDown,
+    handleRosaryMouseMove,
+    handleRosaryMouseUp,
+    handleRosaryTouchStart,
+    handleRosaryTouchMove,
+    handleRosaryTouchEnd,
+  } = useRosaryDragging(
+    sceneRef,
+    rosaryPosition,
+    setRosaryPosition,
+    isDraggingRosary,
+    setIsDraggingRosary,
+    dragStart,
+    setDragStart
+  );
 
   if (!isVisible) {
     return null;
@@ -2486,7 +2215,7 @@ const InteractiveRosary = ({
         top: 0,
         left: 0,
         pointerEvents: "all",
-        cursor: isDraggingRosary ? "grabbing" : "grab",
+        cursor: isDraggingRosary ? "grabbing" : cursorStyle,
       }}
       onMouseDown={handleRosaryMouseDown}
       onMouseMove={handleRosaryMouseMove}
