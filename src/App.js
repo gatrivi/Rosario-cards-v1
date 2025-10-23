@@ -454,6 +454,8 @@ function App() {
   }, [focusMode, toggleFocusMode, exitFocusMode, enterFocusMode]);
 
   // Handle bead click from rosary
+  const lastImageChangeRef = useRef(Date.now());
+  
   const onBeadClick = (prayerIndex, prayerId) => {
     // Mark this bead as pressed for progress tracking
     markBeadPressed(prayerIndex);
@@ -466,11 +468,17 @@ function App() {
         const result = handleBeadClick(prayerIndex, prayerId);
         if (result) {
           setPrayer(result.prayer);
-          const theme = localStorage.getItem("theme");
-          const isDark = theme === "dark";
-          const prayerObj = result.prayerImg;
-          const selectedImage = selectPrayerImage(prayerObj, isDark);
-          setPrayerImg(selectedImage);
+          
+          // Only change background every 20 seconds minimum to avoid flickering
+          const now = Date.now();
+          if (now - lastImageChangeRef.current > 20000) {
+            const theme = localStorage.getItem("theme");
+            const isDark = theme === "dark";
+            const prayerObj = result.prayerImg;
+            const selectedImage = selectPrayerImage(prayerObj, isDark);
+            setPrayerImg(selectedImage);
+            lastImageChangeRef.current = now;
+          }
         }
       }
     } else {
@@ -478,11 +486,17 @@ function App() {
       const result = handleBeadClick(prayerIndex, prayerId);
       if (result) {
         setPrayer(result.prayer);
-        const theme = localStorage.getItem("theme");
-        const isDark = theme === "dark";
-        const prayerObj = result.prayerImg;
-        const selectedImage = selectPrayerImage(prayerObj, isDark);
-        setPrayerImg(selectedImage);
+        
+        // Only change background every 20 seconds minimum to avoid flickering
+        const now = Date.now();
+        if (now - lastImageChangeRef.current > 20000) {
+          const theme = localStorage.getItem("theme");
+          const isDark = theme === "dark";
+          const prayerObj = result.prayerImg;
+          const selectedImage = selectPrayerImage(prayerObj, isDark);
+          setPrayerImg(selectedImage);
+          lastImageChangeRef.current = now;
+        }
       }
     }
   };
