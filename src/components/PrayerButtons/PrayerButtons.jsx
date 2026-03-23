@@ -16,19 +16,25 @@ function PrayerButtons({
 
   const handlePrayerAndCount = (prayerText, prayerImg) => {
     setPrayer(prayerText);
-    if (prayerImg.imgmo && localStorage.getItem("theme") === "dark")
-      return setPrayerImg(prayerImg.imgmo);
-    if (localStorage.getItem("theme") === "light")
-      return setPrayerImg(prayerImg.img);
+    console.log("handlePrayerAndCount:");
+
+    console.log("prayerText in PrayerButtons:", prayerText);
 
     if (
       prayerText ==
-      "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
+      "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, \nJesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, pecadores, \nahora y en la hora de nuestra muerte. \nAmén."
     ) {
+      console.log("Hail Mary clicked, counting up.");
       countUp();
     } else {
       reset();
     }
+
+    if (prayerImg.imgmo && localStorage.getItem("theme") === "dark")
+      return setPrayerImg(prayerImg.imgmo);
+
+    if (localStorage.getItem("theme") === "light")
+      return setPrayerImg(prayerImg.img);
   };
 
   function makeAcronym(str) {

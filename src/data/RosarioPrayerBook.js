@@ -396,7 +396,7 @@ const RosarioPrayerBook = {
       title: "Ave María",
       img: "/gallery-images/misterios/latin-ave-maria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/ave-maria.jpg",
-      text: "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén.",
+      text: "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, \nJesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, pecadores, \nahora y en la hora de nuestra muerte. \nAmén.",
     },
     {
       id: "G",
@@ -415,6 +415,8 @@ const RosarioPrayerBook = {
   ],
   mysteries: {
     gozosos: [
+      "/gallery-images/misterios/modooscuro/misteriogozo0.webp",
+      ,
       {
         id: "MG1",
         num: 1,

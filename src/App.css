@@ -8,7 +8,7 @@
 }
 @font-face {
   font-family: "Cloister Black"; /* Name your custom font */
-  src: url("./data/fonts/Remingtoned.ttf") format("truetype"); /* Add other formats if you have them */
+  src: url("./data/fonts/ELEGANT\ TYPEWRITER\ Regular.ttf") format("truetype"); /* Add other formats if you have them */
   font-weight: normal;
   font-style: normal;
 }
@@ -17,20 +17,30 @@
   font-size: 1.2rem;
   padding: 4px;
   box-sizing: border-box;
-  text-align: center;
-  background-color: var(--background); /* Light beige background */
+  text-align: center; /*
+  background-color: var(--background);  Light beige background */
   color: var(--text-color); /* Dark brown text */
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6),
+    2px 2px 6px rgba(0, 0, 0, 0.7);
   overflow-y: auto; /* Enable vertical scrolling if content overflows */
+}
+p {
+  white-space: pre-line;
+}
+
+.page-left::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
 }
 .page-right {
   overflow: hidden; /* CRITICAL: Clips the zoomed part */
   cursor: zoom-in; /* Provides visual feedback to the user */
 }
 .page-right img {
+  display: none;
   width: 100%;
   height: 100%;
   /* Ensures the image covers the container without distortion */
-  object-fit: cover;
+  object-fit: contain;
   /* CRITICAL: Makes the zoom smooth */
   transition: transform 0.3s ease-in-out;
   /* Start at a normal scale */

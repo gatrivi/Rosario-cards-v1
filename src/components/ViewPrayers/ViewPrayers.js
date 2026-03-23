@@ -20,7 +20,7 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
   console.log("currentTheme:", currentTheme);
   console.log("finalImageUrl:", finalImageUrl);
   return (
-    <div className="top-section" style={{ display: "flex", height: "58vh" }}>
+    <div className="top-section" style={{ display: "flex", height: "58vh", userSelect: "none" }}>
       <div
         className="page-left"
         style={{
@@ -32,24 +32,11 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
         <span style={{ color: "gold" }}>
           {" "}
           {prayer ===
-          "Dios te salve, María, llena eres de gracia, el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús. Santa María, Madre de Dios, ruega por nosotros, pecadores, ahora y en la hora de nuestra muerte. Amén."
+          "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, \nJesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, pecadores, \nahora y en la hora de nuestra muerte. \nAmén."
             ? count
             : ""}
         </span>
-        <p>{prayer}</p>
-      </div>
-      <div className="page-right" style={{ flex: 1 }}>
-        <img
-          className="prayer-image"
-          src={finalImageUrl}
-          alt={`${prayer.name} illustration`}
-          style={{
-            width: "47vw",
-            height: "56vh",
-            objectFit: "contain",
-            borderRadius: "8px",
-          }}
-        />
+        <p style={{ whiteSpace: "pre-line" }}>{prayer}</p>
       </div>
     </div>
   );

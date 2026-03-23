@@ -7,6 +7,9 @@ import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
 import Bead from "./components/RosarioNube/Bead";
+import VirtualRosary from "./components/RosarioNube/VirtualRosary";
+import { getPrayerForNode, getPrayerForLink } from "./utils/prayerMapper";
+
 function App() {
   const [prayer, setPrayer] = useState(
     "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
@@ -23,94 +26,91 @@ function App() {
     RosarioPrayerBook.mysteries[currentMystery][0]
   );
   const [count, setCount] = useState(0);
-  const [position, setPosition] = useState({ x: 100, y: 100 });
-  const [beads, setBeads] = useState([
-    { id: 1, x: 100, y: 100 },
-    { id: 2, x: 200, y: 100 },
-  ]);
+  const [activeNode, setActiveNode] = useState(null);
+  const [showButtons, setShowButtons] = useState(false);
 
-  const handleMove = (id, newPos) => {
-    setBeads((prev) => {
-      let updated = prev.map((b) => (b.id === id ? { ...b, ...newPos } : b));
-      const [b1, b2] = updated;
-      const dx = b2.x - b1.x;
-      const dy = b2.y - b1.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const targetDist = 100; // Longitud hilo
-      if (dist > targetDist) {
-        const ratio = targetDist / dist;
-        if (id === 1) {
-          // Mueve b2 hacia b1
-          b2.x = b1.x + dx * ratio;
-          b2.y = b1.y + dy * ratio;
-        } else {
-          b1.x = b2.x - dx * ratio;
-          b1.y = b2.y - dy * ratio;
-        }
-      }
-      return [b1, b2];
-    });
+  const handleNodeClick = (nodeData) => {
+    setActiveNode(nodeData.id);
+    setPrayer(getPrayerForNode(nodeData));
   };
+
+  const handleLinkClick = (linkData) => {
+    setPrayer(getPrayerForLink(linkData));
+  };
+
   const handleCountClick = () => {
     if (count < 10) {
       setCount(count + 1);
     }
   };
-  console.log("PrayerImg in App:", prayerImg);
   const handleResetClick = () => {
     setCount(0);
   };
 
+  let backgroundImage = prayerImg
+    ? `url(${prayerImg})`
+    : "url(/public/gallery-images/cathedral paing.JPG)";
+
   return (
     <div
       className="app"
-      style={{ display: "flex", flexDirection: "column", height: "100vh" }}
+      style={{
+        height: "100vh",
+        width: "100vw",
+        backgroundImage: backgroundImage,
+        backgroundSize: "cover",
+        position: "relative",
+        overflow: "hidden"
+      }}
     >
-      {" "}
-      <>
-        {beads.map((b) => (
-          <Bead
-            key={b.id}
-            id={b.id}
-            position={{ x: b.x, y: b.y }}
-            onMove={(pos) => handleMove(b.id, pos)}
-          />
-        ))}
-      </>{" "}
-      <svg
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-        }}
-      >
-        <line
-          x1={beads[0].x + 11}
-          y1={beads[0].y + 11}
-          x2={beads[1].x + 11}
-          y2={beads[1].y + 11}
-          stroke="coral"
+      {/* Background UI Layer (Prayers sitting underneath the rosary) */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, display: "flex", flexDirection: "column" }}>
+        <Header logo={logo} style={{ height: "4vh" }} />
+        
+        <div style={{ flex: 1, padding: "10px", overflow: "hidden" }}>
+          {/* Opaque box for prayers so they are easy to read */}
+          <div style={{ background: "rgba(0,0,0,0.65)", borderRadius: "10px", padding: "10px", color: "white", display: "inline-block", maxWidth: "95%", height: "100%" }}>
+            <ViewPrayers
+              count={count}
+              prayerImg={prayerImg}
+              prayer={prayer}
+              currentMystery={currentMystery}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Foreground Physics Layer (Rosary on top) */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, pointerEvents: "none" }}>
+        <VirtualRosary 
+          onNodeClick={handleNodeClick} 
+          onLinkClick={handleLinkClick} 
         />
-      </svg>
-      <Header logo={logo} style={{ height: "4vh" }} />
-      <ViewPrayers
-        count={count}
-        prayerImg={prayerImg}
-        prayer={prayer}
-        currentMystery={currentMystery}
-      />
-      <PrayerButtons
-        prayers={RosarioPrayerBook}
-        countUp={handleCountClick}
-        reset={handleResetClick}
-        setPrayer={setPrayer}
-        setPrayerImg={setPrayerImg}
-        currentMystery={currentMystery}
-        setcurrentMystery={setcurrentMystery}
-      />
+      </div>
+
+      {/* Topmost UI Layer (Just the buttons, floating over everything) */}
+      <div style={{ position: "absolute", bottom: 0, right: 0, left: 0, zIndex: 20, padding: "10px", display: "flex", flexDirection: "column", alignItems: "flex-end", maxHeight: "80vh", pointerEvents: "none" }}>
+        <button 
+          onClick={() => setShowButtons(!showButtons)} 
+          style={{ padding: "10px 15px", background: "rgba(30,30,30,0.8)", color: "white", border: "1px solid white", borderRadius: "8px", cursor: "pointer", marginBottom: "10px", pointerEvents: "auto" }}
+        >
+          {showButtons ? "Ocultar Botones Clásicos" : "Mostrar Botones Clásicos"}
+        </button>
+
+        {showButtons && (
+          <div style={{ background: "rgba(0,0,0,0.85)", padding: "15px", borderRadius: "10px", width: "100%", overflowY: "auto", pointerEvents: "auto" }}>
+            <PrayerButtons
+              prayers={RosarioPrayerBook}
+              countUp={handleCountClick}
+              reset={handleResetClick}
+              setPrayer={setPrayer}
+              setPrayerImg={setPrayerImg}
+              currentMystery={currentMystery}
+              setcurrentMystery={setcurrentMystery}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
