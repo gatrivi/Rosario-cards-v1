@@ -1,18 +1,17 @@
 // ==========================================
 // ROSARY GRAPH DATASOURCE (Physical Layout)
 // ==========================================
-// You can change these numbers to alter the size of beads
-// and the length of chains!
+// User Specification from RosaryStructure.md:
+// "bead diameter is say, 1. short chain is about 0.6. long chain is about 1.2"
+// So if Radius is 12 (Diameter 24), Short = 14.4, Long = 28.8.
 export const SIZES = {
-  // === BEAD SIZES (Radius) ===
-  cross: 25,          // Scale for the Cross
-  centerpiece: 24,    // The size of the center medal
-  largeBead: 18,      // The size of the Our Father beads (Misterio)
-  smallBead: 12,      // The size of the Ave Maria beads
+  cross: 12,
+  centerpiece: 12,
+  largeBead: 12,      
+  smallBead: 12,      
   
-  // === CHAIN LENGTHS (Distance in pixels) ===
-  shortChain: 25,     // The distance between the 10 small beads in a decade
-  longChain: 50       // The distance connecting a large bead or the cross
+  shortChain: 15,     // 0.6 relative length
+  longChain: 30       // 1.2 relative length
 };
 
 export const createRosaryGraph = () => {
@@ -20,76 +19,83 @@ export const createRosaryGraph = () => {
   const links = [];
 
   const addNode = (id, type, label) => {
-    let radius;
+    let radius = SIZES.smallBead;
     if (type === "cross") radius = SIZES.cross;
     else if (type === "centerpiece") radius = SIZES.centerpiece;
-    else if (type === "large-bead") radius = SIZES.largeBead;
-    else radius = SIZES.smallBead;
+    else if (type === "large-bead" || type === "mystery-bead" || type === "tail-lb") radius = SIZES.largeBead;
 
     const node = { id, type, label, radius };
     nodes.push(node);
     return node;
   };
 
-  const addLink = (source, target, type) => {
+  const addLink = (source, target, type, prayerType = null) => {
     const distance = type === "long" ? SIZES.longChain : SIZES.shortChain;
-    const link = { source, target, type, distance, id: `chain-${source}-${target}` };
+    const link = { source, target, type, distance, prayerType, id: `chain-${source}-${target}` };
     links.push(link);
     return link;
   };
 
   // ========================================================
-  // 1. THE TAIL (Cross -> 3 Beads -> Mystery 1 -> Centerpiece)
+  // 1. THE TAIL
   // ========================================================
-  addNode("cross", "cross", "Crucifix");
-  addNode("tail-1", "large-bead", "1st Our Father");
-  addNode("tail-m1", "small-bead", "1st Hail Mary");
-  addNode("tail-m2", "small-bead", "2nd Hail Mary");
-  addNode("tail-m3", "small-bead", "3rd Hail Mary");
-  
-  // Mystery-1 now goes BEFORE the centerpiece as requested
-  addNode("mystery-1", "large-bead", "Mystery 1");
+  addNode("cross", "cross", "Cross");
+  addNode("tail-lb", "tail-lb", "Our Father");
+  addNode("tail-b1", "small-bead", "Hail Mary 1");
+  addNode("tail-b2", "small-bead", "Hail Mary 2");
+  addNode("tail-b3", "small-bead", "Hail Mary 3");
+  addNode("mystery-1", "mystery-bead", "Mystery 1");
+  addNode("centerpiece", "centerpiece", "Medal");
 
-  addLink("cross", "tail-1", "long");
-  addLink("tail-1", "tail-m1", "long");
-  addLink("tail-m1", "tail-m2", "short");
-  addLink("tail-m2", "tail-m3", "short");
-  addLink("tail-m3", "mystery-1", "long");
-
-  // ========================================================
-  // 2. THE CENTERPIECE
-  // ========================================================
-  addNode("centerpiece", "centerpiece", "Centerpiece");
-  addLink("mystery-1", "centerpiece", "long");
+  // Links in the tail
+  addLink("cross", "tail-lb", "long", "contrition");
+  addLink("tail-lb", "tail-b1", "long"); // Around lone beads there is LC
+  addLink("tail-b1", "tail-b2", "short"); // Between grouped beads there is SC
+  addLink("tail-b2", "tail-b3", "short");
+  addLink("tail-b3", "mystery-1", "long", "interval"); // 5. LC > Interval
+  addLink("mystery-1", "centerpiece", "long", "our-father"); // 7. LC > our father
 
   // ========================================================
-  // 3. THE LOOP (5 decades of 10 beads)
+  // 2. THE LOOP (5 decades of 10 beads)
   // ========================================================
   let previousNodeId = "centerpiece";
 
   for (let decade = 1; decade <= 5; decade++) {
-    // A large bead separates the decades, but NOT for decade 1 (is mystery-1)
+    // If >1, we insert the Interval (LC) and the Mystery (LB)
     if (decade > 1) {
-      const largeBeadId = `mystery-${decade}`;
-      addNode(largeBeadId, "large-bead", `Mystery ${decade}`);
-      addLink(previousNodeId, largeBeadId, "long");
-      previousNodeId = largeBeadId;
+      const mysteryId = `mystery-${decade}`;
+      addNode(mysteryId, "mystery-bead", `Mystery ${decade}`);
+      
+      addLink(previousNodeId, mysteryId, "long", "interval");
+      previousNodeId = mysteryId;
     }
 
-    // The 10 small beads (Hail Marys)
+    // The 10 small beads
     for (let bead = 1; bead <= 10; bead++) {
       const smallBeadId = `decade-${decade}-bead-${bead}`;
       addNode(smallBeadId, "small-bead", `D${decade} B${bead}`);
       
-      const linkType = bead === 1 ? "long" : "short";
-      addLink(previousNodeId, smallBeadId, linkType);
+      if (bead === 1) {
+        if (decade === 1) {
+          // Medal connects straight to 1st decade (No Our Father here because it's behind the medal)
+          addLink(previousNodeId, smallBeadId, "long");
+        } else {
+          // Mystery bead connects to 1st bead of decade (LC > Our Father)
+          addLink(previousNodeId, smallBeadId, "long", "our-father");
+        }
+      } else {
+        // Grouped beads use SC
+        addLink(previousNodeId, smallBeadId, "short");
+      }
       
       previousNodeId = smallBeadId;
     }
   }
 
-  // Connect the final bead back to the centerpiece to close the physical loop
-  addLink(previousNodeId, "centerpiece", "long");
+  // Connect the final bead back to the centerpiece
+  // The user repeats "Interval => Mystery => Our Father" after decades. 
+  // After the 5th decade, you usually read the interval (Glory Be) before concluding at the Medal.
+  addLink(previousNodeId, "centerpiece", "long", "interval");
 
   return { nodes, links };
 };

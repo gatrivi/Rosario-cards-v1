@@ -93,15 +93,11 @@ export const useD3Rosary = (containerRef, graph, onNodeClick, onLinkClick) => {
       if (d.type === "cross") {
         el.append("path")
           .attr("d", "M -8 -25 L 8 -25 L 8 -5 L 25 -5 L 25 5 L 8 5 L 8 35 L -8 35 L -8 5 L -25 5 L -25 -5 L -8 -5 Z")
-          .attr("fill", "gold").attr("stroke", "rgba(0,0,0,0.5)").attr("stroke-width", 2);
+          .attr("fill", "chocolate").attr("stroke", "rgba(0,0,0,0.5)").attr("stroke-width", 2);
       } else {
         el.append("circle")
           .attr("r", (d) => d.radius)
-          .attr("fill", (d) => {
-            if (d.type === "centerpiece") return "#B8860B";
-            if (d.type === "large-bead") return "darkred";
-            return "chocolate";
-          })
+          .attr("fill", "chocolate")
           .attr("stroke", "rgba(0,0,0,0.5)").attr("stroke-width", 2);
       }
     });
