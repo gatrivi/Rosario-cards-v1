@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-export const GRAVITY_STRENGTH = 0.08;
-export const TENSION_STRENGTH = 1.2;
-export const REPULSION_STRENGTH = -15;
+export const GRAVITY_STRENGTH = 0.01;
+export const TENSION_STRENGTH = 0.8;
+export const REPULSION_STRENGTH = -5;
 
 const playTick = () => {
   try {
@@ -38,10 +38,17 @@ export const useD3Rosary = (containerRef, graph, onNodeClick, onLinkClick) => {
 
     const simulation = d3
       .forceSimulation(nodes)
+      .velocityDecay(0.2)
       .force("link", d3.forceLink(links).id((d) => d.id).distance((d) => d.distance).strength(TENSION_STRENGTH))
       .force("collide", d3.forceCollide().radius((d) => d.radius + 2).iterations(4))
       .force("charge", d3.forceManyBody().strength(REPULSION_STRENGTH))
-      .force("center", d3.forceCenter(width / 2, height / 2).strength(GRAVITY_STRENGTH));
+      .force("x", d3.forceX(width / 2).strength(GRAVITY_STRENGTH))
+      .force("y", d3.forceY((d) => {
+        if (d.type === "cross" || d.id.startsWith("tail") || d.type === "centerpiece") {
+          return height * 0.8;
+        }
+        return height * 0.35;
+      }).strength(0.015));
 
     d3.select(containerRef.current).selectAll("*").remove();
 
@@ -131,6 +138,11 @@ export const useD3Rosary = (containerRef, graph, onNodeClick, onLinkClick) => {
     nodeWrappers.call(d3.drag().on("start", dragStarted).on("drag", dragged).on("end", dragEnded));
 
     simulation.on("tick", () => {
+      nodes.forEach((d) => {
+        d.x = Math.max(d.radius, Math.min(width - d.radius, d.x));
+        d.y = Math.max(d.radius, Math.min(height - d.radius, d.y));
+      });
+
       lines.each(function(d) {
         const dx = d.target.x - d.source.x;
         const dy = d.target.y - d.source.y;
