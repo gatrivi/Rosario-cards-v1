@@ -1,10 +1,14 @@
 import React from "react";
 
-function Header({ logo }) {
+function Header({ logo, onToggleStats }) {
   return (
     <header
       style={{
-        textAlign: "center",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "0 20px",
+        height: "5vh"
       }}
       className="App-header"
     >
@@ -15,6 +19,21 @@ function Header({ logo }) {
         alt="logo"
         style={{ height: "4vh" }}
       />
+      <button 
+        onClick={onToggleStats}
+        style={{
+          background: "#d4af37",
+          color: "#000",
+          border: "none",
+          padding: "5px 15px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          fontWeight: "bold",
+          pointerEvents: "auto"
+        }}
+      >
+        Estadísticas
+      </button>
     </header>
   );
 }

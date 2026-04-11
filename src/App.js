@@ -9,6 +9,8 @@ import Header from "./components/common/Header";
 import Bead from "./components/RosarioNube/Bead";
 import VirtualRosary from "./components/RosarioNube/VirtualRosary";
 import { getPrayerForNode, getPrayerForLink } from "./utils/prayerMapper";
+import StatsView from "./components/StatsView";
+import { useRosaryStats } from "./hooks/useRosaryStats";
 
 function App() {
   const [prayer, setPrayer] = useState(
@@ -28,6 +30,8 @@ function App() {
   const [count, setCount] = useState(0);
   const [activeNode, setActiveNode] = useState(null);
   const [showButtons, setShowButtons] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const { logRosary } = useRosaryStats();
 
   const handleNodeClick = (nodeData) => {
     setActiveNode(nodeData.id);
@@ -51,6 +55,20 @@ function App() {
     ? `url(${prayerImg})`
     : "url(/public/gallery-images/cathedral paing.JPG)";
 
+  if (showStats) {
+    return (
+      <div style={{ height: "100vh", width: "100vw", overflow: "auto", position: "relative" }}>
+        <button 
+          onClick={() => setShowStats(false)}
+          style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid white", borderRadius: "5px", cursor: "pointer" }}
+        >
+          Volver al Rosario
+        </button>
+        <StatsView />
+      </div>
+    );
+  }
+
   return (
     <div
       className="app"
@@ -65,7 +83,7 @@ function App() {
     >
       {/* Background UI Layer (Prayers sitting underneath the rosary) */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, display: "flex", flexDirection: "column" }}>
-        <Header logo={logo} style={{ height: "4vh" }} />
+        <Header logo={logo} onToggleStats={() => setShowStats(true)} />
         
         <div style={{ flex: 1, padding: "10px", overflow: "hidden" }}>
           {/* Opaque box for prayers so they are easy to read */}
@@ -90,12 +108,24 @@ function App() {
 
       {/* Topmost UI Layer (Just the buttons, floating over everything) */}
       <div style={{ position: "absolute", bottom: 0, right: 0, left: 0, zIndex: 20, padding: "10px", display: "flex", flexDirection: "column", alignItems: "flex-end", maxHeight: "80vh", pointerEvents: "none" }}>
-        <button 
-          onClick={() => setShowButtons(!showButtons)} 
-          style={{ padding: "10px 15px", background: "rgba(30,30,30,0.8)", color: "white", border: "1px solid white", borderRadius: "8px", cursor: "pointer", marginBottom: "10px", pointerEvents: "auto" }}
-        >
-          {showButtons ? "Ocultar Botones Clásicos" : "Mostrar Botones Clásicos"}
-        </button>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <button 
+            onClick={() => {
+              logRosary();
+              alert("¡Rosario registrado!");
+            }} 
+            style={{ padding: "10px 15px", background: "#d4af37", color: "black", border: "none", borderRadius: "8px", cursor: "pointer", pointerEvents: "auto", fontWeight: "bold" }}
+          >
+            + Finalizar Rosario
+          </button>
+
+          <button 
+            onClick={() => setShowButtons(!showButtons)} 
+            style={{ padding: "10px 15px", background: "rgba(30,30,30,0.8)", color: "white", border: "1px solid white", borderRadius: "8px", cursor: "pointer", pointerEvents: "auto" }}
+          >
+            {showButtons ? "Ocultar Botones Clásicos" : "Mostrar Botones Clásicos"}
+          </button>
+        </div>
 
         {showButtons && (
           <div style={{ background: "rgba(0,0,0,0.85)", padding: "15px", borderRadius: "10px", width: "100%", overflowY: "auto", pointerEvents: "auto" }}>
