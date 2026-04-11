@@ -15,18 +15,35 @@ const VERSOS_AVE_MARIA = [
 
 export default function InteractiveAveMaria({ onRosaCompletada }) {
   const [progresoRosa, setProgresoRosa] = useState(0); 
+  const [lastTapTime, setLastTapTime] = useState(null);
+  const [tiemposVersos, setTiemposVersos] = useState([]);
 
   const handleTap = (index) => {
     // Solo avanzamos si toca el verso que toca leer (evita saltos accidentales)
     if (index === progresoRosa) {
+      const now = Date.now();
+      
+      // Si es el primer verso, le damos un tiempo "saludable" por defecto
+      // o tomamos el tiempo desde que cargó el componente (pero puede ser mucho)
+      const tiempoTardado = lastTapTime ? (now - lastTapTime) : 2500;
+      
+      const nuevosTiempos = [...tiemposVersos, tiempoTardado];
+      setTiemposVersos(nuevosTiempos);
+      setLastTapTime(now);
+
       const nuevoProgreso = progresoRosa + 1;
       setProgresoRosa(nuevoProgreso);
 
       if (nuevoProgreso === VERSOS_AVE_MARIA.length) {
-        onRosaCompletada(); // Se planta la rosa
+        // Se planta la rosa, enviando el array de tiempos
+        onRosaCompletada(nuevosTiempos); 
         
         // Un respiro de un segundo antes de reiniciar para la siguiente Ave María
-        setTimeout(() => setProgresoRosa(0), 1000);
+        setTimeout(() => {
+          setProgresoRosa(0);
+          setLastTapTime(null);
+          setTiemposVersos([]);
+        }, 1000);
       }
     }
   };
