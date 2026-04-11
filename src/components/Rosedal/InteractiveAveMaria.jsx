@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-// Los 10 versos del Ave María
 const VERSOS_AVE_MARIA = [
   "Dios te salve, María;",
   "llena eres de gracia;",
@@ -14,88 +13,69 @@ const VERSOS_AVE_MARIA = [
   "Amén."
 ];
 
-// Sub-componente para visualizar cómo se llena la rosa
-function VisualizadorRosa({ progreso, total }) {
-  // Calculamos la opacidad basada en el progreso (0.0 a 1.0)
-  const opacidad = progreso / total;
-  
-  return (
-    <div style={{
-      fontSize: '8em',
-      filter: progreso === total ? 'drop-shadow(0 0 20px rgba(212, 175, 55, 0.8))' : 'none',
-      transition: 'all 0.5s ease',
-      transform: `scale(${0.5 + (opacidad * 0.5)})`, // Crece a medida que se reza
-      opacity: Math.max(0.1, opacidad) // Siempre un poco visible (0.1) como guía
-    }}>
-      🌹
-    </div>
-  );
-}
-
 export default function InteractiveAveMaria({ onRosaCompletada }) {
-  // Rastrea cuántos versos se han "leído" (pasado el mouse)
   const [progresoRosa, setProgresoRosa] = useState(0); 
 
-  const handleMouseEnter = (index) => {
-    // Solo permitimos avanzar si pasa el mouse por el SIGUIENTE verso correcto
+  const handleTap = (index) => {
+    // Solo avanzamos si toca el verso que toca leer (evita saltos accidentales)
     if (index === progresoRosa) {
       const nuevoProgreso = progresoRosa + 1;
       setProgresoRosa(nuevoProgreso);
 
-      // Si llegó al final (10 versos)
       if (nuevoProgreso === VERSOS_AVE_MARIA.length) {
-        onRosaCompletada(); 
+        onRosaCompletada(); // Se planta la rosa
         
-        // Reiniciamos la oración después de un pequeño retraso
-        setTimeout(() => {
-          setProgresoRosa(0);
-        }, 1200);
+        // Un respiro de un segundo antes de reiniciar para la siguiente Ave María
+        setTimeout(() => setProgresoRosa(0), 1000);
       }
     }
   };
 
   return (
-    <div style={{ display: 'flex', gap: '40px', alignItems: 'center', padding: '20px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', padding: '15px' }}>
       
-      {/* Columna Izquierda: El Texto Interactivo */}
-      <div style={{ flex: 1, fontSize: '1.2em', lineHeight: '1.8', minWidth: '300px' }}>
+      {/* La Rosa en la parte superior, bien visible en móvil */}
+      <div style={{ 
+        height: '150px', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        marginBottom: '20px'
+      }}>
+        <div style={{
+          fontSize: '6em',
+          filter: progresoRosa === 10 ? 'drop-shadow(0 0 15px rgba(212, 175, 55, 0.8))' : 'none',
+          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Efecto de rebote suave
+          transform: `scale(${0.4 + ((progresoRosa / 10) * 0.6)})`, 
+          opacity: Math.max(0.15, progresoRosa / 10)
+        }}>
+          🌹
+        </div>
+      </div>
+
+      {/* Lista de versos táctiles */}
+      <div style={{ fontSize: '1.2em', lineHeight: '1.6' }}>
         {VERSOS_AVE_MARIA.map((verso, index) => (
           <div 
             key={index}
-            onMouseEnter={() => handleMouseEnter(index)}
-            // Para dispositivos táctiles
-            onTouchStart={() => handleMouseEnter(index)}
+            onClick={() => handleTap(index)}
+            // Estilos para que sea un área táctil cómoda
             style={{
-              padding: '5px 10px',
-              borderRadius: '5px',
-              cursor: 'default',
-              color: index < progresoRosa ? '#d4af37' : '#555',
-              transition: 'color 0.3s ease, background-color 0.3s ease',
-              backgroundColor: index === progresoRosa ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
-              marginBottom: '5px'
+              padding: '12px 10px', 
+              marginBottom: '4px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: index < progresoRosa ? '#d4af37' : '#666', // Dorado si ya se leyó
+              backgroundColor: index === progresoRosa ? 'rgba(212, 175, 55, 0.15)' : 'transparent', // Resalta el que toca leer
+              borderLeft: index === progresoRosa ? '4px solid #d4af37' : '4px solid transparent', // Guía visual fuerte
+              transition: 'all 0.2s ease',
+              touchAction: 'manipulation' // Optimiza la respuesta táctil
             }}
           >
             {verso}
           </div>
         ))}
       </div>
-
-      {/* Columna Derecha: La Rosa Dibujándose */}
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '250px',
-        minWidth: '200px'
-      }}>
-        <VisualizadorRosa progreso={progresoRosa} total={VERSOS_AVE_MARIA.length} />
-        <p style={{ color: '#aaa', marginTop: '15px' }}>
-          {progresoRosa === 10 ? '¡Rosa completada!' : `Trazos: ${progresoRosa} / 10`}
-        </p>
-      </div>
-
     </div>
   );
 }

@@ -19,11 +19,51 @@ const LEVELS = [
   { id: 12, name: "Padre Pío", reqTotal: 5000 }
 ];
 
+// Helper para los estilos de los botones
+const btnStyle = (tipo) => ({
+  padding: '12px 15px',
+  borderRadius: '8px',
+  border: 'none',
+  background: tipo === 'plantar' ? '#2a4d2a' : '#4d2a2a', // Verde oscurito para sumar, rojizo para restar
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: '0.9em',
+  touchAction: 'manipulation'
+});
+
+// Componente para agregar a la vista principal del Rosedal
+function RosedalControls({ onAdd, onRemove }) {
+  return (
+    <div style={{
+      background: '#222', 
+      padding: '15px', 
+      borderRadius: '12px',
+      border: '1px solid #444',
+      marginTop: '20px',
+      textAlign: 'center'
+    }}>
+      <h4 style={{ margin: '0 0 15px 0', color: '#ccc' }}>Ajuste Rápido Manual</h4>
+      
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+        {/* Botones de Podar (Restar) */}
+        <button onClick={() => onRemove(1)} style={btnStyle('podar')}>- 1 Rosa</button>
+        
+        {/* Botones de Plantar (Sumar) */}
+        <button onClick={() => onAdd(1)} style={btnStyle('plantar')}>+ 1 Rosa</button>
+        <button onClick={() => onAdd(10)} style={btnStyle('plantar')}>+ 1 Decena</button>
+        <button onClick={() => onAdd(50)} style={btnStyle('plantar')}>+ 1 Rosario</button>
+      </div>
+    </div>
+  );
+}
+
 export default function RosedalView() {
   const { 
     totalAveMarias, 
     dailyAveMarias,
     logAveMaria, 
+    addRosas,
+    removeRosas,
     totalMacetones, 
     rosasInCurrentMaceton,
     ROSAS_PER_MACETON
@@ -123,8 +163,11 @@ export default function RosedalView() {
         ))}
       </div>
 
+      {/* Rosedal Controls (Ajuste Rápido Manual) */}
+      <RosedalControls onAdd={addRosas} onRemove={removeRosas} />
+
       {/* La Zona de Oración Activa */}
-      <div style={{ borderTop: '1px solid #444', paddingTop: '30px' }}>
+      <div style={{ borderTop: '1px solid #444', paddingTop: '30px', marginTop: '30px' }}>
         <h3 style={{ textAlign: 'center', color: '#d4af37' }}>Oración en Curso</h3>
         <InteractiveAveMaria onRosaCompletada={handleRosaCompletada} />
       </div>

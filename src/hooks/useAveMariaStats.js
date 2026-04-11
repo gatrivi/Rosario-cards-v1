@@ -31,35 +31,40 @@ export function useAveMariaStats() {
     }
   }, []);
 
-  // Función para registrar UNA Ave María rezada (una nueva rosa)
-  const logAveMaria = () => {
+  // Funciones de control manual
+  const addRosas = (cantidad) => {
     setTotalAveMarias(prev => {
-      const nextCount = prev + 1;
+      const nextCount = prev + cantidad;
       localStorage.setItem('total_ave_marias', nextCount);
       return nextCount;
     });
 
     setDailyAveMarias(prev => {
-      const nextCount = prev + 1;
+      const nextCount = prev + cantidad;
       localStorage.setItem('daily_ave_marias', nextCount);
       return nextCount;
     });
   };
 
-  // Función para registrar un Rosario COMPLETO de una vez (agrega 50 rosas)
-  const logCompleteRosary = () => {
+  const removeRosas = (cantidad) => {
     setTotalAveMarias(prev => {
-      const nextCount = prev + ROSAS_PER_MACETON;
+      const nextCount = Math.max(0, prev - cantidad);
       localStorage.setItem('total_ave_marias', nextCount);
       return nextCount;
     });
 
     setDailyAveMarias(prev => {
-      const nextCount = prev + ROSAS_PER_MACETON;
+      const nextCount = Math.max(0, prev - cantidad);
       localStorage.setItem('daily_ave_marias', nextCount);
       return nextCount;
     });
   };
+
+  // Función para registrar UNA Ave María rezada (una nueva rosa) (legado)
+  const logAveMaria = () => addRosas(1);
+
+  // Función para registrar un Rosario COMPLETO de una vez (legado)
+  const logCompleteRosary = () => addRosas(ROSAS_PER_MACETON);
 
   // Cálculos para la visualización global
   const totalMacetones = Math.floor(totalAveMarias / ROSAS_PER_MACETON);
@@ -70,6 +75,8 @@ export function useAveMariaStats() {
     dailyAveMarias,
     logAveMaria, 
     logCompleteRosary,
+    addRosas,
+    removeRosas,
     totalMacetones, 
     rosasInCurrentMaceton,
     ROSAS_PER_MACETON
