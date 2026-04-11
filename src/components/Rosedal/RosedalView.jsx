@@ -46,12 +46,12 @@ function RosedalControls({ onAdd, onRemove }) {
       
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
         {/* Botones de Podar (Restar) */}
-        <button onClick={() => onRemove(1)} style={btnStyle('podar')}>- 1 Rosa</button>
+        <button onClick={() => onRemove(1)} style={btnStyle('podar')}>✂️ Podar Rosa</button>
         
         {/* Botones de Plantar (Sumar) */}
-        <button onClick={() => onAdd(1)} style={btnStyle('plantar')}>+ 1 Rosa</button>
-        <button onClick={() => onAdd(10)} style={btnStyle('plantar')}>+ 1 Decena</button>
-        <button onClick={() => onAdd(50)} style={btnStyle('plantar')}>+ 1 Rosario</button>
+        <button onClick={() => onAdd(1)} style={btnStyle('plantar')}>🌱 Plantar Rosa</button>
+        <button onClick={() => onAdd(10)} style={btnStyle('plantar')}>🌿 Sembrar Decena</button>
+        <button onClick={() => onAdd(50)} style={btnStyle('plantar')}>🌳 Plantar Rosario</button>
       </div>
     </div>
   );
