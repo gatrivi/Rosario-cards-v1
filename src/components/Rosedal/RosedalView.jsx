@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import Maceton from './Maceton'; 
+import InteractiveAveMaria from './InteractiveAveMaria';
 
 // Definición de los 12 niveles (para referencia, basados en total de rosarios)
 const LEVELS = [
@@ -18,30 +19,32 @@ const LEVELS = [
   { id: 12, name: "Padre Pío", reqTotal: 5000 }
 ];
 
-const btnStyle = {
-  padding: '10px 20px',
-  margin: '5px',
-  background: '#d4af37',
-  color: '#000',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-  fontWeight: 'bold'
-};
-
 export default function RosedalView() {
   const { 
     totalAveMarias, 
+    dailyAveMarias,
     logAveMaria, 
-    logCompleteRosary,
     totalMacetones, 
     rosasInCurrentMaceton,
     ROSAS_PER_MACETON
   } = useAveMariaStats();
 
+  const [objetivoRosarios, setObjetivoRosarios] = useState(1); // Por defecto 1 rosario
+
   // Calcular nivel actual basado en el total de rosarios (macetones)
   const currentLevel = LEVELS.slice().reverse().find(lvl => totalMacetones >= lvl.reqTotal) || LEVELS[0];
   const nextLevel = LEVELS.find(lvl => lvl.id === currentLevel.id + 1);
+
+  // Calcula cuántos maceteros necesitamos basados en el objetivo
+  const maceterosData = Array.from({ length: objetivoRosarios }).map((_, index) => {
+    // Calculamos cuántas rosas van en ESTE macetero específico (capacidad 50)
+    const rosasEnEsteMaceton = Math.max(0, Math.min(50, dailyAveMarias - (index * 50)));
+    return { id: index, rosas: rosasEnEsteMaceton };
+  });
+
+  const handleRosaCompletada = () => {
+    logAveMaria(); 
+  };
 
   return (
     <div className="rosedal-container" style={{
@@ -52,12 +55,6 @@ export default function RosedalView() {
       fontFamily: 'serif'
     }}>
       <h1 style={{ textAlign: 'center', color: '#d4af37' }}>El Rosedal Espiritual</h1>
-      
-      {/* Sección de Botones de Prueba (Eliminar después) */}
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <button onClick={logAveMaria} style={btnStyle}>+ Rezar Ave María (1 rosa)</button>
-        <button onClick={logCompleteRosary} style={btnStyle}>+ Completar Rosario (50 rosas)</button>
-      </div>
 
       {/* Resumen Global */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
@@ -87,22 +84,49 @@ export default function RosedalView() {
         )}
       </div>
 
-      {/* VISUALIZACIÓN DEL ROSEDAL */}
-      <div style={{
-        background: '#333',
-        padding: '20px',
-        borderRadius: '10px',
-        textAlign: 'center'
-      }}>
-        <h2 style={{ marginBottom: '20px' }}>Tus Rosas Plantadas</h2>
-        
-        {/* Renderizar todos los macetones completos */}
-        {Array.from({ length: totalMacetones }).map((_, index) => (
-          <Maceton key={`full-${index}`} count={ROSAS_PER_MACETON} maxRosas={ROSAS_PER_MACETON} />
+      {/* Selector de Objetivo Diario */}
+      <div style={{ marginBottom: '30px', textAlign: 'center', background: '#222', padding: '15px', borderRadius: '8px' }}>
+        <h2>¿Cuánto deseas rezar hoy?</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
+          {[1, 2, 4, 8].map(num => (
+            <button 
+              key={num}
+              onClick={() => setObjetivoRosarios(num)}
+              style={{
+                padding: '10px 20px',
+                background: objetivoRosarios === num ? '#d4af37' : '#333',
+                color: objetivoRosarios === num ? '#000' : '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              {num} {num === 1 ? 'Rosario' : 'Rosarios'}
+            </button>
+          ))}
+        </div>
+        <p style={{ color: '#aaa', marginTop: '10px', fontSize: '0.9em' }}>
+          Objetivo: {objetivoRosarios * ROSAS_PER_MACETON} Ave Marías
+        </p>
+      </div>
+
+      {/* Los Maceteros (El progreso visual del día) */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px', marginBottom: '40px' }}>
+        {maceterosData.map(maceton => (
+          <div key={maceton.id} style={{ textAlign: 'center' }}>
+            {/* Reutilizamos el componente Maceton, pasando las rosas actuales y el máximo de 50 */}
+            <Maceton count={maceton.rosas} maxRosas={ROSAS_PER_MACETON} />
+            <div style={{ marginTop: '5px', color: maceton.rosas === ROSAS_PER_MACETON ? '#d4af37' : '#aaa' }}>
+              {maceton.rosas === ROSAS_PER_MACETON ? '¡Completado!' : 'En progreso...'}
+            </div>
+          </div>
         ))}
-        
-        {/* Renderizar el macetón en progreso (siempre visible) */}
-        <Maceton key="in-progress" count={rosasInCurrentMaceton} maxRosas={ROSAS_PER_MACETON} />
+      </div>
+
+      {/* La Zona de Oración Activa */}
+      <div style={{ borderTop: '1px solid #444', paddingTop: '30px' }}>
+        <h3 style={{ textAlign: 'center', color: '#d4af37' }}>Oración en Curso</h3>
+        <InteractiveAveMaria onRosaCompletada={handleRosaCompletada} />
       </div>
 
     </div>
