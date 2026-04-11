@@ -11,6 +11,8 @@ import VirtualRosary from "./components/RosarioNube/VirtualRosary";
 import { getPrayerForNode, getPrayerForLink } from "./utils/prayerMapper";
 import StatsView from "./components/StatsView";
 import { useRosaryStats } from "./hooks/useRosaryStats";
+import RosedalView from "./components/Rosedal/RosedalView";
+import DailyTracker from "./components/Rosedal/DailyTracker";
 
 function App() {
   const [prayer, setPrayer] = useState(
@@ -31,6 +33,8 @@ function App() {
   const [activeNode, setActiveNode] = useState(null);
   const [showButtons, setShowButtons] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showRosedal, setShowRosedal] = useState(false);
+  const [showDailyTracker, setShowDailyTracker] = useState(false);
   const { logRosary } = useRosaryStats();
 
   const handleNodeClick = (nodeData) => {
@@ -69,6 +73,34 @@ function App() {
     );
   }
 
+  if (showRosedal) {
+    return (
+      <div style={{ height: "100vh", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
+        <button 
+          onClick={() => setShowRosedal(false)}
+          style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid d4af37", borderRadius: "5px", cursor: "pointer" }}
+        >
+          Volver al Rosario
+        </button>
+        <RosedalView />
+      </div>
+    );
+  }
+
+  if (showDailyTracker) {
+    return (
+      <div style={{ height: "100vh", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
+        <button 
+          onClick={() => setShowDailyTracker(false)}
+          style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid #d4af37", borderRadius: "5px", cursor: "pointer" }}
+        >
+          Volver al Rosario
+        </button>
+        <DailyTracker />
+      </div>
+    );
+  }
+
   return (
     <div
       className="app"
@@ -83,7 +115,7 @@ function App() {
     >
       {/* Background UI Layer (Prayers sitting underneath the rosary) */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, display: "flex", flexDirection: "column" }}>
-        <Header logo={logo} onToggleStats={() => setShowStats(true)} />
+        <Header logo={logo} onToggleStats={() => setShowStats(true)} onToggleRosedal={() => setShowRosedal(true)} onToggleDailyTracker={() => setShowDailyTracker(true)} />
         
         <div style={{ flex: 1, padding: "10px", overflow: "hidden" }}>
           {/* Opaque box for prayers so they are easy to read */}

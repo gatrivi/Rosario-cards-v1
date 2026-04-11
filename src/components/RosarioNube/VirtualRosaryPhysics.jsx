@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
 import { getRosaryBeads } from '../../data/physicsRosaryData';
+import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
 const { Engine, World, Bodies, Constraint, Mouse, MouseConstraint, Composite, Events, Query } = Matter;
 
@@ -10,6 +11,7 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
   const [selectedBeadId, setSelectedBeadId] = useState(null);
   const [prayedIds, setPrayedIds] = useState(new Set());
   const prayedIdsRef = useRef(prayedIds);
+  const { logAveMaria } = useAveMariaStats();
 
   useEffect(() => {
     prayedIdsRef.current = prayedIds;
@@ -207,6 +209,9 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
               setPrayedIds(prev => new Set(prev).add(data.id));
               const index = beadsData.findIndex(b => b.id === data.id);
               playChime(1, data.physicsType, index, true);
+              if (data.type === 'small-bead') {
+                logAveMaria();
+              }
             }
             setSelectedBeadId(data.id);
             if (data.type === 'chain') {
