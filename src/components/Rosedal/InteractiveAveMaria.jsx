@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
 const VERSOS_AVE_MARIA = [
   "Dios te salve, María;",
@@ -12,6 +13,18 @@ const VERSOS_AVE_MARIA = [
   "y en la hora de nuestra muerte.",
   "Amén."
 ];
+
+// Estilo sutil para que no parezcan "botones de app" invasivos
+const quickBtnStyle = {
+  background: '#222',
+  color: '#aaa',
+  border: '1px solid #333',
+  borderRadius: '20px', // Bordes redondeados tipo "píldora"
+  padding: '8px 15px',
+  fontSize: '0.8em',
+  touchAction: 'manipulation',
+  cursor: 'pointer'
+};
 
 export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = "#8B0000" }) {
   const [progreso, setProgreso] = useState(0);
