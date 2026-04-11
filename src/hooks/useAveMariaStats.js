@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { NIVELES } from '../data/LevelConfig';
 
 // Definimos cuántas rosas (Ave Marías) tiene un macetón (Rosario estándar de 5 decenas)
 const ROSAS_PER_MACETON = 50; 
@@ -6,9 +7,14 @@ const ROSAS_PER_MACETON = 50;
 export function useAveMariaStats() {
   const [totalAveMarias, setTotalAveMarias] = useState(0);
   const [dailyAveMarias, setDailyAveMarias] = useState(0);
+  const [nivelActualId, setNivelActualId] = useState(7);
 
   // Cargar el total y el diario al montar
   useEffect(() => {
+    // Nivel del usuario
+    const nivelGuardado = localStorage.getItem('nivel_usuario');
+    if (nivelGuardado) setNivelActualId(parseInt(nivelGuardado, 10));
+
     // Total histórico
     const savedTotal = localStorage.getItem('total_ave_marias');
     if (savedTotal) {
@@ -30,6 +36,11 @@ export function useAveMariaStats() {
       setDailyAveMarias(0);
     }
   }, []);
+
+  const cambiarNivel = (nuevoId) => {
+    setNivelActualId(nuevoId);
+    localStorage.setItem('nivel_usuario', nuevoId.toString());
+  };
 
   // Funciones de control manual
   const addRosas = (cantidad) => {
@@ -70,6 +81,11 @@ export function useAveMariaStats() {
   const totalMacetones = Math.floor(totalAveMarias / ROSAS_PER_MACETON);
   const rosasInCurrentMaceton = totalAveMarias % ROSAS_PER_MACETON;
 
+  // Cálculos de Disciplina Diaria
+  const hoy = new Date().getDay();
+  const nivelActual = NIVELES.find(n => n.id === nivelActualId) || NIVELES[6]; // Asume nivel 7 por defecto
+  const objetivoMacetonesHoy = nivelActual.rutinaDiaria[hoy] || 0;
+
   return { 
     totalAveMarias, 
     dailyAveMarias,
@@ -79,6 +95,9 @@ export function useAveMariaStats() {
     removeRosas,
     totalMacetones, 
     rosasInCurrentMaceton,
-    ROSAS_PER_MACETON
+    ROSAS_PER_MACETON,
+    nivelActual,
+    objetivoMacetonesHoy,
+    cambiarNivel
   };
 }

@@ -15,7 +15,6 @@ export default function Maceton({ count, maxRosas = 50 }) {
       padding: '10px',
       margin: '10px',
       width: '220px', // Un tamaño fijo para que la grilla se vea bien
-      background: '#fff', // Fondo blanco para que resalten las rosas
       display: 'inline-block',
       verticalAlign: 'top',
       boxShadow: '2px 2px 5px rgba(0,0,0,0.3)'
