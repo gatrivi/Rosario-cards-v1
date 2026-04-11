@@ -29,7 +29,12 @@ const quickBtnStyle = {
 export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = "#8B0000" }) {
   const [progreso, setProgreso] = useState(0);
   const [ultimoToque, setUltimoToque] = useState(Date.now());
-  const [riquezaVisual, setRiquezaVisual] = useState(0.3); // Inicia pálida (30% saturación)
+  const [riquezaVisual, setRiquezaVisual] = useState(0.3);
+
+  const { rosasInCurrentMaceton, addRosas } = useAveMariaStats();
+
+  const decenasCompletas = Math.floor(rosasInCurrentMaceton / 10);
+  const aveMariasActuales = rosasInCurrentMaceton % 10;
 
   const handleTapPantalla = () => {
     if (progreso >= VERSOS_AVE_MARIA.length) return;
@@ -51,12 +56,10 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
     setProgreso(nuevoProgreso);
 
     if (nuevoProgreso === VERSOS_AVE_MARIA.length) {
-      // Haptic Feedback suave al completar la flor (Plantada)
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate([100, 50, 100]);
       }
 
-      // Pasamos la riqueza final al contexto para guardarla en el Rosedal
       onRosaCompletada(riquezaVisual); 
       
       setTimeout(() => {
@@ -67,26 +70,50 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
   };
 
   return (
-    // El contenedor ocupa el 100% del alto disponible, ideal para móvil
-    <div 
-      onClick={handleTapPantalla}
-      style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        height: '70vh', // Ocupa buena parte de la pantalla
-        justifyContent: 'space-between',
-        padding: '20px',
-        cursor: 'pointer',
-        userSelect: 'none', // Evita que el texto se seleccione por accidente al tocar rápido
-        WebkitTapHighlightColor: 'transparent' // Quita el destello azul en móviles al tocar
-      }}
-    >
+    <div style={{ 
+      // CONTENEDOR MAESTRO: Bloqueado a las dimensiones de la ventana
+      display: 'flex', 
+      flexDirection: 'column', 
+      width: '100%',
+      maxWidth: '600px', 
+      height: '100vh', 
+      maxHeight: '900px', 
+      margin: '0 auto', 
+      backgroundColor: '#0A0A0A',
+      boxSizing: 'border-box',
+      overflow: 'hidden', // ESTO MATA EL SCROLL
+      borderRadius: '12px'
+    }}>
       
-      {/* ZONA SUPERIOR: LA ROSA VIVA */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+      {/* ZONA 1: ENCABEZADO (Altura Fija Automática) */}
+      <div style={{ 
+        flex: '0 0 auto', // No crece, no se encoge
+        padding: '15px', 
+        textAlign: 'center', 
+        color: '#888', 
+        fontSize: '0.9rem', 
+        borderBottom: '1px solid #222' 
+      }}>
+        <span>Misterio de Hoy • Decena {decenasCompletas + 1}</span><br/>
+        <span style={{ color: '#d4af37' }}>Ave María {aveMariasActuales + 1} / 10</span>
+      </div>
+
+      {/* ZONA 2: LA ROSA (Crece para llenar la mitad superior del espacio libre) */}
+      <div 
+        onClick={handleTapPantalla} 
+        style={{ 
+          flex: '1 1 50%', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent'
+        }}
+      >
         <div style={{
-          fontSize: '7em',
-          // Aquí aplicamos el color del misterio y la riqueza basada en el tiempo
+          // Tamaño dinámico: Usa un % del alto de la pantalla, topeando para que no sea inmenso
+          fontSize: 'min(20vh, 120px)', 
           filter: `saturate(${riquezaVisual * 100}%) drop-shadow(0 0 ${riquezaVisual * 20}px ${misterioColor})`,
           transition: 'all 0.5s ease',
           transform: `scale(${0.5 + ((progreso / 10) * 0.6)})`,
@@ -94,49 +121,54 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
         }}>
           🌹
         </div>
-        <div style={{ fontSize: '0.8em', color: '#555', marginTop: '10px' }}>
+        <div style={{ fontSize: '0.8rem', color: '#555', marginTop: '10px' }}>
           {progreso === 10 ? '¡Rosa Plantada!' : `${progreso} / 10`}
         </div>
       </div>
 
-      {/* ZONA INFERIOR: EL TELEPROMPTER */}
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center',
-        position: 'relative'
-      }}>
-        
-        {/* Verso Anterior (Difuminado arriba) */}
-        <div style={{ 
-          fontSize: '1em', color: '#444', textAlign: 'center', opacity: 0.5,
-          position: 'absolute', top: 0, width: '100%', transition: 'all 0.3s'
-        }}>
+      {/* ZONA 3: EL TELEPROMPTER (Crece para llenar la mitad inferior del espacio libre) */}
+      <div 
+        onClick={handleTapPantalla}
+        style={{ 
+          flex: '1 1 50%', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'center',
+          position: 'relative',
+          cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          padding: '0 20px'
+        }}
+      >
+        {/* Usamos 'clamp' para asegurar que el texto sea legible pero nunca rompa el layout */}
+        <div style={{ position: 'absolute', top: '10%', width: 'calc(100% - 40px)', textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2.5vh, 1.2rem)', opacity: 0.5 }}>
           {progreso > 0 && progreso < 11 ? VERSOS_AVE_MARIA[progreso - 1] : ''}
         </div>
 
-        {/* Verso Actual (El Foco) */}
-        <div style={{ 
-          fontSize: '1.4em', color: '#d4af37', textAlign: 'center', fontWeight: 'bold',
-          transition: 'all 0.3s'
-        }}>
+        <div style={{ textAlign: 'center', color: '#d4af37', fontWeight: 'bold', fontSize: 'clamp(1.2rem, 3.5vh, 1.6rem)', zIndex: 10 }}>
           {progreso < 10 ? VERSOS_AVE_MARIA[progreso] : 'Amén.'}
         </div>
 
-        {/* Verso Siguiente (Difuminado abajo) */}
-        <div style={{ 
-          fontSize: '1em', color: '#444', textAlign: 'center', opacity: 0.5,
-          position: 'absolute', bottom: 0, width: '100%', transition: 'all 0.3s'
-        }}>
+        <div style={{ position: 'absolute', bottom: '10%', width: 'calc(100% - 40px)', textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2.5vh, 1.2rem)', opacity: 0.5 }}>
           {progreso < 9 ? VERSOS_AVE_MARIA[progreso + 1] : ''}
         </div>
-
       </div>
 
-      {/* Indicador sutil de interacción */}
-      <div style={{ textAlign: 'center', color: '#333', fontSize: '0.8em', paddingBottom: '10px' }}>
-        Toca en cualquier parte para avanzar
+      {/* ZONA 4: MINI-BARRA "PASEO DEL PERRO" (Altura Fija Automática) */}
+      <div style={{ 
+        flex: '0 0 auto', // No crece, no se encoge
+        padding: '15px 20px', 
+        backgroundColor: '#111', 
+        borderTop: '1px solid #222',
+        display: 'flex', 
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <span style={{ color: '#666', fontSize: '0.8rem' }}>Carga manual:</span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => addRosas(1)} style={quickBtnStyle}>+1 Ave María</button>
+          <button onClick={() => addRosas(10)} style={quickBtnStyle}>+1 Decena</button>
+        </div>
       </div>
 
     </div>
