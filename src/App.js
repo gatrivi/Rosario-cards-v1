@@ -61,7 +61,7 @@ function App() {
 
   if (showStats) {
     return (
-      <div style={{ height: "100vh", width: "100vw", overflow: "auto", position: "relative" }}>
+      <div style={{ height: "100%", width: "100vw", overflow: "auto", position: "relative" }}>
         <button 
           onClick={() => setShowStats(false)}
           style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid white", borderRadius: "5px", cursor: "pointer" }}
@@ -75,7 +75,7 @@ function App() {
 
   if (showRosedal) {
     return (
-      <div style={{ height: "100vh", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
+      <div style={{ height: "100%", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
         <button 
           onClick={() => setShowRosedal(false)}
           style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid d4af37", borderRadius: "5px", cursor: "pointer" }}
@@ -89,7 +89,7 @@ function App() {
 
   if (showDailyTracker) {
     return (
-      <div style={{ height: "100vh", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
+      <div style={{ height: "100%", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
         <button 
           onClick={() => setShowDailyTracker(false)}
           style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid #d4af37", borderRadius: "5px", cursor: "pointer" }}
@@ -105,7 +105,7 @@ function App() {
     <div
       className="app"
       style={{
-        height: "100vh",
+        height: "100%",
         width: "100vw",
         backgroundImage: backgroundImage,
         backgroundSize: "cover",
