@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
-import RosaEnFocoView from '../Views/RosaEnFocoView';
+import RezoEnFocoView from '../Views/RezoEnFocoView';
 import JardinDeRosasView from '../Views/JardinDeRosasView';
 import BottomNav from '../Navigation/BottomNav';
 
@@ -10,9 +10,9 @@ export default function AppShell() {
   const renderizarVista = () => {
     switch (vistaActiva) {
       case 'virtual': return <RosarioVirtualView />;
-      case 'foco':    return <RosaEnFocoView />;
+      case 'foco':    return <RezoEnFocoView />;
       case 'jardin':  return <JardinDeRosasView />;
-      default:        return <RosaEnFocoView />;
+      default:        return <RezoEnFocoView />;
     }
   };
 
