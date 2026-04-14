@@ -14,124 +14,239 @@ export default function RezoEnFocoView() {
 
   const [cargaTotal, setCargaTotal] = useState(0);
   const [isCargando, setIsCargando] = useState(false);
-  const [instruccionVisible, setInstruccionVisible] = useState(true);
+  const [modoInteraccion, setModoInteraccion] = useState('swipe'); // 'swipe' o 'hold'
+  const [esperandoLevante, setEsperandoLevante] = useState(false); // Para evitar skip de versos
+  
   const timerRef = useRef(null);
+  const textoRef = useRef(null);
 
   const totalPuntos = rezoData.versos.length * 100;
   const versoActualIndex = Math.min(Math.floor(cargaTotal / 100), rezoData.versos.length - 1);
   const progresoVersoActual = (cargaTotal % 100);
 
-  // MOCK de progreso: asume que estamos en la cuenta 14 de 50 (Decena 2, Ave María 4)
-  const rosasCompletadasEnTotal = 14; 
+  // MOCK de progreso
+  // Vamos a asumir que la cuenta de progreso es global (0 a 54)
+  // 5 decenas de (1 Padre Nuestro + 10 Ave Marias) = 5 * 11 = 55.
+  const [oracionesCompletadasEnTotal, setOracionesCompletadasEnTotal] = useState(14); 
 
+  // Lógica HOLD
   useEffect(() => {
-    if (isCargando && cargaTotal < totalPuntos) {
-      setInstruccionVisible(false);
+    if (modoInteraccion === 'hold' && isCargando && cargaTotal < totalPuntos && !esperandoLevante) {
       timerRef.current = setInterval(() => {
-        setCargaTotal(prev => (prev >= totalPuntos ? totalPuntos : prev + 3));
+        setCargaTotal(prev => {
+           let next = prev + 2;
+           // Si completa un verso, pausamos y pedimos soltar (o esperamos 1s)
+           // Haremos que la pausa manual sea más inmersiva
+           if (Math.floor(next / 100) > Math.floor(prev / 100)) {
+               return Math.floor(next/100) * 100; 
+           }
+           return next >= totalPuntos ? totalPuntos : next;
+        });
       }, 30);
     } else {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [isCargando, cargaTotal, totalPuntos]);
+  }, [isCargando, cargaTotal, totalPuntos, modoInteraccion, esperandoLevante]);
 
   useEffect(() => {
     if (cargaTotal >= totalPuntos) {
       setIsCargando(false);
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-      setTimeout(() => setCargaTotal(0), 1500); 
+      setOracionesCompletadasEnTotal(prev => prev + 1); // Incrementa la rosa en el macetón
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      setTimeout(() => setCargaTotal(0), 1000); 
     }
   }, [cargaTotal, totalPuntos]);
 
-  return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#0A0A0A' }}>
+  // Lógica SWIPE
+  const handlePointerMove = (e) => {
+    if (modoInteraccion !== 'swipe' || cargaTotal >= totalPuntos || esperandoLevante) return;
+    
+    // Validar arrastre (mouse down o touch)
+    if (e.buttons === 0 && e.pointerType === 'mouse') return;
+
+    if (!textoRef.current) return;
+    
+    // Usar bounding box
+    const rect = textoRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const paddingSensibilidad = 20; // Facilitar llegar al 0% y 100%
+    
+    const porcentajeX = Math.max(0, Math.min(100, ((x + paddingSensibilidad) / (rect.width + paddingSensibilidad*2)) * 100));
+    
+    if (porcentajeX > progresoVersoActual + 1) { 
+       const nuevoTotal = (versoActualIndex * 100) + porcentajeX;
+       
+       if (nuevoTotal >= (versoActualIndex + 1) * 100 - 5) {
+          // Completar verso
+          setCargaTotal((versoActualIndex + 1) * 100);
+          setEsperandoLevante(true);
+          if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
+       } else if (nuevoTotal > cargaTotal) {
+          setCargaTotal(nuevoTotal);
+       }
+    }
+  };
+
+  const handlePointerDown = (e) => {
+    // Si la pantalla estaba pidiendo soltar, y presionan, permitimos continuar
+    setEsperandoLevante(false);
+    
+    if (modoInteraccion === 'hold') {
+      setIsCargando(true);
+    } else {
+      if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
+      handlePointerMove(e);
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    if (modoInteraccion === 'hold') {
+      setIsCargando(false);
+      setEsperandoLevante(false);
+    } else {
+      if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
+        e.target.releasePointerCapture(e.pointerId);
+      }
+      setEsperandoLevante(false);
       
-      {/* 20%: EL MACETÓN (50 casilleros fijos. Zona NO interactiva) */}
-      <div style={{ height: '20%', borderBottom: '1px solid #222', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      // Auto-completar si quedó muy cerca del final
+      if (progresoVersoActual > 80 && cargaTotal < totalPuntos) {
+        setCargaTotal((versoActualIndex + 1) * 100);
+      }
+    }
+  };
+
+  const currentVerseString = cargaTotal >= totalPuntos ? 'Amén.' : rezoData.versos[versoActualIndex];
+  
+  const renderVersoInteractivo = (text, progresoStr) => {
+    const chars = text.split('');
+    return chars.map((char, index) => {
+       const charPct = (index / chars.length) * 100;
+       const isColored = progresoStr >= charPct;
+       // Color ligeramente más visible para el estado "apagado"
+       const offColor = '#666'; 
+       const onColor = isCargando || modoInteraccion === 'swipe' ? '#D4AF37' : rezoData.color;
+       
+       return (
+         <span key={index} style={{
+             color: isColored ? onColor : offColor,
+             transition: 'color 0.1s ease',
+             textShadow: isColored ? '0px 0px 5px rgba(212, 175, 55, 0.4)' : 'none'
+         }}>
+            {char}
+         </span>
+       );
+    });
+  };
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#0A0A0A', userSelect: 'none', WebkitUserSelect: 'none' }}>
+      
+      {/* HEADER NAVBAR MÍNIMO */}
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, display: 'flex', gap: '5px' }}>
+          <button onClick={() => setModoInteraccion(m => m === 'swipe' ? 'hold' : 'swipe')} style={miniBtn}>
+              {modoInteraccion === 'swipe' ? '👆 Lectura' : '⏱️ Espera'}
+          </button>
+          <button onClick={() => setTipoRezoActual(t => t === 'ave_maria' ? 'padre_nuestro' : 'ave_maria')} style={miniBtn}>
+              🔄 {tipoRezoActual === 'ave_maria' ? 'A.M.' : 'P.N.'}
+          </button>
+      </div>
+
+      {/* 20%: EL MACETÓN (5 filas x 11 col: 55 casilleros) */}
+      <div style={{ flex: '0 0 20%', borderBottom: '1px solid #222', padding: '15px 5px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
         <div style={{
           display: 'grid',
-          gridTemplateRows: 'repeat(5, 1fr)', // 5 decenas
-          gridTemplateColumns: 'repeat(10, 1fr)', // 10 rosas por decena
-          gap: '2px',
+          gridTemplateRows: 'repeat(5, 1fr)', 
+          gridTemplateColumns: 'repeat(11, 1fr)', 
+          gap: '3px',
           width: '100%',
           height: '100%',
           maxWidth: '500px'
         }}>
-          {Array.from({ length: 50 }).map((_, i) => {
-            const completada = i < rosasCompletadasEnTotal;
-            const esActual = i === rosasCompletadasEnTotal;
+          {Array.from({ length: 55 }).map((_, i) => {
+            const col = i % 11;
+            const esPadreNuestro = col === 0;
+            const completada = i < oracionesCompletadasEnTotal;
+            const esActual = i === oracionesCompletadasEnTotal;
+            
+            // Renderizado distintivo para Padre Nuestro
+            const bgDefault = '#111';
+            const bgMaceton = completada ? '#2a0a0a' : bgDefault;
+            
             return (
               <div key={i} style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
-                backgroundColor: completada ? '#2a0a0a' : '#111', // Fondo oscuro para la maceta
+                backgroundColor: bgMaceton,
                 border: esActual ? '1px solid #D4AF37' : '1px solid #222',
                 borderRadius: '3px',
-                fontSize: 'min(2vh, 14px)' // Rosa pequeña que escala con la pantalla
+                fontSize: 'min(2vh, 16px)'
               }}>
-                {completada ? '🌹' : ''}
+                {completada ? (
+                  esPadreNuestro ? '✝️' : '🌹'
+                ) : (
+                  <span style={{ opacity: 0.15, filter: 'grayscale(1)' }}>
+                    {esPadreNuestro ? '✝️' : '🌹'}
+                  </span>
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* ZONA INTERACTIVA (Rose 40% + Versos 30%) */}
-      <div 
-        onPointerDown={(e) => { e.preventDefault(); setIsCargando(true); }}
-        onPointerUp={() => setIsCargando(false)}
-        onPointerLeave={() => setIsCargando(false)}
-        onContextMenu={(e) => e.preventDefault()}
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', userSelect: 'none', WebkitUserSelect: 'none', touchAction: 'none' }}
-      >
-        {/* 40%: EL ICONO/ROSA GIGANTE */}
-        <div style={{ height: '55%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-          {instruccionVisible && (
-            <div style={{ position: 'absolute', top: '5%', color: '#666', fontSize: '0.8rem', animation: 'pulse 2s infinite' }}>👇 Mantén presionado abajo</div>
-          )}
+      {/* 30%: EL ICONO/ROSA GIGANTE */}
+      <div style={{ flex: '0 0 35%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
           <div style={{
             fontSize: 'min(25vh, 150px)', lineHeight: 1,
-            filter: `drop-shadow(0 0 ${isCargando ? 15 : 5}px ${rezoData.color})`,
-            transform: `scale(${0.8 + ((cargaTotal / totalPuntos) * 0.2)}) ${isCargando ? 'scale(1.05)' : 'scale(1)'}`,
-            opacity: Math.max(0.5, cargaTotal / totalPuntos),
-            transition: 'transform 0.1s ease-out, filter 0.2s ease'
+            filter: `drop-shadow(0 0 ${(modoInteraccion==='hold' && isCargando) ? 20 : 10}px ${rezoData.color}) saturate(${Math.max(20, (cargaTotal/totalPuntos)*100)}%)`,
+            transform: `scale(${0.8 + ((cargaTotal / totalPuntos) * 0.2)}) ${(modoInteraccion==='hold' && isCargando) ? 'scale(1.02)' : 'scale(1)'}`,
+            opacity: Math.max(0.4, cargaTotal / totalPuntos),
+            transition: 'transform 0.1s ease-out, filter 0.2s ease, opacity 0.2s'
           }}>
             {rezoData.icono}
           </div>
-        </div>
+      </div>
 
-        {/* 30%: LOS VERSOS */}
-        <div style={{ height: '45%', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 20px' }}>
-          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginBottom: '10px' }}>
+      {/* 45%: LOS VERSOS (INTERACTIVOS) */}
+      <div 
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onContextMenu={(e) => e.preventDefault()}
+        style={{ flex: '1', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0 20px', touchAction: 'none' }}
+      >
+          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginBottom: '20px' }}>
             {versoActualIndex > 0 && cargaTotal < totalPuntos ? rezoData.versos[versoActualIndex - 1] : ''}
           </div>
-          <div style={{ position: 'relative', textAlign: 'center' }}>
-            <div style={{ color: isCargando ? '#D4AF37' : '#888', fontWeight: 'bold', fontSize: 'clamp(1.2rem, 3vh, 1.6rem)', zIndex: 10, transition: 'color 0.2s' }}>
-              {cargaTotal >= totalPuntos ? 'Amén.' : rezoData.versos[versoActualIndex]}
-            </div>
-            {cargaTotal < totalPuntos && (
-              <div style={{ width: '100%', height: '3px', background: '#222', marginTop: '10px', borderRadius: '2px', overflow: 'hidden' }}>
-                <div style={{ width: `${progresoVersoActual}%`, height: '100%', background: rezoData.color, transition: 'width 0.1s linear' }} />
-              </div>
-            )}
+          
+          <div ref={textoRef} style={{ position: 'relative', textAlign: 'center', fontWeight: 'bold', fontSize: 'clamp(1.2rem, 3.5vh, 1.8rem)', zIndex: 10, cursor: modoInteraccion === 'swipe' ? 'ew-resize' : 'pointer' }}>
+             {renderVersoInteractivo(currentVerseString, progresoVersoActual)}
           </div>
-          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginTop: '10px' }}>
-            {versoActualIndex < rezoData.versos.length - 1 ? rezoData.versos[versoActualIndex + 1] : ''}
+
+          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginTop: '20px' }}>
+            {versoActualIndex < rezoData.versos.length - 1 && cargaTotal < totalPuntos ? rezoData.versos[versoActualIndex + 1] : ''}
           </div>
-        </div>
+          
+          {/* Indicador inferior */}
+          <div style={{position: 'absolute', bottom: '15px', width: 'calc(100% - 40px)', textAlign: 'center', color: '#666', fontSize: '0.75rem', fontWeight: 'bold'}}>
+            {modoInteraccion === 'swipe' ? '👉 Desliza aquí para leer 👉' : '👇 Mantén presionado 👇'}
+          </div>
       </div>
 
-      {/* 10%: BOTONES AUXILIARES */}
-      <div style={{ height: '10%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', borderTop: '1px solid #1a1a1a' }}>
-         <button onClick={() => setTipoRezoActual('padre_nuestro')} style={btnChico}>P.N.</button>
-         <button onClick={() => setTipoRezoActual('ave_maria')} style={btnChico}>A.M.</button>
-         <button onClick={() => setTipoRezoActual('gloria')} style={btnChico}>Glor.</button>
-         <button onClick={() => setTipoRezoActual('misterio')} style={btnChico}>Mist.</button>
-      </div>
-
-      <style>{`@keyframes pulse { 0% { opacity: 0.3; transform: translateY(0px); } 50% { opacity: 1; transform: translateY(5px); } 100% { opacity: 0.3; transform: translateY(0px); } }`}</style>
     </div>
   );
 }
 
-const btnChico = { background: 'transparent', color: '#555', border: '1px solid #333', borderRadius: '5px', padding: '5px 10px', fontSize: '0.8rem' };
+const miniBtn = {
+    background: 'rgba(20, 20, 20, 0.8)', 
+    backdropFilter: 'blur(5px)',
+    color: '#888', 
+    border: '1px solid #333', 
+    borderRadius: '15px', 
+    padding: '8px 12px', 
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+    touchAction: 'manipulation'
+};
