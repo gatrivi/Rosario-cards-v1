@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
+import { useCloudSync } from '../../hooks/useCloudSync';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 
 // Función para obtener los datos de una oración por ID
@@ -49,10 +50,40 @@ const getSequenceData = (mysteryType = 'gozosos') => {
 };
 
 export default function RezoEnFocoView() {
-  const { addRosas } = useAveMariaStats();
+  const { addRosas, totalAveMarias } = useAveMariaStats();
+  const totalRosasRef = useRef(totalAveMarias);
+
+  // Mantener actualizado el valor para los workers de audio
+  useEffect(() => {
+    totalRosasRef.current = totalAveMarias;
+  }, [totalAveMarias]);
+
   const [misterioActual] = useState('gozosos'); // TODO: Obtener del día
   const [secuencia] = useState(() => getSequenceData(misterioActual));
   const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0); 
+
+  const { cloudState, syncToCloud } = useCloudSync();
+  const [loadedPrayerIndex, setLoadedPrayerIndex] = useState(false);
+
+  // Sincronizar indice desde la nube
+  useEffect(() => {
+    if (cloudState && !loadedPrayerIndex) {
+      if (cloudState.currentPrayerIndex !== undefined && cloudState.todayDate === new Date().toDateString()) {
+         setCurrentPrayerIndex(Math.min(cloudState.currentPrayerIndex, secuencia.length - 1));
+      }
+      setLoadedPrayerIndex(true);
+    }
+  }, [cloudState, loadedPrayerIndex, secuencia.length]);
+
+  // Guardar índice cuando cambie
+  useEffect(() => {
+    if (loadedPrayerIndex) {
+      syncToCloud({ 
+         currentPrayerIndex, 
+         todayDate: new Date().toDateString() 
+      });
+    }
+  }, [currentPrayerIndex, loadedPrayerIndex]);
 
   const rezoData = secuencia[currentPrayerIndex];
   const [cargaTotal, setCargaTotal] = useState(0);
@@ -70,6 +101,46 @@ export default function RezoEnFocoView() {
   
   const timerRef = useRef(null);
   const textoRef = useRef(null);
+  
+  // Audio Synthesizer refs
+  const audioCtxRef = useRef(null);
+  const synthRef = useRef(null);
+
+  const initAudio = () => {
+    if (!audioCtxRef.current) {
+       const AudioContext = window.AudioContext || window.webkitAudioContext;
+       if (!AudioContext) return;
+       audioCtxRef.current = new AudioContext();
+       
+       const gainNode = audioCtxRef.current.createGain();
+       gainNode.gain.value = 0;
+       gainNode.connect(audioCtxRef.current.destination);
+       
+       // Tono Fundamental suave
+       const osc = audioCtxRef.current.createOscillator();
+       osc.type = 'sine';
+       osc.frequency.setValueAtTime(220, audioCtxRef.current.currentTime);
+       osc.connect(gainNode);
+       osc.start();
+       
+       // Tono Secundario (Armónico variable)
+       const osc2 = audioCtxRef.current.createOscillator();
+       osc2.type = 'triangle';
+       osc2.frequency.setValueAtTime(220, audioCtxRef.current.currentTime);
+       // Hacemos que pase por un filtro básico para no ensordecer
+       const filter = audioCtxRef.current.createBiquadFilter();
+       filter.type = 'lowpass';
+       filter.frequency.setValueAtTime(800, audioCtxRef.current.currentTime);
+       osc2.connect(filter);
+       filter.connect(gainNode);
+       osc2.start();
+
+       synthRef.current = { gainNode, osc, osc2, filter };
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+       audioCtxRef.current.resume();
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('rosario_heatmap', JSON.stringify(charHeatMap));
@@ -146,10 +217,35 @@ export default function RezoEnFocoView() {
         if (prev >= targetCarga) return prev;
 
         const currentCharsLength = currentVerseString.length;
-        // Límite de velocidad: max ~50ms por caracter
-        const step = currentCharsLength > 0 ? (60 / currentCharsLength) : 2; 
-        const next = Math.min(prev + step, targetCarga);
         
+        // Flexibilizamos el límite de velocidad: base suave, pero escala con la agresividad del target
+        const baseStep = currentCharsLength > 0 ? (60 / currentCharsLength) : 2; 
+        const dynamicStep = Math.max(baseStep, (targetCarga - prev) * 0.15); // Permite apurar la lectura sin forzar lentitud
+        const next = Math.min(prev + dynamicStep, targetCarga);
+        
+        // Modular Sintetizador según progreso total
+        if (synthRef.current && audioCtxRef.current) {
+          const tRosos = totalRosasRef.current || 0;
+          // Escalado logarítmico: crece suavemente, nunca se vuelve extremo (soporta +10 millones de Ave Marías)
+          const enrichmentMultiplier = Math.min(1, Math.log10(tRosos + 1) / 7.8);
+          
+          const { gainNode, osc2, filter } = synthRef.current;
+          
+          if (prev < targetCarga) {
+             // Modulación de sintonía armónica: cuanto más rece en su vida, el segundo oscilador
+             // se añade, sube armónicos y genera un "Chorus/Drone" progresivamente más rico.
+             osc2.frequency.setTargetAtTime(220 * (1 + (enrichmentMultiplier * 0.5)), audioCtxRef.current.currentTime, 0.1);
+             filter.frequency.setTargetAtTime(800 + (enrichmentMultiplier * 2000), audioCtxRef.current.currentTime, 0.1);
+             
+             // Sonido base bajo volumen
+             const targetVolume = 0.05 + (enrichmentMultiplier * 0.05); 
+             gainNode.gain.setTargetAtTime(targetVolume, audioCtxRef.current.currentTime, 0.05);
+          } else {
+             // Silence gently upon stopping
+             gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.2);
+          }
+        }
+
         // Aumentar el 'heat' o tiempo de permanencia en el caracter actual
         const charIndex = Math.floor((prev % 100) / 100 * currentCharsLength);
         if (charIndex >= 0 && charIndex < currentCharsLength) {
@@ -172,10 +268,16 @@ export default function RezoEnFocoView() {
         return next >= totalPuntos ? totalPuntos : next;
       });
     }, 30);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (synthRef.current && audioCtxRef.current) {
+         synthRef.current.gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.1);
+      }
+    };
   }, [modoInteraccion, targetCarga, totalPuntos, currentVerseString, esperandoLevante, rezoData.id, renderVersoIndex, cargaTotal]);
 
   const handlePointerMove = (e) => {
+    initAudio(); // Initialize or resume on any interaction
     if (modoInteraccion !== 'swipe' || cargaTotal >= totalPuntos || esperandoLevante) return;
     
     // Ya no requerimos mouse down para desktop, pasando el puntero alcanza
@@ -203,6 +305,7 @@ export default function RezoEnFocoView() {
   };
 
   const handlePointerDown = (e) => {
+    initAudio();
     setEsperandoLevante(false);
     
     if (modoInteraccion === 'hold') {
@@ -230,15 +333,9 @@ export default function RezoEnFocoView() {
     }
   };
 
-  const renderVersoIndex = (esperandoLevante && cargaTotal > 0 && cargaTotal % 100 === 0)
-    ? Math.max(0, Math.min(Math.floor(cargaTotal / 100) - 1, rezoData.versos.length - 1))
-    : versoActualIndex;
-
   const renderProgreso = (esperandoLevante && cargaTotal > 0 && cargaTotal % 100 === 0)
     ? 100 
     : progresoVersoActual;
-
-  const currentVerseString = cargaTotal >= totalPuntos ? 'Amén.' : rezoData.versos[renderVersoIndex];
   
   const renderVersoInteractivo = (text, progresoStr) => {
     const chars = text.split('');

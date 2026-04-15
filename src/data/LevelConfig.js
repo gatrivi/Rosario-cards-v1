@@ -35,3 +35,33 @@ export const NIVELES = [
     }
   }
 ];
+
+export const PEREGRINACIONES = [
+  { id: 1, name: "Ir a la Iglesia (Local)", description: "Caminar a la parroquia local.", hrs: 1, reqAveMarias: 200 },
+  { id: 2, name: "Santuario de Schoenstatt", description: "Peregrinación urbana.", hrs: 5, reqAveMarias: 1000 },
+  { id: 3, name: "Santuario de Luján", description: "Desde Buenos Aires a Luján (60km).", hrs: 15, reqAveMarias: 3000 },
+  { id: 4, name: "The Jesus Trail", description: "De Nazaret a Cafarnaúm (65km).", hrs: 18, reqAveMarias: 3600 },
+  { id: 5, name: "Santuario de Fátima", description: "Desde Lisboa a Fátima (140km).", hrs: 35, reqAveMarias: 7000 },
+  { id: 6, name: "Virgen de Guadalupe", description: "Desde Puebla a la Basílica (150km).", hrs: 40, reqAveMarias: 8000 },
+  { id: 7, name: "Camino de Asís", description: "Desde Florencia a Asís (380km).", hrs: 95, reqAveMarias: 19000 },
+  { id: 8, name: "Camino de Santiago", description: "El histórico Camino Francés (800km).", hrs: 200, reqAveMarias: 40000 },
+  { id: 9, name: "Vía de la Plata", description: "De Sevilla a Santiago (1000km).", hrs: 250, reqAveMarias: 50000 },
+  { id: 10, name: "Vía Francígena", description: "De Canterbury a Roma (2000km).", hrs: 500, reqAveMarias: 100000 },
+  { id: 11, name: "Jerusalem Way", description: "El camino a Tierra Santa (5000km).", hrs: 1250, reqAveMarias: 250000 },
+  { id: 12, name: "El Camino al Cielo", description: "Una vida incesante de oración.", hrs: 10000, reqAveMarias: 2000000 }
+];
+
+export const getPeregrinacionActual = (totalAveMarias) => {
+  // Encuentra la peregrinación más alta que el usuario ya comenzó o completó
+  let actual = PEREGRINACIONES[0];
+  for (let p of PEREGRINACIONES) {
+     if (totalAveMarias >= p.reqAveMarias) {
+        // Ya la pasó, o está en ella
+        actual = p;
+     } else {
+        // En progreso hacia esta
+        return { actual, next: p };
+     }
+  }
+  return { actual, next: null };
+};

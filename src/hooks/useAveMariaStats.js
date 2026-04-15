@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NIVELES } from '../data/LevelConfig';
+import { useCloudSync } from './useCloudSync';
 
 // Definimos cuántas rosas (Ave Marías) tiene un macetón (Rosario estándar de 5 decenas)
 const ROSAS_PER_MACETON = 50; 
@@ -8,6 +9,27 @@ export function useAveMariaStats() {
   const [totalAveMarias, setTotalAveMarias] = useState(0);
   const [dailyAveMarias, setDailyAveMarias] = useState(0);
   const [nivelActualId, setNivelActualId] = useState(7);
+  
+  const { cloudState, syncToCloud } = useCloudSync();
+  const [loadedFromCloud, setLoadedFromCloud] = useState(false);
+
+  // Sincronizar desde la nube al cargar
+  useEffect(() => {
+    if (cloudState && !loadedFromCloud) {
+       if (cloudState.nivelActualId !== undefined) {
+         setNivelActualId(cloudState.nivelActualId);
+         localStorage.setItem('nivel_usuario', cloudState.nivelActualId.toString());
+       }
+       if (cloudState.totalAveMarias !== undefined) {
+         setTotalAveMarias(cloudState.totalAveMarias);
+         localStorage.setItem('total_ave_marias', cloudState.totalAveMarias.toString());
+       }
+       if (cloudState.dailyAveMarias !== undefined && cloudState.todayDate === new Date().toDateString()) {
+         setDailyAveMarias(cloudState.dailyAveMarias);
+       }
+       setLoadedFromCloud(true);
+    }
+  }, [cloudState, loadedFromCloud]);
 
   // Cargar el total y el diario al montar
   useEffect(() => {
@@ -40,34 +62,53 @@ export function useAveMariaStats() {
   const cambiarNivel = (nuevoId) => {
     setNivelActualId(nuevoId);
     localStorage.setItem('nivel_usuario', nuevoId.toString());
+    syncToCloud({ nivelActualId: nuevoId });
   };
 
   // Funciones de control manual
   const addRosas = (cantidad) => {
+    let nextTotal = 0;
+    let nextDaily = 0;
+    
     setTotalAveMarias(prev => {
-      const nextCount = prev + cantidad;
-      localStorage.setItem('total_ave_marias', nextCount);
-      return nextCount;
+      nextTotal = prev + cantidad;
+      localStorage.setItem('total_ave_marias', nextTotal);
+      return nextTotal;
     });
 
     setDailyAveMarias(prev => {
-      const nextCount = prev + cantidad;
-      localStorage.setItem('daily_ave_marias', nextCount);
-      return nextCount;
+      nextDaily = prev + cantidad;
+      localStorage.setItem('daily_ave_marias', nextDaily);
+      return nextDaily;
+    });
+
+    syncToCloud({ 
+      totalAveMarias: nextTotal, 
+      dailyAveMarias: nextDaily,
+      todayDate: new Date().toDateString()
     });
   };
 
   const removeRosas = (cantidad) => {
+    let nextTotal = 0;
+    let nextDaily = 0;
+
     setTotalAveMarias(prev => {
-      const nextCount = Math.max(0, prev - cantidad);
-      localStorage.setItem('total_ave_marias', nextCount);
-      return nextCount;
+      nextTotal = Math.max(0, prev - cantidad);
+      localStorage.setItem('total_ave_marias', nextTotal);
+      return nextTotal;
     });
 
     setDailyAveMarias(prev => {
-      const nextCount = Math.max(0, prev - cantidad);
-      localStorage.setItem('daily_ave_marias', nextCount);
-      return nextCount;
+      nextDaily = Math.max(0, prev - cantidad);
+      localStorage.setItem('daily_ave_marias', nextDaily);
+      return nextDaily;
+    });
+
+    syncToCloud({ 
+      totalAveMarias: nextTotal, 
+      dailyAveMarias: nextDaily,
+      todayDate: new Date().toDateString()
     });
   };
 
