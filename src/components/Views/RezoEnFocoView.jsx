@@ -1,17 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useAveMariaStats } from '../../hooks/useAveMariaStats';
+import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 
-// Simulamos la estructura que vendría de tu JSON
-const REZOS_DATA = {
-  'padre_nuestro': { icono: '✝️', color: '#B8860B', versos: ["Padre nuestro, que estás en el cielo,", "santificado sea tu Nombre;", "venga a nosotros tu reino;", "hágase tu voluntad en la tierra como en el cielo.", "Danos hoy nuestro pan de cada día;", "perdona nuestras ofensas,", "como también nosotros perdonamos a los que nos ofenden;", "no nos dejes caer en la tentación,", "y líbranos del mal.", "Amén."] },
-  'ave_maria': { icono: '🌹', color: '#8B0000', versos: ["Dios te salve, María;", "llena eres de gracia;", "el Señor es contigo;", "bendita tú eres entre todas las mujeres,", "y bendito es el fruto de tu vientre, Jesús.", "Santa María, Madre de Dios,", "ruega por nosotros pecadores,", "ahora", "y en la hora de nuestra muerte.", "Amén."] },
-  'gloria': { icono: '🌟', color: '#FFD700', versos: ["Gloria al Padre,", "y al Hijo,", "y al Espíritu Santo.", "Como era en el principio,", "ahora y siempre,", "por los siglos de los siglos.", "Amén."] },
-  'misterio': { icono: '📖', color: '#4682B4', versos: ["Misterio Doloroso", "La Agonía en el Huerto", "Jesús cae rostro en tierra y ora al Padre.", "Su sudor se hace como gotas de sangre.", "Señor, que se haga tu voluntad y no la mía."] }
+// Función para obtener los datos de una oración por ID
+const getPrayerData = (id, mysteryType = 'gozosos') => {
+  const apertura = RosarioPrayerBook.apertura.find(p => p.id === id);
+  if (apertura) return apertura;
+  const decada = RosarioPrayerBook.decada.find(p => p.id === id);
+  if (decada) return decada;
+  const mystery = RosarioPrayerBook.mysteries[mysteryType].find(p => p && p.id === id);
+  if (mystery) return mystery;
+  const cierre = RosarioPrayerBook.cierre.find(p => p.id === id);
+  if (cierre) return cierre;
+  return null;
+};
+
+// Generar la secuencia completa
+const getSequenceData = (mysteryType = 'gozosos') => {
+  const ids = mysteryType === 'gozosos' ? RosarioPrayerBook.RGo :
+              mysteryType === 'dolorosos' ? RosarioPrayerBook.RDo :
+              mysteryType === 'gloriosos' ? RosarioPrayerBook.RGl :
+              RosarioPrayerBook.RL;
+
+  return ids.map(id => {
+    const rawData = getPrayerData(id, mysteryType);
+    if (!rawData) return null;
+    
+    // Asignar colores e íconos por defecto según tipo de oración
+    let icono = '🙏'; let color = '#808080';
+    if (id === 'P') { icono = '✝️'; color = '#B8860B'; }
+    else if (id === 'A') { icono = '🌹'; color = '#8B0000'; }
+    else if (id === 'G') { icono = '🌟'; color = '#FFD700'; }
+    else if (id === 'F') { icono = '🔥'; color = '#FF4500'; }
+    else if (id.startsWith('M')) { icono = '📖'; color = '#4682B4'; }
+    else if (id === 'LL' || id === 'S') { icono = '👑'; color = '#800080'; }
+
+    // Separar oraciones por saltos de línea o signos de puntuación para modo karaoke
+    const versos = rawData.text.split(/(?<=[.,;:!])\s+|\n+/).map(v => v.trim()).filter(v => v.length > 0);
+
+    return {
+      id,
+      title: rawData.title,
+      icono,
+      color,
+      versos
+    };
+  }).filter(Boolean);
 };
 
 export default function RezoEnFocoView() {
-  const [tipoRezoActual, setTipoRezoActual] = useState('ave_maria'); 
-  const rezoData = REZOS_DATA[tipoRezoActual];
+  const { addRosas } = useAveMariaStats();
+  const [misterioActual] = useState('gozosos'); // TODO: Obtener del día
+  const [secuencia] = useState(() => getSequenceData(misterioActual));
+  const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0); 
 
+  const rezoData = secuencia[currentPrayerIndex];
   const [cargaTotal, setCargaTotal] = useState(0);
   const [isCargando, setIsCargando] = useState(false);
   const [modoInteraccion, setModoInteraccion] = useState('swipe'); // 'swipe' o 'hold'
@@ -24,10 +67,17 @@ export default function RezoEnFocoView() {
   const versoActualIndex = Math.min(Math.floor(cargaTotal / 100), rezoData.versos.length - 1);
   const progresoVersoActual = (cargaTotal % 100);
 
-  // MOCK de progreso
-  // Vamos a asumir que la cuenta de progreso es global (0 a 54)
-  // 5 decenas de (1 Padre Nuestro + 10 Ave Marias) = 5 * 11 = 55.
-  const [oracionesCompletadasEnTotal, setOracionesCompletadasEnTotal] = useState(14); 
+  // Mapear los casilleros del Macetón a los índices correspondientes en la secuencia
+  const maceteroMap = secuencia.reduce((acc, oracion, index) => {
+    if (oracion.id === 'P' || oracion.id === 'A') {
+      acc.push({ seqIndex: index, id: oracion.id });
+    }
+    return acc;
+  }, []); // Tendrá 59 (4 iniciales + 55 de decenas)
+
+  // Encontrar cuántas oraciones de Macetón hemos completado o en cuál estamos
+  const maceteroCurrentIndex = maceteroMap.findIndex(m => m.seqIndex >= currentPrayerIndex);
+  const oracionesCompletadasEnTotal = maceteroCurrentIndex === -1 ? maceteroMap.length : maceteroCurrentIndex;
 
   // Lógica HOLD
   useEffect(() => {
@@ -52,9 +102,19 @@ export default function RezoEnFocoView() {
   useEffect(() => {
     if (cargaTotal >= totalPuntos) {
       setIsCargando(false);
-      setOracionesCompletadasEnTotal(prev => prev + 1); // Incrementa la rosa en el macetón
+      
+      // Integrate with the global stats
+      if (rezoData.id === 'A') {
+        addRosas(1);
+      }
+
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
-      setTimeout(() => setCargaTotal(0), 1000); 
+      setTimeout(() => {
+        setCargaTotal(0);
+        if (currentPrayerIndex < secuencia.length - 1) {
+          setCurrentPrayerIndex(prev => prev + 1);
+        }
+      }, 1000); 
     }
   }, [cargaTotal, totalPuntos]);
 
@@ -117,7 +177,15 @@ export default function RezoEnFocoView() {
     }
   };
 
-  const currentVerseString = cargaTotal >= totalPuntos ? 'Amén.' : rezoData.versos[versoActualIndex];
+  const renderVersoIndex = (esperandoLevante && cargaTotal > 0 && cargaTotal % 100 === 0)
+    ? Math.max(0, Math.min(Math.floor(cargaTotal / 100) - 1, rezoData.versos.length - 1))
+    : versoActualIndex;
+
+  const renderProgreso = (esperandoLevante && cargaTotal > 0 && cargaTotal % 100 === 0)
+    ? 100 
+    : progresoVersoActual;
+
+  const currentVerseString = cargaTotal >= totalPuntos ? 'Amén.' : rezoData.versos[renderVersoIndex];
   
   const renderVersoInteractivo = (text, progresoStr) => {
     const chars = text.split('');
@@ -148,41 +216,45 @@ export default function RezoEnFocoView() {
           <button onClick={() => setModoInteraccion(m => m === 'swipe' ? 'hold' : 'swipe')} style={miniBtn}>
               {modoInteraccion === 'swipe' ? '👆 Lectura' : '⏱️ Espera'}
           </button>
-          <button onClick={() => setTipoRezoActual(t => t === 'ave_maria' ? 'padre_nuestro' : 'ave_maria')} style={miniBtn}>
-              🔄 {tipoRezoActual === 'ave_maria' ? 'A.M.' : 'P.N.'}
-          </button>
       </div>
 
-      {/* 20%: EL MACETÓN (5 filas x 11 col: 55 casilleros) */}
-      <div style={{ flex: '0 0 20%', borderBottom: '1px solid #222', padding: '15px 5px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
+      {/* EL MACETÓN */}
+      <div style={{ flex: '0 0 20%', borderBottom: '1px solid #222', padding: '15px 5px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '30px', overflowX: 'auto' }}>
         <div style={{
           display: 'grid',
-          gridTemplateRows: 'repeat(5, 1fr)', 
+          gridTemplateRows: 'repeat(6, 1fr)', // Cambiado a 6 filas para acomodar los iniciales si es necesario
           gridTemplateColumns: 'repeat(11, 1fr)', 
           gap: '3px',
-          width: '100%',
           height: '100%',
-          maxWidth: '500px'
+          maxWidth: '500px',
+          width: '100%'
         }}>
-          {Array.from({ length: 55 }).map((_, i) => {
-            const col = i % 11;
-            const esPadreNuestro = col === 0;
+          {maceteroMap.map((oracion, i) => {
             const completada = i < oracionesCompletadasEnTotal;
             const esActual = i === oracionesCompletadasEnTotal;
+            const seqIndex = oracion.seqIndex;
             
-            // Renderizado distintivo para Padre Nuestro
+            const esPadreNuestro = oracion.id === 'P';
+            
             const bgDefault = '#111';
             const bgMaceton = completada ? '#2a0a0a' : bgDefault;
+
+            // Al hacer click, avanzamos el estado a este punto en la secuencia
+            const handleMaceteroClick = () => {
+              setCurrentPrayerIndex(seqIndex);
+              setCargaTotal(0);
+            };
             
             return (
-              <div key={i} style={{
+              <div key={i} onClick={handleMaceteroClick} style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
                 backgroundColor: bgMaceton,
                 border: esActual ? '1px solid #D4AF37' : '1px solid #222',
                 borderRadius: '3px',
-                fontSize: 'min(2vh, 16px)'
+                fontSize: 'min(2vh, 16px)',
+                cursor: 'pointer'
               }}>
-                {completada ? (
+                {completada || esActual ? (
                   esPadreNuestro ? '✝️' : '🌹'
                 ) : (
                   <span style={{ opacity: 0.15, filter: 'grayscale(1)' }}>
@@ -217,16 +289,18 @@ export default function RezoEnFocoView() {
         onContextMenu={(e) => e.preventDefault()}
         style={{ flex: '1', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0 20px', touchAction: 'none' }}
       >
-          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginBottom: '20px' }}>
-            {versoActualIndex > 0 && cargaTotal < totalPuntos ? rezoData.versos[versoActualIndex - 1] : ''}
+          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginBottom: '20px', minHeight: '1.5em' }}>
+            {renderVersoIndex > 0 && cargaTotal < totalPuntos ? rezoData.versos[renderVersoIndex - 1] : ''}
           </div>
           
-          <div ref={textoRef} style={{ position: 'relative', textAlign: 'center', fontWeight: 'bold', fontSize: 'clamp(1.2rem, 3.5vh, 1.8rem)', zIndex: 10, cursor: modoInteraccion === 'swipe' ? 'ew-resize' : 'pointer' }}>
-             {renderVersoInteractivo(currentVerseString, progresoVersoActual)}
+          {/* Al usar display inline-block, el rect() de DOM medirá exacto el ancho del verso,
+              logrando que la distancia de swipe coincida con el largo del texto del verso (solicitud UX). */}
+          <div ref={textoRef} style={{ display: 'inline-block', position: 'relative', textAlign: 'center', fontWeight: 'bold', fontSize: 'clamp(1.2rem, 3.5vh, 1.8rem)', zIndex: 10, cursor: modoInteraccion === 'swipe' ? 'ew-resize' : 'pointer', padding: '0 5px' }}>
+             {renderVersoInteractivo(currentVerseString, renderProgreso)}
           </div>
 
-          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginTop: '20px' }}>
-            {versoActualIndex < rezoData.versos.length - 1 && cargaTotal < totalPuntos ? rezoData.versos[versoActualIndex + 1] : ''}
+          <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginTop: '20px', minHeight: '1.5em' }}>
+            {renderVersoIndex < rezoData.versos.length - 1 && cargaTotal < totalPuntos ? rezoData.versos[renderVersoIndex + 1] : ''}
           </div>
           
           {/* Indicador inferior */}
