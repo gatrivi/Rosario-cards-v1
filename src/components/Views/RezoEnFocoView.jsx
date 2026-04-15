@@ -56,12 +56,24 @@ export default function RezoEnFocoView() {
 
   const rezoData = secuencia[currentPrayerIndex];
   const [cargaTotal, setCargaTotal] = useState(0);
+  const [targetCarga, setTargetCarga] = useState(0); // Nuevo para interpolación suave
+  const [charHeatMap, setCharHeatMap] = useState(() => {
+    try {
+      const stored = localStorage.getItem('rosario_heatmap');
+      return stored ? JSON.parse(stored) : {};
+    } catch { return {}; }
+  });
+
   const [isCargando, setIsCargando] = useState(false);
   const [modoInteraccion, setModoInteraccion] = useState('swipe'); // 'swipe' o 'hold'
   const [esperandoLevante, setEsperandoLevante] = useState(false); // Para evitar skip de versos
   
   const timerRef = useRef(null);
   const textoRef = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem('rosario_heatmap', JSON.stringify(charHeatMap));
+  }, [charHeatMap]);
 
   const totalPuntos = rezoData.versos.length * 100;
   const versoActualIndex = Math.min(Math.floor(cargaTotal / 100), rezoData.versos.length - 1);
@@ -111,6 +123,7 @@ export default function RezoEnFocoView() {
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
       setTimeout(() => {
         setCargaTotal(0);
+        setTargetCarga(0);
         if (currentPrayerIndex < secuencia.length - 1) {
           setCurrentPrayerIndex(prev => prev + 1);
         }
@@ -118,38 +131,78 @@ export default function RezoEnFocoView() {
     }
   }, [cargaTotal, totalPuntos]);
 
-  // Lógica SWIPE
+  const renderVersoIndex = (esperandoLevante && cargaTotal > 0 && cargaTotal % 100 === 0)
+    ? Math.max(0, Math.min(Math.floor(cargaTotal / 100) - 1, rezoData.versos.length - 1))
+    : versoActualIndex;
+
+  const currentVerseString = cargaTotal >= totalPuntos ? 'Amén.' : rezoData.versos[renderVersoIndex];
+
+  // Lógica SWIPE (Lectura Suave con límite de velocidad y Heatmap)
+  useEffect(() => {
+    if (modoInteraccion !== 'swipe' || esperandoLevante || cargaTotal >= totalPuntos) return;
+    
+    const interval = setInterval(() => {
+      setCargaTotal(prev => {
+        if (prev >= targetCarga) return prev;
+
+        const currentCharsLength = currentVerseString.length;
+        // Límite de velocidad: max ~50ms por caracter
+        const step = currentCharsLength > 0 ? (60 / currentCharsLength) : 2; 
+        const next = Math.min(prev + step, targetCarga);
+        
+        // Aumentar el 'heat' o tiempo de permanencia en el caracter actual
+        const charIndex = Math.floor((prev % 100) / 100 * currentCharsLength);
+        if (charIndex >= 0 && charIndex < currentCharsLength) {
+           setCharHeatMap(prevHeat => {
+               const charKey = `${rezoData.id}-${renderVersoIndex}-${charIndex}`;
+               const current = prevHeat[charKey] || 0;
+               if (current >= 100) return prevHeat; 
+               return { ...prevHeat, [charKey]: Math.min(100, current + 15) }; // Sube 15 cada 30ms de hover
+           });
+        }
+
+        // Frenar al completar el verso
+        if (Math.floor(next / 100) > Math.floor(prev / 100)) {
+           setTargetCarga(Math.floor(next / 100) * 100);
+           setEsperandoLevante(true);
+           if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
+           return Math.floor(next / 100) * 100;
+        }
+
+        return next >= totalPuntos ? totalPuntos : next;
+      });
+    }, 30);
+    return () => clearInterval(interval);
+  }, [modoInteraccion, targetCarga, totalPuntos, currentVerseString, esperandoLevante, rezoData.id, renderVersoIndex, cargaTotal]);
+
   const handlePointerMove = (e) => {
     if (modoInteraccion !== 'swipe' || cargaTotal >= totalPuntos || esperandoLevante) return;
     
-    // Validar arrastre (mouse down o touch)
-    if (e.buttons === 0 && e.pointerType === 'mouse') return;
+    // Ya no requerimos mouse down para desktop, pasando el puntero alcanza
+    // if (e.buttons === 0 && e.pointerType === 'mouse') return;
 
     if (!textoRef.current) return;
     
-    // Usar bounding box
     const rect = textoRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const paddingSensibilidad = 20; // Facilitar llegar al 0% y 100%
+    const paddingSensibilidad = 60; // Área de contacto 30% más amplia
     
     const porcentajeX = Math.max(0, Math.min(100, ((x + paddingSensibilidad) / (rect.width + paddingSensibilidad*2)) * 100));
     
-    if (porcentajeX > progresoVersoActual + 1) { 
+    // Permitir mover targetCarga solo hacia adelante
+    if (porcentajeX > (targetCarga % 100) + 1 || Math.floor(targetCarga/100) < versoActualIndex) { 
        const nuevoTotal = (versoActualIndex * 100) + porcentajeX;
        
        if (nuevoTotal >= (versoActualIndex + 1) * 100 - 5) {
-          // Completar verso
-          setCargaTotal((versoActualIndex + 1) * 100);
-          setEsperandoLevante(true);
-          if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
-       } else if (nuevoTotal > cargaTotal) {
-          setCargaTotal(nuevoTotal);
+          // Auto-completar acercándose al final
+          setTargetCarga((versoActualIndex + 1) * 100);
+       } else if (nuevoTotal > targetCarga) {
+          setTargetCarga(nuevoTotal);
        }
     }
   };
 
   const handlePointerDown = (e) => {
-    // Si la pantalla estaba pidiendo soltar, y presionan, permitimos continuar
     setEsperandoLevante(false);
     
     if (modoInteraccion === 'hold') {
@@ -171,8 +224,8 @@ export default function RezoEnFocoView() {
       setEsperandoLevante(false);
       
       // Auto-completar si quedó muy cerca del final
-      if (progresoVersoActual > 80 && cargaTotal < totalPuntos) {
-        setCargaTotal((versoActualIndex + 1) * 100);
+      if (progresoVersoActual > 80 && targetCarga < totalPuntos) {
+        setTargetCarga((versoActualIndex + 1) * 100);
       }
     }
   };
@@ -196,13 +249,19 @@ export default function RezoEnFocoView() {
        const offColor = '#666'; 
        const onColor = isCargando || modoInteraccion === 'swipe' ? '#D4AF37' : rezoData.color;
        
+       // Recuperar el Heat guardado
+       const charKey = `${rezoData.id}-${renderVersoIndex}-${index}`;
+       const heat = charHeatMap[charKey] || 0;
+       const richness = 1 + (heat / 50); // Hasta 3x de saturación extra basado en tiempo leído
+       
        return (
          <span key={index} style={{
              color: isColored ? onColor : offColor,
-             transition: 'color 0.1s ease',
-             textShadow: isColored ? '0px 0px 5px rgba(212, 175, 55, 0.4)' : 'none'
+             transition: 'color 0.1s ease, filter 0.3s ease',
+             textShadow: isColored ? `0px 0px ${5 + (heat/10)}px rgba(212, 175, 55, ${0.4 + (heat/200)})` : 'none',
+             filter: isColored ? `saturate(${richness}) brightness(${1 + heat/200})` : 'none'
          }}>
-            {char}
+             {char}
          </span>
        );
     });
@@ -243,6 +302,7 @@ export default function RezoEnFocoView() {
             const handleMaceteroClick = () => {
               setCurrentPrayerIndex(seqIndex);
               setCargaTotal(0);
+              setTargetCarga(0);
             };
             
             return (
@@ -287,7 +347,7 @@ export default function RezoEnFocoView() {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onContextMenu={(e) => e.preventDefault()}
-        style={{ flex: '1', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0 20px', touchAction: 'none' }}
+        style={{ flex: '1', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px 40px', touchAction: 'none' }}
       >
           <div style={{ textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2vh, 1.2rem)', opacity: 0.5, marginBottom: '20px', minHeight: '1.5em' }}>
             {renderVersoIndex > 0 && cargaTotal < totalPuntos ? rezoData.versos[renderVersoIndex - 1] : ''}
