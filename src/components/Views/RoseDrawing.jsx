@@ -68,11 +68,21 @@ export default function RoseDrawing({
   warmthProfile = [],  // per-path warmth (0–1)
   wiggleProfile = [],  // per-path variance → organic Bezier variation
   enrichment = 0,      // 0–1: lifetime prayer depth → glow intensity
+  liveWarmth = null,   // 0–1: live hover warmth of the cursor right now
   size = 120,
   style = {},
   onClick,
 }) {
   const N = ROSE_PATHS.length;
+  const pathsRef = React.useRef([]);
+  const [pathLengths, setPathLengths] = React.useState(Array(N).fill(DASH));
+
+  React.useEffect(() => {
+    if (pathsRef.current) {
+      const lengths = pathsRef.current.map((p) => p ? p.getTotalLength() : DASH);
+      setPathLengths(lengths);
+    }
+  }, []);
 
   return (
     <svg
@@ -89,11 +99,16 @@ export default function RoseDrawing({
         const seg   = Math.max(0, Math.min(1, (progress - start) / (end - start)));
         if (seg <= 0) return null;
 
-        const offset = DASH * (1 - seg);
+        const pathLen = pathLengths[i];
+        const offset = pathLen * (1 - seg);
         const type = PATH_TYPES[i];
+        
+        const isActive = progress >= start && progress < end;
 
         // ── Color ──
-        const w = warmthProfile[i] !== undefined ? warmthProfile[i] : 0.2;
+        const w = (isActive && liveWarmth !== null) 
+                    ? Math.max(0.1, liveWarmth) // Use live heat while drawing
+                    : (warmthProfile[i] !== undefined ? warmthProfile[i] : 0.2); // Fallback to recorded avg
         const stroke = type === 'stem'  ? COLORS.stem
                      : type === 'leaf'  ? COLORS.leaf
                      : petalColor(w);
@@ -121,7 +136,7 @@ export default function RoseDrawing({
                 strokeWidth={sw + 2.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeDasharray={DASH}
+                strokeDasharray={pathLen}
                 strokeDashoffset={offset}
                 opacity={enrichment * 0.2}
                 style={{ filter: `blur(${2 + enrichment * 4}px)` }}
@@ -129,15 +144,16 @@ export default function RoseDrawing({
             )}
             {/* Main drawn stroke */}
             <path
+              ref={(el) => (pathsRef.current[i] = el)}
               d={d} fill="none"
               stroke={stroke}
               strokeWidth={sw}
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeDasharray={DASH}
+              strokeDasharray={pathLen}
               strokeDashoffset={offset}
               style={{
-                transition: 'stroke-dashoffset 0.3s ease-out, stroke 0.5s ease',
+                transition: 'stroke-dashoffset 0.1s linear, stroke 0.5s ease',
               }}
             />
           </g>

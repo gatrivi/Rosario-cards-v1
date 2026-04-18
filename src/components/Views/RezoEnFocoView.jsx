@@ -903,6 +903,12 @@ export default function RezoEnFocoView() {
           }}>
             <RoseDrawing
               progress={overallProgress}
+              liveWarmth={(() => {
+                if (charProgressIndex < 0) return 0;
+                const reachedAt = charReachedAtRef.current[charProgressIndex];
+                const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
+                return Math.max(0, Math.min(1, liveDwell / 2000));
+              })()}
               warmthProfile={(() => {
                 const N = RoseDrawing.PATH_COUNT;
                 const vw = verseWarmthRef.current;
