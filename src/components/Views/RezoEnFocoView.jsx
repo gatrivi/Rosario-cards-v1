@@ -40,10 +40,12 @@ const getSequenceData = (mysteryType = 'gozosos') => {
 
 // ─── Color helpers ───
 
-const SILVER    = [185, 185, 195];
-const GOLD      = [212, 175, 55];
-const DEEP_GOLD = [184, 134, 11];  // DarkGoldenrod — richer warmth
-const UNREAD    = [51, 51, 51];    // #333
+const SILVER      = [185, 185, 195];
+const GOLD        = [212, 175, 55];
+const DEEP_GOLD   = [184, 134, 11];   // DarkGoldenrod
+const WARM_AMBER  = [210, 140, 10];   // richer amber — extended meditation
+const INCANDESCENT = [245, 215, 160]; // warm white — deep contemplation
+const UNREAD      = [51, 51, 51];     // #333
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const lerpColor = (from, to, t) => [
@@ -53,17 +55,37 @@ const lerpColor = (from, to, t) => [
 ];
 const toRGB = (c) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 
-// Color ramp based on milliseconds since character was first reached:
-//   0–100ms  → UNREAD → SILVER  (building to silver)
-//   100–200ms → SILVER → GOLD   (warming)
-//   200–600ms → GOLD → DEEP_GOLD (deepening)
-//   600ms+   → DEEP_GOLD
+// Extended color ramp — rewards lingering with richer tones:
+//   0–100ms    → building to silver (fast swipe stays here)
+//   100–200ms  → silver → gold
+//   200–600ms  → gold → deep gold
+//   600–1500ms → deep gold → warm amber
+//   1500–4000ms → warm amber → incandescent (deep contemplation)
+//   4000ms+    → incandescent glow
 const colorFromElapsed = (elapsed) => {
-  if (elapsed <= 0)   return UNREAD;
-  if (elapsed < 100)  return lerpColor(UNREAD, SILVER, elapsed / 100);
-  if (elapsed < 200)  return lerpColor(SILVER, GOLD, (elapsed - 100) / 100);
-  if (elapsed < 600)  return lerpColor(GOLD, DEEP_GOLD, (elapsed - 200) / 400);
-  return DEEP_GOLD;
+  if (elapsed <= 0)    return UNREAD;
+  if (elapsed < 100)   return lerpColor(UNREAD, SILVER, elapsed / 100);
+  if (elapsed < 200)   return lerpColor(SILVER, GOLD, (elapsed - 100) / 100);
+  if (elapsed < 600)   return lerpColor(GOLD, DEEP_GOLD, (elapsed - 200) / 400);
+  if (elapsed < 1500)  return lerpColor(DEEP_GOLD, WARM_AMBER, (elapsed - 600) / 900);
+  if (elapsed < 4000)  return lerpColor(WARM_AMBER, INCANDESCENT, (elapsed - 1500) / 2500);
+  return INCANDESCENT;
+};
+
+// Glow intensity scales with dwell time
+const glowFromElapsed = (elapsed, baseSize) => {
+  if (elapsed < 150) return 'none';
+  if (elapsed < 600) {
+    const t = (elapsed - 150) / 450;
+    return `0 0 ${baseSize * t}px rgba(212, 175, 55, ${0.15 + t * 0.3})`;
+  }
+  if (elapsed < 1500) {
+    const t = (elapsed - 600) / 900;
+    return `0 0 ${baseSize + t * 8}px rgba(210, 140, 10, ${0.4 + t * 0.25})`;
+  }
+  // Transcendent double-glow
+  const t = Math.min(1, (elapsed - 1500) / 2500);
+  return `0 0 ${baseSize + 8 + t * 6}px rgba(245, 215, 160, ${0.5 + t * 0.3}), 0 0 ${baseSize + 16 + t * 10}px rgba(212, 175, 55, ${0.15 + t * 0.15})`;
 };
 
 
@@ -116,6 +138,7 @@ export default function RezoEnFocoView() {
   const textoRef = useRef(null);
   const wordSpanRefs = useRef([]);       // DOM elements for each word (for getBoundingClientRect)
   const charReachedAtRef = useRef([]);   // Timestamp when each global char was first reached
+  const charDwellRef = useRef([]);       // LOCKED dwell ms for passed chars (fast = small, slow = large)
   const autoAdvanceTimer = useRef(null);
   const holdTimerRef = useRef(null);
   const pointerStartX = useRef(null);
@@ -228,6 +251,7 @@ export default function RezoEnFocoView() {
     setIsVersoComplete(false);
     setIsPrayerComplete(false);
     charReachedAtRef.current = [];
+    charDwellRef.current = [];
     if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
   };
 
@@ -242,6 +266,7 @@ export default function RezoEnFocoView() {
     setIsVerseActivated(false);
     setIsVersoComplete(false);
     charReachedAtRef.current = [];
+    charDwellRef.current = [];
   };
 
   useEffect(() => { advanceVerseRef.current = advanceVerse; });
@@ -251,18 +276,33 @@ export default function RezoEnFocoView() {
   // ─── Effects ───
   // ═══════════════════════════════════════════════════════
 
-  // Stamp timestamps for newly-reached characters
+  // Stamp timestamps for newly-reached characters AND lock dwell for passed ones
   useEffect(() => {
     if (charProgressIndex >= 0) {
       const now = Date.now();
       for (let i = 0; i <= charProgressIndex; i++) {
         if (!charReachedAtRef.current[i]) {
-          charReachedAtRef.current[i] = now;
+          // HEAD START: if the previous character had a long dwell, this char
+          // was in the bleed zone and pre-warmed. Backdate its timestamp so it
+          // doesn't snap from bleed-gold back to raw silver.
+          let headStart = 0;
+          if (i > 0 && charReachedAtRef.current[i - 1]) {
+            const prevDwell = now - charReachedAtRef.current[i - 1];
+            if (prevDwell > 200) {
+              headStart = Math.min(prevDwell * 0.25, 600);
+            }
+          }
+          charReachedAtRef.current[i] = now - headStart;
+        }
+        // Lock dwell for chars the cursor has moved PAST.
+        if (i < charProgressIndex && charDwellRef.current[i] === undefined) {
+          charDwellRef.current[i] = now - charReachedAtRef.current[i];
         }
       }
-      // Clear timestamps ahead (supports backward movement)
+      // Clear ahead (supports backward movement)
       for (let i = charProgressIndex + 1; i < charReachedAtRef.current.length; i++) {
         charReachedAtRef.current[i] = null;
+        charDwellRef.current[i] = undefined;
       }
     }
   }, [charProgressIndex]);
@@ -274,10 +314,10 @@ export default function RezoEnFocoView() {
     return () => clearInterval(timer);
   }, [charProgressIndex, isVersoComplete, isPrayerComplete]);
 
-  // Verse auto-advance after completion
+  // Verse auto-advance — brief flash then quick transition (350ms)
   useEffect(() => {
     if (isVersoComplete && !isPrayerComplete) {
-      autoAdvanceTimer.current = setTimeout(() => advanceVerse(1), 800);
+      autoAdvanceTimer.current = setTimeout(() => advanceVerse(1), 350);
       return () => clearTimeout(autoAdvanceTimer.current);
     }
   }, [isVersoComplete, isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -290,7 +330,7 @@ export default function RezoEnFocoView() {
       const timer = setTimeout(() => {
         if (currentPrayerIndex < secuencia.length - 1) setCurrentPrayerIndex(prev => prev + 1);
         resetVerseState();
-      }, 1200);
+      }, 600);
       return () => clearTimeout(timer);
     }
   }, [isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -335,6 +375,7 @@ export default function RezoEnFocoView() {
 
   const findCharAtPointer = (clientX, clientY) => {
     if (wordSpanRefs.current.length === 0 || totalChars === 0) return -1;
+    const M = 15; // ~thumbnail-width margin for forgiving touch/mouse detection
 
     let lastPassedGlobal = -1;
 
@@ -346,31 +387,30 @@ export default function RezoEnFocoView() {
       const baseGlobal = wordCharOffsets[w];
 
       // Word is on a line ABOVE the pointer → fully passed
-      if (clientY > rect.bottom + 4) {
+      if (clientY > rect.bottom + M) {
         lastPassedGlobal = baseGlobal + wordLen - 1;
         continue;
       }
 
       // Word is on a line BELOW the pointer → stop
-      if (clientY < rect.top - 4) break;
+      if (clientY < rect.top - M) break;
 
-      // Same line — mouse is LEFT of this word
-      if (clientX < rect.left - 5) {
-        return lastPassedGlobal; // last char of previous word (or -1 if first)
+      // Same line — mouse is LEFT of this word (beyond margin)
+      if (clientX < rect.left - M) {
+        return lastPassedGlobal;
       }
 
-      // Mouse is WITHIN this word
-      if (clientX <= rect.right + 5) {
+      // Mouse is WITHIN or NEAR this word (extended hit zone)
+      if (clientX <= rect.right + M) {
         const pctInWord = Math.max(0, Math.min(0.999, (clientX - rect.left) / rect.width));
         const localChar = Math.floor(pctInWord * wordLen);
         return baseGlobal + localChar;
       }
 
-      // Mouse is RIGHT of this word (but maybe more words follow on this line)
+      // Mouse is RIGHT of this word
       lastPassedGlobal = baseGlobal + wordLen - 1;
     }
 
-    // Mouse is past all words
     return lastPassedGlobal;
   };
 
@@ -504,16 +544,17 @@ export default function RezoEnFocoView() {
           return <span key={letterIdx} style={{ color: '#333' }}>{letter}</span>;
         }
 
-        // ── Completed verse/prayer ──
+        // ── Completed verse/prayer: adaptive flash (silver for fast, gold for slow) ──
         if (isPrayerComplete || isVersoComplete) {
-          const reachedAt = charReachedAtRef.current[gi];
-          const elapsed = reachedAt ? now - reachedAt : 600;
-          const color = colorFromElapsed(Math.max(elapsed, 300)); // at least gold
+          // Compute average dwell to determine flash warmth
+          const dwells = charDwellRef.current.filter(d => d !== undefined && d !== null);
+          const avgDwell = dwells.length > 0
+            ? dwells.reduce((s, d) => s + d, 0) / dwells.length
+            : 200;
+          const flashAnim = avgDwell < 150 ? 'verse-flash-silver' : 'verse-flash-gold';
           return (
             <span key={letterIdx} style={{
-              color: toRGB(color),
-              textShadow: `0 0 ${glowSize}px rgba(212, 175, 55, 0.5)`,
-              transition: 'color 0.3s ease, text-shadow 0.5s ease',
+              animation: `${flashAnim} 0.3s ease-out forwards`,
             }}>{letter}</span>
           );
         }
@@ -522,18 +563,11 @@ export default function RezoEnFocoView() {
         const dist = gi - charProgressIndex; // negative = behind, positive = ahead
 
         // ── BEHIND the cursor (already read) ──
-        if (dist <= 0) {
-          const reachedAt = charReachedAtRef.current[gi];
-          const elapsed = reachedAt ? now - reachedAt : 0;
-          const color = colorFromElapsed(elapsed);
-
-          // Glow for warm chars (gold+)
-          let shadow = 'none';
-          if (elapsed > 150) {
-            const gI = Math.min(1, (elapsed - 150) / 400);
-            shadow = `0 0 ${glowSize * gI}px rgba(212, 175, 55, ${0.15 + gI * 0.35})`;
-          }
-
+        // Uses LOCKED dwell time — fast swipes stay silver, slow reading stays warm.
+        if (dist < 0) {
+          const dwell = charDwellRef.current[gi] || 0; // frozen when cursor moved past
+          const color = colorFromElapsed(dwell);
+          const shadow = glowFromElapsed(dwell, glowSize);
           return (
             <span key={letterIdx} style={{
               color: toRGB(color),
@@ -543,11 +577,31 @@ export default function RezoEnFocoView() {
           );
         }
 
-        // ── BLEED ZONE: 1–4 chars ahead of cursor ──
+        // ── AT the cursor (LIVE dwell — keeps toasting while static) ──
+        if (dist === 0) {
+          const reachedAt = charReachedAtRef.current[gi];
+          const liveDwell = reachedAt ? now - reachedAt : 0;
+          const color = colorFromElapsed(liveDwell);
+          const shadow = glowFromElapsed(liveDwell, glowSize);
+          return (
+            <span key={letterIdx} style={{
+              color: toRGB(color),
+              textShadow: shadow,
+              transition: 'text-shadow 0.1s ease',
+            }}>{letter}</span>
+          );
+        }
+
+        // ── BLEED ZONE: 1–4 chars ahead ──
+        // When the cursor lingers, bleed heat also intensifies (conduction)
         if (dist <= 4) {
-          // Heat decreases with distance: 0.4, 0.28, 0.16, 0.06
-          const bleedHeat = Math.max(0, 0.45 - (dist - 1) * 0.13);
-          const bleedColor = lerpColor(UNREAD, SILVER, bleedHeat);
+          const cursorReachedAt = charReachedAtRef.current[charProgressIndex];
+          const cursorDwell = cursorReachedAt ? now - cursorReachedAt : 0;
+          const lingerBonus = Math.min(0.35, cursorDwell / 4000); // up to +0.35 over 4s
+          const baseBleed = Math.max(0, 0.45 - (dist - 1) * 0.13);
+          const totalHeat = Math.min(0.8, baseBleed + lingerBonus);
+          const bleedTarget = cursorDwell > 600 ? GOLD : SILVER; // warm bleed when cursor is hot
+          const bleedColor = lerpColor(UNREAD, bleedTarget, totalHeat);
           return (
             <span key={letterIdx} style={{
               color: toRGB(bleedColor),
@@ -715,27 +769,18 @@ export default function RezoEnFocoView() {
           {versoIndex < totalVersos - 1 && !isPrayerComplete ? rezoData.versos[versoIndex + 1] : ''}
         </div>
 
-        {/* Hint */}
-        <div style={{
-          position: 'absolute', bottom: '15px', width: 'calc(100% - 60px)',
-          textAlign: 'center',
-          color: (isVersoComplete || isPrayerComplete) ? '#D4AF37' : '#555',
-          fontSize: (isVersoComplete || isPrayerComplete) ? '0.85rem' : '0.7rem',
-          fontWeight: 'bold',
-          transition: 'color 0.3s, font-size 0.3s',
-          animation: (isVersoComplete || isPrayerComplete) ? 'pulse-hint 1.2s ease-in-out infinite' : 'none',
-        }}>
-          {isPrayerComplete
-            ? '✨ Oración completada'
-            : isVersoComplete
-              ? '✓ Siguiente verso...'
-              : notStarted && modoInteraccion === 'swipe'
-                ? '' /* first-letter pulse is the hint */
-                : modoInteraccion === 'swipe'
-                  ? ''
-                  : '👇 Mantén presionado 👇'
-          }
-        </div>
+        {/* Hint — only for hold mode or prayer completion */}
+        {(isPrayerComplete || (modoInteraccion === 'hold' && notStarted)) && (
+          <div style={{
+            position: 'absolute', bottom: '15px', width: 'calc(100% - 60px)',
+            textAlign: 'center',
+            color: isPrayerComplete ? '#D4AF37' : '#555',
+            fontSize: '0.8rem', fontWeight: 'bold',
+            animation: isPrayerComplete ? 'pulse-hint 1.2s ease-in-out infinite' : 'none',
+          }}>
+            {isPrayerComplete ? '✨ Oración completada' : '👇 Mantén presionado 👇'}
+          </div>
+        )}
 
         <style>{`
           @keyframes pulse-hint {
@@ -751,6 +796,16 @@ export default function RezoEnFocoView() {
               color: #AAA;
               text-shadow: 0 0 14px rgba(185, 185, 195, 0.5);
             }
+          }
+          @keyframes verse-flash-gold {
+            0% { color: #D4AF37; text-shadow: 0 0 8px rgba(212, 175, 55, 0.6); }
+            35% { color: #F5E6A0; text-shadow: 0 0 18px rgba(245, 215, 160, 0.8); }
+            100% { color: #D4AF37; text-shadow: 0 0 4px rgba(212, 175, 55, 0.3); }
+          }
+          @keyframes verse-flash-silver {
+            0% { color: #B9B9C3; text-shadow: 0 0 6px rgba(185, 185, 195, 0.5); }
+            35% { color: #E8E8F0; text-shadow: 0 0 14px rgba(210, 210, 220, 0.7); }
+            100% { color: #B9B9C3; text-shadow: 0 0 3px rgba(185, 185, 195, 0.25); }
           }
         `}</style>
       </div>
