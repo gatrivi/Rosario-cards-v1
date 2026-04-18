@@ -370,7 +370,7 @@ export default function RezoEnFocoView() {
       {/* HEADER NAVBAR MÍNIMO */}
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, display: 'flex', gap: '5px' }}>
           <button onClick={() => setModoInteraccion(m => m === 'swipe' ? 'hold' : 'swipe')} style={miniBtn}>
-              {modoInteraccion === 'swipe' ? '👆 Lectura' : '⏱️ Espera'}
+              {modoInteraccion === 'swipe' ? '✋ Modo: Deslizar' : '👇 Modo: Mantener'}
           </button>
       </div>
 
@@ -461,9 +461,25 @@ export default function RezoEnFocoView() {
           </div>
           
           {/* Indicador inferior */}
-          <div style={{position: 'absolute', bottom: '15px', width: 'calc(100% - 40px)', textAlign: 'center', color: '#666', fontSize: '0.75rem', fontWeight: 'bold'}}>
-            {modoInteraccion === 'swipe' ? '👉 Desliza aquí para leer 👉' : '👇 Mantén presionado 👇'}
+          <div style={{
+            position: 'absolute', bottom: '15px', width: 'calc(100% - 40px)', textAlign: 'center', 
+            color: esperandoLevante ? '#D4AF37' : '#666', 
+            fontSize: esperandoLevante ? '0.9rem' : '0.75rem', 
+            fontWeight: 'bold',
+            transition: 'color 0.3s ease, font-size 0.3s ease',
+            animation: esperandoLevante ? 'pulse-hint 1.2s ease-in-out infinite' : 'none'
+          }}>
+            {esperandoLevante 
+              ? '☝️ ¡Levanta el dedo para continuar!' 
+              : (modoInteraccion === 'swipe' ? '👉 Desliza aquí para leer 👉' : '👇 Mantén presionado 👇')
+            }
           </div>
+          <style>{`
+            @keyframes pulse-hint {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.7; transform: scale(1.05); }
+            }
+          `}</style>
       </div>
 
     </div>

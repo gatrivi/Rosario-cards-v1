@@ -14,7 +14,7 @@ import { useRosaryStats } from "./hooks/useRosaryStats";
 import RosedalView from "./components/Rosedal/RosedalView";
 import DailyTracker from "./components/Rosedal/DailyTracker";
 
-function App() {
+function App({ isEmbedded = false }) {
   const [prayer, setPrayer] = useState(
     "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
   );
@@ -59,44 +59,50 @@ function App() {
     ? `url(${prayerImg})`
     : "url(/public/gallery-images/cathedral paing.JPG)";
 
-  if (showStats) {
+  if (!isEmbedded && showStats) {
     return (
       <div style={{ height: "100%", width: "100vw", overflow: "auto", position: "relative" }}>
+        <div style={{ paddingTop: "60px" }}>
+          <StatsView />
+        </div>
         <button 
           onClick={() => setShowStats(false)}
-          style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid white", borderRadius: "5px", cursor: "pointer" }}
+          style={{ position: "fixed", bottom: "20px", left: "50%", transform: "translateX(-50%)", zIndex: 100, padding: "12px 24px", background: "rgba(0,0,0,0.85)", color: "white", border: "1px solid #d4af37", borderRadius: "25px", cursor: "pointer", fontWeight: "bold", backdropFilter: "blur(10px)", fontSize: "0.95rem" }}
         >
-          Volver al Rosario
+          ← Volver al Rosario
         </button>
-        <StatsView />
       </div>
     );
   }
 
-  if (showRosedal) {
+  if (!isEmbedded && showRosedal) {
     return (
       <div style={{ height: "100%", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
+        <div style={{ paddingTop: "60px" }}>
+          <RosedalView />
+        </div>
         <button 
           onClick={() => setShowRosedal(false)}
-          style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid d4af37", borderRadius: "5px", cursor: "pointer" }}
+          style={{ position: "fixed", bottom: "20px", left: "50%", transform: "translateX(-50%)", zIndex: 100, padding: "12px 24px", background: "rgba(0,0,0,0.85)", color: "white", border: "1px solid #d4af37", borderRadius: "25px", cursor: "pointer", fontWeight: "bold", backdropFilter: "blur(10px)", fontSize: "0.95rem" }}
         >
-          Volver al Rosario
+          ← Volver al Rosario
         </button>
-        <RosedalView />
       </div>
     );
   }
 
-  if (showDailyTracker) {
+  if (!isEmbedded && showDailyTracker) {
     return (
       <div style={{ height: "100%", width: "100vw", overflow: "auto", position: "relative", backgroundColor: '#1a1a1a' }}>
+        <div style={{ paddingTop: "60px" }}>
+          <DailyTracker />
+        </div>
         <button 
           onClick={() => setShowDailyTracker(false)}
-          style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100, padding: "10px", background: "rgba(0,0,0,0.5)", color: "white", border: "1px solid #d4af37", borderRadius: "5px", cursor: "pointer" }}
+          style={{ position: "fixed", bottom: "20px", left: "50%", transform: "translateX(-50%)", zIndex: 100, padding: "12px 24px", background: "rgba(0,0,0,0.85)", color: "white", border: "1px solid #d4af37", borderRadius: "25px", cursor: "pointer", fontWeight: "bold", backdropFilter: "blur(10px)", fontSize: "0.95rem" }}
         >
-          Volver al Rosario
+          ← Volver al Rosario
         </button>
-        <DailyTracker />
       </div>
     );
   }
@@ -106,7 +112,7 @@ function App() {
       className="app"
       style={{
         height: "100%",
-        width: "100vw",
+        width: isEmbedded ? "100%" : "100vw",
         backgroundImage: backgroundImage,
         backgroundSize: "cover",
         position: "relative",
@@ -115,7 +121,7 @@ function App() {
     >
       {/* Background UI Layer (Prayers sitting underneath the rosary) */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, display: "flex", flexDirection: "column" }}>
-        <Header logo={logo} onToggleStats={() => setShowStats(true)} onToggleRosedal={() => setShowRosedal(true)} onToggleDailyTracker={() => setShowDailyTracker(true)} />
+        {!isEmbedded && <Header logo={logo} onToggleStats={() => setShowStats(true)} onToggleRosedal={() => setShowRosedal(true)} onToggleDailyTracker={() => setShowDailyTracker(true)} />}
         
         <div style={{ flex: 1, padding: "10px", overflow: "hidden" }}>
           {/* Opaque box for prayers so they are easy to read */}

@@ -67,49 +67,59 @@ export function useAveMariaStats() {
 
   // Funciones de control manual
   const addRosas = (cantidad) => {
-    let nextTotal = 0;
-    let nextDaily = 0;
-    
     setTotalAveMarias(prev => {
-      nextTotal = prev + cantidad;
-      localStorage.setItem('total_ave_marias', nextTotal);
-      return nextTotal;
+      const next = prev + cantidad;
+      localStorage.setItem('total_ave_marias', next);
+      return next;
     });
 
     setDailyAveMarias(prev => {
-      nextDaily = prev + cantidad;
-      localStorage.setItem('daily_ave_marias', nextDaily);
-      return nextDaily;
+      const next = prev + cantidad;
+      localStorage.setItem('daily_ave_marias', next);
+      return next;
     });
 
-    syncToCloud({ 
-      totalAveMarias: nextTotal, 
-      dailyAveMarias: nextDaily,
-      todayDate: new Date().toDateString()
-    });
+    // Read the ACTUAL persisted values from localStorage for sync (avoids stale closure)
+    setTimeout(() => {
+      const currentTotal = parseInt(localStorage.getItem('total_ave_marias') || '0', 10);
+      const currentDaily = parseInt(localStorage.getItem('daily_ave_marias') || '0', 10);
+      syncToCloud({ 
+        totalAveMarias: currentTotal, 
+        dailyAveMarias: currentDaily,
+        todayDate: new Date().toDateString()
+      });
+      // Dispatch event so other mounted components can re-read immediately
+      window.dispatchEvent(new CustomEvent('rosario-stats-updated', { 
+        detail: { totalAveMarias: currentTotal, dailyAveMarias: currentDaily } 
+      }));
+    }, 0);
   };
 
   const removeRosas = (cantidad) => {
-    let nextTotal = 0;
-    let nextDaily = 0;
-
     setTotalAveMarias(prev => {
-      nextTotal = Math.max(0, prev - cantidad);
-      localStorage.setItem('total_ave_marias', nextTotal);
-      return nextTotal;
+      const next = Math.max(0, prev - cantidad);
+      localStorage.setItem('total_ave_marias', next);
+      return next;
     });
 
     setDailyAveMarias(prev => {
-      nextDaily = Math.max(0, prev - cantidad);
-      localStorage.setItem('daily_ave_marias', nextDaily);
-      return nextDaily;
+      const next = Math.max(0, prev - cantidad);
+      localStorage.setItem('daily_ave_marias', next);
+      return next;
     });
 
-    syncToCloud({ 
-      totalAveMarias: nextTotal, 
-      dailyAveMarias: nextDaily,
-      todayDate: new Date().toDateString()
-    });
+    setTimeout(() => {
+      const currentTotal = parseInt(localStorage.getItem('total_ave_marias') || '0', 10);
+      const currentDaily = parseInt(localStorage.getItem('daily_ave_marias') || '0', 10);
+      syncToCloud({ 
+        totalAveMarias: currentTotal, 
+        dailyAveMarias: currentDaily,
+        todayDate: new Date().toDateString()
+      });
+      window.dispatchEvent(new CustomEvent('rosario-stats-updated', { 
+        detail: { totalAveMarias: currentTotal, dailyAveMarias: currentDaily } 
+      }));
+    }, 0);
   };
 
   // Función para registrar UNA Ave María rezada (una nueva rosa) (legado)

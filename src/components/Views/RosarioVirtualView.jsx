@@ -4,7 +4,7 @@ import App from '../../App';
 export default function RosarioVirtualView() {
   return (
     <div style={{ height: '100%', position: 'relative' }}>
-      <App />
+      <App isEmbedded={true} />
     </div>
   );
 }
