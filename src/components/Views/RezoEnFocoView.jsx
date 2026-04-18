@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
+import RoseDrawing from './RoseDrawing';
 
 // ─── Prayer data helpers ───
 
@@ -94,7 +95,7 @@ const glowFromElapsed = (elapsed, baseSize) => {
 // ═══════════════════════════════════════════════════════
 
 export default function RezoEnFocoView() {
-  const { addRosas, totalAveMarias } = useAveMariaStats();
+  const { addRosas, storeRoseData, totalAveMarias } = useAveMariaStats();
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
 
@@ -131,7 +132,11 @@ export default function RezoEnFocoView() {
   const [isVersoComplete, setIsVersoComplete] = useState(false);
   const [isPrayerComplete, setIsPrayerComplete] = useState(false);
   const [isCargando, setIsCargando] = useState(false);
-  const [warmthTick, setWarmthTick] = useState(0); // Drives re-renders for color animation
+  const [warmthTick, setWarmthTick] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    const stored = localStorage.getItem('rosario_sound_enabled');
+    return stored === null ? true : stored === 'true';
+  });
 
   // ─── Refs ───
   const containerRef = useRef(null);
@@ -139,6 +144,9 @@ export default function RezoEnFocoView() {
   const wordSpanRefs = useRef([]);       // DOM elements for each word (for getBoundingClientRect)
   const charReachedAtRef = useRef([]);   // Timestamp when each global char was first reached
   const charDwellRef = useRef([]);       // LOCKED dwell ms for passed chars (fast = small, slow = large)
+  const verseWarmthRef = useRef([]);     // Per-verse average warmth (for rose fingerprint)
+  const verseWiggleRef = useRef([]);     // Per-verse mouse variance (for rose uniqueness)
+  const mouseWiggleRef = useRef({ lastX: null, lastY: null, samples: [] });
   const autoAdvanceTimer = useRef(null);
   const holdTimerRef = useRef(null);
   const pointerStartX = useRef(null);
@@ -177,67 +185,207 @@ export default function RezoEnFocoView() {
 
 
   // ═══════════════════════════════════════════════════════
-  // ─── Audio ───
+  // ─── Audio System ───
   // ═══════════════════════════════════════════════════════
+  //
+  // Each prayer type has a root frequency. As the user reads,
+  // pitch rises subtly (~15%) through the verse. The filter
+  // cutoff tracks character warmth (silver = muffled, gold = open).
+  // Lifetime enrichment from totalAveMarias adds harmonics.
+
+  // Root note per prayer type (Hz)
+  const PRAYER_FREQ = {
+    'P': 130.81, // C3 — Padre Nuestro (grounding)
+    'A': 164.81, // E3 — Ave María (warm)
+    'G': 196.00, // G3 — Gloria (bright, ascending)
+    'F': 146.83, // D3 — Creed (contemplative)
+    'LL': 155.56, // Eb3 — Letanía
+    'S': 155.56, // Eb3 — Salve
+  };
+  const getBaseFreq = () => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81;
+
+  const toggleSound = () => {
+    setSoundEnabled(prev => {
+      const next = !prev;
+      localStorage.setItem('rosario_sound_enabled', String(next));
+      if (!next && synthRef.current) {
+        synthRef.current.gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.1);
+      }
+      return next;
+    });
+  };
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
-       const AudioContext = window.AudioContext || window.webkitAudioContext;
-       if (!AudioContext) return;
-       audioCtxRef.current = new AudioContext();
-       const gainNode = audioCtxRef.current.createGain();
-       gainNode.gain.value = 0;
-       gainNode.connect(audioCtxRef.current.destination);
-       const osc = audioCtxRef.current.createOscillator();
-       osc.type = 'sine';
-       osc.frequency.setValueAtTime(220, audioCtxRef.current.currentTime);
-       osc.connect(gainNode);
-       osc.start();
-       const osc2 = audioCtxRef.current.createOscillator();
-       osc2.type = 'triangle';
-       osc2.frequency.setValueAtTime(220, audioCtxRef.current.currentTime);
-       const filter = audioCtxRef.current.createBiquadFilter();
-       filter.type = 'lowpass';
-       filter.frequency.setValueAtTime(800, audioCtxRef.current.currentTime);
-       osc2.connect(filter);
-       filter.connect(gainNode);
-       osc2.start();
-       synthRef.current = { gainNode, osc, osc2, filter };
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      audioCtxRef.current = ctx;
+
+      // Master gain
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = 0;
+      gainNode.connect(ctx.destination);
+
+      // Osc1: sine — fundamental tone
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(getBaseFreq(), ctx.currentTime);
+
+      // Osc2: triangle — harmonic warmth (filtered)
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(getBaseFreq() * 1.5, ctx.currentTime); // 5th above
+
+      // Osc3: soft sine pad — octave below for depth
+      const osc3 = ctx.createOscillator();
+      osc3.type = 'sine';
+      osc3.frequency.setValueAtTime(getBaseFreq() * 0.5, ctx.currentTime);
+      const padGain = ctx.createGain();
+      padGain.gain.value = 0; // starts silent, grows with enrichment
+
+      // Filter shapes the timbre based on warmth
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(300, ctx.currentTime);
+      filter.Q.setValueAtTime(1.5, ctx.currentTime);
+
+      // Routing: osc1 + osc2→filter → gainNode → destination
+      osc.connect(gainNode);
+      osc2.connect(filter);
+      filter.connect(gainNode);
+      osc3.connect(padGain);
+      padGain.connect(gainNode);
+
+      osc.start();
+      osc2.start();
+      osc3.start();
+
+      synthRef.current = { gainNode, osc, osc2, osc3, filter, padGain };
     }
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
 
+  // Called on pointer activity (on/off toggle)
   const modulateAudio = (isActive) => {
-    if (!synthRef.current || !audioCtxRef.current) return;
-    const tRosos = totalRosasRef.current || 0;
-    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 7.8);
-    const { gainNode, osc2, filter } = synthRef.current;
+    if (!soundEnabled || !synthRef.current || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const { gainNode } = synthRef.current;
     if (isActive) {
-      osc2.frequency.setTargetAtTime(220 * (1 + enrichment * 0.5), audioCtxRef.current.currentTime, 0.1);
-      filter.frequency.setTargetAtTime(800 + enrichment * 2000, audioCtxRef.current.currentTime, 0.1);
-      gainNode.gain.setTargetAtTime(0.05 + enrichment * 0.05, audioCtxRef.current.currentTime, 0.05);
+      gainNode.gain.setTargetAtTime(0.04, ctx.currentTime, 0.08);
     } else {
-      gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.2);
+      gainNode.gain.setTargetAtTime(0, ctx.currentTime, 0.25);
     }
   };
 
+  // Called every 50ms by warmth timer — smoothly modulates pitch, filter, volume
+  // based on the CURRENT character's live warmth and verse progress.
+  const updateAudioWarmth = () => {
+    if (!soundEnabled || !synthRef.current || !audioCtxRef.current) return;
+    if (charProgressIndex < 0) return;
+    const ctx = audioCtxRef.current;
+    const { osc, osc2, osc3, filter, padGain, gainNode } = synthRef.current;
+    const t = ctx.currentTime;
+
+    const tRosos = totalRosasRef.current || 0;
+    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 7.8);
+
+    // Progress through verse: 0 → 1
+    const progress = charProgressIndex / Math.max(1, totalChars - 1);
+
+    // Live warmth of character at cursor: 0 → 1
+    const reachedAt = charReachedAtRef.current[charProgressIndex];
+    const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
+    const warmth = Math.min(1, liveDwell / 2000);
+
+    // --- Frequency: base × (1 + progress×0.15) — subtle ascent through verse ---
+    const baseFreq = getBaseFreq();
+    const freq = baseFreq * (1 + progress * 0.15);
+    osc.frequency.setTargetAtTime(freq, t, 0.15);
+    osc2.frequency.setTargetAtTime(freq * 1.5, t, 0.15);       // 5th harmonic
+    osc3.frequency.setTargetAtTime(freq * 0.5, t, 0.15);       // octave below
+
+    // --- Filter: warmth opens the cutoff (silver = muffled, gold = open) ---
+    const cutoff = 300 + warmth * 2200 + enrichment * 800;
+    filter.frequency.setTargetAtTime(cutoff, t, 0.1);
+
+    // --- Volume: base + warmth bonus + enrichment bonus ---
+    const vol = 0.03 + warmth * 0.025 + enrichment * 0.02;
+    gainNode.gain.setTargetAtTime(vol, t, 0.08);
+
+    // --- Pad: grows with enrichment (accumulated prayer depth) ---
+    padGain.gain.setTargetAtTime(enrichment * 0.03, t, 0.2);
+  };
+
+  // Verse start chime — pitch matches prayer type
   const playActivationChime = useCallback(() => {
-    if (!audioCtxRef.current) return;
+    if (!soundEnabled || !audioCtxRef.current) return;
     try {
       const ctx = audioCtxRef.current;
+      const base = getBaseFreq();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(523, ctx.currentTime);
-      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.06, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.frequency.setValueAtTime(base * 2, ctx.currentTime);        // octave up
+      osc.frequency.setValueAtTime(base * 2.5, ctx.currentTime + 0.06); // major 3rd
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.25);
+      osc.stop(ctx.currentTime + 0.2);
     } catch (e) { /* ignore */ }
-  }, []);
+  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Verse completion: brief ascending arpeggio, silver or gold depending on speed
+  const playVerseCompleteSound = useCallback((avgDwell) => {
+    if (!soundEnabled || !audioCtxRef.current) return;
+    try {
+      const ctx = audioCtxRef.current;
+      const base = getBaseFreq();
+      const isWarm = avgDwell >= 150;
+      // 3-note ascending arpeggio
+      const notes = isWarm
+        ? [base * 2, base * 2.5, base * 3]       // major arpeggio (warm)
+        : [base * 2, base * 2.25, base * 2.67];  // cooler intervals (silver)
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = isWarm ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.06);
+        gain.gain.linearRampToValueAtTime(isWarm ? 0.05 : 0.04, ctx.currentTime + i * 0.06 + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + i * 0.06);
+        osc.stop(ctx.currentTime + i * 0.06 + 0.2);
+      });
+    } catch (e) { /* ignore */ }
+  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Prayer completion: richer resolved chord
+  const playPrayerCompleteSound = useCallback(() => {
+    if (!soundEnabled || !audioCtxRef.current) return;
+    try {
+      const ctx = audioCtxRef.current;
+      const base = getBaseFreq();
+      // Full major chord (root + 3rd + 5th + octave)
+      [base, base * 1.25, base * 1.5, base * 2].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq * 2, ctx.currentTime);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.04 - i * 0.005, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.6);
+      });
+    } catch (e) { /* ignore */ }
+  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   // ═══════════════════════════════════════════════════════
@@ -252,6 +400,9 @@ export default function RezoEnFocoView() {
     setIsPrayerComplete(false);
     charReachedAtRef.current = [];
     charDwellRef.current = [];
+    verseWarmthRef.current = [];
+    verseWiggleRef.current = [];
+    mouseWiggleRef.current = { lastX: null, lastY: null, samples: [] };
     if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
   };
 
@@ -307,16 +458,35 @@ export default function RezoEnFocoView() {
     }
   }, [charProgressIndex]);
 
-  // Warmth animation: re-render every 50ms while reading is active
+  // Warmth animation + audio: re-render every 50ms while reading
   useEffect(() => {
     if (charProgressIndex < 0 || isVersoComplete || isPrayerComplete) return;
-    const timer = setInterval(() => setWarmthTick(t => t + 1), 50);
+    const timer = setInterval(() => {
+      setWarmthTick(t => t + 1);
+      updateAudioWarmth(); // sync sound to visual warmth
+    }, 50);
     return () => clearInterval(timer);
-  }, [charProgressIndex, isVersoComplete, isPrayerComplete]);
+  }, [charProgressIndex, isVersoComplete, isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Verse auto-advance — brief flash then quick transition (350ms)
+  // Verse auto-advance — brief flash then quick transition
   useEffect(() => {
     if (isVersoComplete && !isPrayerComplete) {
+      // Record verse stats for rose fingerprint
+      const dwells = charDwellRef.current.filter(d => d !== undefined && d !== null);
+      const avgDwell = dwells.length > 0 ? dwells.reduce((s, d) => s + d, 0) / dwells.length : 200;
+      verseWarmthRef.current.push(Math.min(1, avgDwell / 1000));
+      // Compute wiggle from mouse variance
+      const ws = mouseWiggleRef.current.samples;
+      let wiggle = 0;
+      if (ws.length >= 3) {
+        const avg = ws.reduce((a, b) => a + b, 0) / ws.length;
+        const variance = ws.reduce((sum, v) => sum + (v - avg) ** 2, 0) / ws.length;
+        wiggle = Math.min(5, Math.sqrt(variance));
+      }
+      verseWiggleRef.current.push(wiggle);
+      mouseWiggleRef.current.samples = []; // reset for next verse
+
+      playVerseCompleteSound(avgDwell);
       autoAdvanceTimer.current = setTimeout(() => advanceVerse(1), 350);
       return () => clearTimeout(autoAdvanceTimer.current);
     }
@@ -325,7 +495,23 @@ export default function RezoEnFocoView() {
   // Prayer completion
   useEffect(() => {
     if (isPrayerComplete) {
-      if (rezoData.id === 'A') addRosas(1);
+      if (rezoData.id === 'A') {
+        addRosas(1);
+        // Store unique rose fingerprint — maps verse warmth/wiggle to path slots
+        const N = RoseDrawing.PATH_COUNT;
+        const vw = verseWarmthRef.current;
+        const vg = verseWiggleRef.current;
+        const warmthProfile = Array.from({ length: N }, (_, i) => {
+          const vi = Math.floor(i * totalVersos / N);
+          return vw[Math.min(vi, vw.length - 1)] || 0.15;
+        });
+        const wiggleProfile = Array.from({ length: N }, (_, i) => {
+          const vi = Math.floor(i * totalVersos / N);
+          return vg[Math.min(vi, vg.length - 1)] || 0;
+        });
+        storeRoseData({ warmthProfile, wiggleProfile, verseCount: totalVersos });
+      }
+      playPrayerCompleteSound();
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
       const timer = setTimeout(() => {
         if (currentPrayerIndex < secuencia.length - 1) setCurrentPrayerIndex(prev => prev + 1);
@@ -476,6 +662,16 @@ export default function RezoEnFocoView() {
     if (charIdx !== charProgressIndex) {
       setCharProgressIndex(charIdx);
       modulateAudio(true);
+
+      // Track mouse distance for wiggle profile
+      if (mouseWiggleRef.current.lastX !== null) {
+        const dx = clientX - mouseWiggleRef.current.lastX;
+        const dy = clientY - mouseWiggleRef.current.lastY;
+        mouseWiggleRef.current.samples.push(Math.sqrt(dx * dx + dy * dy));
+        if (mouseWiggleRef.current.samples.length > 25) mouseWiggleRef.current.samples.shift();
+      }
+      mouseWiggleRef.current.lastX = clientX;
+      mouseWiggleRef.current.lastY = clientY;
 
       // Auto-complete when reaching last char
       if (charIdx >= totalChars - 1) {
@@ -649,8 +845,11 @@ export default function RezoEnFocoView() {
       userSelect: 'none', WebkitUserSelect: 'none'
     }}>
 
-      {/* ─── MODE TOGGLE ─── */}
+      {/* ─── MODE + SOUND TOGGLES ─── */}
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, display: 'flex', gap: '5px' }}>
+        <button onClick={toggleSound} style={miniBtn} title={soundEnabled ? 'Silenciar' : 'Activar sonido'}>
+          {soundEnabled ? '🔊' : '🔇'}
+        </button>
         <button onClick={() => setModoInteraccion(m => m === 'swipe' ? 'hold' : 'swipe')} style={miniBtn}>
           {modoInteraccion === 'swipe' ? '✋ Deslizar' : '👇 Mantener'}
         </button>
@@ -692,17 +891,50 @@ export default function RezoEnFocoView() {
         </div>
       </div>
 
-      {/* ─── ICON ─── */}
+      {/* ─── ICON / ROSE DRAWING ─── */}
       <div style={{ flex: '0 0 30%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-        <div style={{
-          fontSize: 'min(25vh, 150px)', lineHeight: 1,
-          filter: `drop-shadow(0 0 ${10 + overallProgress * 15}px ${rezoData.color}) saturate(${Math.max(20, overallProgress * 100)}%)`,
-          transform: `scale(${0.8 + overallProgress * 0.2})`,
-          opacity: Math.max(0.4, overallProgress),
-          transition: 'transform 0.2s ease-out, filter 0.3s ease, opacity 0.3s'
-        }}>
-          {rezoData.icono}
-        </div>
+        {rezoData.id === 'A' ? (
+          /* ── Progressive SVG rose for Ave María ── */
+          <div style={{
+            filter: `drop-shadow(0 0 ${6 + overallProgress * 12}px ${rezoData.color})`,
+            transform: `scale(${0.85 + overallProgress * 0.15})`,
+            opacity: Math.max(0.5, 0.5 + overallProgress * 0.5),
+            transition: 'transform 0.3s ease-out, filter 0.4s ease, opacity 0.3s',
+          }}>
+            <RoseDrawing
+              progress={overallProgress}
+              warmthProfile={(() => {
+                const N = RoseDrawing.PATH_COUNT;
+                const vw = verseWarmthRef.current;
+                return Array.from({ length: N }, (_, i) => {
+                  const vi = Math.floor(i * totalVersos / N);
+                  return vw[Math.min(vi, vw.length - 1)] || 0.1;
+                });
+              })()}
+              wiggleProfile={(() => {
+                const N = RoseDrawing.PATH_COUNT;
+                const vg = verseWiggleRef.current;
+                return Array.from({ length: N }, (_, i) => {
+                  const vi = Math.floor(i * totalVersos / N);
+                  return vg[Math.min(vi, vg.length - 1)] || 0;
+                });
+              })()}
+              enrichment={Math.min(1, Math.log10((totalRosasRef.current || 0) + 1) / 7.8)}
+              size={Math.min(160, window.innerHeight * 0.23)}
+            />
+          </div>
+        ) : (
+          /* ── Emoji fallback for non-Ave-María prayers ── */
+          <div style={{
+            fontSize: 'min(25vh, 150px)', lineHeight: 1,
+            filter: `drop-shadow(0 0 ${10 + overallProgress * 15}px ${rezoData.color}) saturate(${Math.max(20, overallProgress * 100)}%)`,
+            transform: `scale(${0.8 + overallProgress * 0.2})`,
+            opacity: Math.max(0.4, overallProgress),
+            transition: 'transform 0.2s ease-out, filter 0.3s ease, opacity 0.3s'
+          }}>
+            {rezoData.icono}
+          </div>
+        )}
       </div>
 
       {/* ─── VERSE INTERACTION ZONE ─── */}

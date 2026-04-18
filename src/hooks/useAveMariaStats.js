@@ -128,6 +128,29 @@ export function useAveMariaStats() {
   // Función para registrar un Rosario COMPLETO de una vez (legado)
   const logCompleteRosary = () => addRosas(ROSAS_PER_MACETON);
 
+  // ─── Rose Fingerprint Storage ───
+  // Each completed Ave María stores a unique "fingerprint" for the rose garden
+  const storeRoseData = (roseData) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
+      stored.push({
+        timestamp: Date.now(),
+        warmthProfile: roseData.warmthProfile || [],
+        wiggleProfile: roseData.wiggleProfile || [],
+        verseCount: roseData.verseCount || 0,
+      });
+      // Keep last 500 roses (~10 rosaries of Ave Marías)
+      if (stored.length > 500) stored.splice(0, stored.length - 500);
+      localStorage.setItem('rosedal_roses', JSON.stringify(stored));
+    } catch (e) { /* localStorage full or unavailable */ }
+  };
+
+  const getRoseData = () => {
+    try {
+      return JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
+    } catch { return []; }
+  };
+
   // Cálculos para la visualización global
   const totalMacetones = Math.floor(totalAveMarias / ROSAS_PER_MACETON);
   const rosasInCurrentMaceton = totalAveMarias % ROSAS_PER_MACETON;
@@ -144,6 +167,8 @@ export function useAveMariaStats() {
     logCompleteRosary,
     addRosas,
     removeRosas,
+    storeRoseData,
+    getRoseData,
     totalMacetones, 
     rosasInCurrentMaceton,
     ROSAS_PER_MACETON,
