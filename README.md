@@ -1,47 +1,22 @@
-🕊️ Rosario en la Nube
+# Rosario Cards
 
-Una aplicación diseñada para rezar y aprender el Santo Rosario de forma profunda y sin distracciones.
+Una aplicación devocional interactiva diseñada para guiar el rezo del Rosario a través del arte generativo y la meditación guiada táctil.
 
-✨ Filosofía y Misión
+## Filosofía de Diseño ("Visual First")
+La app está construida bajo una premisa estética estricta: **el lenguaje principal es visual**. 
+El texto explicativo se minimiza en la interfaz, prefiriendo que la narrativa de progreso surja a través de animaciones táctiles, transiciones doradas y rutas dibujadas en el mapa. Toda la información instructiva se presenta cuidadosamente en *Popovers* o modales que el usuario puede revisar u ocultar con un toque, asegurando que la oración no sea opacada por la sobre-explicación.
+El único lugar donde el texto tiene dominio total sobre la pantalla es en los versos sagrados del propio rezo.
 
-Wsta app prioriza la contemplación y el recogimiento. Nace de la necesidad de tener una herramienta que:
+## Características Principales
 
-    Funcione completamente en local (Modo Avión), permitiendo la oración sin la interrupción de notificaciones, ideal para el recogimiento.
+1. **Rezo en Foco (Hold-to-Charge):** 
+   Experimenta la lectura interactiva. A medida que sigues las palabras de cada padrenuestro y avemaría, el trazo de tu atención va iluminando el texto de plateado a dorado incandescente. Esta acción es el motor de toda la aplicación.
+2. **El Jardín de Rosas:** 
+   Cada oración que completas nutre visualmente una Rosa Vectorial dinámica. No hay dos rosas idénticas: las sutilezas de cuánto te detuviste a meditar en cada sílaba se graban en la forma y en el color de la flor.
+3. **Macetones (Objetivos Diarios):** 
+   Selecciona el Nivel de tu devoción para comprometerte a x cantidades de Macetones (Rosarios) por día y observa cómo se planta sistemáticamente tu progreso.
+4. **El Camino de Peregrinación:**
+   Mide tu progreso acumulado en rutas reales, desde la caminata a tu Iglesia local, avanzando simbólicamente por el mundo hacia el gran destino final en Jerusalén.
 
-    Pone el foco en la belleza del arte cristiano como alimento para el alma.
-
-    Ofrece los Misterios del Rosario en español, cubriendo una necesidad que la versión gratuita de otras apps (como Hallow) no satisface.
-
-💻 Características Principales
-
-Recursos Visuales y Textuales
-
-    Arte Cristiano Antiguo: Cada rezo está ilustrado con imágenes de arte sacro de las tradiciones Romana (Católica) y Ortodoxa.
-
-    Textos Históricos: Incluye visualizaciones de textos medievales con los rezos en Latín y las típicas decoraciones góticas, añadiendo un elemento de tradición y belleza histórica.
-
-    Sencilla Botonera: Una interfaz simple con cada rezo, mostrando el texto de la plegaria junto a su imagen.
-
-    Modo Noche (Dark Mode): Esencial para el recogimiento. Si bien la luz de una vela es rica, la luz de una pantalla no lo es, por lo que el modo noche ayuda a evitar la fatiga visual en la penumbra.
-
-Experiencia Única
-
-    Rosario de Cuentas Interactiva: Esta es la feature más destacada. Permite mover las cuentas digitalmente, ofreciendo un soporte corporal (además de estar de rodillas, si se desea) y ayudando a llevar la cuenta de las decenas.
-
-        Guía para Principiantes: Al tocar una cuenta, se muestra el rezo que corresponde en ese momento. Esto evita confusiones en la secuencia de los 30 rezos distintos que pueden darse en algunas variaciones.
-
-🚀 Futuras Implementaciones
-
-    Audios y Locuciones: Se añadirán audios para que el usuario pueda rezar sin tener que mirar la pantalla constantemente.
-
-    Recordatorios de Hábito: Funcionalidad para ayudar a construir un hábito diario de oración.
-
-    Colección de Arte: Ampliación de las obras de arte disponibles.
-
-    Libro de Cantos y Liturgia: Incorporación de una colección de cantos y otros rezos litúrgicos (Romanos y Ortodoxos). La rica tradición de ambos ritos puede ser intimidante al comienzo, y esta sección servirá como una guía accesible.
-
-
-
-
-    Aclaracion>
-    La IA reescribio el texto para claridad en markdown.
+## Próximos Pasos de Desarrollo
+Revisar `FUTURE_FEATURES.md` para detalles sobre las mecánicas multijugador asíncronas planeadas y la reestructuración interactiva de pergamino para la lectura física de versos.

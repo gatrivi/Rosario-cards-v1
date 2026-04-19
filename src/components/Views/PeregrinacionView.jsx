@@ -74,47 +74,56 @@ export default function PeregrinacionView() {
              transition: 'height 1s ease-in-out'
           }} />
 
-          {PEREGRINACIONES.map((p, i) => {
+          {/* PEREGRINACIONES renderizadas en REVERSA (meta al tope, inicio abajo) */}
+          {[...PEREGRINACIONES].reverse().map((p, reverseIndex) => {
+            const originalIndex = PEREGRINACIONES.length - 1 - reverseIndex;
             const isCompleted = totalAveMarias >= p.reqAveMarias;
             const isCurrent = next && next.id === p.id;
             
-            // Calculate progress specifically for the current segment to position the monjita correctly
+            // Serpenteo: si originalIndex es par, va a la izquierda, si es impar a la derecha
+            const isLeft = originalIndex % 2 === 0;
+            
+            // Calcular el progreso del segmento para la monjita
             let segmentProgress = 0;
+            let showMonjita = isCurrent;
             if (isCurrent) {
-               const prevReq = i === 0 ? 0 : PEREGRINACIONES[i-1].reqAveMarias;
+               const prevReq = originalIndex === 0 ? 0 : PEREGRINACIONES[originalIndex-1].reqAveMarias;
                segmentProgress = Math.max(0, Math.min(1, (totalAveMarias - prevReq) / (p.reqAveMarias - prevReq)));
             }
             
             return (
               <div key={p.id} style={{ 
-                display: 'flex', gap: '20px', alignItems: 'flex-start', position: 'relative',
+                display: 'flex', flexDirection: isLeft ? 'row' : 'row-reverse',
+                gap: '15px', alignItems: 'center', position: 'relative',
                 marginBottom: '40px', opacity: isCompleted || isCurrent ? 1 : 0.4
               }}>
                 <div style={{
-                  width: '34px', height: '34px', borderRadius: '17px', flexShrink: 0,
+                  width: '40px', height: '40px', borderRadius: '20px', flexShrink: 0,
                   background: isCompleted ? '#2a0a0a' : (isCurrent ? '#111' : '#0a0a0a'),
                   border: isCompleted ? '2px solid #D4AF37' : (isCurrent ? '2px solid #8C2832' : '2px solid #333'),
                   display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2,
-                  boxShadow: isCurrent ? '0 0 15px rgba(140, 40, 50, 0.4)' : 'none'
+                  boxShadow: isCurrent ? '0 0 15px rgba(140, 40, 50, 0.4)' : 'none',
+                  position: 'relative'
                 }}>
                   {isCompleted ? '⛪' : (isCurrent ? '📍' : '🔒')}
+                  
+                  {/* ─── LA MONJITA ─── */}
+                  {/* Como el recorrido ahora es físico, la monjita puede flotar a un costado de su nodo actual */}
+                  {showMonjita && (
+                    <div style={{
+                      position: 'absolute', 
+                      bottom: `-${20 + (segmentProgress * 30)}px`, 
+                      [isLeft ? 'right' : 'left']: '-20px',
+                      fontSize: '2rem', zIndex: 10,
+                      filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))',
+                      transition: 'bottom 1s ease-out'
+                    }}>
+                      🧎‍♀️
+                    </div>
+                  )}
                 </div>
-                
-                {/* ─── THE MONJITA (Advancing Character) ─── */}
-                {isCurrent && (
-                  <div style={{
-                    position: 'absolute', left: '-5px', 
-                    top: `${segmentProgress * 100}%`,
-                    transform: 'translateY(-50%)',
-                    fontSize: '1.8rem', zIndex: 10,
-                    filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))',
-                    transition: 'top 1s ease-out'
-                  }}>
-                    🧎‍♀️
-                  </div>
-                )}
 
-                <div style={{ paddingTop: '5px' }}>
+                <div style={{ paddingTop: '5px', textAlign: isLeft ? 'left' : 'right', flex: 1 }}>
                   <div style={{ fontWeight: 'bold', color: isCompleted ? '#D4AF37' : '#fff', fontSize: '1.05rem' }}>{p.name}</div>
                   <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>{p.description}</div>
                   <div style={{ fontSize: '0.75rem', color: '#D4AF37', marginTop: '6px', fontWeight: 'bold' }}>
