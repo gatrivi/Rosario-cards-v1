@@ -80,7 +80,8 @@ export default function JardinDeRosasView() {
                 warmthProfile={rose.warmthProfile || []}
                 wiggleProfile={rose.wiggleProfile || []}
                 enrichment={enrichment}
-                size={40}
+                size={45}
+                compact={true}
               />
             </div>
           ))}

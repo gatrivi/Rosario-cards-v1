@@ -70,12 +70,16 @@ export default function RoseDrawing({
   enrichment = 0,      // 0–1: lifetime prayer depth → glow intensity
   liveWarmth = null,   // 0–1: live hover warmth of the cursor right now
   size = 120,
+  compact = false,     // true to hide stem/leaves and zoom on flower head
   style = {},
   onClick,
 }) {
-  const N = ROSE_PATHS.length;
+  // If compact, only render the first 9 paths (petals). Otherwise, 12.
+  const N_TOTAL = ROSE_PATHS.length;
+  const N_RENDER = compact ? 9 : N_TOTAL;
+  
   const pathsRef = React.useRef([]);
-  const [pathLengths, setPathLengths] = React.useState(Array(N).fill(DASH));
+  const [pathLengths, setPathLengths] = React.useState(Array(N_TOTAL).fill(DASH));
 
   React.useEffect(() => {
     if (pathsRef.current) {
@@ -86,18 +90,17 @@ export default function RoseDrawing({
 
   return (
     <svg
-      viewBox="0 0 100 140"
+      viewBox={compact ? "15 14 70 48" : "0 0 100 140"}
       width={size}
-      height={size * 1.4}
+      height={compact ? size * 0.68 : size * 1.4}
       style={{ overflow: 'visible', ...style }}
       onClick={onClick}
     >
-      {ROSE_PATHS.map((d, i) => {
+      {ROSE_PATHS.slice(0, N_RENDER).map((d, i) => {
         // Each path occupies a proportional slice of the 0→1 progress range
-        const start = i / N;
-        const end   = (i + 1) / N;
+        const start = i / N_RENDER;
+        const end   = (i + 1) / N_RENDER;
         const seg   = Math.max(0, Math.min(1, (progress - start) / (end - start)));
-        if (seg <= 0) return null;
 
         const pathLen = pathLengths[i];
         const offset = pathLen * (1 - seg);
@@ -127,7 +130,7 @@ export default function RoseDrawing({
         const sw = type === 'stem' ? 1.8 : type === 'leaf' ? 1.4 : 1.6;
 
         return (
-          <g key={i} transform={transform}>
+          <g key={i} transform={transform} style={{ opacity: seg <= 0 ? 0 : 1, transition: 'opacity 0.1s linear' }}>
             {/* Glow layer — grows with lifetime enrichment */}
             {enrichment > 0.1 && type === 'petal' && (
               <path

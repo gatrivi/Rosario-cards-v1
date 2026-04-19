@@ -95,7 +95,7 @@ const glowFromElapsed = (elapsed, baseSize) => {
 // ═══════════════════════════════════════════════════════
 
 export default function RezoEnFocoView() {
-  const { addRosas, storeRoseData, totalAveMarias } = useAveMariaStats();
+  const { addRosas, storeRoseData, getRoseData, totalAveMarias } = useAveMariaStats();
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
 
@@ -867,27 +867,75 @@ export default function RezoEnFocoView() {
           gridTemplateColumns: 'repeat(11, 1fr)', 
           gap: '3px', height: '100%', maxWidth: '500px', width: '100%'
         }}>
-          {maceteroMap.map((oracion, i) => {
-            const completada = i < oracionesCompletadasEnTotal;
-            const esActual = i === oracionesCompletadasEnTotal;
-            const esPadreNuestro = oracion.id === 'P';
-            return (
-              <div key={i} onClick={() => handleMaceteroClick(oracion.seqIndex)} style={{
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                backgroundColor: completada ? '#2a0a0a' : '#111',
-                border: esActual ? '1px solid #D4AF37' : '1px solid #222',
-                borderRadius: '3px', fontSize: 'min(2vh, 16px)', cursor: 'pointer'
-              }}>
-                {completada || esActual ? (
-                  esPadreNuestro ? '✝️' : '🌹'
-                ) : (
-                  <span style={{ opacity: 0.15, filter: 'grayscale(1)' }}>
-                    {esPadreNuestro ? '✝️' : '🌹'}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+          {(() => {
+            // Figure out how many 'A' items are completed in the current grid
+            const completedAvesInGrid = maceteroMap.filter((m, i) => i < oracionesCompletadasEnTotal && m.id === 'A').length;
+            const roses = getRoseData();
+            let seenAves = 0;
+
+            return maceteroMap.map((oracion, i) => {
+              const completada = i < oracionesCompletadasEnTotal;
+              const esActual = i === oracionesCompletadasEnTotal;
+              const esPadreNuestro = oracion.id === 'P';
+
+              // Map this 'A' to a stored rose
+              let targetRose = null;
+              if (oracion.id === 'A') {
+                if (completada) {
+                  // We map backwards: the most recently completed 'A' gets the most recent rose.
+                  // So the 1st completed 'A' gets rose[length - completedAvesInGrid].
+                  const targetIndex = roses.length - completedAvesInGrid + seenAves;
+                  if (targetIndex >= 0 && targetIndex < roses.length) {
+                    targetRose = roses[targetIndex];
+                  }
+                  seenAves++;
+                }
+              }
+
+              return (
+                <div key={i} onClick={() => handleMaceteroClick(oracion.seqIndex)} style={{
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  backgroundColor: completada ? '#2a0a0a' : '#111',
+                  border: esActual ? '1px solid #D4AF37' : '1px solid #222',
+                  borderRadius: '3px', fontSize: 'min(2vh, 16px)', cursor: 'pointer',
+                  overflow: 'hidden'
+                }}>
+                  {esPadreNuestro ? (
+                    <span style={{ opacity: completada || esActual ? 1 : 0.15, filter: completada || esActual ? 'none' : 'grayscale(1)' }}>✝️</span>
+                  ) : (
+                    completada && targetRose ? (
+                      <RoseDrawing
+                        progress={1}
+                        warmthProfile={targetRose.warmthProfile}
+                        wiggleProfile={targetRose.wiggleProfile}
+                        enrichment={Math.min(1, Math.log10((totalRosasRef.current || 0) + 1) / 7.8)}
+                        size={30}
+                        compact={true}
+                      />
+                    ) : esActual ? (
+                      <RoseDrawing
+                        progress={overallProgress}
+                        liveWarmth={(() => {
+                          if (charProgressIndex < 0) return 0;
+                          const reachedAt = charReachedAtRef.current[charProgressIndex];
+                          const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
+                          return Math.max(0, Math.min(1, liveDwell / 2000));
+                        })()}
+                        warmthProfile={(() => {
+                          const vw = verseWarmthRef.current;
+                          return Array.from({ length: 9 }, (_, i) => vw[Math.floor(i / 3)] || 0.1);
+                        })()}
+                        size={30}
+                        compact={true}
+                      />
+                    ) : (
+                      <span style={{ opacity: 0.15, filter: 'grayscale(1)' }}>🌹</span>
+                    )
+                  )}
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
 
