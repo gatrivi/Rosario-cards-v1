@@ -5,36 +5,31 @@ import React from 'react';
 // ═══════════════════════════════════════════════════════
 //
 // 12 strokes: 9 petals + stem + 2 leaves.
-// Each stroke reveals via stroke-dasharray/dashoffset as progress advances.
-// Warmth colors each petal (silver → gold → deep gold → incandescent).
-// Wiggle adds subtle per-petal transform variation (organic uniqueness).
-
+// Reordered so the "Jesús" verse (progress 0.25 - 0.5) draws the grand outer crown!
 const ROSE_PATHS = [
-  // ── Rose head: 9 petal curves ──
-  // 1. Center bud spiral
-  'M 50,42 c 2,-3 5,-3 5,0 c 0,3 -3,5 -5,3',
-  // 2. Inner petal wrapping left
-  'M 50,45 c -3,1 -7,-1 -7,-4 c 0,-3 3,-6 7,-5',
-  // 3. Inner petal curving right
-  'M 50,36 c 4,-1 9,2 9,7 c 0,5 -4,8 -8,8',
-  // 4. Mid petal left sweep
-  'M 51,51 c -5,2 -12,0 -14,-5 c -2,-5 1,-10 5,-13',
-  // 5. Mid petal top arc
-  'M 42,33 c 1,-6 7,-12 14,-11 c 7,1 12,6 14,11',
-  // 6. Mid petal right descent
-  'M 70,33 c 3,5 2,13 -2,17 c -4,4 -10,6 -15,5',
-  // 7. Outer petal left enclosing
-  'M 53,56 c -7,3 -16,1 -20,-5 c -4,-6 -3,-15 2,-20',
-  // 8. Outer petal crown
-  'M 35,31 c 1,-10 9,-18 19,-19 c 10,-1 19,5 23,14',
-  // 9. Outer petal right enclosing
-  'M 77,26 c 5,7 5,18 1,25 c -4,7 -13,12 -21,10',
+  // ── 1. Dios te salve (0.0 - 0.25) -> Inner Bud ──
+  'M 50,42 c 2,-3 5,-3 5,0 c 0,3 -3,5 -5,3', // 0. bud
+  'M 50,45 c -3,1 -7,-1 -7,-4 c 0,-3 3,-6 7,-5', // 1. inner left
+
+  // ── 2. Jesús verse (0.25 - 0.5) -> Grand Outer Sweeps ──
+  'M 35,31 c 1,-10 9,-18 19,-19 c 10,-1 19,5 23,14', // 2. outer crown (huge majestic sweep)
+  'M 77,26 c 5,7 5,18 1,25 c -4,7 -13,12 -21,10', // 3. outer right enclosing
+  'M 53,56 c -7,3 -16,1 -20,-5 c -4,-6 -3,-15 2,-20', // 4. outer left enclosing
+
+  // ── 3. Santa María (0.5 - 0.75) -> Inner details ──
+  'M 50,36 c 4,-1 9,2 9,7 c 0,5 -4,8 -8,8', // 5. inner right
+  'M 42,33 c 1,-6 7,-12 14,-11 c 7,1 12,6 14,11', // 6. mid top arc
+
+  // ── 4. Ruega por nosotros (0.75 - 1.0) -> Final fill ──
+  'M 51,51 c -5,2 -12,0 -14,-5 c -2,-5 1,-10 5,-13', // 7. mid left
+  'M 70,33 c 3,5 2,13 -2,17 c -4,4 -10,6 -15,5', // 8. mid right
+  
   // ── Stem & Leaves ──
-  // 10. Stem
+  // 9. Stem
   'M 50,59 c 0,10 -1,22 0,34 c 1,12 0,24 0,36',
-  // 11. Right leaf
+  // 10. Right leaf
   'M 51,80 c 6,-5 15,-4 17,1 c 2,5 -3,8 -10,5',
-  // 12. Left leaf
+  // 11. Left leaf
   'M 49,100 c -6,-5 -15,-4 -17,1 c -2,5 3,8 10,5',
 ];
 
@@ -44,11 +39,11 @@ const PATH_TYPES = [
 ];
 
 const COLORS = {
-  silver:      'rgb(185, 185, 195)',
-  gold:        'rgb(212, 175, 55)',
-  deepGold:    'rgb(184, 134, 11)',
-  warmAmber:   'rgb(210, 140, 10)',
-  incandescent:'rgb(245, 215, 160)',
+  coolRed:     'rgb(110, 20, 30)',   // Fast/cool contemplation
+  baseRed:     'rgb(170, 15, 25)',   // Normal
+  warmRed:     'rgb(220, 10, 30)',   // Warm hover
+  brightRed:   'rgb(255, 30, 50)',  // Deep contemplation
+  incandescent:'rgb(255, 120, 120)', // Incandescent glowing tip
   stem:        '#2d5a27',
   leaf:        '#3e8e2c',
 };
@@ -56,10 +51,10 @@ const COLORS = {
 const DASH = 500; // Larger than any path — safe for all strokes
 
 function petalColor(warmth) {
-  if (warmth < 0.10) return COLORS.silver;
-  if (warmth < 0.25) return COLORS.gold;
-  if (warmth < 0.50) return COLORS.deepGold;
-  if (warmth < 0.75) return COLORS.warmAmber;
+  if (warmth < 0.10) return COLORS.coolRed;
+  if (warmth < 0.25) return COLORS.baseRed;
+  if (warmth < 0.50) return COLORS.warmRed;
+  if (warmth < 0.75) return COLORS.brightRed;
   return COLORS.incandescent;
 }
 
