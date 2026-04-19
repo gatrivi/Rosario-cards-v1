@@ -17,7 +17,7 @@ export default function PeregrinacionView() {
         <TutorialOverlay 
           title="El Camino" 
           imageSrc={santaMariaImg}
-          text="El camino de la oración es largo pero lleno de gracias.&#10;&#10;Cada rosario que completas es un paso en tu peregrinación espiritual. Aquí podrás ver cómo tus rosas pavimentan rutas históricas, desde una pequeña visita a tu parroquia local, hasta el gran camino a Jerusalén."
+          text="«Quien reza se salva, quien no reza se condena.» — San Alfonso María de Ligorio&#10;&#10;Cada rosario que completas es un paso en tu peregrinación espiritual. Las devociones marianas son rutas seguras al cielo. Aquí podrás ver cómo tus rosas pavimentan rutas históricas, desde tu parroquia local, hasta el gran camino a Jerusalén."
         />
       </div>
 
@@ -60,32 +60,65 @@ export default function PeregrinacionView() {
       )}
 
       <div>
-        <h4 style={{ color: '#888', borderBottom: '1px solid #222', paddingBottom: '10px', marginBottom: '20px' }}>
-          Mapa de Ruta
+        <h4 style={{ color: '#888', borderBottom: '1px solid #222', paddingBottom: '10px', marginBottom: '30px' }}>
+          Mapa del Sendero
         </h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', position: 'relative' }}>
-          {/* Vertical path line */}
-          <div style={{ position: 'absolute', left: '15px', top: '10px', bottom: '10px', width: '2px', background: '#222' }} />
+        <div style={{ position: 'relative', paddingLeft: '20px', paddingBottom: '50px' }}>
+          {/* Base Trail Line */}
+          <div style={{ position: 'absolute', left: '35px', top: '15px', bottom: '15px', width: '4px', background: '#222', borderRadius: '2px' }} />
           
+          {/* Active Trail Line (Progress) */}
+          <div style={{ 
+             position: 'absolute', left: '35px', top: '15px', width: '4px', background: '#D4AF37', borderRadius: '2px',
+             height: next ? `${(PEREGRINACIONES.findIndex(p => p.id === next.id) / PEREGRINACIONES.length) * 100}%` : '100%',
+             transition: 'height 1s ease-in-out'
+          }} />
+
           {PEREGRINACIONES.map((p, i) => {
             const isCompleted = totalAveMarias >= p.reqAveMarias;
             const isCurrent = next && next.id === p.id;
             
+            // Calculate progress specifically for the current segment to position the monjita correctly
+            let segmentProgress = 0;
+            if (isCurrent) {
+               const prevReq = i === 0 ? 0 : PEREGRINACIONES[i-1].reqAveMarias;
+               segmentProgress = Math.max(0, Math.min(1, (totalAveMarias - prevReq) / (p.reqAveMarias - prevReq)));
+            }
+            
             return (
-              <div key={p.id} style={{ display: 'flex', gap: '15px', alignItems: 'flex-start', position: 'relative' }}>
+              <div key={p.id} style={{ 
+                display: 'flex', gap: '20px', alignItems: 'flex-start', position: 'relative',
+                marginBottom: '40px', opacity: isCompleted || isCurrent ? 1 : 0.4
+              }}>
                 <div style={{
-                  width: '32px', height: '32px', borderRadius: '16px', flexShrink: 0,
+                  width: '34px', height: '34px', borderRadius: '17px', flexShrink: 0,
                   background: isCompleted ? '#2a0a0a' : (isCurrent ? '#111' : '#0a0a0a'),
-                  border: isCompleted ? '2px solid #D4AF37' : (isCurrent ? '2px solid #8C2832' : '2px solid #222'),
-                  display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2
+                  border: isCompleted ? '2px solid #D4AF37' : (isCurrent ? '2px solid #8C2832' : '2px solid #333'),
+                  display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2,
+                  boxShadow: isCurrent ? '0 0 15px rgba(140, 40, 50, 0.4)' : 'none'
                 }}>
-                  {isCompleted ? '✓' : (isCurrent ? '🚶' : '🔒')}
+                  {isCompleted ? '⛪' : (isCurrent ? '📍' : '🔒')}
                 </div>
-                <div style={{ paddingTop: '5px', opacity: isCompleted || isCurrent ? 1 : 0.5 }}>
-                  <div style={{ fontWeight: 'bold', color: isCompleted ? '#D4AF37' : '#fff' }}>{p.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '2px' }}>{p.description}</div>
-                  <div style={{ fontSize: '0.7rem', color: '#555', marginTop: '4px' }}>
-                    {p.reqAveMarias} rosas ({Math.ceil(p.reqAveMarias / 50)} rosarios)
+                
+                {/* ─── THE MONJITA (Advancing Character) ─── */}
+                {isCurrent && (
+                  <div style={{
+                    position: 'absolute', left: '-5px', 
+                    top: `${segmentProgress * 100}%`,
+                    transform: 'translateY(-50%)',
+                    fontSize: '1.8rem', zIndex: 10,
+                    filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))',
+                    transition: 'top 1s ease-out'
+                  }}>
+                    🧎‍♀️
+                  </div>
+                )}
+
+                <div style={{ paddingTop: '5px' }}>
+                  <div style={{ fontWeight: 'bold', color: isCompleted ? '#D4AF37' : '#fff', fontSize: '1.05rem' }}>{p.name}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>{p.description}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#D4AF37', marginTop: '6px', fontWeight: 'bold' }}>
+                    {p.reqAveMarias} rosas
                   </div>
                 </div>
               </div>

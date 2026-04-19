@@ -40,24 +40,23 @@ export default function JardinDeRosasView() {
         />
       </div>
 
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <h2 style={{ color: '#D4AF37', margin: '0 0 8px' }}>Tu Jardín de Rosas</h2>
-        <p style={{ color: '#888', margin: '0 0 12px', fontSize: '0.85rem' }}>
-          🌹 {totalAveMarias} Ave Marías · {totalMacetones} rosarios completos
-        </p>
-
-        {/* Level selector */}
-        <div style={{ 
-          display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', 
-          background: '#111', padding: '8px', borderRadius: '8px', border: '1px solid #222', 
-          maxWidth: '300px', margin: '0 auto' 
-        }}>
-          <span style={{ fontSize: '0.8rem', color: '#999' }}>Camino:</span>
+      {/* COMPACT HEADER */}
+      <div style={{ 
+        display: 'flex', flexDirection: 'column', gap: '10px', 
+        marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #222' 
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+             <h2 style={{ color: '#D4AF37', margin: '0 0 4px', fontSize: '1.2rem' }}>Jardín de Rosas</h2>
+             <p style={{ color: '#888', margin: 0, fontSize: '0.75rem' }}>
+               🌹 {totalAveMarias} rosas históricas
+             </p>
+          </div>
           <select 
             value={nivelActual.id} 
             onChange={(e) => cambiarNivel(parseInt(e.target.value, 10))}
             style={{ 
-              background: '#0a0a0a', color: '#D4AF37', border: '1px solid #333', 
+              background: '#111', color: '#D4AF37', border: '1px solid #333', 
               padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', outline: 'none', cursor: 'pointer'
             }}
           >
@@ -66,79 +65,71 @@ export default function JardinDeRosasView() {
             ))}
           </select>
         </div>
-      </div>
 
-      {/* Today's Goal  */}
-      <div style={{
-        margin: '0 auto 24px', maxWidth: '300px', textAlign: 'center',
-        background: '#111', borderRadius: '8px', padding: '16px',
-        border: '1px solid #222'
-      }}>
-        <div style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '12px', fontWeight: 'bold' }}>
-          Macetones de Hoy: {macetonesHoy} / {objetivoMacetonesHoy}
-        </div>
-        
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-          {Array.from({ length: Math.max(objetivoMacetonesHoy, macetonesHoy) }).map((_, i) => {
-            const isCompleted = i < macetonesHoy;
-            return (
-              <div key={i} style={{
-                width: '40px', height: '40px', borderRadius: '4px',
-                border: isCompleted ? '1px solid #D4AF37' : '1px dashed #444',
-                background: isCompleted ? '#2a0a0a' : '#0a0a0a',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                boxShadow: isCompleted ? '0 0 10px rgba(212,175,55,0.2)' : 'none'
-              }}>
-                {isCompleted ? (
-                   <span style={{ fontSize: '1.2rem', filter: 'drop-shadow(0 0 2px #D4AF37)' }}>🪴</span>
-                ) : (
-                   <span style={{ fontSize: '1rem', opacity: 0.1 }}>🪴</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Current partial maceton progress bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#777', marginBottom: '6px' }}>
-          <span>Progreso de actual</span>
-          <span>{rosasInCurrentMaceton}/{ROSAS_PER_MACETON}</span>
-        </div>
-        <div style={{ height: '3px', background: '#222', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{
-            width: `${(rosasInCurrentMaceton / ROSAS_PER_MACETON) * 100}%`,
-            height: '100%', background: 'linear-gradient(90deg, #B9B9C3, #D4AF37)',
-            borderRadius: '2px', transition: 'width 0.3s ease'
-          }} />
+        {/* COMPACT TODAY'S GOAL */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0a0a0a', padding: '10px', borderRadius: '8px', border: '1px solid #1a1a1a' }}>
+          <span style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: 'bold' }}>Hoy: {macetonesHoy}/{objetivoMacetonesHoy}</span>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {Array.from({ length: Math.max(objetivoMacetonesHoy, macetonesHoy) }).map((_, i) => (
+              <span key={i} style={{ 
+                fontSize: i < macetonesHoy ? '1rem' : '0.8rem', 
+                opacity: i < macetonesHoy ? 1 : 0.2,
+                filter: i < macetonesHoy ? 'drop-shadow(0 0 2px #D4AF37)' : 'none'
+              }}>🪴</span>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Rose Garden Grid */}
-      {roses.length > 0 ? (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))',
-          gap: '8px', maxWidth: '500px', margin: '0 auto',
-          padding: '16px', background: '#111', borderRadius: '12px',
-          border: '1px solid #1a1a1a'
+      {pots.length > 0 ? (
+        <div style={{ 
+          display: 'flex', flexDirection: 'column', gap: '20px', 
+          maxWidth: '500px', margin: '0 auto', paddingBottom: '40px' 
         }}>
-          {roses.map((rose, i) => (
-            <div key={i} style={{
-              display: 'flex', justifyContent: 'center', alignItems: 'center',
-              background: '#0d0d0d', borderRadius: '6px', padding: '4px',
-              border: '1px solid #1a1a1a',
-              transition: 'border-color 0.3s',
-            }}>
-              <RoseDrawing
-                progress={1}
-                warmthProfile={rose.warmthProfile || []}
-                wiggleProfile={rose.wiggleProfile || []}
-                enrichment={enrichment}
-                size={45}
-                compact={true}
-              />
-            </div>
-          ))}
+          {pots.reverse().map((pot, reversedPotIndex) => {
+            const potIndex = pots.length - 1 - reversedPotIndex;
+            return (
+              <div key={potIndex} style={{
+                background: '#111', borderRadius: '12px', padding: '16px',
+                border: '1px solid #1a1a1a'
+              }}>
+                <h3 style={{ 
+                  color: '#D4AF37', borderBottom: '1px solid #222', paddingBottom: '8px', 
+                  marginTop: 0, marginBottom: '16px', fontSize: '1rem',
+                  display: 'flex', justifyContent: 'space-between'
+                }}>
+                  <span>Macetón {potIndex + 1}</span>
+                  <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal' }}>
+                    {pot.length === ROSAS_PER_MACETON ? 'Completado ✓' : `${pot.length}/${ROSAS_PER_MACETON}`}
+                  </span>
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(35px, 1fr))',
+                  gap: '6px'
+                }}>
+                  {pot.map((rose, i) => (
+                    <div key={i} title={`Rosa ${i+1}`} style={{
+                      display: 'flex', justifyContent: 'center', alignItems: 'center',
+                      background: '#0d0d0d', borderRadius: '4px', padding: '2px',
+                      border: '1px solid #1a1a1a',
+                      transition: 'border-color 0.3s',
+                    }}>
+                      <RoseDrawing
+                        progress={1}
+                        warmthProfile={rose.warmthProfile || []}
+                        wiggleProfile={rose.wiggleProfile || []}
+                        enrichment={enrichment}
+                        size={30}
+                        compact={true}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div style={{ textAlign: 'center', color: '#444', marginTop: '40px', fontSize: '0.9rem' }}>

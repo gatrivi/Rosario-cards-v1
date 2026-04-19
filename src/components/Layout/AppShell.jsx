@@ -6,7 +6,7 @@ import PeregrinacionView from '../Views/PeregrinacionView';
 import BottomNav from '../Navigation/BottomNav';
 
 export default function AppShell() {
-  const [vistaActiva, setVistaActiva] = useState('foco'); 
+  const [vistaActiva, setVistaActiva] = useState('camino'); 
 
   const renderizarVista = () => {
     switch (vistaActiva) {
@@ -14,7 +14,7 @@ export default function AppShell() {
       case 'foco':    return <RezoEnFocoView />;
       case 'jardin':  return <JardinDeRosasView />;
       case 'camino':  return <PeregrinacionView />;
-      default:        return <RezoEnFocoView />;
+      default:        return <PeregrinacionView />;
     }
   };
 

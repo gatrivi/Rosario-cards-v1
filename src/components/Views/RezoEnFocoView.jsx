@@ -850,7 +850,7 @@ export default function RezoEnFocoView() {
       {/* ─── MODE + SOUND TOGGLES ─── */}
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, display: 'flex', gap: '5px' }}>
         <button onClick={toggleSound} style={miniBtn} title={soundEnabled ? 'Silenciar' : 'Activar sonido'}>
-          {soundEnabled ? '🔊' : '🔇'}
+          {soundEnabled ? '🔊 Sonido' : '🔇 Silencio'}
         </button>
         <button onClick={() => setModoInteraccion(m => m === 'swipe' ? 'hold' : 'swipe')} style={miniBtn}>
           {modoInteraccion === 'swipe' ? '✋ Deslizar' : '👇 Mantener'}

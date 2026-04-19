@@ -15,9 +15,10 @@ export default function BottomNav({ vistaActiva, setVistaActiva }) {
       <NavButton 
         id="virtual" 
         icono="📿" 
-        texto="Virtual" 
-        activo={vistaActiva === 'virtual'} 
-        onClick={() => setVistaActiva('virtual')} 
+        texto="Próximamente" 
+        activo={false} 
+        disabled={true}
+        onClick={() => {}} 
       />
       
       <NavButton 
@@ -48,10 +49,11 @@ export default function BottomNav({ vistaActiva, setVistaActiva }) {
   );
 }
 
-function NavButton({ icono, texto, activo, onClick }) {
+function NavButton({ icono, texto, activo, onClick, disabled }) {
   return (
     <button 
-      onClick={onClick}
+      onClick={disabled ? null : onClick}
+      disabled={disabled}
       style={{
         flex: 1,
         display: 'flex',
@@ -61,16 +63,17 @@ function NavButton({ icono, texto, activo, onClick }) {
         height: '100%',
         background: 'transparent',
         border: 'none',
-        color: activo ? '#D4AF37' : '#666',
-        cursor: 'pointer',
+        color: disabled ? '#333' : (activo ? '#D4AF37' : '#666'),
+        cursor: disabled ? 'not-allowed' : 'pointer',
         transition: 'color 0.2s ease',
-        WebkitTapHighlightColor: 'transparent'
+        WebkitTapHighlightColor: 'transparent',
+        opacity: disabled ? 0.5 : 1
       }}
     >
-      <span style={{ fontSize: '1.5rem', marginBottom: '4px', filter: activo ? 'drop-shadow(0 0 5px rgba(212,175,55,0.5))' : 'none' }}>
+      <span style={{ fontSize: '1.5rem', marginBottom: '4px', filter: activo ? 'drop-shadow(0 0 5px rgba(212,175,55,0.5))' : (disabled ? 'grayscale(1)' : 'none') }}>
         {icono}
       </span>
-      <span style={{ fontSize: '0.7rem', fontWeight: activo ? 'bold' : 'normal' }}>
+      <span style={{ fontSize: disabled ? '0.6rem' : '0.7rem', fontWeight: activo ? 'bold' : 'normal' }}>
         {texto}
       </span>
     </button>
