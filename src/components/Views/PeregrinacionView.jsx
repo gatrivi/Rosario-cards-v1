@@ -60,12 +60,49 @@ export default function PeregrinacionView() {
         borderRadius: '12px', border: '1px solid #111', overflow: 'hidden',
         padding: '20px 10px'
       }}>
-        {/* Serpentine Line SVG (visual only) */}
-        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.1 }}>
-          <path 
-            d="M 50,350 C 150,350 250,300 250,250 C 250,200 150,150 150,100 C 150,50 250,50 250,0" 
-            fill="none" stroke="#D4AF37" strokeWidth="2" strokeDasharray="5,5" 
-          />
+        {/* Serpentine Line SVG (Connecting points) */}
+        <svg 
+          viewBox="0 0 100 100" 
+          preserveAspectRatio="none"
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+        >
+           <path 
+             d={(() => {
+               const points = PEREGRINACIONES.map((_, i) => {
+                 const row = Math.floor(i / 3);
+                 const colInRow = i % 3;
+                 const col = (row % 2 === 0) ? colInRow : (2 - colInRow);
+                 const px = (col * 33.33) + 16.66;
+                 const py = ((3 - row) * 25) + 12.5;
+                 return `${px},${py}`;
+               });
+               return `M ${points.join(' L ')}`;
+             })()}
+             fill="none" 
+             stroke="#444" 
+             strokeWidth="3" 
+             strokeLinecap="round" 
+             strokeLinejoin="round" 
+           />
+           <path 
+             d={(() => {
+               const points = PEREGRINACIONES.slice(0, currentStepIndex + 1).map((_, i) => {
+                 const row = Math.floor(i / 3);
+                 const colInRow = i % 3;
+                 const col = (row % 2 === 0) ? colInRow : (2 - colInRow);
+                 const px = (col * 33.33) + 16.66;
+                 const py = ((3 - row) * 25) + 12.5;
+                 return `${px},${py}`;
+               });
+               return `M ${points.join(' L ')}`;
+             })()}
+             fill="none" 
+             stroke="#D4AF37" 
+             strokeWidth="1.5" 
+             strokeLinecap="round" 
+             strokeLinejoin="round" 
+             strokeDasharray="3,2"
+           />
         </svg>
 
         <div style={{ 
@@ -77,12 +114,8 @@ export default function PeregrinacionView() {
           {PEREGRINACIONES.map((p, i) => {
             const isCompleted = totalAveMarias >= p.reqAveMarias;
             const isCurrent = next && next.id === p.id;
+            const isLocked = !isCompleted && !isCurrent;
             
-            // Grid positioning (serpentine logic for 3 columns)
-            // Row 0: 0 1 2 (right)
-            // Row 1: 5 4 3 (left)
-            // Row 2: 6 7 8 (right)
-            // Row 3: 11 10 9 (left)
             const row = Math.floor(i / 3);
             const colInRow = i % 3;
             const col = (row % 2 === 0) ? colInRow : (2 - colInRow);
@@ -98,42 +131,47 @@ export default function PeregrinacionView() {
                 }}
               >
                 <div style={{
-                  width: isCurrent ? '44px' : '36px',
-                  height: isCurrent ? '44px' : '36px',
-                  borderRadius: '22px',
-                  background: isCompleted ? '#2a0a0a' : (isCurrent ? '#1a0a0a' : '#050505'),
-                  border: isCompleted ? '2px solid #D4AF37' : (isCurrent ? '2.5px solid #8C2832' : '1px solid #222'),
+                  width: isCurrent ? '48px' : '40px',
+                  height: isCurrent ? '48px' : '40px',
+                  borderRadius: '24px',
+                  background: isCompleted ? '#2a0a0a' : (isCurrent ? '#1a0a0a' : '#0a0a0a'),
+                  border: isCompleted ? '2px solid #D4AF37' : (isCurrent ? '2.5px solid #8C2832' : '1px solid #333'),
                   display: 'flex', justifyContent: 'center', alignItems: 'center',
                   boxShadow: isCurrent ? '0 0 15px rgba(212,175,55,0.4)' : 'none',
-                  fontSize: isCurrent ? '1.4rem' : '1.1rem',
-                  transition: 'all 0.3s'
+                  fontSize: isCurrent ? '1.5rem' : '1.2rem',
+                  filter: isLocked ? 'grayscale(1) opacity(0.5)' : 'none',
+                  transition: 'all 0.3s',
+                  position: 'relative'
                 }}>
-                  {isCompleted ? '⛪' : (isCurrent ? '📍' : '🔒')}
+                  <span>⛪</span>
+                  
+                  {isLocked && (
+                    <span style={{ 
+                      position: 'absolute', top: '-5px', right: '-5px', 
+                      fontSize: '0.8rem', background: '#222', borderRadius: '50%',
+                      padding: '2px', border: '1px solid #444', filter: 'none'
+                    }}>
+                      🔒
+                    </span>
+                  )}
                   
                   {isCurrent && (
                     <div style={{
-                      position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)',
-                      fontSize: '1.8rem', filter: 'drop-shadow(0 2px 4px black)',
-                      animation: 'float 2s infinite ease-in-out'
+                      position: 'absolute', top: '-28px', left: '50%', transform: 'translateX(-50%)',
+                      fontSize: '2rem', filter: 'drop-shadow(0 2px 4px black)',
+                      animation: 'float 2s infinite ease-in-out', zIndex: 20
                     }}>
                       🧎‍♀️
                     </div>
                   )}
                 </div>
                 <div style={{ 
-                  fontSize: '0.6rem', color: isCurrent ? '#D4AF37' : '#666', 
-                  marginTop: '4px', textAlign: 'center', fontWeight: isCurrent ? 'bold' : 'normal',
+                  fontSize: '0.65rem', color: isCurrent ? '#D4AF37' : (isLocked ? '#444' : '#888'), 
+                  marginTop: '6px', textAlign: 'center', fontWeight: isCurrent ? 'bold' : 'normal',
                   maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'
                 }}>
                   {p.name}
                 </div>
-
-                {isCurrent && (
-                  <div style={{
-                    position: 'absolute', bottom: '-8px', width: '60%', height: '2px', 
-                    background: '#8C2832', borderRadius: '1px'
-                  }} />
-                )}
               </div>
             );
           })}
