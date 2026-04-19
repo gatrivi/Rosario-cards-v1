@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { PEREGRINACIONES, getPeregrinacionActual } from '../../data/LevelConfig';
 import TutorialOverlay from '../common/TutorialOverlay';
@@ -7,134 +7,180 @@ import santaMariaImg from '../../data/assets/img/Theotokos.jpg';
 export default function PeregrinacionView() {
   const { totalAveMarias } = useAveMariaStats();
   const { actual, next } = getPeregrinacionActual(totalAveMarias);
+  const [selectedPin, setSelectedPin] = useState(null);
+
+  // Determine global progress across all peregrinaciones
+  const totalSteps = PEREGRINACIONES.length;
+  const currentStepIndex = next ? PEREGRINACIONES.findIndex(p => p.id === next.id) : totalSteps;
 
   return (
     <div style={{
-      height: '100%', overflowY: 'auto', padding: '20px',
-      backgroundColor: '#0A0A0A', color: '#E0E0E0', position: 'relative'
+      height: '100%', overflow: 'hidden', padding: '15px',
+      backgroundColor: '#0A0A0A', color: '#E0E0E0', position: 'relative',
+      display: 'flex', flexDirection: 'column'
     }}>
-      <div style={{ position: 'absolute', top: 5, right: 5 }}>
+      <div style={{ position: 'absolute', top: 5, right: 5, zIndex: 100 }}>
         <TutorialOverlay 
           title="El Camino" 
           imageSrc={santaMariaImg}
-          text="«Quien reza se salva, quien no reza se condena.» — San Alfonso María de Ligorio&#10;&#10;Cada rosario que completas es un paso en tu peregrinación espiritual. Las devociones marianas son rutas seguras al cielo. Aquí podrás ver cómo tus rosas pavimentan rutas históricas, desde tu parroquia local, hasta el gran camino a Jerusalén."
+          text="«Quien reza se salva, quien no reza se condena.» — San Alfonso María de Ligorio&#10;&#10;Sigue tu progreso histórico. Cada nodo representa una meta de oración. Toca las iglesias para ver los detalles de tu destino."
         />
       </div>
 
-      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h2 style={{ color: '#D4AF37', margin: '0 0 8px' }}>El Camino</h2>
-        <p style={{ color: '#888', margin: '0 0 4px', fontSize: '0.85rem' }}>
-          Tus rosas pavimentan tu peregrinación.
-        </p>
+      <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+        <h2 style={{ color: '#D4AF37', margin: '0 0 4px', fontSize: '1.2rem' }}>El Camino</h2>
+        <div style={{ fontSize: '0.8rem', color: '#888' }}>
+          {totalAveMarias} rosas cultivadas
+        </div>
       </div>
 
-      {next ? (
-        <div style={{
-          background: '#111', borderRadius: '12px', padding: '20px',
-          border: '1px solid #222', marginBottom: '30px'
-        }}>
-          <h3 style={{ color: '#fff', margin: '0 0 5px' }}>Siguiente Destino: {next.name}</h3>
-          <p style={{ color: '#888', fontSize: '0.85rem', margin: '0 0 15px' }}>{next.description}</p>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#aaa', marginBottom: '8px' }}>
-            <span>{totalAveMarias} rosas</span>
-            <span>Meta: {next.reqAveMarias}</span>
-          </div>
-          <div style={{ height: '8px', background: '#222', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{
-              width: `${Math.min(100, Math.max(0, ((totalAveMarias - actual.reqAveMarias) / (next.reqAveMarias - actual.reqAveMarias)) * 100))}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #8C2832, #D4AF37)',
-              borderRadius: '4px'
-            }} />
-          </div>
+      {/* COMPACT PROGRESS SUMMARY */}
+      <div style={{ 
+        background: '#111', borderRadius: '8px', padding: '10px', 
+        border: '1px solid #222', marginBottom: '15px', fontSize: '0.8rem'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+          <span style={{ color: '#D4AF37', fontWeight: 'bold' }}>
+            {next ? `Hacia: ${next.name}` : '¡Peregrinación Completada!'}
+          </span>
+          <span style={{ color: '#666' }}>{next ? `${next.reqAveMarias} rosas` : ''}</span>
         </div>
-      ) : (
-        <div style={{
-          background: 'linear-gradient(145deg, #1a1a1a, #2a0a0a)', borderRadius: '12px', padding: '20px',
-          border: '1px solid #D4AF37', marginBottom: '30px', textAlign: 'center'
-        }}>
-          <h3 style={{ color: '#D4AF37', margin: '0 0 10px' }}>¡Llegaste a la Meta!</h3>
-          <p style={{ color: '#ccc', margin: 0 }}>Has completado todas las peregrinaciones.</p>
-        </div>
-      )}
-
-      <div>
-        <h4 style={{ color: '#888', borderBottom: '1px solid #222', paddingBottom: '10px', marginBottom: '30px' }}>
-          Mapa del Sendero
-        </h4>
-        <div style={{ position: 'relative', paddingLeft: '20px', paddingBottom: '50px' }}>
-          {/* Base Trail Line */}
-          <div style={{ position: 'absolute', left: '35px', top: '15px', bottom: '15px', width: '4px', background: '#222', borderRadius: '2px' }} />
-          
-          {/* Active Trail Line (Progress) */}
-          <div style={{ 
-             position: 'absolute', left: '35px', top: '15px', width: '4px', background: '#D4AF37', borderRadius: '2px',
-             height: next ? `${(PEREGRINACIONES.findIndex(p => p.id === next.id) / PEREGRINACIONES.length) * 100}%` : '100%',
-             transition: 'height 1s ease-in-out'
+        <div style={{ height: '4px', background: '#222', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{
+            width: `${Math.min(100, Math.max(0, ((totalAveMarias - actual.reqAveMarias) / (next ? (next.reqAveMarias - actual.reqAveMarias) : 1)) * 100))}%`,
+            height: '100%', background: 'linear-gradient(90deg, #8C2832, #D4AF37)',
+            borderRadius: '2px', transition: 'width 1s ease'
           }} />
+        </div>
+      </div>
 
-          {/* PEREGRINACIONES renderizadas en REVERSA (meta al tope, inicio abajo) */}
-          {[...PEREGRINACIONES].reverse().map((p, reverseIndex) => {
-            const originalIndex = PEREGRINACIONES.length - 1 - reverseIndex;
+      {/* SNAKE MAP AREA */}
+      <div style={{ 
+        flex: 1, position: 'relative', background: '#050505', 
+        borderRadius: '12px', border: '1px solid #111', overflow: 'hidden',
+        padding: '20px 10px'
+      }}>
+        {/* Serpentine Line SVG (visual only) */}
+        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.1 }}>
+          <path 
+            d="M 50,350 C 150,350 250,300 250,250 C 250,200 150,150 150,100 C 150,50 250,50 250,0" 
+            fill="none" stroke="#D4AF37" strokeWidth="2" strokeDasharray="5,5" 
+          />
+        </svg>
+
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(3, 1fr)', 
+          gridTemplateRows: 'repeat(4, 1fr)',
+          height: '100%', width: '100%', gap: '10px'
+        }}>
+          {PEREGRINACIONES.map((p, i) => {
             const isCompleted = totalAveMarias >= p.reqAveMarias;
             const isCurrent = next && next.id === p.id;
             
-            // Serpenteo: si originalIndex es par, va a la izquierda, si es impar a la derecha
-            const isLeft = originalIndex % 2 === 0;
-            
-            // Calcular el progreso del segmento para la monjita
-            let segmentProgress = 0;
-            let showMonjita = isCurrent;
-            if (isCurrent) {
-               const prevReq = originalIndex === 0 ? 0 : PEREGRINACIONES[originalIndex-1].reqAveMarias;
-               segmentProgress = Math.max(0, Math.min(1, (totalAveMarias - prevReq) / (p.reqAveMarias - prevReq)));
-            }
+            // Grid positioning (serpentine logic for 3 columns)
+            // Row 0: 0 1 2 (right)
+            // Row 1: 5 4 3 (left)
+            // Row 2: 6 7 8 (right)
+            // Row 3: 11 10 9 (left)
+            const row = Math.floor(i / 3);
+            const colInRow = i % 3;
+            const col = (row % 2 === 0) ? colInRow : (2 - colInRow);
             
             return (
-              <div key={p.id} style={{ 
-                display: 'flex', flexDirection: isLeft ? 'row' : 'row-reverse',
-                gap: '15px', alignItems: 'center', position: 'relative',
-                marginBottom: '40px', opacity: isCompleted || isCurrent ? 1 : 0.4
-              }}>
+              <div key={p.id} 
+                onClick={() => setSelectedPin(p)}
+                style={{
+                  gridRow: 4 - row, gridColumn: col + 1,
+                  display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+                  cursor: 'pointer', position: 'relative', transition: 'transform 0.2s',
+                  zIndex: isCurrent ? 10 : 1
+                }}
+              >
                 <div style={{
-                  width: '40px', height: '40px', borderRadius: '20px', flexShrink: 0,
-                  background: isCompleted ? '#2a0a0a' : (isCurrent ? '#111' : '#0a0a0a'),
-                  border: isCompleted ? '2px solid #D4AF37' : (isCurrent ? '2px solid #8C2832' : '2px solid #333'),
-                  display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2,
-                  boxShadow: isCurrent ? '0 0 15px rgba(140, 40, 50, 0.4)' : 'none',
-                  position: 'relative'
+                  width: isCurrent ? '44px' : '36px',
+                  height: isCurrent ? '44px' : '36px',
+                  borderRadius: '22px',
+                  background: isCompleted ? '#2a0a0a' : (isCurrent ? '#1a0a0a' : '#050505'),
+                  border: isCompleted ? '2px solid #D4AF37' : (isCurrent ? '2.5px solid #8C2832' : '1px solid #222'),
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  boxShadow: isCurrent ? '0 0 15px rgba(212,175,55,0.4)' : 'none',
+                  fontSize: isCurrent ? '1.4rem' : '1.1rem',
+                  transition: 'all 0.3s'
                 }}>
                   {isCompleted ? '⛪' : (isCurrent ? '📍' : '🔒')}
                   
-                  {/* ─── LA MONJITA ─── */}
-                  {/* Como el recorrido ahora es físico, la monjita puede flotar a un costado de su nodo actual */}
-                  {showMonjita && (
+                  {isCurrent && (
                     <div style={{
-                      position: 'absolute', 
-                      bottom: `-${20 + (segmentProgress * 30)}px`, 
-                      [isLeft ? 'right' : 'left']: '-20px',
-                      fontSize: '2rem', zIndex: 10,
-                      filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))',
-                      transition: 'bottom 1s ease-out'
+                      position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)',
+                      fontSize: '1.8rem', filter: 'drop-shadow(0 2px 4px black)',
+                      animation: 'float 2s infinite ease-in-out'
                     }}>
                       🧎‍♀️
                     </div>
                   )}
                 </div>
-
-                <div style={{ paddingTop: '5px', textAlign: isLeft ? 'left' : 'right', flex: 1 }}>
-                  <div style={{ fontWeight: 'bold', color: isCompleted ? '#D4AF37' : '#fff', fontSize: '1.05rem' }}>{p.name}</div>
-                  <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>{p.description}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#D4AF37', marginTop: '6px', fontWeight: 'bold' }}>
-                    {p.reqAveMarias} rosas
-                  </div>
+                <div style={{ 
+                  fontSize: '0.6rem', color: isCurrent ? '#D4AF37' : '#666', 
+                  marginTop: '4px', textAlign: 'center', fontWeight: isCurrent ? 'bold' : 'normal',
+                  maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'
+                }}>
+                  {p.name}
                 </div>
+
+                {isCurrent && (
+                  <div style={{
+                    position: 'absolute', bottom: '-8px', width: '60%', height: '2px', 
+                    background: '#8C2832', borderRadius: '1px'
+                  }} />
+                )}
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* POPOVER DETAIL */}
+      {selectedPin && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', zIndex: 1000,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+        }} onClick={() => setSelectedPin(null)}>
+          <div style={{
+            background: '#111', border: '1px solid #D4AF37', borderRadius: '15px',
+            padding: '20px', maxWidth: '300px', textAlign: 'center',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.8)'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
+              {totalAveMarias >= selectedPin.reqAveMarias ? '⛪' : '📍'}
+            </div>
+            <h3 style={{ color: '#D4AF37', margin: '0 0 10px' }}>{selectedPin.name}</h3>
+            <p style={{ color: '#bbb', fontSize: '0.85rem', lineHeight: '1.5', margin: '0 0 15px' }}>
+              {selectedPin.description}
+            </p>
+            <div style={{ color: '#888', fontSize: '0.8rem', borderTop: '1px solid #222', paddingTop: '10px' }}>
+              Meta: {selectedPin.reqAveMarias} rosas
+            </div>
+            <button 
+              onClick={() => setSelectedPin(null)}
+              style={{
+                marginTop: '15px', padding: '8px 20px', background: 'transparent',
+                border: '1px solid #444', color: '#fff', borderRadius: '20px', cursor: 'pointer'
+              }}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translate(-50%, 0); }
+          50% { transform: translate(-50%, -8px); }
+        }
+      `}</style>
     </div>
   );
 }

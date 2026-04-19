@@ -13,14 +13,13 @@ export default function BottomNav({ vistaActiva, setVistaActiva }) {
     }}>
       
       <NavButton 
-        id="virtual" 
-        icono="📿" 
-        texto="Próximamente" 
-        activo={false} 
-        disabled={true}
-        onClick={() => {}} 
+        id="camino" 
+        icono="🚶" 
+        texto="Camino" 
+        activo={vistaActiva === 'camino'} 
+        onClick={() => setVistaActiva('camino')} 
       />
-      
+
       <NavButton 
         id="foco" 
         icono="🌹" 
@@ -38,11 +37,12 @@ export default function BottomNav({ vistaActiva, setVistaActiva }) {
       />
 
       <NavButton 
-        id="camino" 
-        icono="🚶" 
-        texto="Camino" 
-        activo={vistaActiva === 'camino'} 
-        onClick={() => setVistaActiva('camino')} 
+        id="virtual" 
+        icono="📿" 
+        texto="Próximamente" 
+        activo={false} 
+        disabled={true}
+        onClick={() => {}} 
       />
 
     </div>

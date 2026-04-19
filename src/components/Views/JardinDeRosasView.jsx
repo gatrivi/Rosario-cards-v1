@@ -48,7 +48,7 @@ export default function JardinDeRosasView() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
              <h2 style={{ color: '#D4AF37', margin: '0 0 4px', fontSize: '1.2rem' }}>Jardín de Rosas</h2>
-             <p style={{ color: '#888', margin: 0, fontSize: '0.75rem' }}>
+             <p style={{ color: '#eee', margin: 0, fontSize: '0.85rem' }}>
                🌹 {totalAveMarias} rosas históricas
              </p>
           </div>
@@ -68,7 +68,7 @@ export default function JardinDeRosasView() {
 
         {/* COMPACT TODAY'S GOAL */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0a0a0a', padding: '10px', borderRadius: '8px', border: '1px solid #1a1a1a' }}>
-          <span style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: 'bold' }}>Hoy: {macetonesHoy}/{objetivoMacetonesHoy}</span>
+          <span style={{ fontSize: '0.9rem', color: '#ccc', fontWeight: 'bold' }}>Hoy: {macetonesHoy}/{objetivoMacetonesHoy}</span>
           <div style={{ display: 'flex', gap: '4px' }}>
             {Array.from({ length: Math.max(objetivoMacetonesHoy, macetonesHoy) }).map((_, i) => (
               <span key={i} style={{ 

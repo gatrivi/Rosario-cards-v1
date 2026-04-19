@@ -139,6 +139,7 @@ export default function RezoEnFocoView() {
     const stored = localStorage.getItem('rosario_sound_enabled');
     return stored === null ? true : stored === 'true';
   });
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // ─── Refs ───
   const containerRef = useRef(null);
@@ -160,6 +161,8 @@ export default function RezoEnFocoView() {
   // Audio
   const audioCtxRef = useRef(null);
   const synthRef = useRef(null);
+  const soundEnabledRef = useRef(soundEnabled);
+  useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
   useEffect(() => { versoIndexRef.current = versoIndex; }, [versoIndex]);
 
@@ -210,8 +213,14 @@ export default function RezoEnFocoView() {
     setSoundEnabled(prev => {
       const next = !prev;
       localStorage.setItem('rosario_sound_enabled', String(next));
-      if (!next && synthRef.current) {
-        synthRef.current.gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.1);
+      soundEnabledRef.current = next;
+      if (audioCtxRef.current) {
+        if (!next) {
+           audioCtxRef.current.suspend();
+           if (synthRef.current) synthRef.current.gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.1);
+        } else {
+           audioCtxRef.current.resume();
+        }
       }
       return next;
     });
@@ -223,6 +232,9 @@ export default function RezoEnFocoView() {
       if (!AC) return;
       const ctx = new AC();
       audioCtxRef.current = ctx;
+
+      // SI inicia silenciado, suspender de inmediato
+      if (!soundEnabledRef.current) ctx.suspend();
 
       // Master gain
       const gainNode = ctx.createGain();
@@ -249,56 +261,51 @@ export default function RezoEnFocoView() {
       // Filter shapes the timbre based on warmth
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(300, ctx.currentTime);
-      filter.Q.setValueAtTime(1.5, ctx.currentTime);
+      filter.frequency.value = 300;
+      filter.Q.value = 2; // subtle resonance
 
       // Routing: osc1 + osc2→filter → gainNode → destination
-      osc.connect(gainNode);
+      osc.connect(filter);
       osc2.connect(filter);
-      filter.connect(gainNode);
       osc3.connect(padGain);
-      padGain.connect(gainNode);
+      padGain.connect(filter);
+      filter.connect(gainNode);
 
       osc.start();
       osc2.start();
       osc3.start();
 
-      synthRef.current = { gainNode, osc, osc2, osc3, filter, padGain };
+      synthRef.current = { osc, osc2, osc3, filter, gainNode, padGain };
+    } else if (audioCtxRef.current.state === 'suspended' && soundEnabledRef.current) {
+      audioCtxRef.current.resume();
     }
-    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   };
 
   // Called on pointer activity (on/off toggle)
-  const modulateAudio = (isActive) => {
-    if (!soundEnabled || !synthRef.current || !audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
+  const modulateAudio = (active) => {
+    if (!synthRef.current || !soundEnabledRef.current) return;
     const { gainNode } = synthRef.current;
-    if (isActive) {
-      gainNode.gain.setTargetAtTime(0.04, ctx.currentTime, 0.08);
+    if (active) {
+      updateAudioWarmth();
     } else {
-      gainNode.gain.setTargetAtTime(0, ctx.currentTime, 0.25);
+      gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.3);
     }
   };
 
   // Called every 50ms by warmth timer — smoothly modulates pitch, filter, volume
   // based on the CURRENT character's live warmth and verse progress.
   const updateAudioWarmth = () => {
-    if (!soundEnabled || !synthRef.current || !audioCtxRef.current) return;
-    if (charProgressIndex < 0) return;
-    const ctx = audioCtxRef.current;
-    const { osc, osc2, osc3, filter, padGain, gainNode } = synthRef.current;
-    const t = ctx.currentTime;
-
-    const tRosos = totalRosasRef.current || 0;
-    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 7.8);
-
-    // Progress through verse: 0 → 1
-    const progress = charProgressIndex / Math.max(1, totalChars - 1);
-
-    // Live warmth of character at cursor: 0 → 1
+    if (!synthRef.current || !soundEnabledRef.current) return;
+    const { osc, osc2, osc3, filter, gainNode, padGain } = synthRef.current;
+    const t = audioCtxRef.current.currentTime;
+    
+    const progress = totalChars > 0 ? Math.max(0, charProgressIndex) / totalChars : 0;
     const reachedAt = charReachedAtRef.current[charProgressIndex];
     const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
     const warmth = Math.min(1, liveDwell / 2000);
+
+    const tRosos = totalRosasRef.current || 0;
+    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 7.8);
 
     // --- Frequency: base × (1 + progress×0.15) — subtle ascent through verse ---
     const baseFreq = getBaseFreq();
@@ -321,7 +328,7 @@ export default function RezoEnFocoView() {
 
   // Verse start chime — pitch matches prayer type
   const playActivationChime = useCallback(() => {
-    if (!soundEnabled || !audioCtxRef.current) return;
+    if (!soundEnabledRef.current || !audioCtxRef.current) return;
     try {
       const ctx = audioCtxRef.current;
       const base = getBaseFreq();
@@ -337,38 +344,39 @@ export default function RezoEnFocoView() {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.2);
     } catch (e) { /* ignore */ }
-  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Verse completion: brief ascending arpeggio, silver or gold depending on speed
+  // Verse completion: Campana Gregoriana (Deep warm bell)
   const playVerseCompleteSound = useCallback((avgDwell) => {
-    if (!soundEnabled || !audioCtxRef.current) return;
+    if (!soundEnabledRef.current || !audioCtxRef.current) return;
     try {
       const ctx = audioCtxRef.current;
-      const base = getBaseFreq();
-      const isWarm = avgDwell >= 150;
-      // 3-note ascending arpeggio
-      const notes = isWarm
-        ? [base * 2, base * 2.5, base * 3]       // major arpeggio (warm)
-        : [base * 2, base * 2.25, base * 2.67];  // cooler intervals (silver)
-      notes.forEach((freq, i) => {
+      const base = getBaseFreq() * 0.5; // Octava abajo para peso litúrgico
+      
+      const freqs = [base, base * 2.1, base * 3.1]; // Campana inarmónica suave
+      
+      freqs.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = isWarm ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
-        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.06);
-        gain.gain.linearRampToValueAtTime(isWarm ? 0.05 : 0.04, ctx.currentTime + i * 0.06 + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.18);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        
+        // Ataque rápido (golpe), decaimiento lentísimo
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.05 - (i * 0.015), ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3.0 + (i * 0.5));
+        
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + i * 0.06);
-        osc.stop(ctx.currentTime + i * 0.06 + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 4.0);
       });
     } catch (e) { /* ignore */ }
-  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Prayer completion: richer resolved chord
   const playPrayerCompleteSound = useCallback(() => {
-    if (!soundEnabled || !audioCtxRef.current) return;
+    if (!soundEnabledRef.current || !audioCtxRef.current) return;
     try {
       const ctx = audioCtxRef.current;
       const base = getBaseFreq();
@@ -387,7 +395,7 @@ export default function RezoEnFocoView() {
         osc.stop(ctx.currentTime + 0.6);
       });
     } catch (e) { /* ignore */ }
-  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   // ═══════════════════════════════════════════════════════
@@ -620,6 +628,7 @@ export default function RezoEnFocoView() {
   };
 
   const handleTrackPointer = (clientX, clientY, pointerType) => {
+    if (!hasInteracted) setHasInteracted(true);
     // Vertical gesture (touch only)
     if (pointerType === 'touch' && pointerStartY.current !== null && !isVerticalGesture.current) {
       const dY = clientY - pointerStartY.current;
@@ -1102,6 +1111,12 @@ export default function RezoEnFocoView() {
           }
         `}</style>
       </div>
+      <style>{`
+        @keyframes pulseHint {
+          0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+          50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 }
