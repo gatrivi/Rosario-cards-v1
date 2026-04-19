@@ -36,6 +36,14 @@ export default function BottomNav({ vistaActiva, setVistaActiva }) {
         onClick={() => setVistaActiva('jardin')} 
       />
 
+      <NavButton 
+        id="camino" 
+        icono="🚶" 
+        texto="Camino" 
+        activo={vistaActiva === 'camino'} 
+        onClick={() => setVistaActiva('camino')} 
+      />
+
     </div>
   );
 }

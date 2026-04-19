@@ -3,6 +3,8 @@ import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import RoseDrawing from './RoseDrawing';
+import TutorialOverlay from '../common/TutorialOverlay';
+import antonyImg from '../../data/assets/img/st-anthony-of-padua-icon-402.jpg';
 
 // ─── Prayer data helpers ───
 
@@ -853,6 +855,11 @@ export default function RezoEnFocoView() {
         <button onClick={() => setModoInteraccion(m => m === 'swipe' ? 'hold' : 'swipe')} style={miniBtn}>
           {modoInteraccion === 'swipe' ? '✋ Deslizar' : '👇 Mantener'}
         </button>
+        <TutorialOverlay 
+          title="Foco de Oración" 
+          imageSrc={antonyImg}
+          text="Mueve tu dedo o cursor sobre las letras lentamente. Como decía San Antonio de Padua: 'Las acciones hablan más fuerte que las palabras; que enseñen tus acciones y hablen tus palabras.'&#10;&#10;Dedicarle tiempo a cada letra hace que tu rosa interior florezca con colores más intensos."
+        />
       </div>
 
       {/* ─── MACETÓN ─── */}

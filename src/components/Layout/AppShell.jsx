@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
 import RezoEnFocoView from '../Views/RezoEnFocoView';
 import JardinDeRosasView from '../Views/JardinDeRosasView';
+import PeregrinacionView from '../Views/PeregrinacionView';
 import BottomNav from '../Navigation/BottomNav';
 
 export default function AppShell() {
@@ -12,6 +13,7 @@ export default function AppShell() {
       case 'virtual': return <RosarioVirtualView />;
       case 'foco':    return <RezoEnFocoView />;
       case 'jardin':  return <JardinDeRosasView />;
+      case 'camino':  return <PeregrinacionView />;
       default:        return <RezoEnFocoView />;
     }
   };
