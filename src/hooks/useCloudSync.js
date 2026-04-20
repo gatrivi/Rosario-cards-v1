@@ -1,97 +1,126 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-const JSONBLOB_ID = '019d9259-0adf-7800-ac8b-182751178763';
-const SYNC_URL = `https://jsonblob.com/api/jsonBlob/${JSONBLOB_ID}`;
+const BASE_URL = 'https://jsonblob.com/api/jsonBlob';
 const LOCAL_CACHE_KEY = 'rosario_cloud_cache';
-const SYNC_TIMEOUT_MS = 4000; // Max wait for network before falling back to local
+const ID_KEY = 'rosario_sync_id';
+const SYNC_TIMEOUT_MS = 6000;
 
 export function useCloudSync() {
+  const [syncId, setSyncId] = useState(() => localStorage.getItem(ID_KEY));
   const [cloudState, setCloudState] = useState(null);
-  const [syncStatus, setSyncStatus] = useState('loading'); // 'loading' | 'cloud' | 'local' | 'error'
+  const [syncStatus, setSyncStatus] = useState('idle'); // idle, loading, synced, local, error
   const debounceTimer = useRef(null);
 
-  // Load from localStorage immediately, then try cloud as enhancement
-  useEffect(() => {
-    // Step 1: Load from local cache FIRST so we never block on network
+  // --- 1. Inicialización de ID si no existe ---
+  const initializeNewSync = useCallback(async (initialData = {}) => {
+    setSyncStatus('loading');
     try {
-      const cached = localStorage.getItem(LOCAL_CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        setCloudState(parsed);
-        setSyncStatus('local');
+      const res = await fetch(BASE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(initialData)
+      });
+      if (!res.ok) throw new Error('Failed to create cloud slot');
+      
+      // El ID está en el header 'Location' o podemos intentar sacarlo del body si el API lo da
+      // JSONBlob suele devolver el ID en un header. Si no, parseamos el URL del location.
+      const location = res.headers.get('Location');
+      const newId = location ? location.split('/').pop() : null;
+      
+      if (newId) {
+        localStorage.setItem(ID_KEY, newId);
+        setSyncId(newId);
+        setCloudState(initialData);
+        setSyncStatus('synced');
+        return newId;
       }
     } catch (e) {
-      console.warn('[CloudSync] Error reading localStorage cache:', e);
+      console.error('[CloudSync] Initialization error:', e);
+      setSyncStatus('error');
     }
-
-    // Step 2: Attempt cloud fetch with timeout as an enhancement
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
-
-    fetch(SYNC_URL, { 
-      headers: { 'Accept': 'application/json' },
-      signal: controller.signal
-    })
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        clearTimeout(timeoutId);
-        setCloudState(prevLocal => {
-          // Merge: cloud data takes priority, but don't lose local-only keys
-          const merged = { ...prevLocal, ...data };
-          // Cache the merged result locally
-          try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged)); } catch {}
-          return merged;
-        });
-        setSyncStatus('cloud');
-      })
-      .catch(err => {
-        clearTimeout(timeoutId);
-        // Silently degrade — localStorage data is already loaded
-        if (err.name === 'AbortError') {
-          console.warn('[CloudSync] Fetch timed out, using local cache.');
-        } else {
-          console.warn('[CloudSync] Fetch failed, using local cache:', err.message);
-        }
-        // Only set error status if we have NO data at all
-        setSyncStatus(prev => prev === 'local' ? 'local' : 'error');
-      });
-
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
+    return null;
   }, []);
 
-  // Función para guardar cambios — always writes to localStorage, 
-  // cloud write is best-effort
-  const syncToCloud = (partialData) => {
+  // --- 2. Cargar datos del ID actual ---
+  useEffect(() => {
+    if (!syncId) {
+      // Si no hay ID, cargamos solo lo local
+      const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+      if (cached) setCloudState(JSON.parse(cached));
+      setSyncStatus('local');
+      return;
+    }
+
+    const loadCloudData = async () => {
+      setSyncStatus('loading');
+      const controller = new AbortController();
+      const tId = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+
+      try {
+        const res = await fetch(`${BASE_URL}/${syncId}`, { 
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(tId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        setCloudState(prev => {
+          const merged = { ...prev, ...data };
+          localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
+          return merged;
+        });
+        setSyncStatus('synced');
+      } catch (e) {
+        clearTimeout(tId);
+        console.warn('[CloudSync] Fetch failed, using local:', e.message);
+        const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+        if (cached) setCloudState(JSON.parse(cached));
+        setSyncStatus('local');
+      }
+    };
+
+    loadCloudData();
+  }, [syncId]);
+
+  // --- 3. Sincronizar hacia la nube (Debounced) ---
+  const syncToCloud = useCallback((partialData) => {
     setCloudState(prev => {
       const merged = { ...prev, ...partialData };
-      
-      // Always persist to local cache immediately
-      try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged)); } catch {}
+      localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
 
-      // Debounced best-effort cloud sync
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(() => {
-        fetch(SYNC_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(merged)
-        })
-          .then(() => setSyncStatus('cloud'))
-          .catch(err => {
-            console.warn('[CloudSync] Write failed (data safe in localStorage):', err.message);
+      if (syncId) {
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        debounceTimer.current = setTimeout(async () => {
+          try {
+            const res = await fetch(`${BASE_URL}/${syncId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify(merged)
+            });
+            if (res.ok) setSyncStatus('synced');
+          } catch (e) {
             setSyncStatus('local');
-          });
-      }, 1500);
-
+          }
+        }, 2000);
+      }
       return merged;
     });
-  };
+  }, [syncId]);
 
-  return { cloudState, syncToCloud, syncStatus };
+  // --- 4. Forzar un ID (Importar) ---
+  const forceSetSyncId = useCallback((newId) => {
+    if (!newId || newId === syncId) return;
+    localStorage.setItem(ID_KEY, newId);
+    setSyncId(newId);
+  }, [syncId]);
+
+  return { 
+    syncId, 
+    cloudState, 
+    syncStatus, 
+    syncToCloud, 
+    initializeNewSync, 
+    forceSetSyncId 
+  };
 }
