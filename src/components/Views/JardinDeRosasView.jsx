@@ -84,47 +84,76 @@ export default function JardinDeRosasView() {
       {/* Rose Garden Grid */}
       {pots.length > 0 ? (
         <div style={{ 
-          display: 'flex', flexDirection: 'column', gap: '20px', 
-          maxWidth: '500px', margin: '0 auto', paddingBottom: '40px' 
+          display: 'flex', flexDirection: 'column', gap: '30px', 
+          maxWidth: '650px', margin: '0 auto', paddingBottom: '60px' 
         }}>
           {pots.reverse().map((pot, reversedPotIndex) => {
             const potIndex = pots.length - 1 - reversedPotIndex;
+            const isLatest = reversedPotIndex === 0;
+            
+            // For the latest pot, always show all 50 cells (ghosts for empty ones)
+            const displayRoses = isLatest 
+              ? [...pot, ...Array(ROSAS_PER_MACETON - pot.length).fill(null)]
+              : pot;
+
             return (
               <div key={potIndex} style={{
-                background: '#111', borderRadius: '12px', padding: '16px',
-                border: '1px solid #1a1a1a'
+                background: 'radial-gradient(circle at 50% -20%, #1a1a1a 0%, #080808 80%)',
+                borderRadius: '16px', padding: '20px',
+                border: '1px solid rgba(212, 175, 55, 0.15)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(212, 175, 55, 0.05)',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
+                {/* Pot "Lip" or Top Border */}
+                <div style={{ 
+                  position: 'absolute', top: 0, left: 0, right: 0, height: '3px', 
+                  background: 'linear-gradient(90deg, transparent, #D4AF3744, transparent)' 
+                }} />
+
                 <h3 style={{ 
-                  color: '#D4AF37', borderBottom: '1px solid #222', paddingBottom: '8px', 
-                  marginTop: 0, marginBottom: '16px', fontSize: '1rem',
-                  display: 'flex', justifyContent: 'space-between'
+                  color: '#D4AF37', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '10px', 
+                  marginTop: 0, marginBottom: '20px', fontSize: '1.1rem',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                  fontFamily: "'Playfair Display', serif"
                 }}>
                   <span>Macetón {potIndex + 1}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal' }}>
-                    {pot.length === ROSAS_PER_MACETON ? 'Completado ✓' : `${pot.length}/${ROSAS_PER_MACETON}`}
+                  <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'normal', letterSpacing: '1px' }}>
+                    {pot.length === ROSAS_PER_MACETON ? 'SANTIFICADO ✓' : `${pot.length} / ${ROSAS_PER_MACETON}`}
                   </span>
                 </h3>
+
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(35px, 1fr))',
-                  gap: '6px'
+                  gridTemplateColumns: 'repeat(10, 1fr)',
+                  gap: '8px',
+                  // Small screen fallback: 5 columns
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(38px, 1fr))'
                 }}>
-                  {pot.map((rose, i) => (
-                    <div key={i} title={`Rosa ${i+1}`} style={{
+                  {displayRoses.map((rose, i) => (
+                    <div key={i} title={rose ? `Rosa ${i+1}` : "Espacio sagrado"} style={{
+                      aspectRatio: '1/1',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      background: '#0d0d0d', borderRadius: '4px', padding: '2px',
-                      border: '1px solid #1a1a1a',
-                      transition: 'border-color 0.3s',
+                      background: rose ? 'rgba(15, 15, 15, 0.4)' : 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: '8px',
+                      border: rose ? '1px solid rgba(212, 175, 55, 0.1)' : '1px dashed rgba(255,255,255,0.03)',
+                      boxShadow: rose ? '0 2px 8px rgba(0,0,0,0.4)' : 'inset 0 0 10px rgba(0,0,0,0.2)',
+                      transition: 'all 0.3s ease',
+                      position: 'relative'
                     }}>
-                      <RoseDrawing
-                        progress={1}
-                        warmthProfile={rose.warmthProfile || []}
-                        wiggleProfile={rose.wiggleProfile || []}
-                        enrichment={enrichment}
-                        seed={rose.timestamp}
-                        size={30}
-                        compact={true}
-                      />
+                      {rose ? (
+                        <RoseDrawing
+                          progress={1}
+                          warmthProfile={rose.warmthProfile || []}
+                          wiggleProfile={rose.wiggleProfile || []}
+                          enrichment={enrichment}
+                          seed={rose.timestamp}
+                          size={32}
+                          compact={true}
+                        />
+                      ) : (
+                        <span style={{ fontSize: '0.7rem', opacity: 0.1, color: '#D4AF37' }}>🌹</span>
+                      )}
                     </div>
                   ))}
                 </div>
