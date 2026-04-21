@@ -121,6 +121,7 @@ export default function JardinDeRosasView() {
                         warmthProfile={rose.warmthProfile || []}
                         wiggleProfile={rose.wiggleProfile || []}
                         enrichment={enrichment}
+                        seed={rose.timestamp}
                         size={30}
                         compact={true}
                       />

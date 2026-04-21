@@ -126,6 +126,7 @@ export default function RezoEnFocoView({
   const isVerticalGesture = useRef(false);
   const versoIndexRef = useRef(0);
   const advanceVerseRef = useRef(null);
+  const roseSeedRef = useRef(0);
 
   // Audio
   const audioCtxRef = useRef(null);
@@ -139,6 +140,13 @@ export default function RezoEnFocoView({
   const totalVersos = rezoData.versos.length;
   const currentVerseText = isPrayerComplete ? 'Amén.' : (rezoData.versos[versoIndex] || '');
   const currentWords = currentVerseText.split(/\s+/).filter(w => w.length > 0);
+
+  // Initialize unique seed for the current rose
+  useEffect(() => {
+    if (rezoData.id === 'A') {
+      roseSeedRef.current = Date.now();
+    }
+  }, [currentPrayerIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Precompute character offsets: wordCharOffsets[w] = global index of the first char of word w
   const wordCharOffsets = [];
@@ -512,7 +520,12 @@ export default function RezoEnFocoView({
           const vi = Math.floor(i * totalVersos / N);
           return vg[Math.min(vi, vg.length - 1)] || 0;
         });
-        storeRoseData({ warmthProfile, wiggleProfile, verseCount: totalVersos });
+        storeRoseData({ 
+          warmthProfile, 
+          wiggleProfile, 
+          verseCount: totalVersos,
+          timestamp: roseSeedRef.current || Date.now() 
+        });
       }
       playPrayerCompleteSound();
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
@@ -889,6 +902,7 @@ export default function RezoEnFocoView({
                 });
               })()}
               enrichment={Math.min(1, Math.log10((totalRosasRef.current || 0) + 1) / 7.8)}
+              seed={roseSeedRef.current}
               size={Math.min(160, window.innerHeight * 0.23)}
             />
           </div>
