@@ -6,6 +6,7 @@ import MacetonView from '../Views/MacetonView';
 import PeregrinacionView from '../Views/PeregrinacionView';
 import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
+import SettingsOverlay from '../common/SettingsOverlay';
 import { useCloudSync } from '../../hooks/useCloudSync';
 
 export default function AppShell() {
@@ -13,7 +14,21 @@ export default function AppShell() {
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [showIntro, setShowIntro] = useState(() => !localStorage.getItem('rosario_cards_intro'));
   const [showSync, setShowSync] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
+
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem('rosario_settings');
+    return saved ? JSON.parse(saved) : {
+      virtualRosaryEnabled: true,
+      soundEnabled: localStorage.getItem('rosario_sound_enabled') !== 'false'
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('rosario_settings', JSON.stringify(settings));
+    localStorage.setItem('rosario_sound_enabled', String(settings.soundEnabled));
+  }, [settings]);
 
   // --- Lifting Prayer State ---
   const [misterioActual, setMisterioActual] = useState('gozosos');
@@ -48,19 +63,22 @@ export default function AppShell() {
 
   const renderizarVista = () => {
     switch (vistaActiva) {
-      case 'virtual': return (
-        <RosarioVirtualView 
-          currentPrayerIndex={currentPrayerIndex}
-          misterioActual={misterioActual}
-          onUpdateProgreso={handleUpdateProgreso}
-        />
-      );
+  case 'virtual': return (
+    <RosarioVirtualView 
+      currentPrayerIndex={currentPrayerIndex}
+      misterioActual={misterioActual}
+      onUpdateProgreso={handleUpdateProgreso}
+      soundEnabled={settings.soundEnabled}
+    />
+  );
       case 'foco': return (
         <RezoEnFocoView 
           currentPrayerIndex={currentPrayerIndex}
           misterioActual={misterioActual}
           onUpdateProgreso={handleUpdateProgreso}
           onBack={() => setVistaActiva('macetones')}
+          soundEnabled={settings.soundEnabled}
+          onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
         />
       );
       case 'jardin':  return <JardinDeRosasView />;
@@ -96,12 +114,25 @@ export default function AppShell() {
             onClick={() => setShowSync(true)}
             style={{ 
               background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
-              color: syncId ? '#D4AF37' : '#fff', padding: '8px 12px',
-              borderRadius: '20px', cursor: 'pointer', backdropFilter: 'blur(5px)',
-              fontSize: '0.9rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+              color: syncId ? '#D4AF37' : '#fff', width: '40px', height: '40px',
+              borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
+              fontSize: '1.2rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+              display: 'flex', justifyContent: 'center', alignItems: 'center'
             }}
           >
-            {syncId ? '☁️' : '☁️ +'}
+            {syncId ? '☁️' : '☁️'}
+          </button>
+          <button 
+            onClick={() => setShowSettings(true)}
+            style={{ 
+              background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
+              color: '#fff', width: '40px', height: '40px',
+              borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
+              fontSize: '1.2rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+              display: 'flex', justifyContent: 'center', alignItems: 'center'
+            }}
+          >
+            ⚙️
           </button>
         </div>
       </div>
@@ -110,10 +141,21 @@ export default function AppShell() {
         {renderizarVista()}
       </div>
 
-      <BottomNav vistaActiva={vistaActiva} setVistaActiva={setVistaActiva} />
+      <BottomNav 
+        vistaActiva={vistaActiva} 
+        setVistaActiva={setVistaActiva} 
+        virtualEnabled={settings.virtualRosaryEnabled}
+      />
 
-      {/* SYNC MANAGER OVERLAY */}
+      {/* OVERLAYS */}
       {showSync && <SyncManager onClose={() => setShowSync(false)} />}
+      {showSettings && (
+        <SettingsOverlay 
+          settings={settings} 
+          onUpdateSettings={setSettings} 
+          onClose={() => setShowSettings(false)} 
+        />
+      )}
 
       {/* PENDING SYNC PROMPT (Magic Link activation) */}
       {pendingSyncId && (

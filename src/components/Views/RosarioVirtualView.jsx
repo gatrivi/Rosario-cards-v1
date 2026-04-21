@@ -3,7 +3,7 @@ import VirtualRosaryPhysics from '../RosarioNube/VirtualRosaryPhysics';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import { getSequenceData } from '../Views/RezoEnFocoView';
 
-export default function RosarioVirtualView({ currentPrayerIndex, misterioActual, onUpdateProgreso }) {
+export default function RosarioVirtualView({ currentPrayerIndex, misterioActual, onUpdateProgreso, soundEnabled }) {
   const [selectedPrayer, setSelectedPrayer] = useState(null);
   const secuencia = getSequenceData(misterioActual);
 
@@ -30,6 +30,7 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
         onLinkClick={handleLinkClick}
         activePrayerIndex={currentPrayerIndex}
         misterioActual={misterioActual}
+        soundEnabled={soundEnabled}
       />
 
       {/* Floating Subtitle (Karaoke-lite) */}

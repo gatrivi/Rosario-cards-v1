@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import audioManager from '../../utils/audioManager';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
@@ -94,7 +95,7 @@ const glowFromElapsed = (elapsed, baseSize) => {
 // ─── Component ───
 // ═══════════════════════════════════════════════════════
 
-export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onUpdateProgreso, onBack }) {
+export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onUpdateProgreso, onBack, soundEnabled, onToggleSound }) {
   const { addRosas, storeRoseData, getRoseData, totalAveMarias } = useAveMariaStats();
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
@@ -131,10 +132,6 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
   const [isPrayerComplete, setIsPrayerComplete] = useState(false);
   const [isCargando, setIsCargando] = useState(false);
   const [warmthTick, setWarmthTick] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(() => {
-    const stored = localStorage.getItem('rosario_sound_enabled');
-    return stored === null ? true : stored === 'true';
-  });
   const [hasInteracted, setHasInteracted] = useState(false);
 
   // ─── Refs ───
@@ -206,27 +203,13 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
   const getBaseFreq = () => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81;
 
   const toggleSound = () => {
-    setSoundEnabled(prev => {
-      const next = !prev;
-      localStorage.setItem('rosario_sound_enabled', String(next));
-      soundEnabledRef.current = next;
-      if (audioCtxRef.current) {
-        if (!next) {
-           audioCtxRef.current.suspend();
-           if (synthRef.current) synthRef.current.gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.1);
-        } else {
-           audioCtxRef.current.resume();
-        }
-      }
-      return next;
-    });
+    if (onToggleSound) onToggleSound();
   };
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return;
-      const ctx = new AC();
+      const ctx = audioManager.getContext();
+      if (!ctx) return;
       audioCtxRef.current = ctx;
 
       if (!soundEnabledRef.current) ctx.suspend();

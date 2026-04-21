@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
 import { getRosaryBeads } from '../../data/physicsRosaryData';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
+import audioManager from '../../utils/audioManager';
 
 const { Engine, World, Bodies, Constraint, Mouse, MouseConstraint, Composite, Events, Query } = Matter;
 
-const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0, misterioActual = 'gozosos' }) => {
+const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0, misterioActual = 'gozosos', soundEnabled = true }) => {
   const canvasRef = useRef(null);
   const engineRef = useRef(Engine.create({ gravity: { x: 0, y: 0 } }));
   const [selectedBeadId, setSelectedBeadId] = useState(null);
@@ -14,6 +15,12 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
   const [pulse, setPulse] = useState(0);
   const activeIndexRef = useRef(activePrayerIndex);
   const { logAveMaria } = useAveMariaStats();
+
+  // Zoom and Pan State
+  const [zoomScale, setZoomScale] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const zoomScaleRef = useRef(1);
+  const panOffsetRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (activePrayerIndex !== activeIndexRef.current) {
@@ -166,16 +173,20 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
     World.add(world, mouseConstraint);
 
     // --- Audio System ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioCtx = audioManager.getContext();
     let lastChimeTime = 0;
     const CHIME_COOLDOWN = 40;
     
     const playChime = (force, type, index, isProgress = false) => {
+      if (!audioCtx) return;
       const now = audioCtx.currentTime * 1000;
       if (!isProgress && now - lastChimeTime < CHIME_COOLDOWN) return;
       if (!isProgress) lastChimeTime = now;
 
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!soundEnabled || audioCtx.state === 'suspended') {
+        if (soundEnabled) audioCtx.resume();
+        else return;
+      }
       
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -185,7 +196,7 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
       osc.frequency.setValueAtTime(baseFreq * chargeFactor, audioCtx.currentTime);
       osc.type = isProgress ? 'sine' : (type === 'chain' ? 'triangle' : 'sine');
       
-      const volume = isProgress ? 0.15 : Math.min(force * 0.3, 0.15);
+      const volume = isProgress ? 0.12 : Math.min(force * 0.2, 0.1);
       gain.gain.setValueAtTime(volume, audioCtx.currentTime);
       
       if (isProgress) {
@@ -210,10 +221,17 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
       const mouseUpPos = { x: event.mouse.position.x, y: event.mouse.position.y };
       const dist = Math.hypot(mouseUpPos.x - mouseDownPos.x, mouseUpPos.y - mouseDownPos.y);
 
-      if (dist < 10) {
+      if (dist < 15) { // Slightly more lenient 
         const bodies = Composite.allBodies(world);
-        const clickedBodies = Query.point(bodies, mouseUpPos);
-        const beadBody = clickedBodies.find(b => b.beadData);
+        
+        // Thumb-friendly: expand detection radius
+        const pickRadius = 30 / zoomScaleRef.current; 
+        const bounds = {
+          min: { x: mouseUpPos.x - pickRadius, y: mouseUpPos.y - pickRadius },
+          max: { x: mouseUpPos.x + pickRadius, y: mouseUpPos.y + pickRadius }
+        };
+        const potentialBodies = Query.region(bodies, bounds);
+        const beadBody = potentialBodies.find(b => b.beadData);
 
         if (beadBody) {
           const data = beadBody.beadData;
@@ -223,13 +241,59 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
           }
           
           setSelectedBeadId(data.id);
-          // Standardize on a single callback for progression
           onNodeClick(data.index);
-        } else {
-          setSelectedBeadId(null);
         }
       }
     });
+
+    // --- ZOOM & PAN (THUMB FRIENDLY) ---
+    let initialTouchDist = 0;
+    let initialTouchScale = 1;
+    let initialMidpoint = { x: 0, y: 0 };
+    let initialOffset = { x: 0, y: 0 };
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        initialTouchDist = d;
+        initialTouchScale = zoomScaleRef.current;
+        initialMidpoint = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
+        initialOffset = { ...panOffsetRef.current };
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2) {
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        const newScale = Math.max(0.5, Math.min(3, initialTouchScale * (d / initialTouchDist)));
+        
+        zoomScaleRef.current = newScale;
+        setZoomScale(newScale);
+
+        // Adjust mouse scale so interaction works while zoomed
+        const invScale = 1 / newScale;
+        mouse.pixelRatio = invScale; // matter-js specific way to handle internal scale
+        Matter.Mouse.setScale(mouse, { x: invScale, y: invScale });
+      }
+    };
+
+    // Use regular wheel for desktop zoom
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      const newScale = Math.max(0.5, Math.min(3, zoomScaleRef.current * delta));
+      zoomScaleRef.current = newScale;
+      setZoomScale(newScale);
+      const invScale = 1 / newScale;
+      Matter.Mouse.setScale(mouse, { x: invScale, y: invScale });
+    };
+
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
 
     // --- MAGNETISM (UX) ---
     // Make the active bead "magnetic" so it drifts towards the bottom center focus zone
@@ -277,6 +341,12 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
     const render = () => {
       Engine.update(engine, 1000 / 60);
       ctx.clearRect(0, 0, width, height);
+
+      ctx.save();
+      // Apply Zoom Transform
+      ctx.translate(width/2, height/2);
+      ctx.scale(zoomScaleRef.current, zoomScaleRef.current);
+      ctx.translate(-width/2, -height/2);
 
       const baseAlpha = 0.8; 
       
@@ -396,6 +466,7 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
         ctx.restore();
       }
 
+      ctx.restore(); // Restore Zoom Transform
       animationFrameId = requestAnimationFrame(render);
     };
     render();
@@ -404,6 +475,9 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
       cancelAnimationFrame(animationFrameId);
       World.clear(world, false);
       Engine.clear(engine);
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('wheel', handleWheel);
     };
   }, [onNodeClick, onLinkClick]);
 

@@ -1,0 +1,104 @@
+import React from 'react';
+
+export default function SettingsOverlay({ settings, onUpdateSettings, onClose }) {
+  return (
+    <div style={{
+      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 10000,
+      display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+    }} onClick={onClose}>
+      
+      <div 
+        style={{
+          background: '#111', border: '1px solid #333', borderRadius: '20px',
+          padding: '30px', width: '100%', maxWidth: '350px',
+          boxShadow: '0 20px 60px black', animation: 'settings-entry 0.3s ease-out'
+        }} 
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+          <h2 style={{ color: '#D4AF37', margin: 0, fontSize: '1.4rem' }}>Ajustes</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#666', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Virtual Rosary Toggle */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: '1rem' }}>Rosario Virtual</div>
+              <div style={{ color: '#666', fontSize: '0.75rem' }}>Interactúa con el rosario físico (Beta)</div>
+            </div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={settings.virtualRosaryEnabled}
+                onChange={(e) => onUpdateSettings({ ...settings, virtualRosaryEnabled: e.target.checked })}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
+          {/* Sound Toggle (Mirroring global state) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: '1rem' }}>Efectos de Sonido</div>
+              <div style={{ color: '#666', fontSize: '0.75rem' }}>Organismo y campanas góticas</div>
+            </div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={settings.soundEnabled}
+                onChange={(e) => onUpdateSettings({ ...settings, soundEnabled: e.target.checked })}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
+        </div>
+
+        <div style={{ marginTop: '40px', borderTop: '1px solid #222', paddingTop: '20px', textAlign: 'center' }}>
+          <div style={{ color: '#444', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Rosario Cards v1.2
+          </div>
+        </div>
+
+      </div>
+
+      <style>{`
+        @keyframes settings-entry {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 50px;
+          height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background-color: #222;
+          transition: .4s;
+          border: 1px solid #333;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 16px; width: 16px;
+          left: 4px; bottom: 3px;
+          background-color: #666;
+          transition: .4s;
+        }
+        input:checked + .slider { background-color: #D4AF37; border-color: #D4AF37; }
+        input:checked + .slider:before { transform: translateX(26px); background-color: #000; }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+      `}</style>
+
+    </div>
+  );
+}

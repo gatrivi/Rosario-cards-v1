@@ -39,15 +39,17 @@ export default function BottomNav({ vistaActiva, setVistaActiva }) {
       <NavButton 
         id="virtual" 
         icono="📿" 
-        texto="Próximamente" 
-        activo={false} 
-        disabled={true}
-        onClick={() => {}} 
+        texto="Virtual" 
+        activo={vistaActiva === 'virtual'} 
+        disabled={!virtualEnabled}
+        onClick={() => setVistaActiva('virtual')} 
       />
 
     </div>
   );
 }
+
+export default function BottomNav({ vistaActiva, setVistaActiva, virtualEnabled }) {
 
 function NavButton({ icono, texto, activo, onClick, disabled }) {
   return (
