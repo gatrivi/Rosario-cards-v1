@@ -5,13 +5,23 @@ import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
 const { Engine, World, Bodies, Constraint, Mouse, MouseConstraint, Composite, Events, Query } = Matter;
 
-const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
+const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0, misterioActual = 'gozosos' }) => {
   const canvasRef = useRef(null);
   const engineRef = useRef(Engine.create({ gravity: { x: 0, y: 0 } }));
   const [selectedBeadId, setSelectedBeadId] = useState(null);
   const [prayedIds, setPrayedIds] = useState(new Set());
   const prayedIdsRef = useRef(prayedIds);
+  const [pulse, setPulse] = useState(0);
+  const activeIndexRef = useRef(activePrayerIndex);
   const { logAveMaria } = useAveMariaStats();
+
+  useEffect(() => {
+    if (activePrayerIndex !== activeIndexRef.current) {
+      activeIndexRef.current = activePrayerIndex;
+      setPulse(1);
+      setTimeout(() => setPulse(0), 600);
+    }
+  }, [activePrayerIndex]);
 
   useEffect(() => {
     prayedIdsRef.current = prayedIds;
@@ -21,20 +31,20 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
     canvas.width = width;
     canvas.height = height;
 
     const engine = engineRef.current;
-    const beadsData = getRosaryBeads();
+    const beadsData = getRosaryBeads(misterioActual);
 
     const allBodies = [];
     const allConstraints = [];
 
     const cx = width / 2;
-    const cy = height / 2;
-    const loopRadius = Math.min(width * 0.35, 220);
+    const cy = height * 0.45; // Move center up slightly to make room for tail
+    const loopRadius = Math.min(width * 0.38, 200);
 
     const beadOptions = {
       restitution: 0.4,
@@ -44,18 +54,22 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
       slop: 0.05,
     };
 
-    // --- Physics Setup ---
-    
-    // Centerpiece
-    const centerData = beadsData.find(b => b.id === 'centerpiece');
-    const centerBody = Bodies.circle(cx, cy + loopRadius, 18, beadOptions);
-    centerBody.beadData = centerData;
+    // --- PHYSICS SEGMENTATION ---
+    // Tail: first 8 beads (indices 0-7)
+    const pendantItems = beadsData.filter(b => b.index < 8);
+    // Center: index 8
+    const centerItem = beadsData.find(b => b.index === 8);
+    // Loop: everything else
+    const loopItems = beadsData.filter(b => b.index > 8);
+
+    // 1. Create Centerpiece
+    const centerBody = Bodies.circle(cx, cy + loopRadius, 20, beadOptions);
+    centerBody.beadData = centerItem;
+    centerBody.circleRadius = 20;
     allBodies.push(centerBody);
 
-    // Loop (Decades)
-    const loopItems = beadsData.filter(b => (b.id.startsWith('d') && b.id !== 'd1_of') || b.id === 'loop_chain_start');
+    // 2. Create Loop
     const loopBodies = [];
-    
     loopItems.forEach((data, i) => {
       const startAngle = Math.PI / 2;
       const totalAngle = Math.PI * 2;
@@ -65,55 +79,33 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
       const y = cy + Math.sin(angle) * loopRadius;
 
       let r = 8;
-      if (data.physicsType === 'large') r = 12;
+      if (data.physicsType === 'large') r = 13;
       if (data.physicsType === 'chain') r = 4;
 
       const body = Bodies.circle(x, y, r, beadOptions);
       body.beadData = data;
+      body.circleRadius = r;
       loopBodies.push(body);
       allBodies.push(body);
     });
 
-    // Connect loop
-    loopBodies.forEach((bodyB, i) => {
-      const bodyA = i === 0 ? centerBody : loopBodies[i - 1];
-      allConstraints.push(Constraint.create({
-        bodyA, bodyB,
-        stiffness: 0.4,
-        damping: 0.1,
-        length: (bodyA.circleRadius || 10) + (bodyB.circleRadius || 10) + 8,
-        render: { visible: false }
-      }));
-    });
-    // Close the loop
-    allConstraints.push(Constraint.create({
-      bodyA: loopBodies[loopBodies.length - 1],
-      bodyB: centerBody,
-      stiffness: 0.4,
-      damping: 0.1,
-      length: (loopBodies[loopBodies.length - 1].circleRadius || 10) + centerBody.circleRadius + 8,
-      render: { visible: false }
-    }));
-
-    // Pendant (Tail)
-    const pendantItems = beadsData.filter(b => 
-      (!b.id.startsWith('d') || b.id === 'd1_of') && 
-      b.id !== 'loop_chain_start' && 
-      b.id !== 'centerpiece'
-    ).reverse();
+    // 3. Create Pendant (Tail) - reverse so cross is at the bottom
     const pendantBodies = [];
     let py = cy + loopRadius + 30;
+    const reversedPendant = [...pendantItems].reverse();
     
-    pendantItems.forEach((data) => {
+    reversedPendant.forEach((data) => {
       let body;
       if (data.physicsType === 'cross') {
         body = Bodies.rectangle(cx, py + 20, 24, 48, beadOptions);
+        body.circleRadius = 15; // virtual radius for constraint calc
         py += 60;
       } else {
         let r = 8;
         if (data.physicsType === 'large') r = 12;
         if (data.physicsType === 'chain') r = 4;
         body = Bodies.circle(cx, py, r, beadOptions);
+        body.circleRadius = r;
         py += r * 2 + 10;
       }
       body.beadData = data;
@@ -121,22 +113,43 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
       allBodies.push(body);
     });
 
-    // Connect pendant
+    // --- CONECTIONS ---
+    // Connect Loop
+    loopBodies.forEach((bodyB, i) => {
+      const bodyA = i === 0 ? centerBody : loopBodies[i - 1];
+      allConstraints.push(Constraint.create({
+        bodyA, bodyB,
+        stiffness: 0.4,
+        damping: 0.1,
+        length: (bodyA.circleRadius) + (bodyB.circleRadius) + 8,
+        render: { visible: false }
+      }));
+    });
+    // Close Loop
+    allConstraints.push(Constraint.create({
+      bodyA: loopBodies[loopBodies.length - 1],
+      bodyB: centerBody,
+      stiffness: 0.4,
+      damping: 0.1,
+      length: (loopBodies[loopBodies.length - 1].circleRadius) + centerBody.circleRadius + 8,
+      render: { visible: false }
+    }));
+
+    // Connect Pendant to Centerpiece
     pendantBodies.forEach((bodyB, i) => {
       const bodyA = i === 0 ? centerBody : pendantBodies[i - 1];
-      const isCrossA = bodyA.beadData.physicsType === 'cross';
       const isCrossB = bodyB.beadData.physicsType === 'cross';
-      const offsetA = isCrossA ? { x: 0, y: -20 } : { x: 0, y: 0 };
-      const offsetB = isCrossB ? { x: 0, y: -20 } : { x: 0, y: 0 };
-      const lenA = isCrossA ? 4 : (bodyA.circleRadius || 10);
-      const lenB = isCrossB ? 4 : (bodyB.circleRadius || 10);
+      const isCrossA = bodyA.beadData?.physicsType === 'cross';
+
+      const offsetA = isCrossA ? { x: 0, y: 15 } : { x: 0, y: 0 };
+      const offsetB = isCrossB ? { x: 0, y: -15 } : { x: 0, y: 0 };
 
       allConstraints.push(Constraint.create({
         bodyA, pointA: offsetA,
         bodyB, pointB: offsetB,
-        stiffness: 0.3,
+        stiffness: 0.4,
         damping: 0.1,
-        length: lenA + lenB + 6,
+        length: (isCrossA ? 10 : bodyA.circleRadius) + (isCrossB ? 10 : bodyB.circleRadius) + 6,
         render: { visible: false }
       }));
     });
@@ -204,25 +217,39 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
 
         if (beadBody) {
           const data = beadBody.beadData;
-          if (data.prayer || data.type === 'chain') {
-            if (!prayedIdsRef.current.has(data.id)) {
-              setPrayedIds(prev => new Set(prev).add(data.id));
-              const index = beadsData.findIndex(b => b.id === data.id);
-              playChime(1, data.physicsType, index, true);
-              if (data.type === 'small-bead') {
-                logAveMaria();
-              }
-            }
-            setSelectedBeadId(data.id);
-            if (data.type === 'chain') {
-              onLinkClick(data);
-            } else {
-              onNodeClick(data);
-            }
+          if (!prayedIdsRef.current.has(data.id)) {
+            setPrayedIds(prev => new Set(prev).add(data.id));
+            playChime(1, data.physicsType, data.index, true);
           }
+          
+          setSelectedBeadId(data.id);
+          // Standardize on a single callback for progression
+          onNodeClick(data.index);
         } else {
           setSelectedBeadId(null);
         }
+      }
+    });
+
+    // --- MAGNETISM (UX) ---
+    // Make the active bead "magnetic" so it drifts towards the bottom center focus zone
+    Events.on(engine, 'beforeUpdate', () => {
+      const allBodies = Composite.allBodies(engine.world);
+      const activeBead = allBodies.find(b => b.beadData && b.beadData.index === activeIndexRef.current);
+      
+      if (activeBead) {
+        const targetX = width / 2;
+        const targetY = height * 0.7; // Above the subtitle
+        
+        const dx = targetX - activeBead.position.x;
+        const dy = targetY - activeBead.position.y;
+        
+        // Very subtle force to avoid chaos
+        const force = 0.0000008;
+        Matter.Body.applyForce(activeBead, activeBead.position, {
+          x: dx * force,
+          y: dy * force
+        });
       }
     });
 
@@ -286,6 +313,8 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
       for (const body of allBodies) {
         const data = body.beadData;
         const isPrayed = prayedIdsRef.current.has(data.id);
+        const beadIndex = beadsData.findIndex(b => b.id === data.id);
+        const isActive = beadIndex === activeIndexRef.current;
         
         ctx.save();
         ctx.translate(body.position.x, body.position.y);
@@ -295,9 +324,11 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
 
         if (data.physicsType === 'cross') {
           ctx.fillStyle = isPrayed ? '#d4af37' : '#222';
-          if (isPrayed) {
+          if (isPrayed || isActive) {
             ctx.shadowColor = '#d4af37';
-            ctx.shadowBlur = 10;
+            const baseBlur = isActive ? 15 + Math.sin(Date.now() / 200) * 5 : 10;
+            ctx.shadowBlur = baseBlur + (isActive ? pulse * 30 : 0);
+            if (isActive) ctx.fillStyle = '#F5E6A0';
           }
           
           const vWidth = 10;
@@ -322,14 +353,18 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
           ctx.closePath();
           
           ctx.fill();
-          ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = isActive ? '#fff' : 'rgba(255,255,255,0.5)';
+          ctx.lineWidth = isActive ? 2 : 1;
           ctx.stroke();
         } else {
           const r = body.circleRadius;
           const grad = ctx.createRadialGradient(-r/3, -r/3, r/10, 0, 0, r);
           
-          if (data.physicsType === 'large') {
+          if (isActive) {
+            grad.addColorStop(0, '#fff');
+            grad.addColorStop(0.5, '#F5E6A0');
+            grad.addColorStop(1, '#d4af37');
+          } else if (data.physicsType === 'large') {
             grad.addColorStop(0, '#fff');
             grad.addColorStop(0.5, isPrayed ? '#d4af37' : 'rgba(255,255,255,0.9)');
             grad.addColorStop(1, isPrayed ? '#b8860b' : 'rgba(200,200,200,0.8)');
@@ -337,26 +372,24 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick }) => {
             grad.addColorStop(0, '#fff');
             grad.addColorStop(0.5, isPrayed ? '#d4af37' : 'rgba(255,255,255,0.9)');
             grad.addColorStop(1, isPrayed ? '#b8860b' : 'rgba(150,150,150,0.8)');
-          } else if (data.physicsType === 'chain') {
-            grad.addColorStop(0, '#fff');
-            grad.addColorStop(1, isPrayed ? '#d4af37' : 'rgba(180,180,180,0.8)');
           } else {
             grad.addColorStop(0, '#fff');
             grad.addColorStop(0.5, isPrayed ? '#d4af37' : 'rgba(255,255,255,0.9)');
             grad.addColorStop(1, isPrayed ? '#b8860b' : 'rgba(220,220,220,0.8)');
           }
 
-          if (isPrayed) {
+          if (isPrayed || isActive) {
             ctx.shadowColor = '#d4af37';
-            ctx.shadowBlur = 10;
+            const baseBlur = isActive ? 20 + Math.sin(Date.now() / 150) * 8 : 10;
+            ctx.shadowBlur = baseBlur + (isActive ? pulse * 40 : 0);
           }
 
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
           ctx.fillStyle = grad;
           ctx.fill();
-          ctx.strokeStyle = isPrayed ? '#b8860b' : 'rgba(0,0,0,0.1)';
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = isActive ? '#fff' : (isPrayed ? '#b8860b' : 'rgba(0,0,0,0.1)');
+          ctx.lineWidth = isActive ? 2 : 1;
           ctx.stroke();
         }
         

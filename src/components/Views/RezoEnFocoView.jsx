@@ -8,25 +8,23 @@ import antonyImg from '../../data/assets/img/st-anthony-of-padua-icon-402.jpg';
 
 // ─── Prayer data helpers ───
 
-const getPrayerData = (id, mysteryType = 'gozosos') => {
+export const getPrayerData = (id, mysteryType = 'gozosos') => {
   const apertura = RosarioPrayerBook.apertura.find(p => p.id === id);
   if (apertura) return apertura;
   const decada = RosarioPrayerBook.decada.find(p => p.id === id);
   if (decada) return decada;
-  const mystery = RosarioPrayerBook.mysteries[mysteryType].find(p => p && p.id === id);
+  const mystery = RosarioPrayerBook.mysteries[mysteryType]?.find(p => p && p.id === id);
   if (mystery) return mystery;
   const cierre = RosarioPrayerBook.cierre.find(p => p.id === id);
   if (cierre) return cierre;
   return null;
 };
 
-const getSequenceData = (mysteryType = 'gozosos') => {
-  const ids = mysteryType === 'gozosos' ? RosarioPrayerBook.RGo :
-              mysteryType === 'dolorosos' ? RosarioPrayerBook.RDo :
-              mysteryType === 'gloriosos' ? RosarioPrayerBook.RGl :
-              RosarioPrayerBook.RL;
-
-  return ids.map(id => {
+export const getSequenceData = (mysteryType = 'gozosos') => {
+  const seqMap = { 'gozosos': 'RGo', 'dolorosos': 'RDo', 'gloriosos': 'RGl', 'luminosos': 'RL' };
+  const sequenceKeys = RosarioPrayerBook[seqMap[mysteryType]] || RosarioPrayerBook.RGo;
+  
+  return sequenceKeys.map(id => {
     const rawData = getPrayerData(id, mysteryType);
     if (!rawData) return null;
     let icono = '🙏'; let color = '#808080';
@@ -96,14 +94,12 @@ const glowFromElapsed = (elapsed, baseSize) => {
 // ─── Component ───
 // ═══════════════════════════════════════════════════════
 
-export default function RezoEnFocoView() {
+export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onUpdateProgreso, onBack }) {
   const { addRosas, storeRoseData, getRoseData, totalAveMarias } = useAveMariaStats();
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
 
-  const [misterioActual] = useState('gozosos');
   const [secuencia] = useState(() => getSequenceData(misterioActual));
-  const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0); 
 
   // ─── Cloud Sync ───
   const { cloudState, syncToCloud } = useCloudSync();
@@ -112,11 +108,11 @@ export default function RezoEnFocoView() {
   useEffect(() => {
     if (cloudState && !loadedPrayerIndex) {
       if (cloudState.currentPrayerIndex !== undefined && cloudState.todayDate === new Date().toDateString()) {
-         setCurrentPrayerIndex(Math.min(cloudState.currentPrayerIndex, secuencia.length - 1));
+         onUpdateProgreso(Math.min(cloudState.currentPrayerIndex, secuencia.length - 1));
       }
       setLoadedPrayerIndex(true);
     }
-  }, [cloudState, loadedPrayerIndex, secuencia.length]);
+  }, [cloudState, loadedPrayerIndex, secuencia.length, onUpdateProgreso]);
 
   useEffect(() => {
     if (loadedPrayerIndex) {
@@ -129,7 +125,7 @@ export default function RezoEnFocoView() {
   // ─── Interaction State ───
   const [modoInteraccion, setModoInteraccion] = useState('swipe');
   const [versoIndex, setVersoIndex] = useState(0);
-  const [charProgressIndex, setCharProgressIndex] = useState(-1); // Global char index reached (-1 = not started)
+  const [charProgressIndex, setCharProgressIndex] = useState(-1); 
   const [isVerseActivated, setIsVerseActivated] = useState(false);
   const [isVersoComplete, setIsVersoComplete] = useState(false);
   const [isPrayerComplete, setIsPrayerComplete] = useState(false);
@@ -524,7 +520,7 @@ export default function RezoEnFocoView() {
       playPrayerCompleteSound();
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
       const timer = setTimeout(() => {
-        if (currentPrayerIndex < secuencia.length - 1) setCurrentPrayerIndex(prev => prev + 1);
+        if (currentPrayerIndex < secuencia.length - 1) onUpdateProgreso(currentPrayerIndex + 1);
         resetVerseState();
       }, 600);
       return () => clearTimeout(timer);
@@ -648,16 +644,17 @@ export default function RezoEnFocoView() {
     // Instead of requiring the mouse at the screen edge, activate when the
     // mouse is in the LEFT HALF of the text area. This is where the first
     // words are — intuitive for any user.
+    // ─── ACTIVATION CHECK ───
     if (!isVerseActivated) {
       const textRect = textoRef.current?.getBoundingClientRect();
       if (textRect) {
-        const textMidX = textRect.left + textRect.width * 0.5;
-        const isNearText = clientY >= textRect.top - 30 && clientY <= textRect.bottom + 30;
-        if (clientX <= textMidX && isNearText) {
+        // Broadened vertical margin for activation
+        const isNearText = clientY >= textRect.top - 80 && clientY <= textRect.bottom + 80;
+        // User can tap/start from anywhere on the text area, not just left half
+        if (isNearText) {
           setIsVerseActivated(true);
           initAudio();
           playActivationChime();
-          // Find which char the mouse is actually on and start there
           const charIdx = findCharAtPointer(clientX, clientY);
           setCharProgressIndex(Math.max(0, charIdx));
           modulateAudio(true);
@@ -674,18 +671,12 @@ export default function RezoEnFocoView() {
       setCharProgressIndex(charIdx);
       modulateAudio(true);
 
-      // Track mouse distance for wiggle profile
-      if (mouseWiggleRef.current.lastX !== null) {
-        const dx = clientX - mouseWiggleRef.current.lastX;
-        const dy = clientY - mouseWiggleRef.current.lastY;
-        mouseWiggleRef.current.samples.push(Math.sqrt(dx * dx + dy * dy));
-        if (mouseWiggleRef.current.samples.length > 25) mouseWiggleRef.current.samples.shift();
-      }
-      mouseWiggleRef.current.lastX = clientX;
-      mouseWiggleRef.current.lastY = clientY;
+      // Finalization threshold:
+      // For normal verses, reach the last char. 
+      // For very short ones (<15 chars), reaching the last 20% or even just moving suffices.
+      const threshold = totalChars < 15 ? Math.floor(totalChars * 0.8) : totalChars - 1;
 
-      // Auto-complete when reaching last char
-      if (charIdx >= totalChars - 1) {
+      if (charIdx >= threshold) {
         setIsVersoComplete(true);
         modulateAudio(false);
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
@@ -838,7 +829,7 @@ export default function RezoEnFocoView() {
   // ═══════════════════════════════════════════════════════
 
   const handleMaceteroClick = (seqIndex) => {
-    setCurrentPrayerIndex(seqIndex);
+    onUpdateProgreso(seqIndex);
     resetVerseState();
   };
 

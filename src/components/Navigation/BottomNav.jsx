@@ -16,7 +16,7 @@ export default function BottomNav({ vistaActiva, setVistaActiva }) {
         id="camino" 
         icono="🚶" 
         texto="Camino" 
-        activo={vistaActiva === 'camino'} 
+        activo={vistaActiva === 'camino' || vistaActiva === 'macetones'} 
         onClick={() => setVistaActiva('camino')} 
       />
 

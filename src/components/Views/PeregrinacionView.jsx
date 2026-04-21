@@ -4,7 +4,7 @@ import { PEREGRINACIONES, getPeregrinacionActual } from '../../data/LevelConfig'
 import TutorialOverlay from '../common/TutorialOverlay';
 import santaMariaImg from '../../data/assets/img/Theotokos.jpg';
 
-export default function PeregrinacionView() {
+export default function PeregrinacionView({ onSelectLevel }) {
   const { totalAveMarias } = useAveMariaStats();
   const { actual, next } = getPeregrinacionActual(totalAveMarias);
   const [selectedPin, setSelectedPin] = useState(null);
@@ -122,13 +122,18 @@ export default function PeregrinacionView() {
             
             return (
               <div key={p.id} 
-                onClick={() => setSelectedPin(p)}
+                onClick={() => {
+                  setSelectedPin(p);
+                  if (onSelectLevel && !isLocked) onSelectLevel(p);
+                }}
                 style={{
                   gridRow: 4 - row, gridColumn: col + 1,
                   display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-                  cursor: 'pointer', position: 'relative', transition: 'transform 0.2s',
-                  zIndex: isCurrent ? 10 : 1
+                  cursor: isLocked ? 'default' : 'pointer', position: 'relative', transition: 'transform 0.2s',
+                  zIndex: isCurrent ? 10 : 1,
+                  WebkitTapHighlightColor: 'transparent'
                 }}
+                className={isCurrent ? 'pin-active' : ''}
               >
                 <div style={{
                   width: isCurrent ? '48px' : '40px',

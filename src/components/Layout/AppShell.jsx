@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
 import RezoEnFocoView from '../Views/RezoEnFocoView';
 import JardinDeRosasView from '../Views/JardinDeRosasView';
+import MacetonView from '../Views/MacetonView';
 import PeregrinacionView from '../Views/PeregrinacionView';
 import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
@@ -9,9 +10,14 @@ import { useCloudSync } from '../../hooks/useCloudSync';
 
 export default function AppShell() {
   const [vistaActiva, setVistaActiva] = useState('camino'); 
+  const [selectedLevel, setSelectedLevel] = useState(null);
   const [showIntro, setShowIntro] = useState(() => !localStorage.getItem('rosario_cards_intro'));
   const [showSync, setShowSync] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
+
+  // --- Lifting Prayer State ---
+  const [misterioActual, setMisterioActual] = useState('gozosos');
+  const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0);
 
   const { forceSetSyncId, syncId } = useCloudSync();
 
@@ -36,13 +42,31 @@ export default function AppShell() {
     setShowIntro(false);
   };
 
+  const handleUpdateProgreso = (newIndex) => {
+    setCurrentPrayerIndex(newIndex);
+  };
+
   const renderizarVista = () => {
     switch (vistaActiva) {
-      case 'virtual': return <RosarioVirtualView />;
-      case 'foco':    return <RezoEnFocoView />;
+      case 'virtual': return (
+        <RosarioVirtualView 
+          currentPrayerIndex={currentPrayerIndex}
+          misterioActual={misterioActual}
+          onUpdateProgreso={handleUpdateProgreso}
+        />
+      );
+      case 'foco': return (
+        <RezoEnFocoView 
+          currentPrayerIndex={currentPrayerIndex}
+          misterioActual={misterioActual}
+          onUpdateProgreso={handleUpdateProgreso}
+          onBack={() => setVistaActiva('macetones')}
+        />
+      );
       case 'jardin':  return <JardinDeRosasView />;
-      case 'camino':  return <PeregrinacionView />;
-      default:        return <PeregrinacionView />;
+      case 'camino':  return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
+      case 'macetones': return <MacetonView level={selectedLevel} onBack={() => setVistaActiva('camino')} onSelectMaceton={() => setVistaActiva('foco')} />;
+      default:        return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
     }
   };
 
@@ -50,7 +74,6 @@ export default function AppShell() {
     <div style={{
       height: '100dvh', 
       width: '100vw',
-      maxWidth: '600px',
       margin: '0 auto',
       display: 'flex',
       flexDirection: 'column',
@@ -83,7 +106,7 @@ export default function AppShell() {
         </div>
       </div>
 
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }} className="view-enter-active">
         {renderizarVista()}
       </div>
 
