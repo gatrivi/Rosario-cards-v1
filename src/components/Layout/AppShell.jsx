@@ -10,9 +10,10 @@ import SettingsOverlay from '../common/SettingsOverlay';
 import { useCloudSync } from '../../hooks/useCloudSync';
 
 export default function AppShell() {
+  const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
   const [vistaActiva, setVistaActiva] = useState('camino'); 
   const [selectedLevel, setSelectedLevel] = useState(null);
-  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem('rosario_cards_intro'));
+  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem(`rosario_intro_${INTRO_VERSION}`));
   const [showSync, setShowSync] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
@@ -45,15 +46,27 @@ export default function AppShell() {
     }
   }, [syncId]);
 
+  const cleanSyncParam = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('sync');
+    window.history.replaceState({}, '', url.pathname + url.search);
+  };
+
   const confirmPendingSync = () => {
     if (pendingSyncId) {
       forceSetSyncId(pendingSyncId);
-      window.location.href = window.location.origin + window.location.pathname; // Clean URL
+      cleanSyncParam();
+      setPendingSyncId(null);
     }
   };
 
+  const dismissSync = () => {
+    setPendingSyncId(null);
+    cleanSyncParam();
+  };
+
   const dismissIntro = () => {
-    localStorage.setItem('rosario_cards_intro', '1');
+    localStorage.setItem(`rosario_intro_${INTRO_VERSION}`, '1');
     setShowIntro(false);
   };
 
@@ -159,31 +172,32 @@ export default function AppShell() {
 
       {/* PENDING SYNC PROMPT (Magic Link activation) */}
       {pendingSyncId && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 20000,
+          background: 'rgba(0,0,0,0.8)', zIndex: 20000,
           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
         }}>
-          <div style={{
-            background: '#111', border: '1px solid #D4AF37', borderRadius: '20px',
-            padding: '30px', maxWidth: '350px', textAlign: 'center', boxShadow: '0 20px 60px black'
+          <div className="modal-content" style={{
+            background: 'linear-gradient(145deg, #111, #1a1a1a)', border: '1px solid #D4AF37', borderRadius: '20px',
+            padding: '40px 30px', maxWidth: '380px', width: '100%', textAlign: 'center', boxShadow: '0 25px 50px rgba(0,0,0,0.9)',
+            backdropFilter: 'blur(15px)'
           }}>
-            <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🔗</div>
-            <h2 style={{ color: '#D4AF37', marginBottom: '15px' }}>¿Vincular Dispositivo?</h2>
-            <p style={{ color: '#ccc', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '25px' }}>
-              Hemos detectado una llave de peregrinación. <br/>
-              Si aceptas, tu progreso actual en este dispositivo será reemplazado por el de la llave entrante.
+            <div style={{ fontSize: '3.5rem', marginBottom: '20px', filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.3))' }}>🔗</div>
+            <h2 style={{ color: '#D4AF37', marginBottom: '15px', fontSize: '1.6rem', fontWeight: 'bold' }}>¿Vincular Dispositivo?</h2>
+            <p style={{ color: '#bbb', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '30px', textWrap: 'pretty' }}>
+              Detectamos una <strong>llave de peregrinación</strong>. <br/>
+              Si aceptas, tu progreso actual será reemplazado por el de la llave entrante.
             </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button 
                 onClick={confirmPendingSync}
-                style={{ flex: 1, padding: '12px', background: '#D4AF37', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold' }}
+                style={{ flex: 1.2, padding: '14px', background: '#D4AF37', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', transition: 'transform 0.2s' }}
               >
-                Sí, Vincular
+                Vincular
               </button>
               <button 
-                onClick={() => setPendingSyncId(null)}
-                style={{ flex: 1, padding: '12px', background: '#333', color: '#fff', border: 'none', borderRadius: '10px' }}
+                onClick={dismissSync}
+                style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid #444', borderRadius: '12px', fontSize: '1rem', cursor: 'pointer' }}
               >
                 Ahora No
               </button>
@@ -194,38 +208,56 @@ export default function AppShell() {
 
       {/* WELCOME INTRO */}
       {showIntro && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 9999,
-          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+          zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
         }} onClick={dismissIntro}>
-          <div style={{
-            background: 'linear-gradient(145deg, #111, #1a0a0a)', border: '1px solid #D4AF37',
-            borderRadius: '16px', padding: '30px 20px', maxWidth: '400px', textAlign: 'center',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
+          <div className="modal-content" style={{
+            background: 'linear-gradient(145deg, #0d0d0d, #1a0a0a)', border: '1px solid #D4AF37',
+            borderRadius: '24px', padding: '40px 30px', maxWidth: '420px', width: '100%', textAlign: 'center',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)',
+            position: 'relative', overflow: 'hidden'
           }} onClick={e => e.stopPropagation()}>
-            <h1 style={{ color: '#D4AF37', margin: '0 0 15px', fontSize: '1.8rem' }}>Rosario Cards</h1>
-            <p style={{ color: '#ccc', fontSize: '0.95rem', lineHeight: '1.6', margin: '0 0 20px' }}>
-              Una herramienta devocional para meditar profundamente.
+            
+            {/* Subtle glow background */}
+            <div style={{ position: 'absolute', top: '-50px', left: '50%', transform: 'translateX(-50%)', width: '200px', height: '100px', background: 'rgba(212,175,55,0.1)', filter: 'blur(40px)', borderRadius: '50%' }} />
+
+            <h1 style={{ color: '#D4AF37', margin: '0 0 10px', fontSize: '2.2rem', letterSpacing: '1px' }}>Rosario Cards</h1>
+            <p style={{ color: '#ccc', fontSize: '1rem', lineHeight: '1.6', margin: '0 0 30px', fontStyle: 'italic', opacity: 0.8 }}>
+              «Herramienta devocional para la meditación profunda»
             </p>
-            <div style={{ textAlign: 'left', color: '#aaa', fontSize: '0.85rem', marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div>🚶 <strong>El Camino:</strong> Observa tu progreso histórico hacia la meta espiritual.</div>
-              <div>🌹 <strong>Rezar:</strong> Lee lentamente siguiendo la luz para cultivar concentración total.</div>
-              <div>🪴 <strong>El Jardín:</strong> Colecciona rosas vectoriales generadas según tu nivel de devoción.</div>
+            
+            <div style={{ 
+              textAlign: 'left', color: '#aaa', fontSize: '0.9rem', marginBottom: '35px', 
+              display: 'flex', flexDirection: 'column', gap: '15px',
+              background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', border: '1px solid rgba(212,175,55,0.1)'
+            }}>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <span style={{ fontSize: '1.3rem' }}>🚶</span>
+                <div><strong>El Camino:</strong> Visualiza tu recorrido espiritual paso a paso.</div>
+              </div>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <span style={{ fontSize: '1.3rem' }}>🌹</span>
+                <div><strong>Rezar:</strong> Un espacio minimalista para concentrarte en el misterio.</div>
+              </div>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <span style={{ fontSize: '1.3rem' }}>🪴</span>
+                <div><strong>El Jardín:</strong> Tu disciplina florece en rosas únicas coleccionables.</div>
+              </div>
             </div>
             
             <button 
               onClick={dismissIntro}
               style={{
-                width: '100%', padding: '12px', background: '#D4AF37', color: '#000',
-                border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem',
-                cursor: 'pointer', opacity: 0.9, transition: 'opacity 0.2s'
+                width: '100%', padding: '16px', background: 'linear-gradient(90deg, #D4AF37, #C5A028)', color: '#000',
+                border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem',
+                cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,0,0,0.3)', transition: 'all 0.2s'
               }}
             >
               Comenzar Peregrinación
             </button>
-            <p style={{ fontSize: '0.7rem', color: '#666', margin: '15px 0 0 0' }}>
-              Podrás acceder a esta información guiada luego tocando los íconos (ℹ️).
+            <p style={{ fontSize: '0.75rem', color: '#555', margin: '20px 0 0 0' }}>
+              Podrás ver esta guía luego tocando los íconos (ℹ️).
             </p>
           </div>
         </div>
