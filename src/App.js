@@ -15,17 +15,6 @@ import RosedalView from "./components/Rosedal/RosedalView";
 import DailyTracker from "./components/Rosedal/DailyTracker";
 
 function App({ isEmbedded = false }) {
-  const [prayer, setPrayer] = useState(
-    "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
-  );
-  const [currentMystery, setcurrentMystery] = useState(getDefaultMystery);
-
-  console.log("currentMystery in App:", currentMystery);
-  console.log(
-    "Rosario[currentMystery][0] in App:",
-    RosarioPrayerBook.mysteries[currentMystery][0]
-  );
-
   const [prayerImg, setPrayerImg] = useState(
     RosarioPrayerBook.mysteries[currentMystery][0]
   );

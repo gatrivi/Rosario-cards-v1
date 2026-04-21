@@ -37,22 +37,30 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
       <div 
         key={currentPrayerIndex}
         style={{
-          position: 'absolute', bottom: '100px', left: '20px', right: '20px',
-          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
-          borderRadius: '15px', padding: '15px', border: '1px solid #333',
-          textAlign: 'center', pointerEvents: 'none', transition: 'all 0.4s',
-          animation: 'subtitle-entry 0.6s cubic-bezier(0.23, 1, 0.32, 1) both'
+          position: 'absolute', bottom: '110px', left: '30px', right: '30px',
+          background: 'rgba(15, 15, 15, 0.85)', backdropFilter: 'blur(12px)',
+          borderRadius: '20px', padding: '20px', border: '1px solid rgba(212, 175, 55, 0.3)',
+          textAlign: 'center', pointerEvents: 'none', transition: 'all 0.5s',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+          animation: 'subtitle-entry 0.7s cubic-bezier(0.23, 1, 0.32, 1) both'
         }}
       >
-        <div style={{ color: '#D4AF37', fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '5px' }}>
+        <div style={{ 
+          color: '#D4AF37', fontSize: '0.75rem', textTransform: 'uppercase', 
+          marginBottom: '8px', letterSpacing: '2px', fontWeight: 'bold',
+          textShadow: '0 0 10px rgba(212, 175, 55, 0.4)'
+        }}>
           {activePrayer?.title || 'Meditación'}
         </div>
-        <div style={{ color: '#fff', fontSize: '1rem', lineHeight: '1.4', fontWeight: 'serif' }}>
+        <div style={{ 
+          color: '#E0E0E0', fontSize: '1.1rem', lineHeight: '1.5', 
+          fontFamily: "'Playfair Display', serif", fontStyle: 'italic'
+        }}>
           {activePrayer?.text?.split('\n')[0] || 'Toca una cuenta para comenzar...'}
         </div>
         {activePrayer?.text?.split('\n').length > 1 && (
-          <div style={{ color: '#888', fontSize: '0.8rem', marginTop: '5px' }}>
-            ...
+          <div style={{ color: '#666', fontSize: '0.8rem', marginTop: '8px', opacity: 0.6 }}>
+            •••
           </div>
         )}
       </div>

@@ -22,7 +22,8 @@ export default function AppShell() {
     const saved = localStorage.getItem('rosario_settings');
     return saved ? JSON.parse(saved) : {
       virtualRosaryEnabled: true,
-      soundEnabled: localStorage.getItem('rosario_sound_enabled') !== 'false'
+      soundEnabled: localStorage.getItem('rosario_sound_enabled') !== 'false',
+      meditationRitmo: 'incienso' // oro, incienso, mirra
     };
   });
 
@@ -35,7 +36,15 @@ export default function AppShell() {
   const [misterioActual, setMisterioActual] = useState('gozosos');
   const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0);
 
-  const { forceSetSyncId, syncId } = useCloudSync();
+  const { forceSetSyncId, syncId, syncStatus } = useCloudSync();
+
+  const getSyncColor = () => {
+    if (syncStatus === 'loading') return '#888';
+    if (syncStatus === 'synced') return '#D4AF37';
+    if (syncStatus === 'local') return '#4CAF50'; // Green for safe local storage
+    if (syncStatus === 'error') return '#F44336';
+    return '#fff';
+  };
 
   // --- URL Detection for Sync Key ---
   useEffect(() => {
@@ -92,6 +101,7 @@ export default function AppShell() {
           onBack={() => setVistaActiva('macetones')}
           soundEnabled={settings.soundEnabled}
           onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
+          meditationRitmo={settings.meditationRitmo}
         />
       );
       case 'jardin':  return <JardinDeRosasView />;
@@ -127,13 +137,14 @@ export default function AppShell() {
             onClick={() => setShowSync(true)}
             style={{ 
               background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
-              color: syncId ? '#D4AF37' : '#fff', width: '40px', height: '40px',
+              color: getSyncColor(), width: '40px', height: '40px',
               borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
               fontSize: '1.2rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
               display: 'flex', justifyContent: 'center', alignItems: 'center'
             }}
+            title={`Sincronización: ${syncStatus}`}
           >
-            {syncId ? '☁️' : '☁️'}
+            {syncStatus === 'loading' ? '⌛' : '☁️'}
           </button>
           <button 
             onClick={() => setShowSettings(true)}

@@ -55,6 +55,33 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose })
             </label>
           </div>
 
+          {/* Meditation Rhythm (The Three Gifts) */}
+          <div style={{ marginTop: '10px' }}>
+            <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '12px' }}>Ritmo de Meditación</div>
+            <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '5px', borderRadius: '12px' }}>
+              {[
+                { id: 'oro', label: '🌕 Oro', desc: 'Fluido' },
+                { id: 'incienso', label: '🌫️ Incienso', desc: 'Normal' },
+                { id: 'mirra', label: '🌑 Mirra', desc: 'Profundo' }
+              ].map(ritmo => (
+                <button
+                  key={ritmo.id}
+                  onClick={() => onUpdateSettings({ ...settings, meditationRitmo: ritmo.id })}
+                  style={{
+                    flex: 1, padding: '10px 5px', borderRadius: '8px', border: 'none',
+                    background: settings.meditationRitmo === ritmo.id ? '#D4AF37' : 'transparent',
+                    color: settings.meditationRitmo === ritmo.id ? '#000' : '#888',
+                    cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', fontWeight: 'bold',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
+                  }}
+                >
+                  <span>{ritmo.label}</span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>{ritmo.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
         </div>
 
         <div style={{ marginTop: '40px', borderTop: '1px solid #222', paddingTop: '20px', textAlign: 'center' }}>

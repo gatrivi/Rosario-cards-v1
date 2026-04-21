@@ -16,15 +16,11 @@ function PrayerButtons({
 
   const handlePrayerAndCount = (prayerText, prayerImg) => {
     setPrayer(prayerText);
-    console.log("handlePrayerAndCount:");
-
-    console.log("prayerText in PrayerButtons:", prayerText);
 
     if (
       prayerText ==
       "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, \nJesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, pecadores, \nahora y en la hora de nuestra muerte. \nAmén."
     ) {
-      console.log("Hail Mary clicked, counting up.");
       countUp();
     } else {
       reset();

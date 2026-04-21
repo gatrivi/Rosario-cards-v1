@@ -99,6 +99,7 @@ export function useCloudSync() {
               body: JSON.stringify(merged)
             });
             if (res.ok) setSyncStatus('synced');
+            else throw new Error('Sync failed');
           } catch (e) {
             setSyncStatus('local');
           }
@@ -108,7 +109,21 @@ export function useCloudSync() {
     });
   }, [syncId]);
 
-  // --- 4. Forzar un ID (Importar) ---
+  // --- 4. Recuperación automática al volver a estar Online ---
+  useEffect(() => {
+    const handleOnline = () => {
+      if (syncId) {
+        const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+        if (cached) {
+          syncToCloud(JSON.parse(cached));
+        }
+      }
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [syncId, syncToCloud]);
+
+  // --- 5. Forzar un ID (Importar) ---
   const forceSetSyncId = useCallback((newId) => {
     if (!newId || newId === syncId) return;
     localStorage.setItem(ID_KEY, newId);

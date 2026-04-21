@@ -142,7 +142,19 @@ export function useAveMariaStats() {
       // Keep last 500 roses (~10 rosaries of Ave Marías)
       if (stored.length > 500) stored.splice(0, stored.length - 500);
       localStorage.setItem('rosedal_roses', JSON.stringify(stored));
-    } catch (e) { /* localStorage full or unavailable */ }
+
+      // Sync to cloud
+      syncToCloud({ rosedal_roses: stored });
+    } catch (e) { 
+      console.warn('[Rosedal] Storage quota reached or unavailable:', e);
+      // Prune even more aggressively if quota error
+      const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
+      if (stored.length > 100) {
+        const pruned = stored.slice(50);
+        localStorage.setItem('rosedal_roses', JSON.stringify(pruned));
+        syncToCloud({ rosedal_roses: pruned });
+      }
+    }
   };
 
   const getRoseData = () => {

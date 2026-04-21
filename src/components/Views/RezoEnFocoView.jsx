@@ -4,6 +4,9 @@ import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import RoseDrawing from './RoseDrawing';
+import SacredDrawing from './SacredDrawing';
+import SacredText from './SacredText';
+import { SYMBOL_MAP } from '../../data/SacredSymbols';
 import TutorialOverlay from '../common/TutorialOverlay';
 import antonyImg from '../../data/assets/img/st-anthony-of-padua-icon-402.jpg';
 
@@ -40,62 +43,27 @@ export const getSequenceData = (mysteryType = 'gozosos') => {
   }).filter(Boolean);
 };
 
-// ─── Color helpers ───
-
-const SILVER      = [185, 185, 195];
-const GOLD        = [212, 175, 55];
-const DEEP_GOLD   = [184, 134, 11];   // DarkGoldenrod
-const WARM_AMBER  = [210, 140, 10];   // richer amber — extended meditation
-const INCANDESCENT = [245, 215, 160]; // warm white — deep contemplation
-const UNREAD      = [51, 51, 51];     // #333
-
-const lerp = (a, b, t) => a + (b - a) * t;
-const lerpColor = (from, to, t) => [
-  Math.round(lerp(from[0], to[0], t)),
-  Math.round(lerp(from[1], to[1], t)),
-  Math.round(lerp(from[2], to[2], t)),
-];
-const toRGB = (c) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
-
-// Extended color ramp — rewards lingering with richer tones:
-//   0–100ms    → building to silver (fast swipe stays here)
-//   100–200ms  → silver → gold
-//   200–600ms  → gold → deep gold
-//   600–1500ms → deep gold → warm amber
-//   1500–4000ms → warm amber → incandescent (deep contemplation)
-//   4000ms+    → incandescent glow
-const colorFromElapsed = (elapsed) => {
-  if (elapsed <= 0)    return UNREAD;
-  if (elapsed < 100)   return lerpColor(UNREAD, SILVER, elapsed / 100);
-  if (elapsed < 200)   return lerpColor(SILVER, GOLD, (elapsed - 100) / 100);
-  if (elapsed < 600)   return lerpColor(GOLD, DEEP_GOLD, (elapsed - 200) / 400);
-  if (elapsed < 1500)  return lerpColor(DEEP_GOLD, WARM_AMBER, (elapsed - 600) / 900);
-  if (elapsed < 4000)  return lerpColor(WARM_AMBER, INCANDESCENT, (elapsed - 1500) / 2500);
-  return INCANDESCENT;
-};
-
-// Glow intensity scales with dwell time
-const glowFromElapsed = (elapsed, baseSize) => {
-  if (elapsed < 150) return 'none';
-  if (elapsed < 600) {
-    const t = (elapsed - 150) / 450;
-    return `0 0 ${baseSize * t}px rgba(212, 175, 55, ${0.15 + t * 0.3})`;
-  }
-  if (elapsed < 1500) {
-    const t = (elapsed - 600) / 900;
-    return `0 0 ${baseSize + t * 8}px rgba(210, 140, 10, ${0.4 + t * 0.25})`;
-  }
-  // Transcendent double-glow
-  const t = Math.min(1, (elapsed - 1500) / 2500);
-  return `0 0 ${baseSize + 8 + t * 6}px rgba(245, 215, 160, ${0.5 + t * 0.3}), 0 0 ${baseSize + 16 + t * 10}px rgba(212, 175, 55, ${0.15 + t * 0.15})`;
-};
 
 
 // ═══════════════════════════════════════════════════════
 // ─── Component ───
 // ═══════════════════════════════════════════════════════
 
-export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onUpdateProgreso, onBack, soundEnabled, onToggleSound }) {
+const MEDITATION_SPEEDS = {
+  oro: 45,      // Fluid
+  incienso: 85, // Balanced
+  mirra: 155    // Deep
+};
+
+export default function RezoEnFocoView({ 
+  currentPrayerIndex, 
+  misterioActual, 
+  onUpdateProgreso, 
+  onBack, 
+  soundEnabled, 
+  onToggleSound,
+  meditationRitmo = 'incienso'
+}) {
   const { addRosas, storeRoseData, getRoseData, totalAveMarias } = useAveMariaStats();
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
@@ -546,7 +514,7 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
           }
           return next;
         });
-      }, 80); // ~12 chars/second ≈ 3 words/second
+      }, MEDITATION_SPEEDS[meditationRitmo] || 80); 
       return () => clearInterval(holdTimerRef.current);
     }
     return () => { if (holdTimerRef.current) clearInterval(holdTimerRef.current); };
@@ -716,106 +684,6 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
   // Bleed: characters 1–3 positions AHEAD of the cursor get partial
   // brightness, as if heat conducts forward through the text.
 
-  const renderVersoInteractivo = (words) => {
-    const tRosos = totalRosasRef.current || 0;
-    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 7.8);
-    const glowSize = 6 + enrichment * 10;
-    const now = Date.now();
-    const notStarted = charProgressIndex < 0 && !isPrayerComplete && !isVersoComplete;
-
-    // Suppress unused-var lint for warmthTick (forces re-render for animation)
-    void warmthTick;
-
-    return words.map((word, wordIdx) => {
-      const letters = word.split('');
-      const baseGlobal = wordCharOffsets[wordIdx];
-
-      const renderedLetters = letters.map((letter, letterIdx) => {
-        const gi = baseGlobal + letterIdx; // global char index
-
-        // ── First letter pulse (visual anchor when verse not started) ──
-        if (notStarted && gi === 0) {
-          return (
-            <span key={letterIdx} style={{
-              animation: 'pulse-first-letter 2s ease-in-out infinite',
-            }}>{letter}</span>
-          );
-        }
-
-        // ── Unstarted chars ──
-        if (notStarted) {
-          return <span key={letterIdx} style={{ color: '#333' }}>{letter}</span>;
-        }
-
-        // ── Completed verse/prayer: adaptive flash (silver for fast, gold for slow) ──
-        if (isPrayerComplete || isVersoComplete) {
-          // Compute average dwell to determine flash warmth
-          const dwells = charDwellRef.current.filter(d => d !== undefined && d !== null);
-          const avgDwell = dwells.length > 0
-            ? dwells.reduce((s, d) => s + d, 0) / dwells.length
-            : 200;
-          const flashAnim = avgDwell < 150 ? 'verse-flash-silver' : 'verse-flash-gold';
-          return (
-            <span key={letterIdx} style={{
-              animation: `${flashAnim} 0.3s ease-out forwards`,
-            }}>{letter}</span>
-          );
-        }
-
-        // ── Calculate distance from progress cursor ──
-        const dist = gi - charProgressIndex; // negative = behind, positive = ahead
-
-        // ── BEHIND the cursor (already read) ──
-        // Uses LOCKED dwell time — fast swipes stay silver, slow reading stays warm.
-        if (dist < 0) {
-          const dwell = charDwellRef.current[gi] || 0; // frozen when cursor moved past
-          const color = colorFromElapsed(dwell);
-          const shadow = glowFromElapsed(dwell, glowSize);
-          return (
-            <span key={letterIdx} style={{
-              color: toRGB(color),
-              textShadow: shadow,
-              transition: 'text-shadow 0.15s ease',
-            }}>{letter}</span>
-          );
-        }
-
-        // ── AT the cursor (LIVE dwell — keeps toasting while static) ──
-        if (dist === 0) {
-          const reachedAt = charReachedAtRef.current[gi];
-          const liveDwell = reachedAt ? now - reachedAt : 0;
-          const color = colorFromElapsed(liveDwell);
-          const shadow = glowFromElapsed(liveDwell, glowSize);
-          return (
-            <span key={letterIdx} style={{
-              color: toRGB(color),
-              textShadow: shadow,
-              transition: 'text-shadow 0.1s ease',
-            }}>{letter}</span>
-          );
-        }
-
-        // ── BLEED ZONE: 1–4 chars ahead ──
-        // When the cursor lingers, bleed heat also intensifies (conduction)
-        if (dist <= 4) {
-          const cursorReachedAt = charReachedAtRef.current[charProgressIndex];
-          const cursorDwell = cursorReachedAt ? now - cursorReachedAt : 0;
-          const lingerBonus = Math.min(0.35, cursorDwell / 4000); // up to +0.35 over 4s
-          const baseBleed = Math.max(0, 0.45 - (dist - 1) * 0.13);
-          const totalHeat = Math.min(0.8, baseBleed + lingerBonus);
-          const bleedTarget = cursorDwell > 600 ? GOLD : SILVER; // warm bleed when cursor is hot
-          const bleedColor = lerpColor(UNREAD, bleedTarget, totalHeat);
-          return (
-            <span key={letterIdx} style={{
-              color: toRGB(bleedColor),
-              transition: 'color 0.08s linear',
-            }}>{letter}</span>
-          );
-        }
-
-        // ── UNREAD ──
-        return <span key={letterIdx} style={{ color: '#333', transition: 'color 0.1s ease' }}>{letter}</span>;
-      });
 
       return (
         <React.Fragment key={`${versoIndex}-${wordIdx}`}>
@@ -852,14 +720,8 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
       userSelect: 'none', WebkitUserSelect: 'none'
     }}>
 
-      {/* ─── MODE + SOUND TOGGLES ─── */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, display: 'flex', gap: '5px' }}>
-        <button onClick={toggleSound} style={miniBtn} title={soundEnabled ? 'Silenciar' : 'Activar sonido'}>
-          {soundEnabled ? '🔊 Sonido' : '🔇 Silencio'}
-        </button>
-        <button onClick={() => setModoInteraccion(m => m === 'swipe' ? 'hold' : 'swipe')} style={miniBtn}>
-          {modoInteraccion === 'swipe' ? '✋ Deslizar' : '👇 Mantener'}
-        </button>
+      {/* ─── TUTORIAL (Top) ─── */}
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 100 }}>
         <TutorialOverlay 
           title="Foco de Oración" 
           imageSrc={antonyImg}
@@ -912,9 +774,7 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
                   borderRadius: '3px', fontSize: 'min(2vh, 16px)', cursor: 'pointer',
                   overflow: 'hidden'
                 }}>
-                  {esPadreNuestro ? (
-                    <span style={{ opacity: completada || esActual ? 1 : 0.15, filter: completada || esActual ? 'none' : 'grayscale(1)' }}>✝️</span>
-                  ) : (
+                  {oracion.id === 'A' ? (
                     completada && targetRose ? (
                       <RoseDrawing
                         progress={1}
@@ -943,6 +803,25 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
                     ) : (
                       <span style={{ opacity: 0.15, filter: 'grayscale(1)' }}>🌹</span>
                     )
+                  ) : (
+                    /* Other sacred symbols in grid */
+                    <SacredDrawing
+                      symbolKey={(() => {
+                        const id = oracion.id;
+                        const type = misterioActual;
+                        if (id.startsWith('MG')) {
+                          const num = id.slice(2);
+                          if (type === 'gozosos') return `gozoso_${num}`;
+                          if (type === 'gloriosos') return `glorioso_${num}`;
+                        }
+                        if (id.startsWith('MD')) return `doloroso_${id.slice(2)}`;
+                        if (id.startsWith('ML')) return `luminoso_${id.slice(2)}`;
+                        return SYMBOL_MAP[id] || 'cross';
+                      })()}
+                      progress={completada ? 1 : esActual ? overallProgress : 0}
+                      size={24}
+                      style={{ opacity: completada || esActual ? 1 : 0.15 }}
+                    />
                   )}
                 </div>
               );
@@ -951,7 +830,7 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
         </div>
       </div>
 
-      {/* ─── ICON / ROSE DRAWING ─── */}
+      {/* ─── ICON / SACRED DRAWING ─── */}
       <div style={{ flex: '0 0 30%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
         {rezoData.id === 'A' ? (
           /* ── Progressive SVG rose for Ave María ── */
@@ -990,15 +869,47 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
             />
           </div>
         ) : (
-          /* ── Emoji fallback for non-Ave-María prayers ── */
+          /* ── Progressive Sacred Drawing for other prayers ── */
           <div style={{
-            fontSize: 'min(25vh, 150px)', lineHeight: 1,
-            filter: `drop-shadow(0 0 ${10 + overallProgress * 15}px ${rezoData.color}) saturate(${Math.max(20, overallProgress * 100)}%)`,
+            filter: `drop-shadow(0 0 ${8 + overallProgress * 15}px ${rezoData.color})`,
             transform: `scale(${0.8 + overallProgress * 0.2})`,
-            opacity: Math.max(0.4, overallProgress),
+            opacity: Math.max(0.4, 0.4 + overallProgress * 0.6),
             transition: 'transform 0.2s ease-out, filter 0.3s ease, opacity 0.3s'
           }}>
-            {rezoData.icono}
+            <SacredDrawing
+              symbolKey={(() => {
+                const id = rezoData.id;
+                const type = misterioActual; // 'gozosos', 'dolorosos', 'gloriosos', 'luminosos'
+                
+                // Map MG1-5, MD1-5, ML1-5 to unique keys
+                if (id.startsWith('MG')) {
+                  const num = id.slice(2);
+                  if (type === 'gozosos') return `gozoso_${num}`;
+                  if (type === 'gloriosos') return `glorioso_${num}`;
+                }
+                if (id.startsWith('MD')) return `doloroso_${id.slice(2)}`;
+                if (id.startsWith('ML')) return `luminoso_${id.slice(2)}`;
+                
+                return SYMBOL_MAP[id] || 'cross';
+              })()}
+              progress={overallProgress}
+              liveWarmth={(() => {
+                if (charProgressIndex < 0) return 0;
+                const reachedAt = charReachedAtRef.current[charProgressIndex];
+                const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
+                return Math.max(0, Math.min(1, liveDwell / 2000));
+              })()}
+              warmthProfile={(() => {
+                const vw = verseWarmthRef.current;
+                return Array.from({ length: 6 }, (_, i) => vw[Math.floor(i * totalVersos / 6)] || 0.1);
+              })()}
+              wiggleProfile={(() => {
+                const vg = verseWiggleRef.current;
+                return Array.from({ length: 6 }, (_, i) => vg[Math.floor(i * totalVersos / 6)] || 0);
+              })()}
+              enrichment={Math.min(1, Math.log10((totalRosasRef.current || 0) + 1) / 7.8)}
+              size={Math.min(150, window.innerHeight * 0.21)}
+            />
           </div>
         )}
       </div>
@@ -1048,7 +959,18 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
             pointerEvents: 'none',
           }}
         >
-          {renderVersoInteractivo(currentWords)}
+          <SacredText 
+            words={currentWords}
+            wordCharOffsets={wordCharOffsets}
+            charProgressIndex={charProgressIndex}
+            isVersoComplete={isVersoComplete}
+            isPrayerComplete={isPrayerComplete}
+            charReachedAtRef={charReachedAtRef}
+            charDwellRef={charDwellRef}
+            wordSpanRefs={wordSpanRefs}
+            warmthTick={warmthTick}
+            totalAveMarias={totalAveMarias}
+          />
         </div>
 
         {/* Next verse preview */}
@@ -1065,6 +987,25 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
           }}
         >
           {versoIndex < totalVersos - 1 && !isPrayerComplete ? rezoData.versos[versoIndex + 1] : ''}
+        </div>
+
+        {/* ─── MODE TOGGLE (Bottom Ergonomics) ─── */}
+        <div style={{
+          position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', gap: '8px', zIndex: 20
+        }}>
+          <button 
+            onClick={() => setModoInteraccion('swipe')} 
+            style={{...miniBtn, background: modoInteraccion === 'swipe' ? '#D4AF37' : 'rgba(20,20,20,0.8)', color: modoInteraccion === 'swipe' ? '#000' : '#888', fontWeight: modoInteraccion === 'swipe' ? 'bold' : 'normal'}}
+          >
+            ✋ Deslizar
+          </button>
+          <button 
+            onClick={() => setModoInteraccion('hold')} 
+            style={{...miniBtn, background: modoInteraccion === 'hold' ? '#D4AF37' : 'rgba(20,20,20,0.8)', color: modoInteraccion === 'hold' ? '#000' : '#888', fontWeight: modoInteraccion === 'hold' ? 'bold' : 'normal'}}
+          >
+            👇 Mantener
+          </button>
         </div>
 
         {/* Hint — only for hold mode or prayer completion */}
