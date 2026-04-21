@@ -241,15 +241,18 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
       osc.type = 'sine';
       osc.frequency.setValueAtTime(getBaseFreq(), ctx.currentTime);
 
-      // Osc2: Triangle (5th Harmonic — adds texture)
-      const osc2 = ctx.createOscillator();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(getBaseFreq() * 1.5, ctx.currentTime);
-
       // Osc3: Sine (Octave below — adds depth/solemnity)
       const osc3 = ctx.createOscillator();
       osc3.type = 'sine';
       osc3.frequency.setValueAtTime(getBaseFreq() * 0.5, ctx.currentTime);
+      
+      // Osc4: Sine (2 Octaves up — "Celestial" shimmer, grows with session)
+      const osc4 = ctx.createOscillator();
+      osc4.type = 'sine';
+      osc4.frequency.setValueAtTime(getBaseFreq() * 4, ctx.currentTime);
+      const celestialGain = ctx.createGain();
+      celestialGain.gain.value = 0;
+
       const padGain = ctx.createGain();
       padGain.gain.value = 0.02; // Very soft base volume
 
@@ -258,17 +261,30 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
       filter.frequency.value = 600; // Muffled, atmospheric
       filter.Q.value = 1;
 
+      // LFO for subtle "breath"
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.2; // 0.2 Hz (one breath every 5s)
+      lfoGain.gain.value = 0;     // Starts static
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+      lfo.start();
+
       osc.connect(filter);
       osc2.connect(filter);
       osc3.connect(padGain);
+      osc4.connect(celestialGain);
+      celestialGain.connect(filter);
       padGain.connect(filter);
       filter.connect(gainNode);
 
       osc.start();
       osc2.start();
       osc3.start();
+      osc4.start();
 
-      synthRef.current = { osc, osc2, osc3, filter, gainNode, padGain };
+      synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain };
     } else if (audioCtxRef.current.state === 'suspended' && soundEnabledRef.current) {
       audioCtxRef.current.resume();
     }
@@ -289,10 +305,8 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
   // based on the CURRENT character's live warmth and verse progress.
   const updateAudioWarmth = () => {
     if (!synthRef.current || !soundEnabledRef.current) return;
-    const { filter, gainNode, padGain } = synthRef.current;
+    const { filter, gainNode, padGain, celestialGain, lfoGain } = synthRef.current;
     const t = audioCtxRef.current.currentTime;
-    
-    // Frequency remains STATIC now (removed progress-based pitch shifting)
     
     // Subtle warmth changes only (no aggressive frequency shifts)
     const reachedAt = charReachedAtRef.current[charProgressIndex];
@@ -300,17 +314,29 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
     const warmth = Math.min(1, liveDwell / 3000);
 
     const tRosos = totalRosasRef.current || 0;
-    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 10); // More gradual
+    const totalEnrichment = Math.min(1, Math.log10(tRosos + 1) / 8); 
 
-    // --- Filter: extremely subtle opening ---
-    filter.frequency.setTargetAtTime(400 + warmth * 400 + enrichment * 200, t, 0.5);
+    // Session-based reward: Grows as you get closer to completing the mystery
+    const sessionProgress = (currentPrayerIndex + 1) / (secuencia.length || 1);
+    const sessionEnrichment = Math.min(1, sessionProgress);
+
+    // --- Filter: extremely subtle opening & resonance increase ---
+    const targetFreq = 400 + warmth * 300 + sessionEnrichment * 400 + totalEnrichment * 200;
+    filter.frequency.setTargetAtTime(targetFreq, t, 0.5);
+    filter.Q.setTargetAtTime(1 + sessionEnrichment * 2, t, 0.5); // "Larger" space feel
+
+    // --- High Celestial Voice: Grows with session progress ---
+    celestialGain.gain.setTargetAtTime(sessionEnrichment * 0.015, t, 1.0);
+
+    // --- LFO Shimmer: "Living" sound grows as you deepen prayer ---
+    lfoGain.gain.setTargetAtTime(sessionEnrichment * 50, t, 1.0);
 
     // --- Volume: constant low gain, no "blaring" ---
-    const baseVolume = 0.015;
-    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.005, t, 0.5);
+    const baseVolume = 0.012 + (totalEnrichment * 0.005);
+    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.004, t, 0.5);
 
     // --- Pad: static stability ---
-    padGain.gain.setTargetAtTime(0.01 + enrichment * 0.01, t, 0.5);
+    padGain.gain.setTargetAtTime(0.01 + totalEnrichment * 0.01, t, 0.5);
   };
 
   // Verse start chime — pitch matches prayer type
