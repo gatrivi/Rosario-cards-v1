@@ -200,8 +200,8 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
     'A': 164.81, // E3 — Ave María (warm)
     'G': 196.00, // G3 — Gloria (bright, ascending)
     'F': 146.83, // D3 — Creed (contemplative)
-    'LL': 155.56, // Eb3 — Letanía
-    'S': 155.56, // Eb3 — Salve
+    'LL': 130.81, // C3
+    'S': 130.81, // C3
   };
   const getBaseFreq = () => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81;
 
@@ -229,38 +229,35 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
       const ctx = new AC();
       audioCtxRef.current = ctx;
 
-      // SI inicia silenciado, suspender de inmediato
       if (!soundEnabledRef.current) ctx.suspend();
 
-      // Master gain
       const gainNode = ctx.createGain();
       gainNode.gain.value = 0;
       gainNode.connect(ctx.destination);
 
-      // Osc1: sine — fundamental tone
+      // --- Gothic Organ Timbre ---
+      // Osc1: Sine (Foundational Root)
       const osc = ctx.createOscillator();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(getBaseFreq(), ctx.currentTime);
 
-      // Osc2: triangle — harmonic warmth (filtered)
+      // Osc2: Triangle (5th Harmonic — adds texture)
       const osc2 = ctx.createOscillator();
       osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(getBaseFreq() * 1.5, ctx.currentTime); // 5th above
+      osc2.frequency.setValueAtTime(getBaseFreq() * 1.5, ctx.currentTime);
 
-      // Osc3: soft sine pad — octave below for depth
+      // Osc3: Sine (Octave below — adds depth/solemnity)
       const osc3 = ctx.createOscillator();
       osc3.type = 'sine';
       osc3.frequency.setValueAtTime(getBaseFreq() * 0.5, ctx.currentTime);
       const padGain = ctx.createGain();
-      padGain.gain.value = 0; // starts silent, grows with enrichment
+      padGain.gain.value = 0.02; // Very soft base volume
 
-      // Filter shapes the timbre based on warmth
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.value = 300;
-      filter.Q.value = 2; // subtle resonance
+      filter.frequency.value = 600; // Muffled, atmospheric
+      filter.Q.value = 1;
 
-      // Routing: osc1 + osc2→filter → gainNode → destination
       osc.connect(filter);
       osc2.connect(filter);
       osc3.connect(padGain);
@@ -292,34 +289,28 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
   // based on the CURRENT character's live warmth and verse progress.
   const updateAudioWarmth = () => {
     if (!synthRef.current || !soundEnabledRef.current) return;
-    const { osc, osc2, osc3, filter, gainNode, padGain } = synthRef.current;
+    const { filter, gainNode, padGain } = synthRef.current;
     const t = audioCtxRef.current.currentTime;
     
-    const progress = totalChars > 0 ? Math.max(0, charProgressIndex) / totalChars : 0;
+    // Frequency remains STATIC now (removed progress-based pitch shifting)
+    
+    // Subtle warmth changes only (no aggressive frequency shifts)
     const reachedAt = charReachedAtRef.current[charProgressIndex];
     const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
-    const warmth = Math.min(1, liveDwell / 2000);
+    const warmth = Math.min(1, liveDwell / 3000);
 
     const tRosos = totalRosasRef.current || 0;
-    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 7.8);
+    const enrichment = Math.min(1, Math.log10(tRosos + 1) / 10); // More gradual
 
-    // --- Frequency: base × (1 + progress×0.15) — subtle ascent through verse ---
-    const baseFreq = getBaseFreq();
-    const freq = baseFreq * (1 + progress * 0.15);
-    osc.frequency.setTargetAtTime(freq, t, 0.15);
-    osc2.frequency.setTargetAtTime(freq * 1.5, t, 0.15);       // 5th harmonic
-    osc3.frequency.setTargetAtTime(freq * 0.5, t, 0.15);       // octave below
+    // --- Filter: extremely subtle opening ---
+    filter.frequency.setTargetAtTime(400 + warmth * 400 + enrichment * 200, t, 0.5);
 
-    // --- Filter: warmth opens the cutoff (silver = muffled, gold = open) ---
-    const cutoff = 300 + warmth * 2200 + enrichment * 800;
-    filter.frequency.setTargetAtTime(cutoff, t, 0.1);
+    // --- Volume: constant low gain, no "blaring" ---
+    const baseVolume = 0.015;
+    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.005, t, 0.5);
 
-    // --- Volume: base + warmth bonus + enrichment bonus ---
-    const vol = 0.03 + warmth * 0.025 + enrichment * 0.02;
-    gainNode.gain.setTargetAtTime(vol, t, 0.08);
-
-    // --- Pad: grows with enrichment (accumulated prayer depth) ---
-    padGain.gain.setTargetAtTime(enrichment * 0.03, t, 0.2);
+    // --- Pad: static stability ---
+    padGain.gain.setTargetAtTime(0.01 + enrichment * 0.01, t, 0.5);
   };
 
   // Verse start chime — pitch matches prayer type
@@ -347,25 +338,30 @@ export default function RezoEnFocoView({ currentPrayerIndex, misterioActual, onU
     if (!soundEnabledRef.current || !audioCtxRef.current) return;
     try {
       const ctx = audioCtxRef.current;
-      const base = getBaseFreq() * 0.5; // Octava abajo para peso litúrgico
+      const base = getBaseFreq() * 0.5; 
       
-      const freqs = [base, base * 2.1, base * 3.1]; // Campana inarmónica suave
+      // Gothic Bell harmonics
+      const freqs = [base, base * 2.01, base * 3.02, base * 4.03]; 
       
       freqs.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = 'sine';
+        osc.type = (i === 0) ? 'sine' : 'triangle'; // triangle adds that "metal strike" harmonic
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
         
-        // Ataque rápido (golpe), decaimiento lentísimo
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.05 - (i * 0.015), ctx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3.0 + (i * 0.5));
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 2000;
         
-        osc.connect(gain);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.04 - (i * 0.01), ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 4.0);
+        
+        osc.connect(filter);
+        filter.connect(gain);
         gain.connect(ctx.destination);
         osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 4.0);
+        osc.stop(ctx.currentTime + 4.1);
       });
     } catch (e) { /* ignore */ }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
