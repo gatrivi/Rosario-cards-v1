@@ -1,3 +1,10 @@
+/**
+ * SACRED PERFORMANCE LICENSE - Edition v1.2
+ * Copyright (c) 2026 gatrivi. All Rights Reserved.
+ * 
+ * This code and its associated "Cosmic Alignment" algorithms, interaction models,
+ * and procedural devotional logic are protected as intellectual and spiritual property.
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import audioManager from '../../utils/audioManager';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
@@ -6,6 +13,7 @@ import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import RoseDrawing from './RoseDrawing';
 import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
+import { getCosmicPhases } from '../../utils/cosmicModulator';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
 import TutorialOverlay from '../common/TutorialOverlay';
 import antonyImg from '../../data/assets/img/st-anthony-of-padua-icon-402.jpg';
@@ -271,16 +279,32 @@ export default function RezoEnFocoView({
     const sessionProgress = (currentPrayerIndex + 1) / (secuencia.length || 1);
     const sessionEnrichment = Math.min(1, sessionProgress);
 
-    // --- Filter: extremely subtle opening & resonance increase ---
-    const targetFreq = 400 + warmth * 300 + sessionEnrichment * 400 + totalEnrichment * 200;
-    filter.frequency.setTargetAtTime(targetFreq, t, 0.5);
-    filter.Q.setTargetAtTime(1 + sessionEnrichment * 2, t, 0.5); // "Larger" space feel
+    // --- Cosmic Modulation (The Great Journey) ---
+    const cosmic = getCosmicPhases();
+    
+    // Saturn (29y) & Pluto (248y) affect the "Ground" (Depth and Sub)
+    const deepBase = cosmic.pluto * 10 + cosmic.saturn * 5;
+    
+    // Mercury (7d) affects LFO speed (The Breath)
+    const lfoSpeed = 0.15 + (cosmic.mercury * 0.1);
+    if (synthRef.current.lfo) {
+      synthRef.current.lfo.frequency.setTargetAtTime(lfoSpeed, t, 1.0);
+    }
 
-    // --- High Celestial Voice: Grows with session progress ---
-    celestialGain.gain.setTargetAtTime(sessionEnrichment * 0.015, t, 1.0);
+    // --- Filter: extremely subtle opening & resonance increase ---
+    // Jupiter modulates the Seasonal Cutoff range
+    const jupiterMod = cosmic.jupiter * 150;
+    const targetFreq = 400 + warmth * 300 + sessionEnrichment * 400 + totalEnrichment * 200 + jupiterMod + deepBase;
+    filter.frequency.setTargetAtTime(targetFreq, t, 0.5);
+    
+    // Neptune (164y) modulates the ethereal "wash" (Resonance)
+    filter.Q.setTargetAtTime(1 + sessionEnrichment * 2 + cosmic.neptune * 1.5, t, 0.5); 
+
+    // --- High Celestial Voice: Uranus (84y) modulates shimmer depth ---
+    celestialGain.gain.setTargetAtTime(sessionEnrichment * 0.015 + (cosmic.uranus * 0.005), t, 1.0); 
 
     // --- LFO Shimmer: "Living" sound grows as you deepen prayer ---
-    lfoGain.gain.setTargetAtTime(sessionEnrichment * 50, t, 1.0);
+    lfoGain.gain.setTargetAtTime(sessionEnrichment * 50 + (cosmic.mercury * 20), t, 1.0);
 
     // --- Volume: constant low gain, no "blaring" ---
     const baseVolume = 0.012 + (totalEnrichment * 0.005);
@@ -909,6 +933,14 @@ export default function RezoEnFocoView({
               })()}
               enrichment={Math.min(1, Math.log10((totalRosasRef.current || 0) + 1) / 7.8)}
               size={Math.min(150, window.innerHeight * 0.21)}
+              decadeIndex={(() => {
+                // Find distance from last mystery announcement to show growth within decade
+                let lastM = 0;
+                for (let j = currentPrayerIndex; j >= 0; j--) {
+                  if (secuencia[j]?.id.startsWith('M')) { lastM = j; break; }
+                }
+                return Math.min(9, currentPrayerIndex - lastM);
+              })()}
             />
           </div>
         )}

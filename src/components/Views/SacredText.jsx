@@ -1,3 +1,7 @@
+/**
+ * SACRED PERFORMANCE LICENSE - Edition v1.2
+ * Copyright (c) 2026 gatrivi. All Rights Reserved.
+ */
 import React from 'react';
 
 /**

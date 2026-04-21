@@ -1,5 +1,10 @@
+/**
+ * SACRED PERFORMANCE LICENSE - Edition v1.2
+ * Copyright (c) 2026 gatrivi. All Rights Reserved.
+ */
 import React from 'react';
 import { SACRED_SYMBOLS } from '../../data/SacredSymbols';
+import { getCosmicPhases } from '../../utils/cosmicModulator';
 
 /**
  * SacredDrawing — A generic progressive SVG drawing component.
@@ -42,10 +47,11 @@ export default function SacredDrawing({
   wiggleProfile = [],
   enrichment = 0,
   liveWarmth = null,
-  size = 120,
   baseColor = '#D4AF37',
   style = {},
+  decadeIndex = 0, // 0-9 for Ave Maria intra-decade bloom
 }) {
+  const phases = getCosmicPhases();
   const paths = SACRED_SYMBOLS[symbolKey] || SACRED_SYMBOLS.cross;
   const N = paths.length;
 
@@ -57,7 +63,10 @@ export default function SacredDrawing({
       const lengths = pathsRef.current.map((p) => (p ? p.getTotalLength() : DASH));
       setPathLengths(lengths);
     }
-  }, [symbolKey]); // Re-measure if symbol changes
+  }, [symbolKey]); 
+
+  // Intra-decade Bloom: Each prayer adds a subtle expansion to the sacred geometry
+  const bloomScale = 1 + (decadeIndex * 0.015) + (phases.jupiter * 0.05);
 
   return (
     <svg
@@ -66,6 +75,20 @@ export default function SacredDrawing({
       height={size * 1.4}
       style={{ overflow: 'visible', ...style }}
     >
+      <defs>
+        {/* Sacred Texture: Simulates hand-drawn ink movement and parchment grit */}
+        <filter id="sacred-ink-texture">
+          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale={1 + phases.saturn * 2} />
+        </filter>
+        
+        {/* Holy Glow Filter */}
+        <filter id="sacred-glow">
+          <feGaussianBlur stdDeviation={1.5 + phases.uranus * 2} />
+        </filter>
+      </defs>
+
+      <g transform={`scale(${bloomScale})`} transform-origin="50 70">
       {paths.map((d, i) => {
         const start = i / N;
         const end = (i + 1) / N;
@@ -114,7 +137,7 @@ export default function SacredDrawing({
                 strokeDasharray={pathLen}
                 strokeDashoffset={offset}
                 opacity={enrichment * 0.15}
-                style={{ filter: `blur(${3 + enrichment * 5}px)` }}
+                filter="url(#sacred-glow)"
               />
             )}
             {/* Main Stroke */}
@@ -127,14 +150,15 @@ export default function SacredDrawing({
               strokeLinejoin="round"
               strokeDasharray={pathLen}
               strokeDashoffset={offset}
+              filter="url(#sacred-ink-texture)"
               style={{
                 transition: 'stroke-dashoffset 0.12s linear, stroke 0.4s ease, stroke-width 0.3s ease',
               }}
             />
           </g>
         );
-        );
       })}
+      </g>
     </svg>
   );
 }

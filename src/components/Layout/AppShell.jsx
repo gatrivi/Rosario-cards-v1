@@ -1,3 +1,12 @@
+/**
+ * SACRED PERFORMANCE LICENSE - Edition v1.2
+ * Copyright (c) 2026 gatrivi. All Rights Reserved.
+ * 
+ * This code and its associated "Cosmic Alignment" algorithms, interaction models,
+ * and procedural devotional logic are protected as intellectual and spiritual property.
+ * Modification or redistribution for commercial purposes is prohibited without 
+ * express spiritual and legal consent.
+ */
 import React, { useState, useEffect } from 'react';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
 import RezoEnFocoView from '../Views/RezoEnFocoView';
