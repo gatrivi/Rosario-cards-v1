@@ -1,4 +1,10 @@
 const RosarioPrayerBook = {
+
+  // structure of the physical rosary
+  PRo:[
+    
+  ],
+  // this describes the order of the prayers
   RGo: [
     "SC",
     "AC",
@@ -365,7 +371,7 @@ const RosarioPrayerBook = {
     {
       id: "SC",
       title: "Señal de la Cruz",
-      img: "/gallery-images/misterios/francisco_de_asis_2.jpg",
+      img: "/gallery-images/cathedral praing.jpg",
       text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
     },
     {
@@ -378,7 +384,7 @@ const RosarioPrayerBook = {
     {
       id: "C",
       title: "Credo",
-      img: "/gallery-images/misterios/latin-credo.jpeg",
+      img: "/gallery-images/latin-credo.jpeg",
       imgmo: "/gallery-images/misterios/modooscuro/credo.webp",
       text: "Creo en Dios, Padre todopoderoso, Creador del cielo y de la tierra. Creo en Jesucristo, su único Hijo, nuestro Señor, que fue concebido por obra y gracia del Espíritu Santo, nació de Santa María Virgen, padeció bajo el poder de Poncio Pilato, fue crucificado, muerto y sepultado, descendió a los infiernos, al tercer día resucitó de entre los muertos, subió a los cielos y está sentado a la derecha de Dios, Padre todopoderoso. Desde allí ha de venir a juzgar a vivos y muertos. Creo en el Espíritu Santo, la santa Iglesia católica, la comunión de los santos, el perdón de los pecados, la resurrección de la carne y la vida eterna. Amén.",
     },
@@ -387,21 +393,21 @@ const RosarioPrayerBook = {
     {
       id: "P",
       title: "Padre Nuestro",
-      img: "/gallery-images/misterios/latin-pater-noster.jpg",
+      img: "/gallery-images/latin-pater-noster.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/padre-nuestro.jpg",
       text: "Padre nuestro, que estás en el cielo, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
     },
     {
       id: "A",
       title: "Ave María",
-      img: "/gallery-images/misterios/latin-ave-maria.jpg",
+      img: "/gallery-images/latin-ave-maria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/ave-maria.jpg",
       text: "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, \nJesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, pecadores, \nahora y en la hora de nuestra muerte. \nAmén.",
     },
     {
       id: "G",
       title: "Gloria",
-      img: "/gallery-images/misterios/latin-gloria.jpg",
+      img: "/gallery-images/latin-gloria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/gloria.webp",
       text: "Gloria al Padre, y al Hijo, y al Espíritu Santo. Como era en el principio, ahora y siempre, por los siglos de los siglos. Amén.",
     },

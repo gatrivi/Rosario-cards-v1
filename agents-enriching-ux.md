@@ -17,4 +17,4 @@ b. an approx or sort of solution for ofline can be decvised
 
 [] for second to second variation we can use the second minute time of day, and use astronomy to add a much deeper variability
 
-[] 
+[] in 

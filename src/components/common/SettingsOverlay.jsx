@@ -55,6 +55,22 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose })
             </label>
           </div>
 
+          {/* Left Handed Mode */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: '1rem' }}>Modo Zurdo</div>
+              <div style={{ color: '#666', fontSize: '0.75rem' }}>Invierte el orden de la navegación</div>
+            </div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={settings.isLeftHanded}
+                onChange={(e) => onUpdateSettings({ ...settings, isLeftHanded: e.target.checked })}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
           {/* Meditation Rhythm (The Three Gifts) */}
           <div style={{ marginTop: '10px' }}>
             <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '12px' }}>Ritmo de Meditación</div>

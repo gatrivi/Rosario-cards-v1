@@ -47,7 +47,7 @@ export const getSequenceData = (mysteryType = 'gozosos') => {
     else if (id.startsWith('M')) { icono = '📖'; color = '#4682B4'; }
     else if (id === 'LL' || id === 'S') { icono = '👑'; color = '#800080'; }
     const versos = rawData.text.split(/(?<=[.,;:!])\s+|\n+/).map(v => v.trim()).filter(v => v.length > 0);
-    return { id, title: rawData.title, icono, color, versos };
+    return { id, title: rawData.title, icono, color, versos, img: rawData.img, imgmo: rawData.imgmo };
   }).filter(Boolean);
 };
 
@@ -63,7 +63,7 @@ const MEDITATION_SPEEDS = {
   mirra: 155    // Deep
 };
 
-export default function RezoEnFocoView({ 
+export default function RoseView({ 
   currentPrayerIndex, 
   misterioActual, 
   onUpdateProgreso, 
@@ -186,9 +186,6 @@ export default function RezoEnFocoView({
   };
   const getBaseFreq = () => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81;
 
-  const toggleSound = () => {
-    if (onToggleSound) onToggleSound();
-  };
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -207,6 +204,11 @@ export default function RezoEnFocoView({
       const osc = ctx.createOscillator();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(getBaseFreq(), ctx.currentTime);
+
+      // Osc2: Triangle (Perfect 5th — adds organ "reed" texture)
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(getBaseFreq() * 1.5, ctx.currentTime);
 
       // Osc3: Sine (Octave below — adds depth/solemnity)
       const osc3 = ctx.createOscillator();
@@ -709,29 +711,7 @@ export default function RezoEnFocoView({
   };
 
 
-  // ═══════════════════════════════════════════════════════
-  // ─── Character-level rendering with bleed ───
-  // ═══════════════════════════════════════════════════════
-  //
-  // Each character is a <span>. Colors are based on:
-  //  1. Whether the char has been reached (charProgressIndex)
-  //  2. How long since it was reached (silver → gold → deep gold)
-  //  3. Distance from the progress cursor (bleed/conduction effect)
-  //
-  // Bleed: characters 1–3 positions AHEAD of the cursor get partial
-  // brightness, as if heat conducts forward through the text.
 
-
-      return (
-        <React.Fragment key={`${versoIndex}-${wordIdx}`}>
-          <span ref={el => { wordSpanRefs.current[wordIdx] = el; }}>
-            {renderedLetters}
-          </span>
-          {wordIdx < words.length - 1 && ' '}
-        </React.Fragment>
-      );
-    });
-  };
 
 
   // ═══════════════════════════════════════════════════════
@@ -755,120 +735,27 @@ export default function RezoEnFocoView({
       height: '100%', display: 'flex', flexDirection: 'column',
       overflow: 'hidden', backgroundColor: '#0A0A0A',
       userSelect: 'none', WebkitUserSelect: 'none'
-    }}>
+    }}
+    ref={containerRef}
+    onPointerDown={handlePointerDown}
+    onPointerMove={handlePointerMove}
+    onPointerUp={handlePointerUp}
+    onPointerLeave={handlePointerUp}
+    onMouseMove={handleMouseMove}
+    >
+      
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          
+          {/* Subtle Mystery Title */}
+          <div style={{ 
+            marginTop: '40px', textAlign: 'center', opacity: 0.3, 
+            fontSize: '0.7rem', color: '#D4AF37', letterSpacing: '3px', textTransform: 'uppercase' 
+          }}>
+            {rezoData.title}
+          </div>
 
-      {/* ─── TUTORIAL (Top) ─── */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 100 }}>
-        <TutorialOverlay 
-          title="Foco de Oración" 
-          imageSrc={antonyImg}
-          text="Mueve tu dedo o cursor sobre las letras lentamente. Como decía San Antonio de Padua: 'Las acciones hablan más fuerte que las palabras; que enseñen tus acciones y hablen tus palabras.'&#10;&#10;Dedicarle tiempo a cada letra hace que tu rosa interior florezca con colores más intensos."
-        />
-      </div>
-
-      {/* ─── MACETÓN ─── */}
-      <div style={{
-        flex: '0 0 20%', borderBottom: '1px solid #222', padding: '15px 5px',
-        display: 'flex', justifyContent: 'center', alignItems: 'center',
-        marginTop: '30px', overflowX: 'auto'
-      }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateRows: 'repeat(6, 1fr)',
-          gridTemplateColumns: 'repeat(11, 1fr)', 
-          gap: '3px', height: '100%', maxWidth: '500px', width: '100%'
-        }}>
-          {(() => {
-            // Figure out how many 'A' items are completed in the current grid
-            const completedAvesInGrid = maceteroMap.filter((m, i) => i < oracionesCompletadasEnTotal && m.id === 'A').length;
-            const roses = getRoseData();
-            let seenAves = 0;
-
-            return maceteroMap.map((oracion, i) => {
-              const completada = i < oracionesCompletadasEnTotal;
-              const esActual = i === oracionesCompletadasEnTotal;
-              const esPadreNuestro = oracion.id === 'P';
-
-              // Map this 'A' to a stored rose
-              let targetRose = null;
-              if (oracion.id === 'A') {
-                if (completada) {
-                  // We map backwards: the most recently completed 'A' gets the most recent rose.
-                  // So the 1st completed 'A' gets rose[length - completedAvesInGrid].
-                  const targetIndex = roses.length - completedAvesInGrid + seenAves;
-                  if (targetIndex >= 0 && targetIndex < roses.length) {
-                    targetRose = roses[targetIndex];
-                  }
-                  seenAves++;
-                }
-              }
-
-              return (
-                <div key={i} onClick={() => handleMaceteroClick(oracion.seqIndex)} style={{
-                  display: 'flex', justifyContent: 'center', alignItems: 'center',
-                  backgroundColor: completada ? '#2a0a0a' : '#111',
-                  border: esActual ? '1px solid #D4AF37' : '1px solid #222',
-                  borderRadius: '3px', fontSize: 'min(2vh, 16px)', cursor: 'pointer',
-                  overflow: 'hidden'
-                }}>
-                  {oracion.id === 'A' ? (
-                    completada && targetRose ? (
-                      <RoseDrawing
-                        progress={1}
-                        warmthProfile={targetRose.warmthProfile}
-                        wiggleProfile={targetRose.wiggleProfile}
-                        enrichment={Math.min(1, Math.log10((totalRosasRef.current || 0) + 1) / 7.8)}
-                        size={30}
-                        compact={true}
-                      />
-                    ) : esActual ? (
-                      <RoseDrawing
-                        progress={overallProgress}
-                        liveWarmth={(() => {
-                          if (charProgressIndex < 0) return 0;
-                          const reachedAt = charReachedAtRef.current[charProgressIndex];
-                          const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
-                          return Math.max(0, Math.min(1, liveDwell / 2000));
-                        })()}
-                        warmthProfile={(() => {
-                          const vw = verseWarmthRef.current;
-                          return Array.from({ length: 9 }, (_, i) => vw[Math.floor(i / 3)] || 0.1);
-                        })()}
-                        size={30}
-                        compact={true}
-                      />
-                    ) : (
-                      <span style={{ opacity: 0.15, filter: 'grayscale(1)' }}>🌹</span>
-                    )
-                  ) : (
-                    /* Other sacred symbols in grid */
-                    <SacredDrawing
-                      symbolKey={(() => {
-                        const id = oracion.id;
-                        const type = misterioActual;
-                        if (id.startsWith('MG')) {
-                          const num = id.slice(2);
-                          if (type === 'gozosos') return `gozoso_${num}`;
-                          if (type === 'gloriosos') return `glorioso_${num}`;
-                        }
-                        if (id.startsWith('MD')) return `doloroso_${id.slice(2)}`;
-                        if (id.startsWith('ML')) return `luminoso_${id.slice(2)}`;
-                        return SYMBOL_MAP[id] || 'cross';
-                      })()}
-                      progress={completada ? 1 : esActual ? overallProgress : 0}
-                      size={24}
-                      style={{ opacity: completada || esActual ? 1 : 0.15 }}
-                    />
-                  )}
-                </div>
-              );
-            });
-          })()}
-        </div>
-      </div>
-
-      {/* ─── ICON / SACRED DRAWING ─── */}
-      <div style={{ flex: '0 0 30%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          {/* ICON / SACRED DRAWING */}
+          <div style={{ flex: '0 0 35%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
         {rezoData.id === 'A' ? (
           /* ── Progressive SVG rose for Ave María ── */
           <div style={{
@@ -960,52 +847,14 @@ export default function RezoEnFocoView({
         )}
       </div>
 
-      {/* ─── VERSE INTERACTION ZONE ─── */}
-      <div
-        ref={containerRef}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onMouseMove={handleMouseMove}
-        onContextMenu={(e) => e.preventDefault()}
-        style={{
-          flex: '1', position: 'relative',
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center',
-          padding: '20px 30px',
-          touchAction: 'none', cursor: 'default'
-        }}
-      >
-        {/* Previous verse preview */}
-        <div
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => advanceVerse(-1)}
-          style={{
-            textAlign: 'center', color: '#333',
-            fontSize: 'clamp(0.85rem, 1.8vh, 1rem)',
-            opacity: versoIndex > 0 && !isPrayerComplete ? 0.4 : 0,
-            marginBottom: '20px', minHeight: '1.5em',
-            cursor: 'pointer', transition: 'opacity 0.3s',
-            pointerEvents: versoIndex > 0 && !isPrayerComplete ? 'auto' : 'none'
-          }}
-        >
-          {versoIndex > 0 && !isPrayerComplete ? rezoData.versos[versoIndex - 1] : ''}
-        </div>
-
-        {/* Current verse text */}
-        <div
-          ref={textoRef}
-          style={{
-            display: 'inline-block', position: 'relative', textAlign: 'center',
-            fontWeight: 'bold', fontSize: 'clamp(1.2rem, 3.5vh, 1.8rem)',
-            lineHeight: 1.6, zIndex: 10,
-            padding: '5px 10px',
-            transition: 'opacity 0.3s',
-            pointerEvents: 'none',
-          }}
-        >
-          <SacredText 
+      {/* ─── FOCAL TEXT ZONE ─── */}
+      <div style={{ 
+        flex: '0 0 45%', display: 'flex', justifyContent: 'center', 
+        padding: '20px', zIndex: 10, position: 'relative' 
+      }}>
+         <SacredText 
+            ref={textoRef}
+            text={currentVerseText}
             words={currentWords}
             wordCharOffsets={wordCharOffsets}
             charProgressIndex={charProgressIndex}
@@ -1016,56 +865,17 @@ export default function RezoEnFocoView({
             wordSpanRefs={wordSpanRefs}
             warmthTick={warmthTick}
             totalAveMarias={totalAveMarias}
-          />
-        </div>
+         />
+      </div>
 
-        {/* Next verse preview */}
-        <div
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => advanceVerse(1)}
-          style={{
-            textAlign: 'center', color: '#333',
-            fontSize: 'clamp(0.85rem, 1.8vh, 1rem)',
-            opacity: versoIndex < totalVersos - 1 && !isPrayerComplete ? 0.4 : 0,
-            marginTop: '20px', minHeight: '1.5em',
-            cursor: 'pointer', transition: 'opacity 0.3s',
-            pointerEvents: versoIndex < totalVersos - 1 && !isPrayerComplete ? 'auto' : 'none'
-          }}
-        >
-          {versoIndex < totalVersos - 1 && !isPrayerComplete ? rezoData.versos[versoIndex + 1] : ''}
-        </div>
-
-        {/* ─── MODE TOGGLE (Bottom Ergonomics) ─── */}
-        <div style={{
-          position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)',
-          display: 'flex', gap: '8px', zIndex: 20
-        }}>
-          <button 
-            onClick={() => setModoInteraccion('swipe')} 
-            style={{...miniBtn, background: modoInteraccion === 'swipe' ? '#D4AF37' : 'rgba(20,20,20,0.8)', color: modoInteraccion === 'swipe' ? '#000' : '#888', fontWeight: modoInteraccion === 'swipe' ? 'bold' : 'normal'}}
-          >
-            ✋ Deslizar
-          </button>
-          <button 
-            onClick={() => setModoInteraccion('hold')} 
-            style={{...miniBtn, background: modoInteraccion === 'hold' ? '#D4AF37' : 'rgba(20,20,20,0.8)', color: modoInteraccion === 'hold' ? '#000' : '#888', fontWeight: modoInteraccion === 'hold' ? 'bold' : 'normal'}}
-          >
-            👇 Mantener
-          </button>
-        </div>
-
-        {/* Hint — only for hold mode or prayer completion */}
-        {(isPrayerComplete || (modoInteraccion === 'hold' && notStarted)) && (
-          <div style={{
-            position: 'absolute', bottom: '15px', width: 'calc(100% - 60px)',
-            textAlign: 'center',
-            color: isPrayerComplete ? '#D4AF37' : '#555',
-            fontSize: '0.8rem', fontWeight: 'bold',
-            animation: isPrayerComplete ? 'pulse-hint 1.2s ease-in-out infinite' : 'none',
-          }}>
-            {isPrayerComplete ? '✨ Oración completada' : '👇 Mantén presionado 👇'}
-          </div>
-        )}
+      {/* Instruction */}
+      <div style={{ 
+          position: 'absolute', bottom: '20px', width: '100%', textAlign: 'center',
+          fontSize: '0.7rem', color: '#333', letterSpacing: '1px',
+          opacity: (charProgressIndex < 0 && !isVersoComplete && !isPrayerComplete) ? 0.6 : 0, transition: 'opacity 0.5s'
+      }}>
+        Desliza sobre las letras para rezar
+      </div>
 
         <style>{`
           @keyframes pulse-hint {

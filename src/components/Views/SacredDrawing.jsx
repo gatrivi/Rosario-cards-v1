@@ -29,7 +29,6 @@ const getCelestialShift = () => {
   return { shift: [0, 0, 0], name: 'High Noon' };
 };
 
-const lerp = (a, b, t) => a + (b - a) * t;
 const toRGB = (c, shift = [0,0,0]) => 
   `rgb(${Math.max(0, Math.min(255, c[0] + shift[0]))}, ${Math.max(0, Math.min(255, c[1] + shift[1]))}, ${Math.max(0, Math.min(255, c[2] + shift[2]))})`;
 
@@ -49,6 +48,7 @@ export default function SacredDrawing({
   liveWarmth = null,
   baseColor = '#D4AF37',
   style = {},
+  size = 100, // Explicit size prop
   decadeIndex = 0, // 0-9 for Ave Maria intra-decade bloom
 }) {
   const phases = getCosmicPhases();
@@ -88,7 +88,7 @@ export default function SacredDrawing({
         </filter>
       </defs>
 
-      <g transform={`scale(${bloomScale})`} transform-origin="50 70">
+      <g transform={`scale(${bloomScale})`} transformOrigin="50 70">
       {paths.map((d, i) => {
         const start = i / N;
         const end = (i + 1) / N;

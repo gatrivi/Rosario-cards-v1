@@ -9,10 +9,10 @@
  */
 import React, { useState, useEffect } from 'react';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
-import RezoEnFocoView from '../Views/RezoEnFocoView';
-import JardinDeRosasView from '../Views/JardinDeRosasView';
+import RoseView from '../Views/RoseView';
 import MacetonView from '../Views/MacetonView';
 import PeregrinacionView from '../Views/PeregrinacionView';
+import MonkView from '../Views/MonkView';
 import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
@@ -20,9 +20,9 @@ import { useCloudSync } from '../../hooks/useCloudSync';
 
 export default function AppShell() {
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
-  const [vistaActiva, setVistaActiva] = useState('camino'); 
+  const [vistaActiva, setVistaActiva] = useState('rosary'); 
   const [selectedLevel, setSelectedLevel] = useState(null);
-  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem(`rosario_intro_${INTRO_VERSION}`));
+  const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
@@ -32,13 +32,15 @@ export default function AppShell() {
     return saved ? JSON.parse(saved) : {
       virtualRosaryEnabled: true,
       soundEnabled: localStorage.getItem('rosario_sound_enabled') !== 'false',
-      meditationRitmo: 'incienso' // oro, incienso, mirra
+      meditationRitmo: 'incienso', // oro, incienso, mirra
+      isLeftHanded: localStorage.getItem('rosario_left_handed') === 'true'
     };
   });
 
   useEffect(() => {
     localStorage.setItem('rosario_settings', JSON.stringify(settings));
     localStorage.setItem('rosario_sound_enabled', String(settings.soundEnabled));
+    localStorage.setItem('rosario_left_handed', String(settings.isLeftHanded));
   }, [settings]);
 
   // --- Lifting Prayer State ---
@@ -88,22 +90,26 @@ export default function AppShell() {
     setShowIntro(false);
   };
 
-  const handleUpdateProgreso = (newIndex) => {
+  const handleUpdateProgreso = React.useCallback((newIndex) => {
     setCurrentPrayerIndex(newIndex);
-  };
+  }, []);
 
   const renderizarVista = () => {
     switch (vistaActiva) {
-  case 'virtual': return (
-    <RosarioVirtualView 
-      currentPrayerIndex={currentPrayerIndex}
-      misterioActual={misterioActual}
-      onUpdateProgreso={handleUpdateProgreso}
-      soundEnabled={settings.soundEnabled}
-    />
-  );
-      case 'foco': return (
-        <RezoEnFocoView 
+      case 'monk': return <MonkView />;
+      case 'camino': return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
+      case 'macetones': return <MacetonView onSelectMaceton={() => setVistaActiva('rosary')} />;
+      case 'rosary': return (
+        <RosarioVirtualView 
+          currentPrayerIndex={currentPrayerIndex}
+          misterioActual={misterioActual}
+          onUpdateProgreso={handleUpdateProgreso}
+          soundEnabled={settings.soundEnabled}
+          isLeftHanded={settings.isLeftHanded}
+        />
+      );
+      case 'rose': return (
+        <RoseView 
           currentPrayerIndex={currentPrayerIndex}
           misterioActual={misterioActual}
           onUpdateProgreso={handleUpdateProgreso}
@@ -113,10 +119,7 @@ export default function AppShell() {
           meditationRitmo={settings.meditationRitmo}
         />
       );
-      case 'jardin':  return <JardinDeRosasView />;
-      case 'camino':  return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
-      case 'macetones': return <MacetonView level={selectedLevel} onBack={() => setVistaActiva('camino')} onSelectMaceton={() => setVistaActiva('foco')} />;
-      default:        return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
+      default: return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
     }
   };
 
@@ -170,14 +173,21 @@ export default function AppShell() {
         </div>
       </div>
 
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }} className="view-enter-active">
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', zIndex: 10 }} className="view-enter-active">
         {renderizarVista()}
       </div>
+
+      {/* Handedness Toggle (Floating above nav) */}
+      <HandToggle 
+        isLeftHanded={settings.isLeftHanded} 
+        onToggle={() => setSettings(s => ({ ...s, isLeftHanded: !s.isLeftHanded }))} 
+      />
 
       <BottomNav 
         vistaActiva={vistaActiva} 
         setVistaActiva={setVistaActiva} 
         virtualEnabled={settings.virtualRosaryEnabled}
+        isLeftHanded={settings.isLeftHanded}
       />
 
       {/* OVERLAYS */}
@@ -283,6 +293,82 @@ export default function AppShell() {
         </div>
       )}
 
+    </div>
+  );
+}
+
+// --- Sub-components ---
+
+function HandToggle({ isLeftHanded, onToggle }) {
+  const [msg, setMsg] = React.useState('');
+  const timerRef = React.useRef(null);
+
+  const handleStart = (e) => {
+    e.preventDefault();
+    setMsg(isLeftHanded ? "Sostener para modo diestro" : "Sostener para modo zurdo");
+    timerRef.current = setTimeout(() => {
+      onToggle();
+      setMsg('');
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+    }, 1000);
+  };
+
+  const handleEnd = () => {
+    clearTimeout(timerRef.current);
+    setTimeout(() => setMsg(''), 2000);
+  };
+
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: '90px', // Just above BottomNav
+      [isLeftHanded ? 'right' : 'left']: '15px', // Opposite of dominant hand
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: isLeftHanded ? 'flex-end' : 'flex-start',
+      pointerEvents: 'none'
+    }}>
+      {msg && (
+        <div style={{
+          background: 'rgba(0,0,0,0.8)',
+          color: '#D4AF37',
+          padding: '8px 12px',
+          borderRadius: '10px',
+          fontSize: '0.75rem',
+          marginBottom: '8px',
+          border: '1px solid rgba(212,175,55,0.3)',
+          animation: 'fade-in 0.3s ease'
+        }}>
+          {msg}
+        </div>
+      )}
+      <button
+        onMouseDown={handleStart}
+        onMouseUp={handleEnd}
+        onMouseLeave={handleEnd}
+        onTouchStart={handleStart}
+        onTouchEnd={handleEnd}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          fontSize: '1.8rem',
+          opacity: 0.3, // 30% transparency
+          cursor: 'pointer',
+          pointerEvents: 'auto',
+          padding: '10px',
+          transition: 'transform 0.2s, opacity 0.2s',
+          filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))'
+        }}
+      >
+        {isLeftHanded ? '🫱' : '🫲'}
+      </button>
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

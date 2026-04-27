@@ -1,10 +1,3 @@
-# Rosary Physics Structure Blueprint (v4)
-
-This document defines the formal physics and topological structure of the Virtual Rosary.
-
-## 1. Technical Blueprint (JSON)
-
-```json
 {
   "rosary_physics_blueprint": "final_v4",
   "metadata": {
@@ -75,16 +68,3 @@ This document defines the formal physics and topological structure of the Virtua
     }
   }
 }
-```
-
-## 2. Key Constraints Breakdown
-
-- **Tight Link**: Used for grouped beads (Decades and the 3 Hail Marys in the tail). Creates the visual of beads touching or nearly touching.
-- **Long Chain**: Used around Lone Beads (Our Fathers/Mysteries). Creates the necessary negative space to distinguish these prayers from the decades.
-- **Short Chain**: Used for transitional anchor points, specifically the connection between the Crucifix and the first Lone Bead, and the Medal connections.
-
-## 3. Physical Layout Notes
-
-- The **Medal** acts as a "Y-split" joint.
-- The **Tail** contains the Crucifix, 1 Our Father, 3 Hail Marys, and the *Decade 1 Our Father* (physically located after the tail group but before the loop).
-- The **Loop** consists of 5 decades of 10 beads, separated by 4 Lone Beads.

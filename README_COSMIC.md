@@ -58,4 +58,16 @@ The audio system (`RezoEnFocoView`) interprets the cosmic data in real-time:
 
 ---
 
+## 🧭 The Five Sacred Views
+
+The pilgrimage is structured through five distinct layers of engagement, from long-term commitment to momentary focus.
+
+1. **🧘 Monk (Monje)**: *The Commitment Layer*. Select your character and daily rhythm (1-12 Rosaries/day).
+2. **🚶 Pilgrimage (Camino)**: *The Path Layer*. View your historical progress across the 12 sacred milestones of the map.
+3. **🪴 Macetón (Diario)**: *The Day Layer*. View today's specific work. Rosaries are visualized as vertical containers (Portrait) or a grid (Landscape) of unique roses.
+4. **📿 Rosary (Rosario)**: *The Hour Layer*. A 3D physics-based simulation of the physical beads. Interact with the thread and meditate on the loop.
+5. **🌹 Rose (Rosa)**: *The Moment Layer*. An ultra-minimalist focus on the current verse. Interaction with the text procedurally grows a unique rose.
+
+---
+
 *“As above, so below.”* — The Sacred Cosmic Edition ensures your digital pilgrimage is as deep and varied as the heavens themselves.

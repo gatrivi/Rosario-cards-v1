@@ -1,56 +1,5 @@
 import React from 'react';
 
-export default function BottomNav({ vistaActiva, setVistaActiva }) {
-  return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      height: '70px',
-      backgroundColor: '#111',
-      borderTop: '1px solid #222',
-      flexShrink: 0
-    }}>
-      
-      <NavButton 
-        id="camino" 
-        icono="🚶" 
-        texto="Camino" 
-        activo={vistaActiva === 'camino' || vistaActiva === 'macetones'} 
-        onClick={() => setVistaActiva('camino')} 
-      />
-
-      <NavButton 
-        id="foco" 
-        icono="🌹" 
-        texto="Rezar" 
-        activo={vistaActiva === 'foco'} 
-        onClick={() => setVistaActiva('foco')} 
-      />
-      
-      <NavButton 
-        id="jardin" 
-        icono="🪴" 
-        texto="Jardín" 
-        activo={vistaActiva === 'jardin'} 
-        onClick={() => setVistaActiva('jardin')} 
-      />
-
-      <NavButton 
-        id="virtual" 
-        icono="📿" 
-        texto="Virtual" 
-        activo={vistaActiva === 'virtual'} 
-        disabled={!virtualEnabled}
-        onClick={() => setVistaActiva('virtual')} 
-      />
-
-    </div>
-  );
-}
-
-export default function BottomNav({ vistaActiva, setVistaActiva, virtualEnabled }) {
-
 function NavButton({ icono, texto, activo, onClick, disabled }) {
   return (
     <button 
@@ -79,5 +28,41 @@ function NavButton({ icono, texto, activo, onClick, disabled }) {
         {texto}
       </span>
     </button>
+  );
+}
+
+export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded }) {
+  const navItems = [
+    { id: 'monk', icono: '🧘', texto: 'Monje' },
+    { id: 'camino', icono: '🚶', texto: 'Camino' },
+    { id: 'macetones', icono: '🪴', texto: 'Diario' },
+    { id: 'rosary', icono: '📿', texto: 'Rosario' },
+    { id: 'rose', icono: '🌹', texto: 'Rosa' },
+  ];
+
+  const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      height: '70px',
+      backgroundColor: '#111',
+      borderTop: '1px solid #222',
+      flexShrink: 0,
+      position: 'relative',
+      zIndex: 50
+    }}>
+      {orderedItems.map((item) => (
+        <NavButton 
+          key={item.id}
+          icono={item.icono} 
+          texto={item.texto} 
+          activo={vistaActiva === item.id} 
+          onClick={() => setVistaActiva(item.id)} 
+        />
+      ))}
+    </div>
   );
 }

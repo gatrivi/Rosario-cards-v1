@@ -1,121 +1,118 @@
 import React from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
-import { PEREGRINACIONES, getPeregrinacionActual } from '../../data/LevelConfig';
 import RoseDrawing from './RoseDrawing';
 
-export default function MacetonView({ level, onBack, onSelectMaceton }) {
-  const { totalAveMarias, ROSAS_PER_MACETON, getRoseData } = useAveMariaStats();
-  
-  // If no level passed, use the current active pilgrimage level
-  const effectiveLevel = level || getPeregrinacionActual(totalAveMarias).actual;
-  
-  const roses = getRoseData();
+export default function MacetonView({ onSelectMaceton }) {
+  const { 
+    dailyAveMarias, objetivoMacetonesHoy, ROSAS_PER_MACETON, getRoseData, totalAveMarias
+  } = useAveMariaStats();
+
+  const allRoses = getRoseData();
   const enrichment = Math.min(1, Math.log10(totalAveMarias + 1) / 7.8);
 
-  const totalNeeded = effectiveLevel.reqAveMarias;
-  const potsInThisLevel = Math.ceil(totalNeeded / ROSAS_PER_MACETON);
-  const completedAveMariasInThisLevel = Math.min(totalAveMarias, totalNeeded);
-  const completedPots = Math.floor(completedAveMariasInThisLevel / ROSAS_PER_MACETON);
-  const currentPotProgress = (completedAveMariasInThisLevel % ROSAS_PER_MACETON) / ROSAS_PER_MACETON;
+  // Filter roses for today? Actually, for simplicity and UX, we can just show 
+  // the latest N roses that correspond to today's progress.
+  const todayRoses = allRoses.slice(-dailyAveMarias);
+
+  const pots = [];
+  for (let i = 0; i < objetivoMacetonesHoy; i++) {
+    const startIdx = i * ROSAS_PER_MACETON;
+    const potContent = todayRoses.slice(startIdx, startIdx + ROSAS_PER_MACETON);
+    // Fill with nulls to show ghost cells
+    const displayPot = [...potContent, ...Array(ROSAS_PER_MACETON - potContent.length).fill(null)];
+    pots.push({
+      index: i,
+      roses: displayPot,
+      count: potContent.length,
+      isCompleted: potContent.length === ROSAS_PER_MACETON,
+      isActive: i === Math.floor(dailyAveMarias / ROSAS_PER_MACETON)
+    });
+  }
+
+  const isPortrait = typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
 
   return (
     <div style={{
       height: '100%', overflowY: 'auto', padding: '20px',
       backgroundColor: '#0A0A0A', color: '#fff', display: 'flex', flexDirection: 'column'
     }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '15px' }}>
-        <button 
-          onClick={onBack}
-          style={{ 
-            background: '#111', border: '1px solid #333', color: '#fff', 
-            borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer',
-            fontSize: '1.2rem', display: 'flex', justifyContent: 'center', alignItems: 'center'
-          }}
-        >
-          ←
-        </button>
-        <div>
-          <h2 style={{ color: '#D4AF37', margin: 0, fontSize: '1.1rem' }}>{effectiveLevel.name}</h2>
-          <div style={{ fontSize: '0.8rem', color: '#888' }}>
-            {completedAveMariasInThisLevel} / {totalNeeded} rosas necesarias
-          </div>
-        </div>
+      <div style={{ textAlign: 'center', marginBottom: '25px', marginTop: '10px' }}>
+        <h2 style={{ color: '#D4AF37', margin: '0 0 5px', fontSize: '1.4rem', fontFamily: 'serif' }}>El Rosedal Diario</h2>
+        <p style={{ color: '#888', fontSize: '0.85rem' }}>
+          Hoy: <span style={{ color: '#D4AF37', fontWeight: 'bold' }}>{Math.floor(dailyAveMarias / 50)} / {objetivoMacetonesHoy}</span> Rosarios cultivados
+        </p>
       </div>
 
-      {/* Progress Bar */}
-      <div style={{ 
-        height: '6px', background: '#111', borderRadius: '3px', 
-        marginBottom: '30px', overflow: 'hidden', border: '1px solid #222'
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isPortrait ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: '30px',
+        maxWidth: isPortrait ? '500px' : 'none',
+        margin: '0 auto',
+        paddingBottom: '40px',
+        width: '100%'
       }}>
-        <div style={{ 
-          width: `${(completedAveMariasInThisLevel / totalNeeded) * 100}%`, 
-          height: '100%', background: 'linear-gradient(90deg, #8C2832, #D4AF37)',
-          transition: 'width 1s ease'
-        }} />
-      </div>
+        {pots.map((pot) => (
+          <div 
+            key={pot.index}
+            onClick={pot.isCompleted ? null : onSelectMaceton}
+            style={{
+              background: 'radial-gradient(circle at 50% -20%, #1a1a1a 0%, #080808 80%)',
+              borderRadius: '20px', padding: '20px',
+              border: pot.isActive ? '2px solid #D4AF37' : '1px solid rgba(212, 175, 55, 0.1)',
+              boxShadow: pot.isActive ? '0 0 30px rgba(212,175,55,0.15)' : '0 10px 30px rgba(0,0,0,0.5)',
+              position: 'relative',
+              cursor: pot.isCompleted ? 'default' : 'pointer',
+              transition: 'all 0.3s ease',
+              opacity: pot.isActive || pot.isCompleted ? 1 : 0.4
+            }}
+          >
+            {/* Header / Info */}
+            <h3 style={{
+              color: '#D4AF37', margin: '0 0 15px', fontSize: '1rem',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
+              <span>Macetón {pot.index + 1}</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#666' }}>
+                {pot.isCompleted ? 'SANTIFICADO ✓' : `${pot.count} / 50`}
+              </span>
+            </h3>
 
-      <p style={{ fontSize: '0.9rem', color: '#ccc', textAlign: 'center', marginBottom: '20px' }}>
-        Elige un Macetón para cultivar tus rosas. <br/>
-        Cada uno requiere un Rosario completo (50 Ave Marías).
-      </p>
-
-      {/* Pots Grid */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', 
-        gap: '15px', paddingBottom: '40px' 
-      }}>
-        {Array.from({ length: potsInThisLevel }).map((_, i) => {
-          const isCompleted = i < completedPots;
-          const isCurrent = i === completedPots;
-          const isLocked = i > completedPots;
-
-          return (
-            <div 
-              key={i} 
-              onClick={isLocked ? null : onSelectMaceton}
-              style={{
-                background: isCompleted ? '#1a0a0a' : (isCurrent ? '#0d0d0d' : '#050505'),
-                border: isCurrent ? '2px solid #D4AF37' : '1px solid #222',
-                borderRadius: '12px', padding: '10px', textAlign: 'center',
-                cursor: isLocked ? 'default' : 'pointer',
-                opacity: isLocked ? 0.3 : 1,
-                transition: 'all 0.3s',
-                position: 'relative',
-                boxShadow: isCurrent ? '0 0 15px rgba(212,175,55,0.2)' : 'none'
-              }}
-            >
-              <div style={{ fontSize: '2rem', marginBottom: '5px' }}>
-                {isCompleted ? '🪴' : (isCurrent ? '🌱' : '🌑')}
-              </div>
-              <div style={{ fontSize: '0.6rem', color: isCurrent ? '#D4AF37' : '#666', fontWeight: isCurrent ? 'bold' : 'normal' }}>
-                Macetón {i + 1}
-              </div>
-              
-              {isCurrent && (
-                <div style={{ 
-                  position: 'absolute', bottom: 0, left: 0, right: 0, 
-                  height: '3px', background: '#333', borderRadius: '0 0 12px 12px', overflow: 'hidden' 
+            {/* Rose Grid (10x5) */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(10, 1fr)',
+              gap: '6px'
+            }}>
+              {pot.roses.map((rose, ri) => (
+                <div key={ri} style={{
+                  aspectRatio: '1/1', background: 'rgba(0,0,0,0.3)', borderRadius: '4px',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  border: rose ? 'none' : '1px dashed rgba(255,255,255,0.03)'
                 }}>
-                  <div style={{ 
-                    width: `${currentPotProgress * 100}%`, height: '100%', background: '#D4AF37' 
-                  }} />
+                  {rose ? (
+                    <RoseDrawing 
+                      progress={1} 
+                      size={24} 
+                      compact={true} 
+                      warmthProfile={rose.warmthProfile} 
+                      wiggleProfile={rose.wiggleProfile}
+                      enrichment={enrichment}
+                    />
+                  ) : (
+                    <span style={{ fontSize: '0.6rem', opacity: 0.1 }}>🌹</span>
+                  )}
                 </div>
-              )}
-              
-              {isCompleted && (
-                <div style={{ position: 'absolute', top: -5, right: -5, fontSize: '0.8rem' }}>
-                  ✅
-                </div>
-              )}
+              ))}
             </div>
-          );
-        })}
-      </div>
-
-      <div style={{ marginTop: 'auto', textAlign: 'center', padding: '10px', color: '#444', fontSize: '0.75rem' }}>
-        "La paciencia es la raíz de todas las rosas."
+            
+            {pot.isActive && (
+              <div style={{ marginTop: '15px', textAlign: 'center', color: '#D4AF37', fontSize: '0.7rem', fontWeight: 'bold', letterSpacing: '1px' }}>
+                CONTINUAR CULTIVO
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
