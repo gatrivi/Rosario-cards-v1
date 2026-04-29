@@ -18,6 +18,8 @@ import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
 import { useCloudSync } from '../../hooks/useCloudSync';
 
+const APP_VERSION = '0.2.0';
+
 export default function AppShell() {
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
   const [vistaActiva, setVistaActiva] = useState('rosary'); 
@@ -189,6 +191,22 @@ export default function AppShell() {
         virtualEnabled={settings.virtualRosaryEnabled}
         isLeftHanded={settings.isLeftHanded}
       />
+
+      {/* Version badge */}
+      <div style={{
+        position: 'absolute',
+        bottom: '78px',
+        left: '10px',
+        zIndex: 100,
+        color: 'rgba(212, 175, 55, 0.35)',
+        fontSize: '0.6rem',
+        fontFamily: 'monospace',
+        letterSpacing: '1px',
+        pointerEvents: 'none',
+        userSelect: 'none'
+      }}>
+        v{APP_VERSION}
+      </div>
 
       {/* OVERLAYS */}
       {showSync && <SyncManager onClose={() => setShowSync(false)} />}

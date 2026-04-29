@@ -136,7 +136,21 @@ ID meanings:
 
 ---
 
+## DESIGN REQUIREMENTS
+- **Version number must always be visible in deployed builds** (at least during active development). Display subtle `vX.Y.Z` badge in a corner so users can verify what they're testing
+- **Version naming convention**: Use theme-related descriptive names for each version. E.g. `v0.2.0 — La Cruz`, `v0.3.0 — El Jardín`. Document the name in `agents.md` when bumping
+- **Layering**: Background image → Prayer text (z-index middle) → Rosary (z-index forefront). The rosary must always be fully visible and interactive on top. Prayers are read through and around the beads, never as a blocking card
+- No anxious HUD: no progress bars, streaks, or completion metrics on the main prayer screen
+- **Plan Diario** = the daily commitment of roses to plant in the Rosedal. **Rosedal** = the garden where planted roses are displayed
+
 ## SESSION NOTES (2026-04-28)
 - Fixed missing state in App.js: `currentMystery`, `setcurrentMystery`, `prayer`, `setPrayer`
 - Build passes with warnings (unused vars in RoseView, AppShell, VirtualRosaryPhysics)
 - **Do not delete** `VirtualRosaryPhysics.jsx` or `RosarioVirtualView.jsx` — they are complete and functional
+
+## SESSION NOTES (2026-04-28b)
+- Bumped version to `0.2.0`
+- Cross-gesture magnetism implemented: draw ✝ on canvas to align scattered beads
+- Physics tuned for contemplative feel: high friction, low restitution, differentiated bead mass
+- RosarioVirtualView redesigned: prayer bar moved to top, bottom card/buttons removed
+- BottomNav: "Diario" renamed to "Rosedal" with 🌹 icon

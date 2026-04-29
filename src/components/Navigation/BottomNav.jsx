@@ -35,7 +35,7 @@ export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded })
   const navItems = [
     { id: 'monk', icono: '🧘', texto: 'Monje' },
     { id: 'camino', icono: '🚶', texto: 'Camino' },
-    { id: 'macetones', icono: '🪴', texto: 'Diario' },
+    { id: 'macetones', icono: '🌹', texto: 'Rosedal' },
     { id: 'rosary', icono: '📿', texto: 'Rosario' },
     { id: 'rose', icono: '🌹', texto: 'Rosa' },
   ];
