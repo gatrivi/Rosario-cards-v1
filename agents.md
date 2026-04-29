@@ -154,3 +154,11 @@ ID meanings:
 - Physics tuned for contemplative feel: high friction, low restitution, differentiated bead mass
 - RosarioVirtualView redesigned: prayer bar moved to top, bottom card/buttons removed
 - BottomNav: "Diario" renamed to "Rosedal" with 🌹 icon
+
+## SESSION NOTES (2026-04-28c)
+- `pulse` state refactored to `pulseRef` — eliminated eslint `react-hooks/exhaustive-deps` warning
+- RosarioVirtualView layering fixed: prayer text is now middle z-index (z=5), rosary canvas is forefront (z=20). Text is visible through and around beads
+- Removed "Siguiente Verso" button and verse dots — advancement is tap/swipe only
+- Header "Plan Diario" kept (Plan Diario = daily commitment, Rosedal = garden)
+- AppShell: subtle `v0.2.0` badge bottom-left
+- Version naming convention documented in DESIGN REQUIREMENTS
