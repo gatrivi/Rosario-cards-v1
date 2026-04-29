@@ -15,8 +15,7 @@ import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
 import { getCosmicPhases } from '../../utils/cosmicModulator';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
-import TutorialOverlay from '../common/TutorialOverlay';
-import antonyImg from '../../data/assets/img/st-anthony-of-padua-icon-402.jpg';
+
 
 // ─── Prayer data helpers ───
 
@@ -72,7 +71,7 @@ export default function RoseView({
   onToggleSound,
   meditationRitmo = 'incienso'
 }) {
-  const { addRosas, storeRoseData, getRoseData, totalAveMarias } = useAveMariaStats();
+  const { addRosas, storeRoseData, totalAveMarias } = useAveMariaStats();
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
 
@@ -100,7 +99,7 @@ export default function RoseView({
   const rezoData = secuencia[currentPrayerIndex];
 
   // ─── Interaction State ───
-  const [modoInteraccion, setModoInteraccion] = useState('swipe');
+  const [modoInteraccion] = useState('swipe');
   const [versoIndex, setVersoIndex] = useState(0);
   const [charProgressIndex, setCharProgressIndex] = useState(-1); 
   const [isVerseActivated, setIsVerseActivated] = useState(false);
@@ -156,15 +155,6 @@ export default function RoseView({
 
   const overallProgress = isPrayerComplete ? 1 :
     (versoIndex + (charProgressIndex >= 0 ? (charProgressIndex + 1) / Math.max(1, totalChars) : 0)) / Math.max(1, totalVersos);
-
-  // ─── Macetero mapping ───
-  const maceteroMap = secuencia.reduce((acc, oracion, index) => {
-    if (oracion.id === 'P' || oracion.id === 'A') acc.push({ seqIndex: index, id: oracion.id });
-    return acc;
-  }, []);
-  const maceteroCurrentIndex = maceteroMap.findIndex(m => m.seqIndex >= currentPrayerIndex);
-  const oracionesCompletadasEnTotal = maceteroCurrentIndex === -1 ? maceteroMap.length : maceteroCurrentIndex;
-
 
   // ═══════════════════════════════════════════════════════
   // ─── Audio System ───
@@ -557,7 +547,7 @@ export default function RoseView({
       return () => clearInterval(holdTimerRef.current);
     }
     return () => { if (holdTimerRef.current) clearInterval(holdTimerRef.current); };
-  }, [modoInteraccion, isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated]);
+  }, [modoInteraccion, isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, meditationRitmo]);
 
   // Wheel handler
   useEffect(() => {
@@ -717,14 +707,6 @@ export default function RoseView({
   // ═══════════════════════════════════════════════════════
   // ─── Macetero click ───
   // ═══════════════════════════════════════════════════════
-
-  const handleMaceteroClick = (seqIndex) => {
-    onUpdateProgreso(seqIndex);
-    resetVerseState();
-  };
-
-  // Hint text
-  const notStarted = charProgressIndex < 0 && !isVersoComplete && !isPrayerComplete;
 
   // ═══════════════════════════════════════════════════════
   // ─── JSX ───
@@ -914,15 +896,4 @@ export default function RoseView({
   );
 }
 
-// ─── Styles ───
-const miniBtn = {
-  background: 'rgba(20, 20, 20, 0.8)',
-  backdropFilter: 'blur(5px)',
-  color: '#888',
-  border: '1px solid #333',
-  borderRadius: '15px',
-  padding: '8px 12px',
-  fontSize: '0.8rem',
-  cursor: 'pointer',
-  touchAction: 'manipulation'
-};
+

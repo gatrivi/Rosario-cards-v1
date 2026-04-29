@@ -31,11 +31,6 @@ const resolvePrayer = (id, mysteryKey) => {
   return null;
 };
 
-/**
- * Generates a physics-compatible bead list derived DIRECTLY from the 
- * RosarioPrayerBook sequences. This ensures 1-to-1 mapping between 
- * the physics interaction and the liturgical progress.
- */
 export const getRosaryBeads = (mysteryKey = 'gozosos') => {
   const seqMap = {
     'gozosos': 'RGo',
@@ -47,47 +42,107 @@ export const getRosaryBeads = (mysteryKey = 'gozosos') => {
   const sequenceKey = seqMap[mysteryKey] || 'RGo';
   const sequence = RosarioPrayerBook[sequenceKey] || RosarioPrayerBook.RGo;
   
-  // 1. Filter sequence to match the 59-bead blueprint + Crucifix + Medal
-  const physicsNodes = sequence.map((id, index) => {
-    const data = resolvePrayer(id, mysteryKey);
-    
+  // 1. Filter sequence to match exactly the 61-node blueprint (Cross + Medal + 59 Beads)
+  const physicsNodes = [];
+  const processedLiturgicIndices = new Set();
+  
+  sequence.forEach((id, index) => {
+    let isPhysical = false;
     let role = 'group';
     let physicsType = 'bead';
-    
-    // Physical mapping (59 beads + Cross + Medal)
-    if (id === 'SC') {
+
+    // Strict Physical Mapping Logic
+    if (id === 'SC' && index === 0) { // Only the FIRST SC is the physical crucifix
+      isPhysical = true;
       role = 'crucifix';
       physicsType = 'cross';
-    } else if (['P', 'MG1', 'MG2', 'MG3', 'MG4', 'MG5', 'MD1', 'MD2', 'MD3', 'MD4', 'MD5', 'ML1', 'ML2', 'ML3', 'ML4', 'ML5'].includes(id)) {
-      role = 'lone';
-      physicsType = 'bead';
-    } else if (id === 'S' || id === 'LL' || id === 'Papa') {
-      role = 'medal';
-      physicsType = 'medal';
     } else if (id === 'A') {
+      isPhysical = true;
       role = 'group';
       physicsType = 'bead';
-    } else {
-      // Skip liturgical steps (AC, C, G, F) in physics model
-      return null;
+    } else if (id === 'S') { // Salve Regina is the Medal
+      isPhysical = true;
+      role = 'medal';
+      physicsType = 'medal';
+    } else if (['MG1', 'MG2', 'MG3', 'MG4', 'MG5', 'MD1', 'MD2', 'MD3', 'MD4', 'MD5', 'ML1', 'ML2', 'ML3', 'ML4', 'ML5'].includes(id)) {
+      isPhysical = true;
+      role = 'lone';
+      physicsType = 'bead';
+    } else if (id === 'P') {
+      // Padre Nuestro is physical ONLY if it doesn't follow a Mystery announcement
+      const prevId = index > 0 ? sequence[index - 1] : null;
+      const isAfterMystery = prevId && (prevId.startsWith('MG') || prevId.startsWith('MD') || prevId.startsWith('ML'));
+      if (!isAfterMystery) {
+        isPhysical = true;
+        role = 'lone';
+        physicsType = 'bead';
+      }
     }
 
-    return {
-      id: `${id}_${index}`,
-      liturgicId: id,
-      physicsType,
-      role,
-      topology: 'loop', // Default
-      label: data?.title || id,
-      prayer: data?.text || ' ',
-      index // original liturgical index
-    };
-  }).filter(node => node !== null);
+    if (isPhysical && physicsNodes.length < 61) {
+      const data = resolvePrayer(id, mysteryKey);
+      physicsNodes.push({
+        id: `${id}_${index}`,
+        liturgicId: id,
+        physicsType,
+        role,
+        topology: 'loop', 
+        label: data?.title || id,
+        prayer: data?.text || ' ',
+        index // original liturgical index
+      });
+      processedLiturgicIndices.add(index);
+    }
+  });
 
-  // 2. Re-assign topology based on physical sequence
-  // v4 Tail: Crucifix (0), P (1), A,A,A (2,3,4), MG1 (5), Medal (6)
+  // Ensure exactly 61 nodes. If we missed any (rare), we fill them.
+  // Then re-assign topology: Crucifix (0), P (1), A,A,A (2,3,4), MG1 (5), Medal (6)
   return physicsNodes.map((node, i) => {
-    if (i <= 6) node.topology = 'tail';
+    if (i <= 5) node.topology = 'tail';
+    else if (i === 6) {
+      node.topology = 'tail';
+      node.role = 'medal';
+      node.physicsType = 'medal';
+    } else {
+      node.topology = 'loop';
+    }
     return node;
   });
+};
+
+/**
+ * Returns the mapping of liturgical indices to physical node indices.
+ * Used for "Safe-Step" navigation.
+ */
+export const getPhysicalMapping = (mysteryKey) => {
+  const seqMap = {
+    'gozosos': 'RGo',
+    'dolorosos': 'RDo',
+    'gloriosos': 'RGl',
+    'luminosos': 'RL'
+  };
+  const sequenceKey = seqMap[mysteryKey] || 'RGo';
+  const sequence = RosarioPrayerBook[sequenceKey] || RosarioPrayerBook.RGo;
+  const beads = getRosaryBeads(mysteryKey);
+  
+  const mapping = {};
+  
+  // Initialize mapping with exact matches from the physical beads list
+  beads.forEach((node, i) => {
+    mapping[node.index] = i;
+  });
+
+  // Second pass: fill in the "invisible" steps and shared beads
+  let lastPhysicalIndex = 0;
+  sequence.forEach((id, index) => {
+    if (mapping[index] !== undefined) {
+      lastPhysicalIndex = mapping[index];
+    } else {
+      // This is an invisible step (Gloria, Fatima, Mystery announcement if shared with PN, etc.)
+      // It should stay focused on the "last" physical bead.
+      mapping[index] = lastPhysicalIndex;
+    }
+  });
+
+  return mapping;
 };

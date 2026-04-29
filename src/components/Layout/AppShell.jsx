@@ -21,7 +21,7 @@ import { useCloudSync } from '../../hooks/useCloudSync';
 export default function AppShell() {
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
   const [vistaActiva, setVistaActiva] = useState('rosary'); 
-  const [selectedLevel, setSelectedLevel] = useState(null);
+  const [, setSelectedLevel] = useState(null);
   const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -44,7 +44,7 @@ export default function AppShell() {
   }, [settings]);
 
   // --- Lifting Prayer State ---
-  const [misterioActual, setMisterioActual] = useState('gozosos');
+  const [misterioActual] = useState('gozosos');
   const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0);
 
   const { forceSetSyncId, syncId, syncStatus } = useCloudSync();

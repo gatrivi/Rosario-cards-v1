@@ -1,39 +1,87 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Matter from 'matter-js';
-import { getRosaryBeads } from '../../data/physicsRosaryData';
-import { useAveMariaStats } from '../../hooks/useAveMariaStats';
+import { getRosaryBeads, getPhysicalMapping } from '../../data/physicsRosaryData';
 import audioManager from '../../utils/audioManager';
 
-const { Engine, World, Bodies, Constraint, Mouse, MouseConstraint, Composite, Events, Query } = Matter;
+const { Engine, World, Bodies, Constraint, Mouse, MouseConstraint, Composite, Events, Query, Body } = Matter;
 
-const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0, misterioActual = 'gozosos', soundEnabled = true, isLeftHanded = false }) => {
+// ─── Cross Gesture Detection ───
+function detectCrossGesture(points) {
+  if (points.length < 14) return false;
+
+  const minX = Math.min(...points.map(p => p.x));
+  const maxX = Math.max(...points.map(p => p.x));
+  const minY = Math.min(...points.map(p => p.y));
+  const maxY = Math.max(...points.map(p => p.y));
+
+  const w = maxX - minX;
+  const h = maxY - minY;
+
+  if (Math.min(w, h) < 50) return false;
+  if (Math.max(w, h) / Math.min(w, h) > 2.8) return false;
+
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+
+  // 3x3 grid occupancy
+  let topCenter = 0, bottomCenter = 0, midLeft = 0, midRight = 0, center = 0;
+  for (const p of points) {
+    const gx = p.x < cx - w * 0.22 ? 0 : (p.x > cx + w * 0.22 ? 2 : 1);
+    const gy = p.y < cy - h * 0.22 ? 0 : (p.y > cy + h * 0.22 ? 2 : 1);
+    if (gx === 1 && gy === 0) topCenter++;
+    if (gx === 1 && gy === 2) bottomCenter++;
+    if (gx === 0 && gy === 1) midLeft++;
+    if (gx === 2 && gy === 1) midRight++;
+    if (gx === 1 && gy === 1) center++;
+  }
+
+  // Require a Latin cross proportion: vertical arm longer than horizontal
+  const verticalRatio = h / w;
+  return topCenter > 1 && bottomCenter > 1 && midLeft > 1 && midRight > 1 && center > 2 && verticalRatio > 1.0;
+}
+
+const VirtualRosaryPhysics = ({
+  onNodeClick,
+  onLinkClick,
+  onAdvance,
+  onRetreat,
+  activePrayerIndex = 0,
+  misterioActual = 'gozosos',
+  soundEnabled = true,
+  isLeftHanded = false,
+  guided = true,
+}) => {
   const canvasRef = useRef(null);
-  const engineRef = useRef(Engine.create({ 
+  const engineRef = useRef(Engine.create({
     gravity: { x: 0, y: 0 },
-    positionIterations: 20 
+    positionIterations: 20
   }));
-  const [selectedBeadId, setSelectedBeadId] = useState(null);
-  const prayedIdsRef = useRef(new Set());
-  const [pulse, setPulse] = useState(0);
+  const pulseRef = useRef(0);
   const activeIndexRef = useRef(activePrayerIndex);
-  const { logAveMaria } = useAveMariaStats();
-
-  // Zoom and Pan State
-  const [zoomScale, setZoomScale] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const zoomScaleRef = useRef(1);
-  const panOffsetRef = useRef({ x: 0, y: 0 });
+  const homePositionsRef = useRef([]);
+  const guidedRef = useRef(guided);
+  const swipeStartRef = useRef(null);
+
+  // Gesture & magnetism refs
+  const strokePointsRef = useRef([]);
+  const magnetismActiveRef = useRef(false);
+  const magnetismEndTimeRef = useRef(0);
+  const needsRescueRef = useRef(false);
+  const rescueFlashRef = useRef(0);
+
+  // Keep guided ref in sync without re-running the engine effect
+  useEffect(() => { guidedRef.current = guided; }, [guided]);
 
   useEffect(() => {
     if (activePrayerIndex !== activeIndexRef.current) {
       activeIndexRef.current = activePrayerIndex;
-      setPulse(1);
-      setTimeout(() => setPulse(0), 600);
+      pulseRef.current = 1;
+      setTimeout(() => { pulseRef.current = 0; }, 600);
     }
   }, [activePrayerIndex]);
 
   useEffect(() => {
-    // Sync internal ref when activePrayerIndex changes
     activeIndexRef.current = activePrayerIndex;
   }, [activePrayerIndex]);
 
@@ -51,88 +99,105 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
 
     const allBodies = [];
     const allConstraints = [];
+    homePositionsRef.current = [];
 
     const cx = width / 2;
-    const cy = height * 0.45; // Move center up slightly to make room for tail
+    const cy = height * 0.45;
     const loopRadius = Math.min(width * 0.38, 200);
 
     const rosaryGroup = Matter.Body.nextGroup(true);
-    const beadOptions = {
-      restitution: 0.4,
-      friction: 0.02,
-      frictionAir: 0.08, // Dampen chaotic swinging
+
+    // Physics tuned for contemplative weight: dry impacts, deliberate movement
+    const baseBeadOptions = {
+      restitution: 0.05,
+      friction: 0.3,
+      frictionAir: guided ? 0.3 : 0.12,
       density: 0.008,
       slop: 0.05,
-      collisionFilter: { group: rosaryGroup } // Ignore collisions within the chain
+      collisionFilter: { group: rosaryGroup }
+    };
+
+    const getBeadOptions = (data) => {
+      const opts = { ...baseBeadOptions };
+      // Padre Nuestro beads are heavier — require denser drag
+      if (data.role === 'lone') {
+        opts.density = 0.025;
+        opts.friction = 0.4;
+      }
+      // Crucifix and medal have more heft
+      if (data.physicsType === 'cross' || data.role === 'medal') {
+        opts.density = 0.05;
+      }
+      return opts;
     };
 
     const pendantItems = beadsData.filter(b => b.topology === 'tail');
     const loopItems = beadsData.filter(b => b.topology === 'loop');
-    
+
     const centerItem = beadsData.find(b => b.role === 'medal') || beadsData.find(b => b.physicsType === 'center') || pendantItems[pendantItems.length - 1];
     const beadRadius = 10;
-    
-    // 1. Create Centerpiece (Medal) - Higher density to act as a stable hinge
+
+    // 1. Centerpiece (Medal) — anchor in guided mode
     const centerBody = Bodies.circle(cx, cy + loopRadius, 20, {
-      ...beadOptions,
-      density: 0.04 // 5x density of normal beads
+      ...getBeadOptions(centerItem),
+      isStatic: guided,
     });
     centerBody.beadData = centerItem;
     centerBody.circleRadius = 20;
     allBodies.push(centerBody);
+    homePositionsRef.current.push({ x: cx, y: cy + loopRadius });
 
-    // 2. Create Loop
+    // 2. Loop
     const loopBodies = [];
     loopItems.forEach((data, i) => {
       const startAngle = Math.PI / 2;
       const totalAngle = Math.PI * 2;
       const angle = startAngle + ((i + 1) / (loopItems.length + 1)) * totalAngle;
-      
+
       const x = cx + Math.cos(angle) * loopRadius;
       const y = cy + Math.sin(angle) * loopRadius;
 
-      const body = Bodies.circle(x, y, beadRadius, beadOptions);
+      const body = Bodies.circle(x, y, beadRadius, getBeadOptions(data));
       body.beadData = data;
       body.circleRadius = beadRadius;
       loopBodies.push(body);
       allBodies.push(body);
+      homePositionsRef.current.push({ x, y });
     });
 
-    // 3. Create Pendant (Tail)
+    // 3. Pendant (Tail)
     const pendantBodies = [];
     let py = cy + loopRadius + 30;
     const filteredPendant = pendantItems.filter(b => b.id !== centerItem.id).reverse();
-    
+
     filteredPendant.forEach((data) => {
       let body;
       if (data.physicsType === 'cross') {
-        body = Bodies.rectangle(cx, py + 20, 24, 48, beadOptions);
+        body = Bodies.rectangle(cx, py + 20, 24, 48, getBeadOptions(data));
         body.circleRadius = 15;
         py += 60;
       } else {
-        body = Bodies.circle(cx, py, beadRadius, beadOptions);
+        body = Bodies.circle(cx, py, beadRadius, getBeadOptions(data));
         body.circleRadius = beadRadius;
         py += beadRadius * 2 + 10;
       }
       body.beadData = data;
       pendantBodies.push(body);
       allBodies.push(body);
+      homePositionsRef.current.push({ x: cx, y: py - (data.physicsType === 'cross' ? 40 : beadRadius + 5) });
     });
 
-    // --- CONECTIONS ---
+    // Connections — loose, rope-like constraints
     const getConstraintProps = (bodyA, bodyB) => {
       const rA = bodyA.beadData?.role;
       const rB = bodyB.beadData?.role;
-      
-      // Stiffness 0.8 as requested to stabilize the non-colliding chain
-      // Lengths updated to accommodate 20px bead diameter (radius 10)
       if (rA === 'lone' || rB === 'lone') {
-        return { length: 35, stiffness: 0.8, damping: 0.2 }; // Long
+        return { length: 35, stiffness: 0.35, damping: 0.4 };
       }
       if (rA === 'crucifix' || rB === 'crucifix' || rA === 'medal' || rB === 'medal') {
-        return { length: 25, stiffness: 0.8, damping: 0.1 }; // Short
+        return { length: 25, stiffness: 0.45, damping: 0.3 };
       }
-      return { length: 20, stiffness: 0.8, damping: 0.1 }; // Tight
+      return { length: 20, stiffness: 0.4, damping: 0.3 };
     };
 
     loopBodies.forEach((bodyB, i) => {
@@ -164,8 +229,10 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
     const mouse = Mouse.create(canvas);
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse: mouse,
-      constraint: { stiffness: 0.2, render: { visible: false } }
+      constraint: { stiffness: guided ? 0.08 : 0.2, render: { visible: false } }
     });
+
+    // Mouse constraint available in both modes, but very soft in guided
     World.add(world, mouseConstraint);
 
     const audioCtx = audioManager.getContext();
@@ -175,37 +242,141 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
         if (soundEnabled) audioCtx.resume();
         else return;
       }
-      
+
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      
+
       const baseFreq = isProgress ? 1200 : (type === 'chain' ? 800 : (type === 'large' ? 300 : 500));
       const chargeFactor = 1 + (index / beadsData.length) * 0.5;
       osc.frequency.setValueAtTime(baseFreq * chargeFactor, audioCtx.currentTime);
       osc.type = isProgress ? 'sine' : (type === 'chain' ? 'triangle' : 'sine');
-      
+
       const volume = isProgress ? 0.12 : Math.min(force * 0.2, 0.1);
       gain.gain.setValueAtTime(volume, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-      
+
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + 1);
     };
 
-    let mouseDownPos = { x: 0, y: 0 };
+    const playMagnetismChime = () => {
+      if (!audioCtx) return;
+      if (!soundEnabled || audioCtx.state === 'suspended') {
+        if (soundEnabled) audioCtx.resume();
+        else return;
+      }
+      // Deep, distant bell for the cross gesture
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 1.5);
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 2.5);
+    };
+
+    // ─── Haptic feedback ───
+    const triggerHaptic = (ms = 10) => {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(ms);
+      }
+    };
+
+    // ─── Stroke / Gesture tracking ───
+    const onCanvasMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      strokePointsRef.current.push({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        t: Date.now()
+      });
+      if (strokePointsRef.current.length > 300) {
+        strokePointsRef.current = strokePointsRef.current.slice(-200);
+      }
+    };
+
+    const onCanvasTouchMove = (e) => {
+      if (e.touches.length === 1) {
+        const rect = canvas.getBoundingClientRect();
+        strokePointsRef.current.push({
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top,
+          t: Date.now()
+        });
+        if (strokePointsRef.current.length > 300) {
+          strokePointsRef.current = strokePointsRef.current.slice(-200);
+        }
+      }
+    };
+
+    canvas.addEventListener('mousemove', onCanvasMouseMove);
+    canvas.addEventListener('touchmove', onCanvasTouchMove, { passive: true });
+
+    const tryActivateMagnetism = () => {
+      const points = strokePointsRef.current;
+      if (points.length < 10) return false;
+      // Only consider the last stroke (since last mouse/touch down)
+      // We don't have down events here, so use all points; the gesture is short enough
+      if (detectCrossGesture(points)) {
+        magnetismActiveRef.current = true;
+        magnetismEndTimeRef.current = Date.now() + 3000;
+        needsRescueRef.current = false;
+        rescueFlashRef.current = 1;
+        setTimeout(() => { rescueFlashRef.current = 0; }, 800);
+        playMagnetismChime();
+        triggerHaptic(25);
+        strokePointsRef.current = [];
+        return true;
+      }
+      return false;
+    };
+
+    // ─── Click / Swipe handling ───
+    let mouseDownPos = { x: 0, y: 0, time: 0 };
+
     const onMouseDown = (event) => {
-      mouseDownPos = { x: event.mouse.position.x, y: event.mouse.position.y };
+      mouseDownPos = { x: event.mouse.position.x, y: event.mouse.position.y, time: Date.now() };
+      swipeStartRef.current = { x: event.mouse.position.x, y: event.mouse.position.y };
+      strokePointsRef.current = [];
     };
 
     const onMouseUp = (event) => {
       const mouseUpPos = { x: event.mouse.position.x, y: event.mouse.position.y };
       const dist = Math.hypot(mouseUpPos.x - mouseDownPos.x, mouseUpPos.y - mouseDownPos.y);
+      const duration = Date.now() - mouseDownPos.time;
+
+      // Swipe detection (guided mode)
+      if (guidedRef.current && swipeStartRef.current && dist > 40 && duration < 600) {
+        const dx = mouseUpPos.x - swipeStartRef.current.x;
+        if (Math.abs(dx) > Math.abs(mouseUpPos.y - swipeStartRef.current.y)) {
+          if (dx < 0 && onAdvance) onAdvance();
+          else if (dx > 0 && onRetreat) onRetreat();
+          swipeStartRef.current = null;
+          strokePointsRef.current = [];
+          return;
+        }
+      }
+
+      // Cross gesture check (free mode)
+      if (!guidedRef.current && dist > 25 && duration > 150) {
+        if (tryActivateMagnetism()) return;
+      }
 
       if (dist < 15) {
+        if (guidedRef.current) {
+          if (onAdvance) onAdvance();
+          strokePointsRef.current = [];
+          return;
+        }
+
         const bodies = Composite.allBodies(world);
-        const pickRadius = 30 / zoomScaleRef.current; 
+        const pickRadius = 30 / zoomScaleRef.current;
         const bounds = {
           min: { x: mouseUpPos.x - pickRadius, y: mouseUpPos.y - pickRadius },
           max: { x: mouseUpPos.x + pickRadius, y: mouseUpPos.y + pickRadius }
@@ -216,20 +387,106 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
         if (beadBody) {
           const data = beadBody.beadData;
           playChime(1, data.physicsType, data.index, true);
-          setSelectedBeadId(data.id);
           onNodeClick(data.index);
         }
       }
+      strokePointsRef.current = [];
     };
 
     Events.on(mouseConstraint, 'mousedown', onMouseDown);
     Events.on(mouseConstraint, 'mouseup', onMouseUp);
 
+    // Guided mode: canvas listeners for click/swipe + cross gesture
+    const onGuidedMouseDown = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseDownPos = { x: e.clientX - rect.left, y: e.clientY - rect.top, time: Date.now() };
+      swipeStartRef.current = { x: mouseDownPos.x, y: mouseDownPos.y };
+      strokePointsRef.current = [];
+    };
+
+    const onGuidedMouseUp = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const up = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      const dist = Math.hypot(up.x - mouseDownPos.x, up.y - mouseDownPos.y);
+      const duration = Date.now() - mouseDownPos.time;
+
+      if (swipeStartRef.current && dist > 40 && duration < 600) {
+        const dx = up.x - swipeStartRef.current.x;
+        if (Math.abs(dx) > Math.abs(up.y - swipeStartRef.current.y)) {
+          if (dx < 0 && onAdvance) onAdvance();
+          else if (dx > 0 && onRetreat) onRetreat();
+          swipeStartRef.current = null;
+          strokePointsRef.current = [];
+          return;
+        }
+      }
+
+      // Cross gesture check in guided mode too
+      if (dist > 25 && duration > 150) {
+        if (tryActivateMagnetism()) {
+          strokePointsRef.current = [];
+          return;
+        }
+      }
+
+      if (dist < 15 && onAdvance) {
+        onAdvance();
+      }
+      strokePointsRef.current = [];
+    };
+
+    const onGuidedTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        const rect = canvas.getBoundingClientRect();
+        mouseDownPos = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top, time: Date.now() };
+        swipeStartRef.current = { x: mouseDownPos.x, y: mouseDownPos.y };
+        strokePointsRef.current = [];
+      }
+    };
+
+    const onGuidedTouchEnd = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.changedTouches[0];
+      const up = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+      const dist = Math.hypot(up.x - mouseDownPos.x, up.y - mouseDownPos.y);
+      const duration = Date.now() - mouseDownPos.time;
+
+      if (swipeStartRef.current && dist > 40 && duration < 600) {
+        const dx = up.x - swipeStartRef.current.x;
+        if (Math.abs(dx) > Math.abs(up.y - swipeStartRef.current.y)) {
+          if (dx < 0 && onAdvance) onAdvance();
+          else if (dx > 0 && onRetreat) onRetreat();
+          swipeStartRef.current = null;
+          strokePointsRef.current = [];
+          return;
+        }
+      }
+
+      // Cross gesture check
+      if (dist > 25 && duration > 150) {
+        if (tryActivateMagnetism()) {
+          strokePointsRef.current = [];
+          return;
+        }
+      }
+
+      if (dist < 15 && onAdvance) {
+        onAdvance();
+      }
+      strokePointsRef.current = [];
+    };
+
+    canvas.addEventListener('mousedown', onGuidedMouseDown);
+    canvas.addEventListener('mouseup', onGuidedMouseUp);
+    canvas.addEventListener('touchstart', onGuidedTouchStart, { passive: true });
+    canvas.addEventListener('touchend', onGuidedTouchEnd, { passive: true });
+
+    // Touch zoom (only in free mode)
     let initialTouchDist = 0;
     let initialTouchScale = 1;
 
     const handleTouchStart = (e) => {
-      if (e.touches.length === 2) {
+      if (!guidedRef.current && e.touches.length === 2) {
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         initialTouchDist = d;
         initialTouchScale = zoomScaleRef.current;
@@ -237,25 +494,25 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
     };
 
     const handleTouchMove = (e) => {
-      if (e.touches.length === 2) {
+      if (!guidedRef.current && e.touches.length === 2) {
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         const newScale = Math.max(0.5, Math.min(3, initialTouchScale * (d / initialTouchDist)));
         zoomScaleRef.current = newScale;
-        setZoomScale(newScale);
         const invScale = 1 / newScale;
-        mouse.pixelRatio = invScale; 
+        mouse.pixelRatio = invScale;
         Matter.Mouse.setScale(mouse, { x: invScale, y: invScale });
       }
     };
 
     const handleWheel = (e) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      const newScale = Math.max(0.5, Math.min(3, zoomScaleRef.current * delta));
-      zoomScaleRef.current = newScale;
-      setZoomScale(newScale);
-      const invScale = 1 / newScale;
-      Matter.Mouse.setScale(mouse, { x: invScale, y: invScale });
+      if (!guidedRef.current) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        const newScale = Math.max(0.5, Math.min(3, zoomScaleRef.current * delta));
+        zoomScaleRef.current = newScale;
+        const invScale = 1 / newScale;
+        Matter.Mouse.setScale(mouse, { x: invScale, y: invScale });
+      }
     };
 
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -263,31 +520,89 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
     canvas.addEventListener('wheel', handleWheel, { passive: false });
 
     const onBeforeUpdate = () => {
-      const allBodies = Composite.allBodies(engine.world);
-      const activeBead = allBodies.find(b => b.beadData && b.beadData.index === activeIndexRef.current);
-      
-      if (activeBead) {
-        const targetX = isLeftHanded ? width * 0.3 : width * 0.7;
-        const targetY = height * 0.7; 
-        const dx = targetX - activeBead.position.x;
-        const dy = targetY - activeBead.position.y;
-        const force = 0.0000008;
-        Matter.Body.applyForce(activeBead, activeBead.position, { x: dx * force, y: dy * force });
+      const allWorldBodies = Composite.allBodies(engine.world);
+
+      // Check magnetism timer
+      if (magnetismActiveRef.current && Date.now() > magnetismEndTimeRef.current) {
+        magnetismActiveRef.current = false;
+      }
+
+      // Calculate displacement for rescue detection
+      let totalDisplacement = 0;
+      let displacedCount = 0;
+      allWorldBodies.forEach((body, i) => {
+        if (!body.beadData || body.isStatic) return;
+        const home = homePositionsRef.current[i];
+        if (!home) return;
+        const d = Math.hypot(home.x - body.position.x, home.y - body.position.y);
+        totalDisplacement += d;
+        displacedCount++;
+      });
+      const avgDisplacement = displacedCount > 0 ? totalDisplacement / displacedCount : 0;
+
+      // Rescue needed if significantly displaced and not currently magnetizing
+      const wasRescue = needsRescueRef.current;
+      needsRescueRef.current = avgDisplacement > 55 && !magnetismActiveRef.current;
+      if (!wasRescue && needsRescueRef.current) {
+        rescueFlashRef.current = 0.6;
+      }
+
+      // Home forces
+      if (guidedRef.current) {
+        const k = magnetismActiveRef.current ? 0.025 : (needsRescueRef.current ? 0 : 0.001);
+        const damping = magnetismActiveRef.current ? 0.65 : 0.92;
+
+        allWorldBodies.forEach((body, i) => {
+          if (!body.beadData || body.isStatic) return;
+          const home = homePositionsRef.current[i];
+          if (!home) return;
+
+          if (k > 0) {
+            const dx = home.x - body.position.x;
+            const dy = home.y - body.position.y;
+            Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
+          }
+
+          Body.setVelocity(body, {
+            x: body.velocity.x * damping,
+            y: body.velocity.y * damping
+          });
+          Body.setAngularVelocity(body, body.angularVelocity * damping);
+        });
+      }
+
+      // Free mode: gentle magnetism if active (e.g. after cross gesture)
+      if (!guidedRef.current && magnetismActiveRef.current) {
+        const k = 0.008;
+        allWorldBodies.forEach((body, i) => {
+          if (!body.beadData || body.isStatic) return;
+          const home = homePositionsRef.current[i];
+          if (!home) return;
+          const dx = home.x - body.position.x;
+          const dy = home.y - body.position.y;
+          Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
+          Body.setVelocity(body, {
+            x: body.velocity.x * 0.85,
+            y: body.velocity.y * 0.85
+          });
+        });
       }
     };
 
     const onCollisionStart = (event) => {
+      if (guidedRef.current) return;
       event.pairs.forEach((pair) => {
         const bodyA = pair.bodyA;
         const bodyB = pair.bodyB;
         if (bodyA.beadData && bodyB.beadData) {
-          const force = pair.collision.normal.x * (bodyA.velocity.x - bodyB.velocity.x) + 
-                        pair.collision.normal.y * (bodyA.velocity.y - bodyB.velocity.y);
+          const force = pair.collision.normal.x * (bodyA.velocity.x - bodyB.velocity.x) +
+            pair.collision.normal.y * (bodyA.velocity.y - bodyB.velocity.y);
           const absForce = Math.abs(force);
           if (absForce > 0.8) {
             const dataA = bodyA.beadData;
             const indexA = beadsData.findIndex(b => b.id === dataA.id);
             playChime(absForce, dataA.physicsType, indexA);
+            triggerHaptic(Math.min(Math.round(absForce * 3), 15));
           }
         }
       });
@@ -304,25 +619,25 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
       ctx.clearRect(0, 0, width, height);
 
       ctx.save();
-      ctx.translate(width/2, height/2);
+      ctx.translate(width / 2, height / 2);
       ctx.scale(zoomScaleRef.current, zoomScaleRef.current);
-      ctx.translate(-width/2, -height/2);
+      ctx.translate(-width / 2, -height / 2);
 
-      const baseAlpha = 0.8; 
-      
+      const baseAlpha = 0.8;
+
       for (const c of allConstraints) {
         const dataA = c.bodyA.beadData;
         const dataB = c.bodyB.beadData;
         const isPrayedA = dataA && dataA.index < activeIndexRef.current;
         const isPrayedB = dataB && dataB.index < activeIndexRef.current;
-        
+
         ctx.save();
         ctx.beginPath();
         const posA = { x: c.bodyA.position.x + c.pointA.x, y: c.bodyA.position.y + c.pointA.y };
         const posB = { x: c.bodyB.position.x + c.pointB.x, y: c.bodyB.position.y + c.pointB.y };
         ctx.moveTo(posA.x, posA.y);
         ctx.lineTo(posB.x, posB.y);
-        
+
         if (isPrayedA && isPrayedB) {
           ctx.strokeStyle = '#d4af37';
           ctx.lineWidth = 3;
@@ -338,34 +653,53 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
         ctx.restore();
       }
 
+      const mapping = getPhysicalMapping(misterioActual);
+      const activePhysicalIndex = mapping[activeIndexRef.current] ?? 0;
+
       for (const body of allBodies) {
         const data = body.beadData;
-        const beadIndex = beadsData.findIndex(b => b.id === data.id);
-        const isPrayed = beadIndex < activeIndexRef.current;
-        const isActive = beadIndex === activeIndexRef.current;
-        
+        if (!data) continue;
+
+        const beadPhysicalIndex = beadsData.findIndex(b => b.id === data.id);
+        const isPrayed = beadPhysicalIndex < activePhysicalIndex;
+        const isActive = beadPhysicalIndex === activePhysicalIndex;
+
         ctx.save();
         ctx.translate(body.position.x, body.position.y);
         ctx.rotate(body.angle);
-        
+
         ctx.globalAlpha = isPrayed ? baseAlpha + 0.2 : baseAlpha;
+
+        // ── Active bead halo (guided mode) ──
+        if (isActive && guidedRef.current) {
+          ctx.save();
+          ctx.beginPath();
+          const haloR = (body.circleRadius || 15) + 8 + Math.sin(Date.now() / 200) * 3;
+          ctx.arc(0, 0, haloR, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+          ctx.lineWidth = 2;
+          ctx.shadowColor = '#d4af37';
+          ctx.shadowBlur = 20;
+          ctx.stroke();
+          ctx.restore();
+        }
 
         if (data.physicsType === 'cross') {
           ctx.fillStyle = isPrayed ? '#d4af37' : '#222';
           if (isPrayed || isActive) {
             ctx.shadowColor = '#d4af37';
             const baseBlur = isActive ? 15 + Math.sin(Date.now() / 200) * 5 : 10;
-            ctx.shadowBlur = baseBlur + (isActive ? pulse * 30 : 0);
+            ctx.shadowBlur = baseBlur + (isActive ? pulseRef.current * 30 : 0);
             if (isActive) ctx.fillStyle = '#F5E6A0';
           }
           const vWidth = 10; const hWidth = 32; const hHeight = 12; const vHeight = 48; const crossBarY = -10;
           ctx.beginPath();
-          ctx.moveTo(-vWidth/2, -vHeight/2); ctx.lineTo(vWidth/2, -vHeight/2);
-          ctx.lineTo(vWidth/2, crossBarY - hHeight/2); ctx.lineTo(hWidth/2, crossBarY - hHeight/2);
-          ctx.lineTo(hWidth/2, crossBarY + hHeight/2); ctx.lineTo(vWidth/2, crossBarY + hHeight/2);
-          ctx.lineTo(vWidth/2, vHeight/2); ctx.lineTo(-vWidth/2, vHeight/2);
-          ctx.lineTo(-vWidth/2, crossBarY + hHeight/2); ctx.lineTo(-hWidth/2, crossBarY + hHeight/2);
-          ctx.lineTo(-hWidth/2, crossBarY - hHeight/2); ctx.lineTo(-vWidth/2, crossBarY - hHeight/2);
+          ctx.moveTo(-vWidth / 2, -vHeight / 2); ctx.lineTo(vWidth / 2, -vHeight / 2);
+          ctx.lineTo(vWidth / 2, crossBarY - hHeight / 2); ctx.lineTo(hWidth / 2, crossBarY - hHeight / 2);
+          ctx.lineTo(hWidth / 2, crossBarY + hHeight / 2); ctx.lineTo(vWidth / 2, crossBarY + hHeight / 2);
+          ctx.lineTo(vWidth / 2, vHeight / 2); ctx.lineTo(-vWidth / 2, vHeight / 2);
+          ctx.lineTo(-vWidth / 2, crossBarY + hHeight / 2); ctx.lineTo(-hWidth / 2, crossBarY + hHeight / 2);
+          ctx.lineTo(-hWidth / 2, crossBarY - hHeight / 2); ctx.lineTo(-vWidth / 2, crossBarY - hHeight / 2);
           ctx.closePath();
           ctx.fill();
           ctx.strokeStyle = isActive ? '#fff' : 'rgba(255,255,255,0.5)';
@@ -373,7 +707,7 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
           ctx.stroke();
         } else {
           const r = body.circleRadius;
-          const grad = ctx.createRadialGradient(-r/3, -r/3, r/10, 0, 0, r);
+          const grad = ctx.createRadialGradient(-r / 3, -r / 3, r / 10, 0, 0, r);
           if (isActive) {
             grad.addColorStop(0, '#fff'); grad.addColorStop(0.5, '#F5E6A0'); grad.addColorStop(1, '#d4af37');
           } else if (data.physicsType === 'large') {
@@ -383,7 +717,7 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
           }
           if (isPrayed || isActive) {
             ctx.shadowColor = '#d4af37';
-            ctx.shadowBlur = (isActive ? 20 + Math.sin(Date.now() / 150) * 8 : 10) + (isActive ? pulse * 40 : 0);
+            ctx.shadowBlur = (isActive ? 20 + Math.sin(Date.now() / 150) * 8 : 10) + (isActive ? pulseRef.current * 40 : 0);
           }
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
@@ -393,6 +727,54 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
           ctx.lineWidth = isActive ? 2 : 1;
           ctx.stroke();
         }
+        ctx.restore();
+      }
+
+      // ── Rescue hint: faint cross to draw ──
+      if (needsRescueRef.current || rescueFlashRef.current > 0) {
+        const alpha = needsRescueRef.current
+          ? 0.15 + Math.sin(Date.now() / 600) * 0.08
+          : rescueFlashRef.current * 0.3;
+        const crossH = Math.min(width, height) * 0.18;
+        const crossW = crossH * 0.65;
+        const barY = -crossH * 0.15;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = 15;
+
+        // Vertical
+        ctx.beginPath();
+        ctx.moveTo(0, -crossH / 2);
+        ctx.lineTo(0, crossH / 2);
+        ctx.stroke();
+
+        // Horizontal
+        ctx.beginPath();
+        ctx.moveTo(-crossW / 2, barY);
+        ctx.lineTo(crossW / 2, barY);
+        ctx.stroke();
+
+        // Label
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✝  para reunir', 0, crossH / 2 + 18);
+
+        ctx.restore();
+      }
+
+      // ── Magnetism active flash ──
+      if (magnetismActiveRef.current) {
+        ctx.save();
+        ctx.globalAlpha = 0.03 + Math.sin(Date.now() / 100) * 0.02;
+        ctx.fillStyle = '#d4af37';
+        ctx.fillRect(0, 0, width, height);
         ctx.restore();
       }
 
@@ -407,11 +789,17 @@ const VirtualRosaryPhysics = ({ onNodeClick, onLinkClick, activePrayerIndex = 0,
       Events.off(mouseConstraint);
       World.clear(world, false);
       Engine.clear(engine);
+      canvas.removeEventListener('mousemove', onCanvasMouseMove);
+      canvas.removeEventListener('touchmove', onCanvasTouchMove);
+      canvas.removeEventListener('mousedown', onGuidedMouseDown);
+      canvas.removeEventListener('mouseup', onGuidedMouseUp);
+      canvas.removeEventListener('touchstart', onGuidedTouchStart);
+      canvas.removeEventListener('touchend', onGuidedTouchEnd);
       canvas.removeEventListener('touchstart', handleTouchStart);
       canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('wheel', handleWheel);
     };
-  }, [onNodeClick, onLinkClick, misterioActual, soundEnabled, isLeftHanded]);
+  }, [onNodeClick, onLinkClick, onAdvance, onRetreat, misterioActual, soundEnabled, isLeftHanded, guided]);
 
   return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }} />;
 };

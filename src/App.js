@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import ViewPrayers from "./components/ViewPrayers/ViewPrayers";
 import PrayerButtons from "./components/PrayerButtons/PrayerButtons";
 import Header from "./components/common/Header";
-import Bead from "./components/RosarioNube/Bead";
 import VirtualRosary from "./components/RosarioNube/VirtualRosary";
 import { getPrayerForNode, getPrayerForLink } from "./utils/prayerMapper";
 import StatsView from "./components/StatsView";
@@ -15,8 +14,12 @@ import RosedalView from "./components/Rosedal/RosedalView";
 import DailyTracker from "./components/Rosedal/DailyTracker";
 
 function App({ isEmbedded = false }) {
+  const [currentMystery, setcurrentMystery] = useState(getDefaultMystery());
+  const [prayer, setPrayer] = useState(
+    "Por la señal de la Santa Cruz \nde nuestros enemigos, líbranos Señor, Dios nuestro. \nAmén.\n\nAbre Señor, mis labios \ny proclamará mi boca tu alabanza."
+  );
   const [prayerImg, setPrayerImg] = useState(
-    RosarioPrayerBook.mysteries[currentMystery][0]
+    RosarioPrayerBook.mysteries[currentMystery]?.[0] || ""
   );
   const [count, setCount] = useState(0);
   const [activeNode, setActiveNode] = useState(null);
