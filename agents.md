@@ -162,3 +162,12 @@ ID meanings:
 - Header "Plan Diario" kept (Plan Diario = daily commitment, Rosedal = garden)
 - AppShell: subtle `v0.2.0` badge bottom-left
 - Version naming convention documented in DESIGN REQUIREMENTS
+
+## SESSION NOTES (2026-05-08)
+- Bumped version to `0.3.0 — La Rosa Accesible`
+- Unified Physics Rosary with Interactive Rosa: background now responds to "empty" touches with a charging bloom
+- Integrated Gothic Organ Synth: physics beads now hum with sacred frequencies on interaction
+- Navigation Unified: legacy header removed, all features (Plan, Stats) moved to BottomNav
+- Elderly Accessibility: implemented "Lectura Fácil" (Simple Mode) with 40% larger fonts and 4x faster interaction
+- Physics refinement: separated tap/swipe callbacks to ensure navigation always works during meditation
+- Fixed touch obfuscation: Matter.js canvas now delegates unused events to the moment layer

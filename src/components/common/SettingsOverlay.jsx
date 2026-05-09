@@ -71,6 +71,22 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose })
             </label>
           </div>
 
+          {/* Simple Mode (Accessibility) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(212, 175, 55, 0.05)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+            <div>
+              <div style={{ color: '#D4AF37', fontSize: '1rem', fontWeight: 'bold' }}>👵 Lectura Fácil</div>
+              <div style={{ color: '#aaa', fontSize: '0.75rem' }}>Letras grandes y toques simples</div>
+            </div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={settings.simpleMode}
+                onChange={(e) => onUpdateSettings({ ...settings, simpleMode: e.target.checked })}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
           {/* Meditation Rhythm (The Three Gifts) */}
           <div style={{ marginTop: '10px' }}>
             <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '12px' }}>Ritmo de Meditación</div>

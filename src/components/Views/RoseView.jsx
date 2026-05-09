@@ -69,7 +69,8 @@ export default function RoseView({
   onBack, 
   soundEnabled, 
   onToggleSound,
-  meditationRitmo = 'incienso'
+  meditationRitmo = 'incienso',
+  simpleMode = false
 }) {
   const { addRosas, storeRoseData, totalAveMarias } = useAveMariaStats();
   const totalRosasRef = useRef(totalAveMarias);
@@ -623,6 +624,11 @@ export default function RoseView({
     } else if (e.pointerType === 'touch' && e.target.setPointerCapture) {
       e.target.setPointerCapture(e.pointerId);
     }
+    
+    // Simple Mode: Allow advance on simple tap (if not already completed)
+    if (simpleMode && !isVersoComplete && !isPrayerComplete) {
+      advanceVerse(1);
+    }
   };
 
   const handleTrackPointer = (clientX, clientY, pointerType) => {
@@ -847,6 +853,7 @@ export default function RoseView({
             wordSpanRefs={wordSpanRefs}
             warmthTick={warmthTick}
             totalAveMarias={totalAveMarias}
+            simpleMode={simpleMode}
          />
       </div>
 

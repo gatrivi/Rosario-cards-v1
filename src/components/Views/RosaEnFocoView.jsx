@@ -13,11 +13,18 @@ const VERSOS_AVE_MARIA = [
   "Amén."
 ];
 
-export default function RosaEnFocoView({ misterioColor = "#8B0000" }) {
+export default function RosaEnFocoView({ 
+  misterioColor = "#8B0000", 
+  externalIsCargando = null, 
+  onComplete = null,
+  simpleMode = false
+}) {
   // Estado de carga continua: 0 (inicio) a 1000 (fin)
   const [carga, setCarga] = useState(0);
-  const [isCargando, setIsCargando] = useState(false);
+  const [internalIsCargando, setInternalIsCargando] = useState(false);
   const timerRef = useRef(null);
+
+  const isCargando = externalIsCargando !== null ? externalIsCargando : internalIsCargando;
 
   // Calcula el verso actual (0 a 9) basándose en la carga total
   // Usamos Math.min para que no pase de 9 al llegar a 1000
@@ -31,14 +38,20 @@ export default function RosaEnFocoView({ misterioColor = "#8B0000" }) {
     if (isCargando && carga < 1000) {
       // Cada 30ms sumamos un poco de carga. 
       // Matemáticas: (1000 puntos / 2.5 por tick) * 30ms = 12 segundos por Ave María.
-      // Un ritmo excelente y meditativo.
+      // Simple Mode: 4x más rápido (3 segundos) para evitar fatiga.
+      const tick = simpleMode ? 10 : 2.5;
+
       timerRef.current = setInterval(() => {
         setCarga(prev => {
           if (prev >= 1000) {
             clearInterval(timerRef.current);
             return 1000;
           }
-          return prev + 2.5; 
+          // Haptic feedback sutil cada 25% de un verso para dar sensación de "textura"
+          if (Math.floor(prev) % 25 === 0 && navigator.vibrate) {
+            navigator.vibrate(5);
+          }
+          return prev + tick; 
         });
       }, 30);
     } else {
@@ -46,41 +59,44 @@ export default function RosaEnFocoView({ misterioColor = "#8B0000" }) {
     }
 
     return () => clearInterval(timerRef.current); // Limpieza al desmontar
-  }, [isCargando, carga]);
+  }, [isCargando, carga, simpleMode]);
 
   // Cuando se llega al final de la oración
   useEffect(() => {
     if (carga >= 1000) {
-      setIsCargando(false); // Detenemos la carga
+      if (externalIsCargando === null) setInternalIsCargando(false);
       
       // Vibración de éxito (Doble latido)
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       
-      // Aquí llamarías a tu contexto: onRosaCompletada();
+      // Llamar al callback de completado
+      if (onComplete) onComplete();
       
       // Reiniciamos después de 1.5 segundos para disfrutar la rosa completa
       setTimeout(() => setCarga(0), 1500);
     }
-  }, [carga]);
+  }, [carga, externalIsCargando, onComplete]);
 
-  // Manejadores de eventos táctiles/mouse
+  // Manejadores de eventos táctiles/mouse (solo si no es externo)
   const iniciarCarga = (e) => {
-    // Evita comportamientos raros de click derecho o gestos largos del móvil
+    if (externalIsCargando !== null) return;
     e.preventDefault(); 
-    if (carga < 1000) setIsCargando(true);
+    if (carga < 1000) setInternalIsCargando(true);
   };
 
   const detenerCarga = () => {
-    setIsCargando(false);
+    if (externalIsCargando !== null) return;
+    setInternalIsCargando(false);
   };
 
   return (
     <div 
-      // EVENTOS UNIFICADOS (Mouse + Touch)
-      onPointerDown={iniciarCarga}
-      onPointerUp={detenerCarga}
-      onPointerLeave={detenerCarga} // Por si el dedo/mouse sale de la pantalla mientras presiona
-      onContextMenu={(e) => e.preventDefault()} // Evita que salga el menú del celular al mantener presionado
+      // EVENTOS UNIFICADOS (Solo si no es controlado externamente)
+      onPointerDown={externalIsCargando === null ? iniciarCarga : null}
+      onPointerUp={externalIsCargando === null ? detenerCarga : null}
+      onPointerLeave={externalIsCargando === null ? detenerCarga : null}
+      onContextMenu={(e) => e.preventDefault()}
+
       
       style={{ 
         height: '100%', 
@@ -104,9 +120,12 @@ export default function RosaEnFocoView({ misterioColor = "#8B0000" }) {
         {/* Barra de progreso circular o halo detrás de la rosa */}
         <div style={{
            position: 'absolute',
-           width: '200px', height: '200px', borderRadius: '50%',
+           width: '240px', height: '240px', borderRadius: '50%',
            background: `conic-gradient(${misterioColor} ${progresoVisual * 360}deg, transparent 0)`,
-           opacity: 0.15, transition: 'background 0.1s linear'
+           opacity: isCargando ? 0.3 : 0.1, 
+           transition: 'opacity 0.3s ease, transform 0.3s ease',
+           transform: isCargando ? 'scale(1.1)' : 'scale(1)',
+           filter: isCargando ? 'blur(2px)' : 'none'
         }} />
 
         {/* El Emoji de la Rosa */}
@@ -126,17 +145,17 @@ export default function RosaEnFocoView({ misterioColor = "#8B0000" }) {
       <div style={{ flex: '1 1 50%', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
         
         {/* Verso Anterior */}
-        <div style={{ position: 'absolute', top: '10%', width: '100%', textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2.5vh, 1.2rem)', opacity: 0.5, transition: 'opacity 0.3s' }}>
+        <div style={{ position: 'absolute', top: '10%', width: '100%', textAlign: 'center', color: '#444', fontSize: simpleMode ? '1.5rem' : 'clamp(1rem, 2.5vh, 1.2rem)', opacity: 0.5, transition: 'opacity 0.3s' }}>
           {versoActualIndex > 0 && carga < 1000 ? VERSOS_AVE_MARIA[versoActualIndex - 1] : ''}
         </div>
 
         {/* Verso Actual */}
-        <div style={{ textAlign: 'center', color: isCargando ? '#D4AF37' : '#888', fontWeight: 'bold', fontSize: 'clamp(1.2rem, 3.5vh, 1.6rem)', zIndex: 10, transition: 'color 0.3s' }}>
+        <div style={{ textAlign: 'center', color: isCargando ? '#D4AF37' : '#888', fontWeight: 'bold', fontSize: simpleMode ? '2.1rem' : 'clamp(1.2rem, 3.5vh, 1.6rem)', zIndex: 10, transition: 'color 0.3s' }}>
           {carga >= 1000 ? 'Amén.' : VERSOS_AVE_MARIA[versoActualIndex]}
         </div>
 
         {/* Verso Siguiente */}
-        <div style={{ position: 'absolute', bottom: '10%', width: '100%', textAlign: 'center', color: '#444', fontSize: 'clamp(1rem, 2.5vh, 1.2rem)', opacity: 0.5, transition: 'opacity 0.3s' }}>
+        <div style={{ position: 'absolute', bottom: '10%', width: '100%', textAlign: 'center', color: '#444', fontSize: simpleMode ? '1.5rem' : 'clamp(1rem, 2.5vh, 1.2rem)', opacity: 0.5, transition: 'opacity 0.3s' }}>
           {versoActualIndex < 9 ? VERSOS_AVE_MARIA[versoActualIndex + 1] : ''}
         </div>
 

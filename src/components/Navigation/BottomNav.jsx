@@ -1,6 +1,6 @@
 import React from 'react';
 
-function NavButton({ icono, texto, activo, onClick, disabled }) {
+function NavButton({ icono, texto, activo, onClick, disabled, simpleMode }) {
   return (
     <button 
       onClick={disabled ? null : onClick}
@@ -21,23 +21,24 @@ function NavButton({ icono, texto, activo, onClick, disabled }) {
         opacity: disabled ? 0.5 : 1
       }}
     >
-      <span style={{ fontSize: '1.5rem', marginBottom: '4px', filter: activo ? 'drop-shadow(0 0 5px rgba(212,175,55,0.5))' : (disabled ? 'grayscale(1)' : 'none') }}>
+      <span style={{ fontSize: simpleMode ? '1.8rem' : '1.5rem', marginBottom: '4px', filter: activo ? 'drop-shadow(0 0 5px rgba(212,175,55,0.5))' : (disabled ? 'grayscale(1)' : 'none') }}>
         {icono}
       </span>
-      <span style={{ fontSize: disabled ? '0.6rem' : '0.7rem', fontWeight: activo ? 'bold' : 'normal' }}>
+      <span style={{ fontSize: simpleMode ? '0.8rem' : (disabled ? '0.6rem' : '0.7rem'), fontWeight: activo ? 'bold' : 'normal' }}>
         {texto}
       </span>
     </button>
   );
 }
 
-export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded }) {
+export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded, simpleMode = false }) {
   const navItems = [
     { id: 'monk', icono: '🧘', texto: 'Monje' },
     { id: 'camino', icono: '🚶', texto: 'Camino' },
-    { id: 'macetones', icono: '🌹', texto: 'Rosedal' },
+    { id: 'tracker', icono: '📅', texto: 'Plan' },
     { id: 'rosary', icono: '📿', texto: 'Rosario' },
     { id: 'rose', icono: '🌹', texto: 'Rosa' },
+    { id: 'stats', icono: '📊', texto: 'Stats' },
   ];
 
   const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;
@@ -61,6 +62,7 @@ export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded })
           texto={item.texto} 
           activo={vistaActiva === item.id} 
           onClick={() => setVistaActiva(item.id)} 
+          simpleMode={simpleMode}
         />
       ))}
     </div>

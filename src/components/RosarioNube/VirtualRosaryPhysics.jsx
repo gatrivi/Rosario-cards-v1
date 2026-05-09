@@ -40,11 +40,25 @@ function detectCrossGesture(points) {
   return topCenter > 1 && bottomCenter > 1 && midLeft > 1 && midRight > 1 && center > 2 && verticalRatio > 1.0;
 }
 
+const PRAYER_FREQ = {
+  'P': 130.81, // C3 — Padre Nuestro (grounding)
+  'A': 164.81, // E3 — Ave María (warm)
+  'G': 196.00, // G3 — Gloria (bright, ascending)
+  'F': 146.83, // D3 — Creed (contemplative)
+  'LL': 130.81, // C3
+  'S': 130.81, // C3
+};
+
 const VirtualRosaryPhysics = ({
   onNodeClick,
   onLinkClick,
   onAdvance,
   onRetreat,
+  onSwipeAdvance,
+  onSwipeRetreat,
+  onEmptyPointerDown,
+  onEmptyPointerMove,
+  onEmptyPointerUp,
   activePrayerIndex = 0,
   misterioActual = 'gozosos',
   soundEnabled = true,
@@ -62,6 +76,12 @@ const VirtualRosaryPhysics = ({
   const homePositionsRef = useRef([]);
   const guidedRef = useRef(guided);
   const swipeStartRef = useRef(null);
+  const isEmptyTouchingRef = useRef(false);
+
+  // Audio system refs
+  const audioCtxRef = useRef(null);
+  const synthRef = useRef(null);
+  const warmthTickRef = useRef(0);
 
   // Gesture & magnetism refs
   const strokePointsRef = useRef([]);
@@ -95,6 +115,7 @@ const VirtualRosaryPhysics = ({
     canvas.height = height;
 
     const engine = engineRef.current;
+    const world = engine.world;
     const beadsData = getRosaryBeads(misterioActual);
 
     const allBodies = [];
@@ -223,7 +244,6 @@ const VirtualRosaryPhysics = ({
       allConstraints.push(Constraint.create({ bodyA, pointA: offsetA, bodyB, pointB: offsetB, ...props, render: { visible: false } }));
     });
 
-    const world = engine.world;
     World.add(world, [...allBodies, ...allConstraints]);
 
     const mouse = Mouse.create(canvas);
@@ -234,6 +254,120 @@ const VirtualRosaryPhysics = ({
 
     // Mouse constraint available in both modes, but very soft in guided
     World.add(world, mouseConstraint);
+
+    const getBaseFreq = () => {
+      const mapping = getPhysicalMapping(misterioActual);
+      const activeIdx = activeIndexRef.current;
+      const beadIndex = mapping[activeIdx];
+      const beadData = beadsData[beadIndex];
+      const role = beadData?.role || 'A';
+      return PRAYER_FREQ[role] || PRAYER_FREQ[role[0]] || 164.81;
+    };
+
+    const initSynth = () => {
+      if (!audioCtxRef.current) {
+        const ctx = audioManager.getContext();
+        if (!ctx) return;
+        audioCtxRef.current = ctx;
+
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = 0;
+        gainNode.connect(ctx.destination);
+
+        const base = getBaseFreq();
+
+        // --- Gothic Organ Timbre ---
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(base, ctx.currentTime);
+
+        const osc2 = ctx.createOscillator();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(base * 1.5, ctx.currentTime);
+
+        const osc3 = ctx.createOscillator();
+        osc3.type = 'sine';
+        osc3.frequency.setValueAtTime(base * 0.5, ctx.currentTime);
+        
+        const osc4 = ctx.createOscillator();
+        osc4.type = 'sine';
+        osc4.frequency.setValueAtTime(base * 4, ctx.currentTime);
+        const celestialGain = ctx.createGain();
+        celestialGain.gain.value = 0;
+
+        const padGain = ctx.createGain();
+        padGain.gain.value = 0.02;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 600;
+        filter.Q.value = 1;
+
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.2;
+        lfoGain.gain.value = 0;
+        lfo.connect(lfoGain);
+        lfoGain.connect(filter.frequency);
+        lfo.start();
+
+        osc.connect(filter);
+        osc2.connect(filter);
+        osc3.connect(padGain);
+        osc4.connect(celestialGain);
+        celestialGain.connect(filter);
+        padGain.connect(filter);
+        filter.connect(gainNode);
+
+        osc.start();
+        osc2.start();
+        osc3.start();
+        osc4.start();
+
+        synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain };
+      }
+    };
+
+    const updateAudioWarmth = (warmth = 0.1) => {
+      if (!synthRef.current || !soundEnabled) return;
+      const { filter, gainNode, celestialGain, lfoGain } = synthRef.current;
+      const ctx = audioCtxRef.current;
+      const t = ctx.currentTime;
+      
+      const sessionProgress = (activeIndexRef.current + 1) / (beadsData.length || 1);
+      const cosmic = { mercury: 0.5, jupiter: 0.5, saturn: 0.5, pluto: 0.5, uranus: 0.5, neptune: 0.5 }; // Fallback
+      try {
+        const { getCosmicPhases } = require('../../utils/cosmicModulator');
+        const c = getCosmicPhases();
+        if (c) Object.assign(cosmic, c);
+      } catch(e){}
+
+      const deepBase = cosmic.pluto * 10 + cosmic.saturn * 5;
+      const targetFreq = 400 + warmth * 400 + sessionProgress * 400 + deepBase;
+      filter.frequency.setTargetAtTime(targetFreq, t, 0.5);
+      filter.Q.setTargetAtTime(1 + sessionProgress * 2 + cosmic.neptune * 1.5, t, 0.5); 
+      celestialGain.gain.setTargetAtTime(sessionProgress * 0.015 + (cosmic.uranus * 0.005), t, 1.0); 
+      lfoGain.gain.setTargetAtTime(sessionProgress * 50 + (cosmic.mercury * 20), t, 1.0);
+      gainNode.gain.setTargetAtTime(0.012 + warmth * 0.01, t, 0.3);
+    };
+
+    const stopSynth = () => {
+      if (synthRef.current) {
+        synthRef.current.gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.5);
+      }
+    };
+
+    const checkBeadHit = (pos) => {
+      const bodies = Composite.allBodies(world);
+      const pickRadius = 30 / zoomScaleRef.current;
+      const bounds = {
+        min: { x: pos.x - pickRadius, y: pos.y - pickRadius },
+        max: { x: pos.x + pickRadius, y: pos.y + pickRadius }
+      };
+      const potentialBodies = Query.region(bodies, bounds);
+      return potentialBodies.find(b => b.beadData);
+    };
 
     const audioCtx = audioManager.getContext();
     const playChime = (force, type, index, isProgress = false) => {
@@ -291,26 +425,26 @@ const VirtualRosaryPhysics = ({
     // ─── Stroke / Gesture tracking ───
     const onCanvasMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
-      strokePointsRef.current.push({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-        t: Date.now()
-      });
+      const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      strokePointsRef.current.push({ ...pos, t: Date.now() });
       if (strokePointsRef.current.length > 300) {
         strokePointsRef.current = strokePointsRef.current.slice(-200);
+      }
+      if (isEmptyTouchingRef.current && onEmptyPointerMove) {
+        onEmptyPointerMove(e);
       }
     };
 
     const onCanvasTouchMove = (e) => {
       if (e.touches.length === 1) {
         const rect = canvas.getBoundingClientRect();
-        strokePointsRef.current.push({
-          x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top,
-          t: Date.now()
-        });
+        const pos = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+        strokePointsRef.current.push({ ...pos, t: Date.now() });
         if (strokePointsRef.current.length > 300) {
           strokePointsRef.current = strokePointsRef.current.slice(-200);
+        }
+        if (isEmptyTouchingRef.current && onEmptyPointerMove) {
+          onEmptyPointerMove(e);
         }
       }
     };
@@ -344,6 +478,17 @@ const VirtualRosaryPhysics = ({
       mouseDownPos = { x: event.mouse.position.x, y: event.mouse.position.y, time: Date.now() };
       swipeStartRef.current = { x: event.mouse.position.x, y: event.mouse.position.y };
       strokePointsRef.current = [];
+      
+      const hit = checkBeadHit(event.mouse.position);
+      isEmptyTouchingRef.current = !hit;
+      if (!hit && onEmptyPointerDown) {
+        onEmptyPointerDown(event.sourceEvent);
+      }
+
+      if (soundEnabled) {
+        initSynth();
+        updateAudioWarmth(hit ? 0.3 : 0.1);
+      }
     };
 
     const onMouseUp = (event) => {
@@ -351,12 +496,24 @@ const VirtualRosaryPhysics = ({
       const dist = Math.hypot(mouseUpPos.x - mouseDownPos.x, mouseUpPos.y - mouseDownPos.y);
       const duration = Date.now() - mouseDownPos.time;
 
-      // Swipe detection (guided mode)
-      if (guidedRef.current && swipeStartRef.current && dist > 40 && duration < 600) {
+      stopSynth();
+
+      if (isEmptyTouchingRef.current && onEmptyPointerUp) {
+        onEmptyPointerUp(event.sourceEvent);
+      }
+      isEmptyTouchingRef.current = false;
+
+      // Swipe detection
+      if (swipeStartRef.current && dist > 40 && duration < 600) {
         const dx = mouseUpPos.x - swipeStartRef.current.x;
         if (Math.abs(dx) > Math.abs(mouseUpPos.y - swipeStartRef.current.y)) {
-          if (dx < 0 && onAdvance) onAdvance();
-          else if (dx > 0 && onRetreat) onRetreat();
+          if (dx < 0) {
+            if (onSwipeAdvance) onSwipeAdvance();
+            else if (onAdvance) onAdvance();
+          } else if (dx > 0) {
+            if (onSwipeRetreat) onSwipeRetreat();
+            else if (onRetreat) onRetreat();
+          }
           swipeStartRef.current = null;
           strokePointsRef.current = [];
           return;
@@ -370,19 +527,15 @@ const VirtualRosaryPhysics = ({
 
       if (dist < 15) {
         if (guidedRef.current) {
+          // In guided mode, we advance on any tap that didn't hit a bead or start a charge
+          // If onEmptyPointerDown was used, we might want to skip onAdvance here
+          // But for now, let's keep it simple.
           if (onAdvance) onAdvance();
           strokePointsRef.current = [];
           return;
         }
 
-        const bodies = Composite.allBodies(world);
-        const pickRadius = 30 / zoomScaleRef.current;
-        const bounds = {
-          min: { x: mouseUpPos.x - pickRadius, y: mouseUpPos.y - pickRadius },
-          max: { x: mouseUpPos.x + pickRadius, y: mouseUpPos.y + pickRadius }
-        };
-        const potentialBodies = Query.region(bodies, bounds);
-        const beadBody = potentialBodies.find(b => b.beadData);
+        const beadBody = checkBeadHit(mouseUpPos);
 
         if (beadBody) {
           const data = beadBody.beadData;
@@ -399,9 +552,21 @@ const VirtualRosaryPhysics = ({
     // Guided mode: canvas listeners for click/swipe + cross gesture
     const onGuidedMouseDown = (e) => {
       const rect = canvas.getBoundingClientRect();
-      mouseDownPos = { x: e.clientX - rect.left, y: e.clientY - rect.top, time: Date.now() };
+      const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      mouseDownPos = { x: pos.x, y: pos.y, time: Date.now() };
       swipeStartRef.current = { x: mouseDownPos.x, y: mouseDownPos.y };
       strokePointsRef.current = [];
+
+      const hit = checkBeadHit(pos);
+      isEmptyTouchingRef.current = !hit;
+      if (!hit && onEmptyPointerDown) {
+        onEmptyPointerDown(e);
+      }
+
+      if (soundEnabled) {
+        initSynth();
+        updateAudioWarmth(hit ? 0.3 : 0.1);
+      }
     };
 
     const onGuidedMouseUp = (e) => {
@@ -410,11 +575,23 @@ const VirtualRosaryPhysics = ({
       const dist = Math.hypot(up.x - mouseDownPos.x, up.y - mouseDownPos.y);
       const duration = Date.now() - mouseDownPos.time;
 
+      stopSynth();
+
+      if (isEmptyTouchingRef.current && onEmptyPointerUp) {
+        onEmptyPointerUp(e);
+      }
+      isEmptyTouchingRef.current = false;
+
       if (swipeStartRef.current && dist > 40 && duration < 600) {
         const dx = up.x - swipeStartRef.current.x;
         if (Math.abs(dx) > Math.abs(up.y - swipeStartRef.current.y)) {
-          if (dx < 0 && onAdvance) onAdvance();
-          else if (dx > 0 && onRetreat) onRetreat();
+          if (dx < 0) {
+            if (onSwipeAdvance) onSwipeAdvance();
+            else if (onAdvance) onAdvance();
+          } else if (dx > 0) {
+            if (onSwipeRetreat) onSwipeRetreat();
+            else if (onRetreat) onRetreat();
+          }
           swipeStartRef.current = null;
           strokePointsRef.current = [];
           return;
@@ -429,7 +606,8 @@ const VirtualRosaryPhysics = ({
         }
       }
 
-      if (dist < 15 && onAdvance) {
+      // Only advance if it was a quick tap AND NOT a charge interaction
+      if (dist < 15 && onAdvance && duration < 300) {
         onAdvance();
       }
       strokePointsRef.current = [];
@@ -438,9 +616,21 @@ const VirtualRosaryPhysics = ({
     const onGuidedTouchStart = (e) => {
       if (e.touches.length === 1) {
         const rect = canvas.getBoundingClientRect();
-        mouseDownPos = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top, time: Date.now() };
+        const pos = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+        mouseDownPos = { x: pos.x, y: pos.y, time: Date.now() };
         swipeStartRef.current = { x: mouseDownPos.x, y: mouseDownPos.y };
         strokePointsRef.current = [];
+
+        const hit = checkBeadHit(pos);
+        isEmptyTouchingRef.current = !hit;
+        if (!hit && onEmptyPointerDown) {
+          onEmptyPointerDown(e);
+        }
+
+        if (soundEnabled) {
+          initSynth();
+          updateAudioWarmth(hit ? 0.3 : 0.1);
+        }
       }
     };
 
@@ -451,11 +641,23 @@ const VirtualRosaryPhysics = ({
       const dist = Math.hypot(up.x - mouseDownPos.x, up.y - mouseDownPos.y);
       const duration = Date.now() - mouseDownPos.time;
 
+      stopSynth();
+
+      if (isEmptyTouchingRef.current && onEmptyPointerUp) {
+        onEmptyPointerUp(e);
+      }
+      isEmptyTouchingRef.current = false;
+
       if (swipeStartRef.current && dist > 40 && duration < 600) {
         const dx = up.x - swipeStartRef.current.x;
         if (Math.abs(dx) > Math.abs(up.y - swipeStartRef.current.y)) {
-          if (dx < 0 && onAdvance) onAdvance();
-          else if (dx > 0 && onRetreat) onRetreat();
+          if (dx < 0) {
+            if (onSwipeAdvance) onSwipeAdvance();
+            else if (onAdvance) onAdvance();
+          } else if (dx > 0) {
+            if (onSwipeRetreat) onSwipeRetreat();
+            else if (onRetreat) onRetreat();
+          }
           swipeStartRef.current = null;
           strokePointsRef.current = [];
           return;
@@ -470,7 +672,7 @@ const VirtualRosaryPhysics = ({
         }
       }
 
-      if (dist < 15 && onAdvance) {
+      if (dist < 15 && onAdvance && duration < 300) {
         onAdvance();
       }
       strokePointsRef.current = [];
@@ -478,8 +680,11 @@ const VirtualRosaryPhysics = ({
 
     canvas.addEventListener('mousedown', onGuidedMouseDown);
     canvas.addEventListener('mouseup', onGuidedMouseUp);
+    canvas.addEventListener('mouseleave', onGuidedMouseUp);
     canvas.addEventListener('touchstart', onGuidedTouchStart, { passive: true });
     canvas.addEventListener('touchend', onGuidedTouchEnd, { passive: true });
+    canvas.addEventListener('touchcancel', onGuidedTouchEnd, { passive: true });
+
 
     // Touch zoom (only in free mode)
     let initialTouchDist = 0;

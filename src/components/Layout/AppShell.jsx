@@ -17,8 +17,11 @@ import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
 import { useCloudSync } from '../../hooks/useCloudSync';
+import DailyTracker from '../Rosedal/DailyTracker';
+import StatsView from '../StatsView';
 
-const APP_VERSION = '0.2.0';
+const APP_VERSION = '0.3.0';
+
 
 export default function AppShell() {
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
@@ -35,7 +38,8 @@ export default function AppShell() {
       virtualRosaryEnabled: true,
       soundEnabled: localStorage.getItem('rosario_sound_enabled') !== 'false',
       meditationRitmo: 'incienso', // oro, incienso, mirra
-      isLeftHanded: localStorage.getItem('rosario_left_handed') === 'true'
+      isLeftHanded: localStorage.getItem('rosario_left_handed') === 'true',
+      simpleMode: localStorage.getItem('rosario_simple_mode') === 'true'
     };
   });
 
@@ -43,6 +47,7 @@ export default function AppShell() {
     localStorage.setItem('rosario_settings', JSON.stringify(settings));
     localStorage.setItem('rosario_sound_enabled', String(settings.soundEnabled));
     localStorage.setItem('rosario_left_handed', String(settings.isLeftHanded));
+    localStorage.setItem('rosario_simple_mode', String(settings.simpleMode));
   }, [settings]);
 
   // --- Lifting Prayer State ---
@@ -101,6 +106,8 @@ export default function AppShell() {
       case 'monk': return <MonkView />;
       case 'camino': return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
       case 'macetones': return <MacetonView onSelectMaceton={() => setVistaActiva('rosary')} />;
+      case 'stats': return <StatsView />;
+      case 'tracker': return <DailyTracker />;
       case 'rosary': return (
         <RosarioVirtualView 
           currentPrayerIndex={currentPrayerIndex}
@@ -108,6 +115,7 @@ export default function AppShell() {
           onUpdateProgreso={handleUpdateProgreso}
           soundEnabled={settings.soundEnabled}
           isLeftHanded={settings.isLeftHanded}
+          simpleMode={settings.simpleMode}
         />
       );
       case 'rose': return (
@@ -390,3 +398,4 @@ function HandToggle({ isLeftHanded, onToggle }) {
     </div>
   );
 }
+

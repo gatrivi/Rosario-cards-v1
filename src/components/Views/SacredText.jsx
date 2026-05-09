@@ -17,7 +17,8 @@ const SacredText = ({
   charDwellRef, 
   wordSpanRefs, 
   warmthTick,
-  totalAveMarias = 0 
+  totalAveMarias = 0,
+  simpleMode = false 
 }) => {
   const SILVER = [185, 185, 195];
   const GOLD = [212, 175, 55];
@@ -86,11 +87,12 @@ const SacredText = ({
 
       const seed = gi * 13 + wordIdx * 7;
       const fontVariation = {
-        fontWeight: 700 + (seed % 3 === 0 ? 100 : 0),
-        letterSpacing: `${(seed % 5 - 2) * 0.2}px`,
+        fontWeight: simpleMode ? 700 : (700 + (seed % 3 === 0 ? 100 : 0)),
+        fontSize: simpleMode ? '2rem' : 'inherit',
+        letterSpacing: simpleMode ? '0.5px' : `${(seed % 5 - 2) * 0.2}px`,
         opacity: 1 - (seed % 11) * 0.015,
         display: 'inline-block',
-        transform: `rotate(${(seed % 7 - 3.5) * 0.1}deg) translateY(${(seed % 13 - 6.5) * 0.1}px)`
+        transform: simpleMode ? 'none' : `rotate(${(seed % 7 - 3.5) * 0.1}deg) translateY(${(seed % 13 - 6.5) * 0.1}px)`
       };
 
       if (isPrayerComplete || isVersoComplete) {

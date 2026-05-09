@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import VirtualRosaryPhysics from '../RosarioNube/VirtualRosaryPhysics';
 import { getSequenceData } from './RoseView';
+import RosaEnFocoView from './RosaEnFocoView';
 
-export default function RosarioVirtualView({ currentPrayerIndex, misterioActual, onUpdateProgreso, soundEnabled, isLeftHanded }) {
+export default function RosarioVirtualView({ currentPrayerIndex, misterioActual, onUpdateProgreso, soundEnabled, isLeftHanded, simpleMode = false }) {
   const [versoIndex, setVersoIndex] = useState(0);
   const [guided, setGuided] = useState(true);
   const [showHint, setShowHint] = useState(true);
+  const [isCargandoRosa, setIsCargandoRosa] = useState(false);
   const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
 
   useEffect(() => {
@@ -45,6 +47,7 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
 
   const activePrayer = secuencia[currentPrayerIndex];
   const bgImage = activePrayer?.img || '/gallery-images/cathedral-painting.jpg';
+  const isAveMaria = activePrayer?.id === 'A';
 
   return (
     <div style={{
@@ -57,7 +60,7 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
 
       {/* ── Layer 1: Background image (implicit, set on parent) */}
 
-      {/* ── Layer 2: Prayer text — middle z-index, visible through and around the rosary */}
+      {/* ── Layer 2: Moment Layer (Rosa / Prayer Text) ── */}
       <div style={{
         position: 'absolute',
         top: 0, left: 0, width: '100%', height: '100%',
@@ -65,26 +68,35 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none'
+        justifyContent: 'center'
       }}>
-        <div
-          key={currentPrayerIndex + '-' + versoIndex}
-          style={{
-            color: 'rgba(240, 240, 240, 0.55)',
-            fontSize: 'clamp(1.3rem, 3.2vh, 1.9rem)',
-            lineHeight: 1.65,
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontStyle: 'italic',
-            textAlign: 'center',
-            maxWidth: '85%',
-            textShadow: '0 2px 12px rgba(0,0,0,0.9)',
-            padding: '30px',
-            animation: 'textFade 0.6s cubic-bezier(0.23, 1, 0.32, 1) both'
-          }}
-        >
-          {activePrayer?.versos?.[versoIndex] || 'Toca para comenzar...'}
-        </div>
+        {isAveMaria ? (
+          <RosaEnFocoView 
+            misterioColor="#D4AF37" 
+            externalIsCargando={isCargandoRosa}
+            onComplete={handleAdvance}
+            simpleMode={simpleMode}
+          />
+        ) : (
+          <div
+            key={currentPrayerIndex + '-' + versoIndex}
+            style={{
+              color: 'rgba(240, 240, 240, 0.55)',
+              fontSize: simpleMode ? 'clamp(1.6rem, 4.5vh, 2.5rem)' : 'clamp(1.3rem, 3.2vh, 1.9rem)',
+              lineHeight: 1.65,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontStyle: 'italic',
+              textAlign: 'center',
+              maxWidth: '85%',
+              textShadow: '0 2px 12px rgba(0,0,0,0.9)',
+              padding: '30px',
+              animation: 'textFade 0.6s cubic-bezier(0.23, 1, 0.32, 1) both',
+              pointerEvents: 'none'
+            }}
+          >
+            {activePrayer?.versos?.[versoIndex] || 'Toca para comenzar...'}
+          </div>
+        )}
       </div>
 
       {/* ── Layer 3: Rosary — forefront, fully interactive */}
@@ -95,8 +107,12 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
         <VirtualRosaryPhysics
           onNodeClick={handleNodeClick}
           onLinkClick={handleLinkClick}
-          onAdvance={handleAdvance}
+          onAdvance={simpleMode ? handleAdvance : (!isAveMaria ? handleAdvance : null)}
           onRetreat={handleRetreat}
+          onSwipeAdvance={handleAdvance}
+          onSwipeRetreat={handleRetreat}
+          onEmptyPointerDown={() => setIsCargandoRosa(true)}
+          onEmptyPointerUp={() => setIsCargandoRosa(false)}
           activePrayerIndex={currentPrayerIndex}
           misterioActual={misterioActual}
           soundEnabled={soundEnabled}
@@ -104,6 +120,7 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
           guided={guided}
         />
       </div>
+
 
       {/* ── Floating chrome: title, verse indicator, mode toggle (z-index above rosary) */}
       <div style={{
