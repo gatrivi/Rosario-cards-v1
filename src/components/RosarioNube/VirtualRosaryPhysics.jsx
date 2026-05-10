@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import Matter from 'matter-js';
 import { getRosaryBeads, getPhysicalMapping } from '../../data/physicsRosaryData';
 import audioManager from '../../utils/audioManager';
+import { SACRED_SYMBOLS, SYMBOL_MAP } from '../../data/SacredSymbols';
 
 const { Engine, World, Bodies, Constraint, Mouse, MouseConstraint, Composite, Events, Query, Body } = Matter;
 
@@ -81,7 +82,6 @@ const VirtualRosaryPhysics = ({
   // Audio system refs
   const audioCtxRef = useRef(null);
   const synthRef = useRef(null);
-  const warmthTickRef = useRef(0);
 
   // Gesture & magnetism refs
   const strokePointsRef = useRef([]);
@@ -868,6 +868,7 @@ const VirtualRosaryPhysics = ({
         const beadPhysicalIndex = beadsData.findIndex(b => b.id === data.id);
         const isPrayed = beadPhysicalIndex < activePhysicalIndex;
         const isActive = beadPhysicalIndex === activePhysicalIndex;
+        const isBeingDragged = mouseConstraint.constraint.body === body;
 
         ctx.save();
         ctx.translate(body.position.x, body.position.y);
@@ -875,17 +876,23 @@ const VirtualRosaryPhysics = ({
 
         ctx.globalAlpha = isPrayed ? baseAlpha + 0.2 : baseAlpha;
 
-        // ── Active bead halo (guided mode) ──
-        if (isActive && guidedRef.current) {
+        // ── Interaction Glow & Halo ──
+        if (isActive || isBeingDragged) {
           ctx.save();
           ctx.beginPath();
-          const haloR = (body.circleRadius || 15) + 8 + Math.sin(Date.now() / 200) * 3;
+          const pulse = Math.sin(Date.now() / 200) * 3;
+          const haloR = (body.circleRadius || 15) + (isBeingDragged ? 12 : 8) + pulse;
           ctx.arc(0, 0, haloR, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
-          ctx.lineWidth = 2;
-          ctx.shadowColor = '#d4af37';
-          ctx.shadowBlur = 20;
-          ctx.stroke();
+          const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, haloR);
+          grad.addColorStop(0, isBeingDragged ? 'rgba(212, 175, 55, 0.4)' : 'rgba(212, 175, 55, 0.25)');
+          grad.addColorStop(1, 'rgba(212, 175, 55, 0)');
+          ctx.fillStyle = grad;
+          ctx.fill();
+          if (isActive) {
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
           ctx.restore();
         }
 
@@ -910,6 +917,45 @@ const VirtualRosaryPhysics = ({
           ctx.strokeStyle = isActive ? '#fff' : 'rgba(255,255,255,0.5)';
           ctx.lineWidth = isActive ? 2 : 1;
           ctx.stroke();
+        } else if (data.role === 'medal') {
+          // The Sacred Medal (Centerpiece)
+          const r = body.circleRadius || 20;
+          ctx.beginPath();
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
+          ctx.fillStyle = '#111';
+          ctx.strokeStyle = '#D4AF37';
+          ctx.lineWidth = 2;
+          if (isActive) {
+             ctx.shadowColor = '#d4af37';
+             ctx.shadowBlur = 15 + Math.sin(Date.now() / 200) * 5;
+          }
+          ctx.fill();
+          ctx.stroke();
+
+          // DRAW SACRED SYMBOL ON MEDAL
+          let symbolKey = SYMBOL_MAP[data.role] || 'praying_hands';
+          const activeBead = beadsData[activePhysicalIndex];
+          
+          if (activeBead?.role === 'decena') {
+             const mysteryNum = Math.floor(activeBead.index / 10) + 1;
+             const mPrefix = misterioActual.endsWith('os') ? misterioActual.slice(0, -2) : misterioActual; // gozoso, doloroso, etc
+             symbolKey = `${mPrefix}_${mysteryNum}`;
+          }
+
+          const paths = SACRED_SYMBOLS[symbolKey];
+          if (paths) {
+            ctx.save();
+            ctx.scale(0.22, 0.22); // Shrink to fit medal
+            ctx.translate(-50, -70); // Center symbol (100x140 viewbox)
+            ctx.strokeStyle = (isActive || isPrayed) ? '#D4AF37' : 'rgba(212, 175, 55, 0.5)';
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            paths.forEach(p => {
+              ctx.stroke(new Path2D(p));
+            });
+            ctx.restore();
+          }
         } else {
           const r = body.circleRadius;
           const grad = ctx.createRadialGradient(-r / 3, -r / 3, r / 10, 0, 0, r);
@@ -1004,7 +1050,12 @@ const VirtualRosaryPhysics = ({
       canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('wheel', handleWheel);
     };
-  }, [onNodeClick, onLinkClick, onAdvance, onRetreat, misterioActual, soundEnabled, isLeftHanded, guided]);
+  }, [
+    onNodeClick, onLinkClick, onAdvance, onRetreat, 
+    onSwipeAdvance, onSwipeRetreat, onEmptyPointerDown, 
+    onEmptyPointerMove, onEmptyPointerUp, 
+    misterioActual, soundEnabled, isLeftHanded, guided
+  ]);
 
   return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }} />;
 };

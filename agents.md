@@ -171,3 +171,10 @@ ID meanings:
 - Elderly Accessibility: implemented "Lectura Fácil" (Simple Mode) with 40% larger fonts and 4x faster interaction
 - Physics refinement: separated tap/swipe callbacks to ensure navigation always works during meditation
 - Fixed touch obfuscation: Matter.js canvas now delegates unused events to the moment layer
+
+## SESSION NOTES (2026-05-08b)
+- Final Upgrade: `v0.3.1 — Excelencia Sagrada`
+- Visual Mystery Symbols: The rosary medal now transforms visually based on the active mystery (Gozoso, Doloroso, etc.)
+- Interactive Glows: Added intense "interaction glows" and a pulsing "heartbeat" halo to the active bead
+- PWA Offline Support: Implemented a Service Worker and PWA manifest registration so the app works in signal-dead zones (basements, old churches)
+- Technical Integrity: Fixed legacy syntax errors in `ViewPrayers.js` to ensure a green build

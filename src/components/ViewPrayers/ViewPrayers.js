@@ -27,5 +27,6 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
       </div>
     </div>
   );
+}
 
 export default ViewPrayers;

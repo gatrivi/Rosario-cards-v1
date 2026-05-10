@@ -19,8 +19,9 @@ import SettingsOverlay from '../common/SettingsOverlay';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
 import StatsView from '../StatsView';
+import FeedbackOverlay from '../common/FeedbackOverlay';
 
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.3.1';
 
 
 export default function AppShell() {
@@ -30,6 +31,7 @@ export default function AppShell() {
   const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
 
   const [settings, setSettings] = useState(() => {
@@ -133,6 +135,15 @@ export default function AppShell() {
     }
   };
 
+  const telemetryData = {
+    v: APP_VERSION,
+    view: vistaActiva,
+    mystery: misterioActual,
+    idx: currentPrayerIndex,
+    simpleMode: settings.simpleMode,
+    ua: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+  };
+
   return (
     <div style={{
       height: '100dvh', 
@@ -153,7 +164,19 @@ export default function AppShell() {
         display: 'flex', justifyContent: 'space-between', zIndex: 100,
         pointerEvents: 'none'
       }}>
-        <div /> {/* Spacer */}
+        <div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto' }}>
+          <button 
+            onClick={() => setShowFeedback(true)}
+            title="Reportar problema o sugerencia"
+            style={{
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              color: '#666', borderRadius: '10px', padding: '8px', cursor: 'pointer',
+              fontSize: '1.2rem', backdropFilter: 'blur(5px)'
+            }}
+          >
+            {settings.simpleMode ? '🆘 Ayuda' : '💬'}
+          </button>
+        </div>
         <div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto' }}>
           <button 
             onClick={() => setShowSync(true)}
@@ -218,11 +241,19 @@ export default function AppShell() {
 
       {/* OVERLAYS */}
       {showSync && <SyncManager onClose={() => setShowSync(false)} />}
+      {/* MODALS */}
       {showSettings && (
         <SettingsOverlay 
           settings={settings} 
           onUpdateSettings={setSettings} 
           onClose={() => setShowSettings(false)} 
+        />
+      )}
+
+      {showFeedback && (
+        <FeedbackOverlay 
+          telemetry={telemetryData}
+          onClose={() => setShowFeedback(false)}
         />
       )}
 
