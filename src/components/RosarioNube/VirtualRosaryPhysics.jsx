@@ -870,6 +870,7 @@ const VirtualRosaryPhysics = ({
       const baseAlpha = 0.8;
 
       for (const c of allConstraints) {
+        if (!c.bodyA || !c.bodyB) continue; // Safety check
         const dataA = c.bodyA.beadData;
         const dataB = c.bodyB.beadData;
         const isPrayedA = dataA && dataA.index < activeIndexRef.current;
