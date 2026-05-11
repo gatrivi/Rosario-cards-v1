@@ -11,19 +11,15 @@ function ViewPrayers({ prayer, count, prayerImg, currentMystery }) {
         className="page-left"
         style={{
           flex: 1,
-          overflow: "scroll",
-          padding: "4px",
+          overflow: "auto",
+          padding: "15px",
           color: isDark ? "#fff" : "#333",
           background: isDark ? "transparent" : "rgba(255,255,255,0.85)",
         }}
       >
-        <span style={{ color: isDark ? "gold" : "#8B0000" }}>
-          {prayer ===
-          "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, \nJesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, pecadores, \nahora y en la hora de nuestra muerte. \nAmén."
-            ? count
-            : ""}
-        </span>
-        <p style={{ whiteSpace: "pre-line" }}>{prayer}</p>
+        <div style={{ fontSize: "1.5rem", lineHeight: "1.4", whiteSpace: "pre-line" }}>
+          {prayer}
+        </div>
       </div>
     </div>
   );

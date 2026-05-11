@@ -78,6 +78,8 @@ const VirtualRosaryPhysics = ({
   const guidedRef = useRef(guided);
   const swipeStartRef = useRef(null);
   const isEmptyTouchingRef = useRef(false);
+  const panOffsetRef = useRef({ x: 0, y: 0 });
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
 
   // Audio system refs
   const audioCtxRef = useRef(null);
@@ -158,15 +160,24 @@ const VirtualRosaryPhysics = ({
     const centerItem = beadsData.find(b => b.role === 'medal') || beadsData.find(b => b.physicsType === 'center') || pendantItems[pendantItems.length - 1];
     const beadRadius = 10;
 
-    // 1. Centerpiece (Medal) — anchor in guided mode
-    const centerBody = Bodies.circle(cx, cy + loopRadius, 20, {
-      ...getBeadOptions(centerItem),
-      isStatic: guided,
-    });
+    // 1. Centerpiece (Medal) — no longer static, uses a soft anchor instead
+    const centerBody = Bodies.circle(cx, cy + loopRadius, 20, getBeadOptions(centerItem));
     centerBody.beadData = centerItem;
     centerBody.circleRadius = 20;
     allBodies.push(centerBody);
     homePositionsRef.current.push({ x: cx, y: cy + loopRadius });
+
+    // Anchor the centerpiece with a soft, invisible 'virtual string'
+    // This lets it move but keeps it from drifting off screen
+    const centerpieceAnchor = Constraint.create({
+      pointA: { x: cx, y: cy + loopRadius },
+      bodyB: centerBody,
+      stiffness: 0.0008,
+      damping: 0.1,
+      length: 0,
+      render: { visible: false }
+    });
+    allConstraints.push(centerpieceAnchor);
 
     // 2. Loop
     const loopBodies = [];
@@ -430,9 +441,16 @@ const VirtualRosaryPhysics = ({
       if (strokePointsRef.current.length > 300) {
         strokePointsRef.current = strokePointsRef.current.slice(-200);
       }
-      if (isEmptyTouchingRef.current && onEmptyPointerMove) {
-        onEmptyPointerMove(e);
+      if (isEmptyTouchingRef.current) {
+        const dx = pos.x - lastMousePosRef.current.x;
+        const dy = pos.y - lastMousePosRef.current.y;
+        if (Math.hypot(dx, dy) < 100) { // Avoid jumps on multi-touch
+          panOffsetRef.current.x += dx;
+          panOffsetRef.current.y += dy;
+        }
+        if (onEmptyPointerMove) onEmptyPointerMove(e);
       }
+      lastMousePosRef.current = pos;
     };
 
     const onCanvasTouchMove = (e) => {
@@ -443,9 +461,16 @@ const VirtualRosaryPhysics = ({
         if (strokePointsRef.current.length > 300) {
           strokePointsRef.current = strokePointsRef.current.slice(-200);
         }
-        if (isEmptyTouchingRef.current && onEmptyPointerMove) {
-          onEmptyPointerMove(e);
+        if (isEmptyTouchingRef.current) {
+          const dx = pos.x - lastMousePosRef.current.x;
+          const dy = pos.y - lastMousePosRef.current.y;
+          if (Math.hypot(dx, dy) < 100) {
+            panOffsetRef.current.x += dx;
+            panOffsetRef.current.y += dy;
+          }
+          if (onEmptyPointerMove) onEmptyPointerMove(e);
         }
+        lastMousePosRef.current = pos;
       }
     };
 
@@ -477,6 +502,7 @@ const VirtualRosaryPhysics = ({
     const onMouseDown = (event) => {
       mouseDownPos = { x: event.mouse.position.x, y: event.mouse.position.y, time: Date.now() };
       swipeStartRef.current = { x: event.mouse.position.x, y: event.mouse.position.y };
+      lastMousePosRef.current = { x: event.mouse.position.x, y: event.mouse.position.y };
       strokePointsRef.current = [];
       
       const hit = checkBeadHit(event.mouse.position);
@@ -555,6 +581,7 @@ const VirtualRosaryPhysics = ({
       const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       mouseDownPos = { x: pos.x, y: pos.y, time: Date.now() };
       swipeStartRef.current = { x: mouseDownPos.x, y: mouseDownPos.y };
+      lastMousePosRef.current = { x: pos.x, y: pos.y };
       strokePointsRef.current = [];
 
       const hit = checkBeadHit(pos);
@@ -619,6 +646,7 @@ const VirtualRosaryPhysics = ({
         const pos = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
         mouseDownPos = { x: pos.x, y: pos.y, time: Date.now() };
         swipeStartRef.current = { x: mouseDownPos.x, y: mouseDownPos.y };
+        lastMousePosRef.current = { x: pos.x, y: pos.y };
         strokePointsRef.current = [];
 
         const hit = checkBeadHit(pos);
@@ -737,9 +765,10 @@ const VirtualRosaryPhysics = ({
       let displacedCount = 0;
       allWorldBodies.forEach((body, i) => {
         if (!body.beadData || body.isStatic) return;
+        if (mouseConstraint.body === body) return; // Ignore dragged body
         const home = homePositionsRef.current[i];
         if (!home) return;
-        const d = Math.hypot(home.x - body.position.x, home.y - body.position.y);
+        const d = Math.hypot((home.x + panOffsetRef.current.x) - body.position.x, (home.y + panOffsetRef.current.y) - body.position.y);
         totalDisplacement += d;
         displacedCount++;
       });
@@ -747,24 +776,34 @@ const VirtualRosaryPhysics = ({
 
       // Rescue needed if significantly displaced and not currently magnetizing
       const wasRescue = needsRescueRef.current;
-      needsRescueRef.current = avgDisplacement > 55 && !magnetismActiveRef.current;
+      needsRescueRef.current = avgDisplacement > 180 && !magnetismActiveRef.current;
       if (!wasRescue && needsRescueRef.current) {
         rescueFlashRef.current = 0.6;
       }
 
       // Home forces
       if (guidedRef.current) {
-        const k = magnetismActiveRef.current ? 0.025 : (needsRescueRef.current ? 0 : 0.001);
-        const damping = magnetismActiveRef.current ? 0.65 : 0.92;
+        const k = magnetismActiveRef.current ? 0.025 : (needsRescueRef.current ? 0.005 : 0.0001);
+        const damping = magnetismActiveRef.current ? 0.65 : 0.98;
+
+        // Update anchor to match pan
+        if (centerpieceAnchor) {
+          centerpieceAnchor.pointA = { 
+            x: cx + panOffsetRef.current.x, 
+            y: cy + loopRadius + panOffsetRef.current.y 
+          };
+        }
 
         allWorldBodies.forEach((body, i) => {
           if (!body.beadData || body.isStatic) return;
+          if (mouseConstraint.body === body) return; // EXORCISM: Don't fight the user!
+          
           const home = homePositionsRef.current[i];
           if (!home) return;
 
           if (k > 0) {
-            const dx = home.x - body.position.x;
-            const dy = home.y - body.position.y;
+            const dx = (home.x + panOffsetRef.current.x) - body.position.x;
+            const dy = (home.y + panOffsetRef.current.y) - body.position.y;
             Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
           }
 
@@ -783,12 +822,12 @@ const VirtualRosaryPhysics = ({
           if (!body.beadData || body.isStatic) return;
           const home = homePositionsRef.current[i];
           if (!home) return;
-          const dx = home.x - body.position.x;
-          const dy = home.y - body.position.y;
+          const dx = (home.x + panOffsetRef.current.x) - body.position.x;
+          const dy = (home.y + panOffsetRef.current.y) - body.position.y;
           Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
           Body.setVelocity(body, {
-            x: body.velocity.x * 0.85,
-            y: body.velocity.y * 0.85
+            x: body.velocity.x * 0.98,
+            y: body.velocity.y * 0.98
           });
         });
       }
@@ -991,7 +1030,7 @@ const VirtualRosaryPhysics = ({
         const barY = -crossH * 0.15;
 
         ctx.save();
-        ctx.translate(cx, cy);
+        ctx.translate(cx + panOffsetRef.current.x, cy + panOffsetRef.current.y);
         ctx.globalAlpha = Math.max(0, alpha);
         ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
         ctx.lineWidth = 2;
