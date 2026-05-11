@@ -20,8 +20,9 @@ import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
 import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
+import { getDefaultMystery } from '../utils/getDefaultMystery';
 
-const APP_VERSION = '0.3.1';
+const APP_VERSION = '0.3.2';
 
 
 export default function AppShell() {
@@ -53,7 +54,7 @@ export default function AppShell() {
   }, [settings]);
 
   // --- Lifting Prayer State ---
-  const [misterioActual] = useState('gozosos');
+  const [misterioActual] = useState(getDefaultMystery());
   const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0);
 
   const { forceSetSyncId, syncId, syncStatus } = useCloudSync();
@@ -429,4 +430,3 @@ function HandToggle({ isLeftHanded, onToggle }) {
     </div>
   );
 }
-

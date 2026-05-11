@@ -2,6 +2,8 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import VirtualRosaryPhysics from '../RosarioNube/VirtualRosaryPhysics';
 import { getSequenceData } from './RoseView';
 import RosaEnFocoView from './RosaEnFocoView';
+import SacredDrawing from './SacredDrawing';
+import { SYMBOL_MAP } from '../../data/SacredSymbols';
 
 export default function RosarioVirtualView({ currentPrayerIndex, misterioActual, onUpdateProgreso, soundEnabled, isLeftHanded, simpleMode = false }) {
   const [versoIndex, setVersoIndex] = useState(0);
@@ -14,7 +16,6 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
     setVersoIndex(0);
   }, [currentPrayerIndex]);
 
-  // Hide hint after first interaction
   useEffect(() => {
     const timer = setTimeout(() => setShowHint(false), 8000);
     return () => clearTimeout(timer);
@@ -49,16 +50,23 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
   const bgImage = activePrayer?.img || '/gallery-images/cathedral-painting.jpg';
   const isAveMaria = activePrayer?.id === 'A';
 
+  // Determine Symbol
+  const prayerId = activePrayer?.id;
+  let symbolKey = SYMBOL_MAP[prayerId] || 'cross';
+  if (prayerId && prayerId.startsWith('M')) {
+    const mPrefix = misterioActual.endsWith('os') ? misterioActual.slice(0, -2) : misterioActual;
+    const mNum = prayerId.slice(2);
+    symbolKey = `${mPrefix}_${mNum}`;
+  }
+
   return (
     <div style={{
       height: '100%', position: 'relative', backgroundColor: '#050505', overflow: 'hidden',
-      backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)), url(${bgImage})`,
+      backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)), url(${bgImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       transition: 'background-image 0.8s ease-in-out'
     }}>
-
-      {/* ── Layer 1: Background image (implicit, set on parent) */}
 
       {/* ── Layer 2: Moment Layer (Rosa / Prayer Text) ── */}
       <div style={{
@@ -68,7 +76,8 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: '40px 20px'
       }}>
         {isAveMaria ? (
           <RosaEnFocoView 
@@ -78,23 +87,34 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
             simpleMode={simpleMode}
           />
         ) : (
-          <div
-            key={currentPrayerIndex + '-' + versoIndex}
-            style={{
-              color: 'rgba(240, 240, 240, 0.55)',
-              fontSize: simpleMode ? 'clamp(1.6rem, 4.5vh, 2.5rem)' : 'clamp(1.3rem, 3.2vh, 1.9rem)',
-              lineHeight: 1.65,
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontStyle: 'italic',
-              textAlign: 'center',
-              maxWidth: '85%',
-              textShadow: '0 2px 12px rgba(0,0,0,0.9)',
-              padding: '30px',
-              animation: 'textFade 0.6s cubic-bezier(0.23, 1, 0.32, 1) both',
-              pointerEvents: 'none'
-            }}
-          >
-            {activePrayer?.versos?.[versoIndex] || 'Toca para comenzar...'}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', width: '100%' }}>
+            <div style={{ opacity: 0.7, transform: 'scale(1.2)' }}>
+              <SacredDrawing 
+                symbolKey={symbolKey} 
+                progress={1} 
+                size={simpleMode ? 140 : 100}
+                decadeIndex={currentPrayerIndex % 10}
+              />
+            </div>
+            
+            <div
+              key={currentPrayerIndex + '-' + versoIndex}
+              style={{
+                color: '#D4AF37',
+                fontSize: simpleMode ? 'clamp(1.8rem, 5vh, 2.8rem)' : 'clamp(1.3rem, 3.5vh, 1.8rem)',
+                lineHeight: 1.6,
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontStyle: 'italic',
+                textAlign: 'center',
+                maxWidth: '90%',
+                textShadow: '0 2px 15px rgba(0,0,0,0.9)',
+                padding: '10px 20px',
+                animation: 'textFade 0.8s cubic-bezier(0.23, 1, 0.32, 1) both',
+                pointerEvents: 'none'
+              }}
+            >
+              {activePrayer?.versos?.[versoIndex] || 'Iniciando meditación...'}
+            </div>
           </div>
         )}
       </div>
