@@ -1,19 +1,28 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import VirtualRosaryPhysics from '../RosarioNube/VirtualRosaryPhysics';
 import { getSequenceData } from './RoseView';
 import RosaEnFocoView from './RosaEnFocoView';
 import SacredDrawing from './SacredDrawing';
+import SacredText from './SacredText';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
 
 export default function RosarioVirtualView({ currentPrayerIndex, misterioActual, onUpdateProgreso, soundEnabled, isLeftHanded, simpleMode = false }) {
   const [versoIndex, setVersoIndex] = useState(0);
   const [guided, setGuided] = useState(true);
   const [showHint, setShowHint] = useState(true);
-  const [isCargandoRosa, setIsCargandoRosa] = useState(false);
+  const [isCargando, setIsCargando] = useState(false);
+  const [cargaOracion, setCargaOracion] = useState(0);
+  const [warmthTick, setWarmthTick] = useState(0);
   const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
+
+  const wordSpanRefs = useRef([]);
+  const charReachedAtRef = useRef([]);
+  const charDwellRef = useRef([]);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     setVersoIndex(0);
+    setCargaOracion(0);
   }, [currentPrayerIndex]);
 
   useEffect(() => {
@@ -26,10 +35,68 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
     const activePrayer = secuencia[currentPrayerIndex];
     if (activePrayer?.versos && versoIndex < activePrayer.versos.length - 1) {
       setVersoIndex(prev => prev + 1);
+      setCargaOracion(0);
     } else if (currentPrayerIndex < secuencia.length - 1) {
       onUpdateProgreso(currentPrayerIndex + 1);
     }
   }, [currentPrayerIndex, versoIndex, secuencia, onUpdateProgreso]);
+
+  const activePrayer = secuencia[currentPrayerIndex];
+  const isAveMaria = activePrayer?.id === 'A';
+  const bgImage = activePrayer?.img || '/gallery-images/cathedral-painting.jpg';
+
+  // Logic for non-AveMaria charging
+  useEffect(() => {
+    if (!isAveMaria && isCargando && cargaOracion < 100) {
+      timerRef.current = setInterval(() => {
+        setWarmthTick(t => t + 1);
+        setCargaOracion(prev => {
+          if (prev >= 100) {
+            clearInterval(timerRef.current);
+            return 100;
+          }
+          return prev + 2.5; 
+        });
+      }, 30);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [isAveMaria, isCargando, cargaOracion]);
+
+  useEffect(() => {
+    if (!isAveMaria && cargaOracion >= 100) {
+      if (navigator.vibrate) navigator.vibrate(20);
+      handleAdvance();
+    }
+  }, [isAveMaria, cargaOracion, handleAdvance]);
+
+  const currentVerseText = activePrayer?.versos?.[versoIndex] || '';
+  const words = useMemo(() => currentVerseText.split(/\s+/).filter(w => w.length > 0), [currentVerseText]);
+  const wordCharOffsets = useMemo(() => {
+    let off = 0;
+    return words.map(w => {
+      const res = off;
+      off += w.length;
+      return res;
+    });
+  }, [words]);
+  const totalChars = wordCharOffsets.length > 0 ? wordCharOffsets[wordCharOffsets.length - 1] + words[words.length - 1].length : 0;
+  const charProgressIndex = Math.floor(cargaOracion / 100 * totalChars);
+
+  useEffect(() => {
+    if (charProgressIndex >= 0) {
+      const now = Date.now();
+      for (let i = 0; i <= charProgressIndex; i++) {
+        if (!charReachedAtRef.current[i]) charReachedAtRef.current[i] = now;
+      }
+    }
+  }, [charProgressIndex]);
+
+  useEffect(() => {
+    charReachedAtRef.current = [];
+    charDwellRef.current = [];
+  }, [versoIndex, currentPrayerIndex]);
 
   const handleRetreat = useCallback(() => {
     setShowHint(false);
@@ -45,10 +112,6 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
   }, [onUpdateProgreso]);
 
   const handleLinkClick = useCallback(() => {}, []);
-
-  const activePrayer = secuencia[currentPrayerIndex];
-  const bgImage = activePrayer?.img || '/gallery-images/cathedral-painting.jpg';
-  const isAveMaria = activePrayer?.id === 'A';
 
   // Determine Symbol
   const prayerId = activePrayer?.id;
@@ -82,38 +145,52 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
         {isAveMaria ? (
           <RosaEnFocoView 
             misterioColor="#D4AF37" 
-            externalIsCargando={isCargandoRosa}
+            externalIsCargando={isCargando}
             onComplete={handleAdvance}
             simpleMode={simpleMode}
+            seed={currentPrayerIndex}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', width: '100%' }}>
-            <div style={{ opacity: 0.7, transform: 'scale(1.2)' }}>
+            <div style={{ 
+              opacity: 0.7, 
+              transform: isCargando ? 'scale(1.25)' : 'scale(1.2)',
+              transition: 'transform 0.4s ease'
+            }}>
               <SacredDrawing 
                 symbolKey={symbolKey} 
-                progress={1} 
+                progress={cargaOracion / 100} 
                 size={simpleMode ? 140 : 100}
                 decadeIndex={currentPrayerIndex % 10}
+                liveWarmth={isCargando ? 0.8 : 0.2}
               />
             </div>
             
-            <div
-              key={currentPrayerIndex + '-' + versoIndex}
-              style={{
-                color: '#D4AF37',
-                fontSize: simpleMode ? 'clamp(1.8rem, 5vh, 2.8rem)' : 'clamp(1.3rem, 3.5vh, 1.8rem)',
-                lineHeight: 1.6,
-                fontFamily: "'Playfair Display', Georgia, serif",
-                fontStyle: 'italic',
-                textAlign: 'center',
-                maxWidth: '90%',
-                textShadow: '0 2px 15px rgba(0,0,0,0.9)',
-                padding: '10px 20px',
-                animation: 'textFade 0.8s cubic-bezier(0.23, 1, 0.32, 1) both',
-                pointerEvents: 'none'
-              }}
-            >
-              {activePrayer?.versos?.[versoIndex] || 'Iniciando meditación...'}
+            <div style={{
+              zIndex: 10, 
+              transition: 'transform 0.4s ease',
+              transform: isCargando ? 'scale(1.02)' : 'scale(1)',
+              filter: isCargando ? 'drop-shadow(0 0 15px rgba(212,175,55,0.2))' : 'none',
+              maxWidth: '90%',
+              color: '#D4AF37',
+              fontSize: simpleMode ? 'clamp(1.8rem, 5vh, 2.8rem)' : 'clamp(1.3rem, 3.5vh, 1.8rem)',
+              lineHeight: 1.6,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontStyle: 'italic',
+              textShadow: '0 2px 15px rgba(0,0,0,0.9)',
+            }}>
+              <SacredText 
+                words={words}
+                wordCharOffsets={wordCharOffsets}
+                charProgressIndex={charProgressIndex}
+                isVersoComplete={cargaOracion >= 100}
+                isPrayerComplete={false}
+                charReachedAtRef={charReachedAtRef}
+                charDwellRef={charDwellRef}
+                wordSpanRefs={wordSpanRefs}
+                warmthTick={warmthTick}
+                simpleMode={simpleMode}
+              />
             </div>
           </div>
         )}
@@ -131,8 +208,8 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
           onRetreat={handleRetreat}
           onSwipeAdvance={handleAdvance}
           onSwipeRetreat={handleRetreat}
-          onEmptyPointerDown={() => setIsCargandoRosa(true)}
-          onEmptyPointerUp={() => setIsCargandoRosa(false)}
+          onEmptyPointerDown={() => setIsCargando(true)}
+          onEmptyPointerUp={() => setIsCargando(false)}
           activePrayerIndex={currentPrayerIndex}
           misterioActual={misterioActual}
           soundEnabled={soundEnabled}
@@ -171,33 +248,49 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
         )}
       </div>
 
-      {/* Mode toggle */}
-      <button
-        onClick={() => setGuided(g => !g)}
-        style={{
-          position: 'absolute',
-          top: '12px',
-          right: isLeftHanded ? 'auto' : '12px',
-          left: isLeftHanded ? '12px' : 'auto',
-          zIndex: 25,
-          pointerEvents: 'auto',
-          background: guided ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(212,175,55,0.2)',
-          color: guided ? '#D4AF37' : '#555',
-          borderRadius: '10px',
-          padding: '3px 8px',
-          fontSize: '0.55rem',
-          fontWeight: 'bold',
-          textTransform: 'uppercase',
+      {/* Mode toggle & Version - moved to bottom for accessibility */}
+      <div style={{
+        position: 'absolute',
+        bottom: '12px',
+        right: isLeftHanded ? 'auto' : '12px',
+        left: isLeftHanded ? '12px' : 'auto',
+        zIndex: 25,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
+        gap: '4px',
+        pointerEvents: 'none'
+      }}>
+        <button
+          onClick={() => setGuided(g => !g)}
+          style={{
+            pointerEvents: 'auto',
+            background: guided ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(212,175,55,0.2)',
+            color: guided ? '#D4AF37' : '#555',
+            borderRadius: '10px',
+            padding: '4px 10px',
+            fontSize: '0.6rem',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            backdropFilter: 'blur(4px)',
+            textShadow: '0 1px 3px rgba(0,0,0,0.8)'
+          }}
+        >
+          {guided ? 'Guiado' : 'Libre'}
+        </button>
+        <span style={{ 
+          fontSize: '0.45rem', 
+          color: 'rgba(212,175,55,0.4)', 
           letterSpacing: '1px',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          backdropFilter: 'blur(4px)',
-          textShadow: '0 1px 3px rgba(0,0,0,0.8)'
-        }}
-      >
-        {guided ? 'Guiado' : 'Libre'}
-      </button>
+          fontWeight: 'bold'
+        }}>
+          v0.3.2
+        </span>
+      </div>
 
       {/* Hint overlay */}
       {showHint && guided && (
@@ -221,7 +314,7 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
           <div style={{ color: '#D4AF37', fontWeight: 'bold', marginBottom: '4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2px' }}>
             Modo Guiado
           </div>
-          Toca en cualquier lugar o desliza ← → para avanzar<br />
+          Mantén presionado para rezar • Desliza ← → para avanzar<br />
           <span style={{ opacity: 0.6, fontSize: '0.75rem' }}>Dibuja ✝ para reunir las cuentas</span>
         </div>
       )}

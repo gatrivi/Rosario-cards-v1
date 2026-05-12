@@ -106,7 +106,7 @@ function App({ isEmbedded = false }) {
 
       {/* Version Badge */}
       <div style={{ position: "fixed", bottom: "5px", left: "10px", zIndex: 100, color: "rgba(255,255,255,0.3)", fontSize: "0.6rem", pointerEvents: "none" }}>
-        v0.3.1 — Excelencia Sagrada
+        v0.3.2 — Excelencia Sagrada
       </div>
     </div>
   );

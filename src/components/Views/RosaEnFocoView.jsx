@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import RoseDrawing from './RoseDrawing';
+import SacredText from './SacredText';
 
 const VERSOS_AVE_MARIA = [
   "Dios te salve, María;",
@@ -18,20 +19,49 @@ export default function RosaEnFocoView({
   misterioColor = "#D4AF37", 
   externalIsCargando = null, 
   onComplete = null,
-  simpleMode = false
+  simpleMode = false,
+  seed = 123
 }) {
   const [carga, setCarga] = useState(0);
   const [internalIsCargando, setInternalIsCargando] = useState(false);
+  const [warmthTick, setWarmthTick] = useState(0);
   const timerRef = useRef(null);
+
+  // Refs for SacredText
+  const wordSpanRefs = useRef([]);
+  const charReachedAtRef = useRef([]);
+  const charDwellRef = useRef([]);
 
   const isCargando = externalIsCargando !== null ? externalIsCargando : internalIsCargando;
   const versoActualIndex = Math.min(Math.floor(carga / 100), 9);
   const progresoVisual = carga / 1000;
 
+  const currentVerseText = VERSOS_AVE_MARIA[versoActualIndex];
+  const words = useMemo(() => currentVerseText.split(/\s+/).filter(w => w.length > 0), [currentVerseText]);
+  
+  const wordCharOffsets = useMemo(() => {
+    let off = 0;
+    return words.map(w => {
+      const res = off;
+      off += w.length;
+      return res;
+    });
+  }, [words]);
+
+  const totalChars = wordCharOffsets.length > 0 ? wordCharOffsets[wordCharOffsets.length - 1] + words[words.length - 1].length : 0;
+  const charProgressIndex = Math.floor((carga % 100) / 100 * totalChars);
+
+  useEffect(() => {
+    // Reset refs when verse changes
+    charReachedAtRef.current = [];
+    charDwellRef.current = [];
+  }, [versoActualIndex]);
+
   useEffect(() => {
     if (isCargando && carga < 1000) {
       const tick = simpleMode ? 10 : 2.5;
       timerRef.current = setInterval(() => {
+        setWarmthTick(t => t + 1);
         setCarga(prev => {
           if (prev >= 1000) {
             clearInterval(timerRef.current);
@@ -48,6 +78,16 @@ export default function RosaEnFocoView({
     }
     return () => clearInterval(timerRef.current);
   }, [isCargando, carga, simpleMode]);
+
+  useEffect(() => {
+    // Sync charReachedAtRef
+    if (charProgressIndex >= 0) {
+      const now = Date.now();
+      for (let i = 0; i <= charProgressIndex; i++) {
+        if (!charReachedAtRef.current[i]) charReachedAtRef.current[i] = now;
+      }
+    }
+  }, [charProgressIndex]);
 
   useEffect(() => {
     if (carga >= 1000) {
@@ -106,7 +146,7 @@ export default function RosaEnFocoView({
           size={200}
           enrichment={progresoVisual}
           liveWarmth={isCargando ? 0.8 : 0.2}
-          seed={123} // Fixed seed for now
+          seed={seed}
         />
       </div>
 
@@ -114,20 +154,30 @@ export default function RosaEnFocoView({
         <div style={{ position: 'absolute', top: '0', width: '100%', textAlign: 'center', color: '#444', fontSize: simpleMode ? '1.5rem' : '1.1rem', opacity: 0.3, transition: 'opacity 0.3s' }}>
           {versoActualIndex > 0 && carga < 1000 ? VERSOS_AVE_MARIA[versoActualIndex - 1] : ''}
         </div>
-
         <div style={{ 
-          textAlign: 'center', 
-          color: isCargando ? '#D4AF37' : 'rgba(212,175,55,0.6)', 
-          fontWeight: '300', 
+          zIndex: 10, 
+          transition: 'transform 0.4s ease',
+          transform: isCargando ? 'scale(1.02)' : 'scale(1)',
+          filter: isCargando ? 'drop-shadow(0 0 15px rgba(212,175,55,0.2))' : 'none',
+          color: '#D4AF37',
           fontSize: simpleMode ? '2.5rem' : 'clamp(1.4rem, 4vh, 2rem)', 
           fontFamily: "'Playfair Display', serif",
           fontStyle: 'italic',
-          zIndex: 10, 
-          transition: 'color 0.4s ease, transform 0.4s ease',
-          transform: isCargando ? 'scale(1.02)' : 'scale(1)',
-          textShadow: isCargando ? '0 0 15px rgba(212,175,55,0.4)' : 'none'
+          textShadow: '0 2px 15px rgba(0,0,0,0.9)',
+          textAlign: 'center'
         }}>
-          {carga >= 1000 ? 'Amén.' : VERSOS_AVE_MARIA[versoActualIndex]}
+          <SacredText 
+            words={words}
+            wordCharOffsets={wordCharOffsets}
+            charProgressIndex={charProgressIndex}
+            isVersoComplete={false} 
+            isPrayerComplete={carga >= 1000}
+            charReachedAtRef={charReachedAtRef}
+            charDwellRef={charDwellRef}
+            wordSpanRefs={wordSpanRefs}
+            warmthTick={warmthTick}
+            simpleMode={simpleMode}
+          />
         </div>
 
         <div style={{ position: 'absolute', bottom: '0', width: '100%', textAlign: 'center', color: '#444', fontSize: simpleMode ? '1.5rem' : '1.1rem', opacity: 0.3, transition: 'opacity 0.3s' }}>

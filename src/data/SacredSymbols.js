@@ -132,13 +132,19 @@ export const SACRED_SYMBOLS = {
     'M 40,110 h 20 l -5,-40 h -10 Z',    // Chalice
     'M 35,70 q 15,10 30,0', 
     'M 40,30 q 10,-10 20,0 q 10,10 -10,20 q -20,-10 -10,-20' // Bread/Host
+  ],
+  'bread': [
+    'M 30,90 q 20,-30 40,0 v 15 h -40 Z', // Loaf body
+    'M 40,75 l 5,15',                    // Slit 1
+    'M 50,70 l 5,15',                    // Slit 2
+    'M 60,75 l 5,15'                     // Slit 3
   ]
 };
 
 // Maps prayer IDs to symbol keys (Base mapping, refined in views)
 export const SYMBOL_MAP = {
   'SC': 'cross',
-  'P':  'cross',
+  'P':  'bread',
   'AC': 'praying_hands',
   'C':  'scroll',
   'G':  'crown',

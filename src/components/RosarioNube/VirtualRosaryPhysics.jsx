@@ -81,6 +81,25 @@ const VirtualRosaryPhysics = ({
   const panOffsetRef = useRef({ x: 0, y: 0 });
   const lastMousePosRef = useRef({ x: 0, y: 0 });
 
+  // Callbacks refs to prevent re-renders
+  const callbacksRef = useRef({
+    onNodeClick, onLinkClick, onAdvance, onRetreat,
+    onSwipeAdvance, onSwipeRetreat, onEmptyPointerDown,
+    onEmptyPointerMove, onEmptyPointerUp
+  });
+
+  useEffect(() => {
+    callbacksRef.current = {
+      onNodeClick, onLinkClick, onAdvance, onRetreat,
+      onSwipeAdvance, onSwipeRetreat, onEmptyPointerDown,
+      onEmptyPointerMove, onEmptyPointerUp
+    };
+  }, [
+    onNodeClick, onLinkClick, onAdvance, onRetreat,
+    onSwipeAdvance, onSwipeRetreat, onEmptyPointerDown,
+    onEmptyPointerMove, onEmptyPointerUp
+  ]);
+
   // Audio system refs
   const audioCtxRef = useRef(null);
   const synthRef = useRef(null);
@@ -119,6 +138,10 @@ const VirtualRosaryPhysics = ({
     const engine = engineRef.current;
     const world = engine.world;
     const beadsData = getRosaryBeads(misterioActual);
+
+    // Clear existing world if misterioActual changed
+    World.clear(world, false);
+    Engine.clear(engine);
 
     const allBodies = [];
     const allConstraints = [];
@@ -448,7 +471,7 @@ const VirtualRosaryPhysics = ({
           panOffsetRef.current.x += dx;
           panOffsetRef.current.y += dy;
         }
-        if (onEmptyPointerMove) onEmptyPointerMove(e);
+        if (callbacksRef.current.onEmptyPointerMove) callbacksRef.current.onEmptyPointerMove(e);
       }
       lastMousePosRef.current = pos;
     };
@@ -468,8 +491,9 @@ const VirtualRosaryPhysics = ({
             panOffsetRef.current.x += dx;
             panOffsetRef.current.y += dy;
           }
-          if (onEmptyPointerMove) onEmptyPointerMove(e);
-        }
+          if (callbacksRef.current.onEmptyPointerMove) callbacksRef.current.onEmptyPointerMove(e);
+          }
+
         lastMousePosRef.current = pos;
       }
     };
@@ -507,8 +531,8 @@ const VirtualRosaryPhysics = ({
       
       const hit = checkBeadHit(event.mouse.position);
       isEmptyTouchingRef.current = !hit;
-      if (!hit && onEmptyPointerDown) {
-        onEmptyPointerDown(event.sourceEvent);
+      if (!hit && callbacksRef.current.onEmptyPointerDown) {
+        callbacksRef.current.onEmptyPointerDown(event.sourceEvent);
       }
 
       if (soundEnabled) {
@@ -524,8 +548,8 @@ const VirtualRosaryPhysics = ({
 
       stopSynth();
 
-      if (isEmptyTouchingRef.current && onEmptyPointerUp) {
-        onEmptyPointerUp(event.sourceEvent);
+      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerUp) {
+        callbacksRef.current.onEmptyPointerUp(event.sourceEvent);
       }
       isEmptyTouchingRef.current = false;
 
@@ -534,11 +558,11 @@ const VirtualRosaryPhysics = ({
         const dx = mouseUpPos.x - swipeStartRef.current.x;
         if (Math.abs(dx) > Math.abs(mouseUpPos.y - swipeStartRef.current.y)) {
           if (dx < 0) {
-            if (onSwipeAdvance) onSwipeAdvance();
-            else if (onAdvance) onAdvance();
+            if (callbacksRef.current.onSwipeAdvance) callbacksRef.current.onSwipeAdvance();
+            else if (callbacksRef.current.onAdvance) callbacksRef.current.onAdvance();
           } else if (dx > 0) {
-            if (onSwipeRetreat) onSwipeRetreat();
-            else if (onRetreat) onRetreat();
+            if (callbacksRef.current.onSwipeRetreat) callbacksRef.current.onSwipeRetreat();
+            else if (callbacksRef.current.onRetreat) callbacksRef.current.onRetreat();
           }
           swipeStartRef.current = null;
           strokePointsRef.current = [];
@@ -553,10 +577,7 @@ const VirtualRosaryPhysics = ({
 
       if (dist < 15) {
         if (guidedRef.current) {
-          // In guided mode, we advance on any tap that didn't hit a bead or start a charge
-          // If onEmptyPointerDown was used, we might want to skip onAdvance here
-          // But for now, let's keep it simple.
-          if (onAdvance) onAdvance();
+          if (callbacksRef.current.onAdvance) callbacksRef.current.onAdvance();
           strokePointsRef.current = [];
           return;
         }
@@ -566,7 +587,7 @@ const VirtualRosaryPhysics = ({
         if (beadBody) {
           const data = beadBody.beadData;
           playChime(1, data.physicsType, data.index, true);
-          onNodeClick(data.index);
+          callbacksRef.current.onNodeClick(data.index);
         }
       }
       strokePointsRef.current = [];
@@ -586,8 +607,8 @@ const VirtualRosaryPhysics = ({
 
       const hit = checkBeadHit(pos);
       isEmptyTouchingRef.current = !hit;
-      if (!hit && onEmptyPointerDown) {
-        onEmptyPointerDown(e);
+      if (!hit && callbacksRef.current.onEmptyPointerDown) {
+        callbacksRef.current.onEmptyPointerDown(e);
       }
 
       if (soundEnabled) {
@@ -604,8 +625,8 @@ const VirtualRosaryPhysics = ({
 
       stopSynth();
 
-      if (isEmptyTouchingRef.current && onEmptyPointerUp) {
-        onEmptyPointerUp(e);
+      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerUp) {
+        callbacksRef.current.onEmptyPointerUp(e);
       }
       isEmptyTouchingRef.current = false;
 
@@ -613,11 +634,11 @@ const VirtualRosaryPhysics = ({
         const dx = up.x - swipeStartRef.current.x;
         if (Math.abs(dx) > Math.abs(up.y - swipeStartRef.current.y)) {
           if (dx < 0) {
-            if (onSwipeAdvance) onSwipeAdvance();
-            else if (onAdvance) onAdvance();
+            if (callbacksRef.current.onSwipeAdvance) callbacksRef.current.onSwipeAdvance();
+            else if (callbacksRef.current.onAdvance) callbacksRef.current.onAdvance();
           } else if (dx > 0) {
-            if (onSwipeRetreat) onSwipeRetreat();
-            else if (onRetreat) onRetreat();
+            if (callbacksRef.current.onSwipeRetreat) callbacksRef.current.onSwipeRetreat();
+            else if (callbacksRef.current.onRetreat) callbacksRef.current.onRetreat();
           }
           swipeStartRef.current = null;
           strokePointsRef.current = [];
@@ -634,8 +655,8 @@ const VirtualRosaryPhysics = ({
       }
 
       // Only advance if it was a quick tap AND NOT a charge interaction
-      if (dist < 15 && onAdvance && duration < 300) {
-        onAdvance();
+      if (dist < 15 && callbacksRef.current.onAdvance && duration < 300) {
+        callbacksRef.current.onAdvance();
       }
       strokePointsRef.current = [];
     };
@@ -651,8 +672,8 @@ const VirtualRosaryPhysics = ({
 
         const hit = checkBeadHit(pos);
         isEmptyTouchingRef.current = !hit;
-        if (!hit && onEmptyPointerDown) {
-          onEmptyPointerDown(e);
+        if (!hit && callbacksRef.current.onEmptyPointerDown) {
+          callbacksRef.current.onEmptyPointerDown(e);
         }
 
         if (soundEnabled) {
@@ -671,8 +692,8 @@ const VirtualRosaryPhysics = ({
 
       stopSynth();
 
-      if (isEmptyTouchingRef.current && onEmptyPointerUp) {
-        onEmptyPointerUp(e);
+      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerUp) {
+        callbacksRef.current.onEmptyPointerUp(e);
       }
       isEmptyTouchingRef.current = false;
 
@@ -680,11 +701,11 @@ const VirtualRosaryPhysics = ({
         const dx = up.x - swipeStartRef.current.x;
         if (Math.abs(dx) > Math.abs(up.y - swipeStartRef.current.y)) {
           if (dx < 0) {
-            if (onSwipeAdvance) onSwipeAdvance();
-            else if (onAdvance) onAdvance();
+            if (callbacksRef.current.onSwipeAdvance) callbacksRef.current.onSwipeAdvance();
+            else if (callbacksRef.current.onAdvance) callbacksRef.current.onAdvance();
           } else if (dx > 0) {
-            if (onSwipeRetreat) onSwipeRetreat();
-            else if (onRetreat) onRetreat();
+            if (callbacksRef.current.onSwipeRetreat) callbacksRef.current.onSwipeRetreat();
+            else if (callbacksRef.current.onRetreat) callbacksRef.current.onRetreat();
           }
           swipeStartRef.current = null;
           strokePointsRef.current = [];
@@ -700,8 +721,8 @@ const VirtualRosaryPhysics = ({
         }
       }
 
-      if (dist < 15 && onAdvance && duration < 300) {
-        onAdvance();
+      if (dist < 15 && callbacksRef.current.onAdvance && duration < 300) {
+        callbacksRef.current.onAdvance();
       }
       strokePointsRef.current = [];
     };
@@ -1090,12 +1111,8 @@ const VirtualRosaryPhysics = ({
       canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('wheel', handleWheel);
     };
-  }, [
-    onNodeClick, onLinkClick, onAdvance, onRetreat, 
-    onSwipeAdvance, onSwipeRetreat, onEmptyPointerDown, 
-    onEmptyPointerMove, onEmptyPointerUp, 
-    misterioActual, soundEnabled, isLeftHanded, guided
-  ]);
+  }, [misterioActual, soundEnabled, isLeftHanded, guided]); // MINIMAL DEPENDENCIES
+
 
   return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }} />;
 };
