@@ -6,7 +6,17 @@ import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
 
-export default function RosarioVirtualView({ currentPrayerIndex, misterioActual, onUpdateProgreso, soundEnabled, isLeftHanded, simpleMode = false }) {
+export default function RosarioVirtualView({ 
+  currentPrayerIndex, 
+  misterioActual, 
+  onUpdateProgreso, 
+  soundEnabled, 
+  isLeftHanded, 
+  simpleMode = false,
+  onShowStats,
+  onShowRosedal,
+  onToggleSimpleMode
+}) {
   const [versoIndex, setVersoIndex] = useState(0);
   const [guided, setGuided] = useState(true);
   const [showHint, setShowHint] = useState(true);
@@ -258,37 +268,84 @@ export default function RosarioVirtualView({ currentPrayerIndex, misterioActual,
         display: 'flex',
         flexDirection: 'column',
         alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
-        gap: '4px',
+        gap: '8px',
         pointerEvents: 'none'
       }}>
-        <button
-          onClick={() => setGuided(g => !g)}
-          style={{
-            pointerEvents: 'auto',
-            background: guided ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(212,175,55,0.2)',
-            color: guided ? '#D4AF37' : '#555',
-            borderRadius: '10px',
-            padding: '4px 10px',
-            fontSize: '0.6rem',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            backdropFilter: 'blur(4px)',
-            textShadow: '0 1px 3px rgba(0,0,0,0.8)'
-          }}
-        >
-          {guided ? 'Guiado' : 'Libre'}
-        </button>
+        <div style={{ display: 'flex', gap: '8px', pointerEvents: 'auto' }}>
+          <button
+            onClick={onToggleSimpleMode}
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(212,175,55,0.2)',
+              color: simpleMode ? '#D4AF37' : '#555',
+              borderRadius: '10px',
+              padding: '4px 8px',
+              fontSize: '0.65rem',
+              cursor: 'pointer',
+              backdropFilter: 'blur(4px)',
+            }}
+            title="Modo Simple"
+          >
+            👵
+          </button>
+          <button
+            onClick={onShowRosedal}
+            style={{
+              background: 'rgba(212,175,55,0.12)',
+              border: '1px solid rgba(212,175,55,0.2)',
+              color: '#D4AF37',
+              borderRadius: '10px',
+              padding: '4px 8px',
+              fontSize: '0.65rem',
+              cursor: 'pointer',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            🌹
+          </button>
+          <button
+            onClick={onShowStats}
+            style={{
+              background: 'rgba(212,175,55,0.12)',
+              border: '1px solid rgba(212,175,55,0.2)',
+              color: '#D4AF37',
+              borderRadius: '10px',
+              padding: '4px 8px',
+              fontSize: '0.65rem',
+              cursor: 'pointer',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            📊
+          </button>
+          <button
+            onClick={() => setGuided(g => !g)}
+            style={{
+              background: guided ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(212,175,55,0.2)',
+              color: guided ? '#D4AF37' : '#555',
+              borderRadius: '10px',
+              padding: '4px 10px',
+              fontSize: '0.6rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              backdropFilter: 'blur(4px)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)'
+            }}
+          >
+            {guided ? 'Guiado' : 'Libre'}
+          </button>
+        </div>
         <span style={{ 
           fontSize: '0.45rem', 
           color: 'rgba(212,175,55,0.4)', 
           letterSpacing: '1px',
           fontWeight: 'bold'
         }}>
-          v0.3.2
+          v0.3.2 — Excelencia Sagrada
         </span>
       </div>
 

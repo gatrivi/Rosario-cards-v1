@@ -95,19 +95,10 @@ function App({ isEmbedded = false }) {
         soundEnabled={soundEnabled}
         isLeftHanded={isLeftHanded}
         simpleMode={simpleMode}
+        onShowStats={() => setShowStats(true)}
+        onShowRosedal={() => setShowRosedal(true)}
+        onToggleSimpleMode={() => setSimpleMode(!simpleMode)}
       />
-
-      {/* Navigation Icons (Floating UI) */}
-      <div style={{ position: "fixed", bottom: "20px", right: "20px", zIndex: 100, display: "flex", gap: "10px" }}>
-        <button onClick={() => setSimpleMode(!simpleMode)} style={{ width: "60px", height: "60px", borderRadius: "50%", backgroundColor: simpleMode ? "#fff" : "#444", border: "1px solid #d4af37", fontSize: "1.2rem", cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.4)" }}>👵</button>
-        <button onClick={() => setShowRosedal(true)} style={{ width: "60px", height: "60px", borderRadius: "50%", backgroundColor: "#d4af37", border: "none", fontSize: "1.5rem", cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.4)" }}>🌹</button>
-        <button onClick={() => setShowStats(true)} style={{ width: "60px", height: "60px", borderRadius: "50%", backgroundColor: "#d4af37", border: "none", fontSize: "1.5rem", cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.4)" }}>📊</button>
-      </div>
-
-      {/* Version Badge */}
-      <div style={{ position: "fixed", bottom: "5px", left: "10px", zIndex: 100, color: "rgba(255,255,255,0.3)", fontSize: "0.6rem", pointerEvents: "none" }}>
-        v0.3.2 — Excelencia Sagrada
-      </div>
     </div>
   );
 }
