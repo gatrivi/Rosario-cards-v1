@@ -550,10 +550,15 @@ export default function RoseView({
     }
   }, [isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Hold mode
+  // Hold mode (Hybrid: works alongside swipe)
   useEffect(() => {
-    if (modoInteraccion === 'hold' && isCargando && !isVersoComplete && !isPrayerComplete) {
-      if (!isVerseActivated) setIsVerseActivated(true);
+    if (isCargando && !isVersoComplete && !isPrayerComplete) {
+      if (!isVerseActivated) {
+        setIsVerseActivated(true);
+        initAudio();
+        playActivationChime();
+        if (charProgressIndex < 0) setCharProgressIndex(0);
+      }
       holdTimerRef.current = setInterval(() => {
         setCharProgressIndex(prev => {
           const next = prev + 1;
@@ -568,7 +573,7 @@ export default function RoseView({
       return () => clearInterval(holdTimerRef.current);
     }
     return () => { if (holdTimerRef.current) clearInterval(holdTimerRef.current); };
-  }, [modoInteraccion, isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, meditationRitmo]);
+  }, [isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, meditationRitmo, charProgressIndex, initAudio, playActivationChime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wheel handler
   useEffect(() => {
@@ -639,9 +644,11 @@ export default function RoseView({
     pointerStartX.current = e.clientX;
     pointerStartY.current = e.clientY;
     isVerticalGesture.current = false;
-    if (modoInteraccion === 'hold') {
-      setIsCargando(true);
-    } else if (e.pointerType === 'touch' && e.target.setPointerCapture) {
+    
+    // Always start charging (allows hold-to-advance alongside swipe)
+    setIsCargando(true);
+
+    if (e.pointerType === 'touch' && e.target.setPointerCapture) {
       e.target.setPointerCapture(e.pointerId);
     }
     
@@ -661,12 +668,12 @@ export default function RoseView({
         isVerticalGesture.current = true;
         advanceVerse(dY < 0 ? 1 : -1);
         modulateAudio(false);
-        if (modoInteraccion === 'hold') setIsCargando(false);
+        setIsCargando(false);
         return;
       }
     }
     if (isVerticalGesture.current) return;
-    if (modoInteraccion !== 'swipe' || isPrayerComplete || isVersoComplete) return;
+    if (isPrayerComplete || isVersoComplete) return;
 
     // ─── ACTIVATION GATE ───
     if (!isVerseActivated) {
@@ -674,13 +681,13 @@ export default function RoseView({
       if (textRect) {
         // Broadened vertical margin for activation
         const isNearText = clientY >= textRect.top - 120 && clientY <= textRect.bottom + 120;
-        // User can tap/start from anywhere on the text area, not just left half
         if (isNearText) {
           setIsVerseActivated(true);
           initAudio();
           playActivationChime();
           const charIdx = findCharAtPointer(clientX, clientY);
-          setCharProgressIndex(Math.max(0, charIdx));
+          // Don't jump too far on activation (max 5 chars)
+          setCharProgressIndex(Math.max(0, Math.min(charIdx, 5)));
           modulateAudio(true);
         }
       }
@@ -691,16 +698,22 @@ export default function RoseView({
     const charIdx = findCharAtPointer(clientX, clientY);
     if (charIdx < 0) return;
 
-    if (charIdx !== charProgressIndex) {
-      setCharProgressIndex(charIdx);
+    // Enforce sequential progression (never go backwards)
+    if (charIdx <= charProgressIndex) return;
+
+    // Prevent massive jumps to avoid accidental completion by tapping the end.
+    // This forces the user to actually swipe across the text.
+    const MAX_JUMP = 20; 
+    const nextProgress = Math.min(charIdx, charProgressIndex + MAX_JUMP);
+
+    if (nextProgress > charProgressIndex) {
+      setCharProgressIndex(nextProgress);
       modulateAudio(true);
 
       // Finalization threshold:
-      // For normal verses, reach the last char. 
-      // For very short ones (<15 chars), reaching the last 20% or even just moving suffices.
       const threshold = totalChars < 15 ? Math.floor(totalChars * 0.8) : totalChars - 1;
 
-      if (charIdx >= threshold) {
+      if (nextProgress >= threshold) {
         setIsVersoComplete(true);
         modulateAudio(false);
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
@@ -712,8 +725,8 @@ export default function RoseView({
   const handleMouseMove = (e) => { handleTrackPointer(e.clientX, e.clientY, 'mouse'); };
 
   const handlePointerUp = (e) => {
-    if (modoInteraccion === 'hold') setIsCargando(false);
-    else if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
+    setIsCargando(false);
+    if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
       e.target.releasePointerCapture(e.pointerId);
     }
     pointerStartY.current = null;

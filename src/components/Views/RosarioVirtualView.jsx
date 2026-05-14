@@ -345,7 +345,7 @@ export default function RosarioVirtualView({
           letterSpacing: '1px',
           fontWeight: 'bold'
         }}>
-          v0.3.5 — La Rosa Bíblica
+          v0.3.6 — La Rosa Trascendente
         </span>
       </div>
 
