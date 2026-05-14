@@ -366,6 +366,7 @@ const RosarioPrayerBook = {
       img: "/gallery-images/latin-pater-noster.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/padre-nuestro.jpg",
       text: "Padre nuestro, que estás en el cielo, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
+      scripture: "Matthew 6:9-13"
     },
     {
       id: "A",
@@ -373,6 +374,7 @@ const RosarioPrayerBook = {
       img: "/gallery-images/latin-ave-maria.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/ave-maria.jpg",
       text: "Dios te salve, María, \nllena eres de gracia, \nel Señor es contigo. \nBendita tú eres entre todas las mujeres, \ny bendito es el fruto de tu vientre, \nJesús. \nSanta María, \nMadre de Dios, \nruega por nosotros, pecadores, \nahora y en la hora de nuestra muerte. \nAmén.",
+      scriptureId: "A"
     },
     {
       id: "G",
