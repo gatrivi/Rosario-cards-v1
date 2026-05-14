@@ -100,7 +100,6 @@ export default function RoseView({
   const rezoData = secuencia[currentPrayerIndex];
 
   // ─── Interaction State ───
-  const [modoInteraccion] = useState('swipe');
   const [versoIndex, setVersoIndex] = useState(0);
   const [charProgressIndex, setCharProgressIndex] = useState(-1); 
   const [isVerseActivated, setIsVerseActivated] = useState(false);
@@ -160,11 +159,6 @@ export default function RoseView({
   // ═══════════════════════════════════════════════════════
   // ─── Audio System ───
   // ═══════════════════════════════════════════════════════
-  //
-  // Each prayer type has a root frequency. As the user reads,
-  // pitch rises subtly (~15%) through the verse. The filter
-  // cutoff tracks character warmth (silver = muffled, gold = open).
-  // Lifetime enrichment from totalAveMarias adds harmonics.
 
   // Root note per prayer type (Hz)
   const PRAYER_FREQ = {
@@ -175,10 +169,10 @@ export default function RoseView({
     'LL': 130.81, // C3
     'S': 130.81, // C3
   };
-  const getBaseFreq = () => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81;
+  const getBaseFreq = useCallback(() => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81, [rezoData.id]);
 
 
-  const initAudio = () => {
+  const initAudio = useCallback(() => {
     if (!audioCtxRef.current) {
       const ctx = audioManager.getContext();
       if (!ctx) return;
@@ -276,7 +270,7 @@ export default function RoseView({
     } else if (audioCtxRef.current.state === 'suspended' && soundEnabledRef.current) {
       audioCtxRef.current.resume();
     }
-  };
+  }, [getBaseFreq]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Called on pointer activity (on/off toggle)
   const modulateAudio = (active) => {
@@ -932,5 +926,3 @@ export default function RoseView({
     </div>
   );
 }
-
-
