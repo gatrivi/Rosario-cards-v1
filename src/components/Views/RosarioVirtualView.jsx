@@ -341,11 +341,11 @@ export default function RosarioVirtualView({
         </div>
         <span style={{ 
           fontSize: '0.45rem', 
-          color: 'rgba(212,175,55,0.4)', 
+          color: 'rgba(212, 175, 55, 0.4)', 
           letterSpacing: '1px',
           fontWeight: 'bold'
         }}>
-          v0.3.2 — Excelencia Sagrada
+          v0.3.4 — La Rosa Resonante
         </span>
       </div>
 

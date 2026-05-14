@@ -310,7 +310,17 @@ const VirtualRosaryPhysics = ({
 
         const base = getBaseFreq();
 
-        // --- Gothic Organ Timbre ---
+        // --- AMBIANCE LAYER: Deep Sub Ground ---
+        const droneOsc = ctx.createOscillator();
+        droneOsc.type = 'sine';
+        droneOsc.frequency.setValueAtTime(base * 0.25, ctx.currentTime);
+        const droneGain = ctx.createGain();
+        droneGain.gain.value = 0.005;
+        droneOsc.connect(droneGain);
+        droneGain.connect(gainNode);
+        droneOsc.start();
+
+        // --- SACRED ORGAN LAYERS ---
         const osc = ctx.createOscillator();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(base, ctx.currentTime);
@@ -330,17 +340,33 @@ const VirtualRosaryPhysics = ({
         celestialGain.gain.value = 0;
 
         const padGain = ctx.createGain();
-        padGain.gain.value = 0.02;
+        padGain.gain.value = 0.015;
+
+        // Reverb Simulation
+        const reverbGain = ctx.createGain();
+        reverbGain.gain.value = 0.25;
+        const delay = ctx.createDelay();
+        delay.delayTime.value = 0.55;
+        const feedback = ctx.createGain();
+        feedback.gain.value = 0.45;
+        const reverbFilter = ctx.createBiquadFilter();
+        reverbFilter.type = 'lowpass';
+        reverbFilter.frequency.value = 700;
+        
+        delay.connect(feedback);
+        feedback.connect(reverbFilter);
+        reverbFilter.connect(delay);
+        delay.connect(reverbGain);
 
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.value = 600;
-        filter.Q.value = 1;
+        filter.frequency.value = 550;
+        filter.Q.value = 1.2;
 
         const lfo = ctx.createOscillator();
         const lfoGain = ctx.createGain();
         lfo.type = 'sine';
-        lfo.frequency.value = 0.2;
+        lfo.frequency.value = 0.12;
         lfoGain.gain.value = 0;
         lfo.connect(lfoGain);
         lfoGain.connect(filter.frequency);
@@ -353,19 +379,21 @@ const VirtualRosaryPhysics = ({
         celestialGain.connect(filter);
         padGain.connect(filter);
         filter.connect(gainNode);
+        filter.connect(delay);
+        reverbGain.connect(gainNode);
 
         osc.start();
         osc2.start();
         osc3.start();
         osc4.start();
 
-        synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain };
+        synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain, droneGain };
       }
     };
 
     const updateAudioWarmth = (warmth = 0.1) => {
       if (!synthRef.current || !soundEnabled) return;
-      const { filter, gainNode, celestialGain, lfoGain } = synthRef.current;
+      const { filter, gainNode, celestialGain, lfoGain, droneGain } = synthRef.current;
       const ctx = audioCtxRef.current;
       const t = ctx.currentTime;
       
@@ -377,18 +405,20 @@ const VirtualRosaryPhysics = ({
         if (c) Object.assign(cosmic, c);
       } catch(e){}
 
-      const deepBase = cosmic.pluto * 10 + cosmic.saturn * 5;
-      const targetFreq = 400 + warmth * 400 + sessionProgress * 400 + deepBase;
-      filter.frequency.setTargetAtTime(targetFreq, t, 0.5);
-      filter.Q.setTargetAtTime(1 + sessionProgress * 2 + cosmic.neptune * 1.5, t, 0.5); 
-      celestialGain.gain.setTargetAtTime(sessionProgress * 0.015 + (cosmic.uranus * 0.005), t, 1.0); 
-      lfoGain.gain.setTargetAtTime(sessionProgress * 50 + (cosmic.mercury * 20), t, 1.0);
-      gainNode.gain.setTargetAtTime(0.012 + warmth * 0.01, t, 0.3);
+      const deepBase = cosmic.pluto * 12 + cosmic.saturn * 6;
+      const targetFreq = 450 + warmth * 400 + sessionProgress * 500 + deepBase;
+      filter.frequency.setTargetAtTime(targetFreq, t, 0.7);
+      filter.Q.setTargetAtTime(1.2 + sessionProgress * 2.5 + cosmic.neptune * 1.8, t, 0.7); 
+      celestialGain.gain.setTargetAtTime(sessionProgress * 0.02 + (cosmic.uranus * 0.008), t, 1.2); 
+      droneGain.gain.setTargetAtTime(0.005 + (cosmic.pluto * 0.004), t, 1.5);
+      lfoGain.gain.setTargetAtTime(sessionProgress * 55 + (cosmic.mercury * 25), t, 1.2);
+      gainNode.gain.setTargetAtTime(0.015 + warmth * 0.008, t, 0.5);
     };
 
     const stopSynth = () => {
       if (synthRef.current) {
-        synthRef.current.gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.5);
+        // Keep a tiny "sacred background" hum
+        synthRef.current.gainNode.gain.setTargetAtTime(0.002, audioCtxRef.current.currentTime, 0.8);
       }
     };
 
@@ -575,7 +605,7 @@ const VirtualRosaryPhysics = ({
         if (tryActivateMagnetism()) return;
       }
 
-      if (dist < 15) {
+      if (dist < 30) {
         if (guidedRef.current) {
           if (callbacksRef.current.onAdvance) callbacksRef.current.onAdvance();
           strokePointsRef.current = [];
@@ -655,7 +685,7 @@ const VirtualRosaryPhysics = ({
       }
 
       // Only advance if it was a quick tap AND NOT a charge interaction
-      if (dist < 15 && callbacksRef.current.onAdvance && duration < 300) {
+      if (dist < 30 && callbacksRef.current.onAdvance && duration < 300) {
         callbacksRef.current.onAdvance();
       }
       strokePointsRef.current = [];
@@ -721,7 +751,7 @@ const VirtualRosaryPhysics = ({
         }
       }
 
-      if (dist < 15 && callbacksRef.current.onAdvance && duration < 300) {
+      if (dist < 30 && callbacksRef.current.onAdvance && duration < 300) {
         callbacksRef.current.onAdvance();
       }
       strokePointsRef.current = [];

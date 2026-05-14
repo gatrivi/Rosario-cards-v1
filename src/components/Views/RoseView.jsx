@@ -190,7 +190,17 @@ export default function RoseView({
       gainNode.gain.value = 0;
       gainNode.connect(ctx.destination);
 
-      // --- Gothic Organ Timbre ---
+      // --- AMBIANCE LAYER: Deep Monastery Drone (Foundational) ---
+      const droneOsc = ctx.createOscillator();
+      droneOsc.type = 'sine';
+      droneOsc.frequency.setValueAtTime(getBaseFreq() * 0.25, ctx.currentTime); // 2 Octaves down
+      const droneGain = ctx.createGain();
+      droneGain.gain.value = 0.005; // Very low constant hum
+      droneOsc.connect(droneGain);
+      droneGain.connect(gainNode);
+      droneOsc.start();
+
+      // --- SACRED ORGAN LAYERS ---
       // Osc1: Sine (Foundational Root)
       const osc = ctx.createOscillator();
       osc.type = 'sine';
@@ -206,7 +216,7 @@ export default function RoseView({
       osc3.type = 'sine';
       osc3.frequency.setValueAtTime(getBaseFreq() * 0.5, ctx.currentTime);
       
-      // Osc4: Sine (2 Octaves up — "Celestial" shimmer, grows with session)
+      // Osc4: Sine (Celestial Choir / Harmonic Shimmer)
       const osc4 = ctx.createOscillator();
       osc4.type = 'sine';
       osc4.frequency.setValueAtTime(getBaseFreq() * 4, ctx.currentTime);
@@ -214,19 +224,35 @@ export default function RoseView({
       celestialGain.gain.value = 0;
 
       const padGain = ctx.createGain();
-      padGain.gain.value = 0.02; // Very soft base volume
+      padGain.gain.value = 0.015; 
+
+      // Reverb Simulation: Long delay + Filter feedback
+      const reverbGain = ctx.createGain();
+      reverbGain.gain.value = 0.3;
+      const delay = ctx.createDelay();
+      delay.delayTime.value = 0.5;
+      const feedback = ctx.createGain();
+      feedback.gain.value = 0.4;
+      const reverbFilter = ctx.createBiquadFilter();
+      reverbFilter.type = 'lowpass';
+      reverbFilter.frequency.value = 800;
+      
+      delay.connect(feedback);
+      feedback.connect(reverbFilter);
+      reverbFilter.connect(delay);
+      delay.connect(reverbGain);
 
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.value = 600; // Muffled, atmospheric
-      filter.Q.value = 1;
+      filter.frequency.value = 500; 
+      filter.Q.value = 1.5;
 
-      // LFO for subtle "breath"
+      // LFO for "Sacred Breath" (Tremolo + Filter)
       const lfo = ctx.createOscillator();
       const lfoGain = ctx.createGain();
       lfo.type = 'sine';
-      lfo.frequency.value = 0.2; // 0.2 Hz (one breath every 5s)
-      lfoGain.gain.value = 0;     // Starts static
+      lfo.frequency.value = 0.15; 
+      lfoGain.gain.value = 0;     
       lfo.connect(lfoGain);
       lfoGain.connect(filter.frequency);
       lfo.start();
@@ -238,13 +264,15 @@ export default function RoseView({
       celestialGain.connect(filter);
       padGain.connect(filter);
       filter.connect(gainNode);
+      filter.connect(delay);
+      reverbGain.connect(gainNode);
 
       osc.start();
       osc2.start();
       osc3.start();
       osc4.start();
 
-      synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain };
+      synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain, droneGain };
     } else if (audioCtxRef.current.state === 'suspended' && soundEnabledRef.current) {
       audioCtxRef.current.resume();
     }
@@ -257,63 +285,55 @@ export default function RoseView({
     if (active) {
       updateAudioWarmth();
     } else {
-      gainNode.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.3);
+      // Don't kill it instantly, leave a tiny "ghost" hum
+      gainNode.gain.setTargetAtTime(0.002, audioCtxRef.current.currentTime, 0.6);
     }
   };
 
-  // Called every 50ms by warmth timer — smoothly modulates pitch, filter, volume
-  // based on the CURRENT character's live warmth and verse progress.
   const updateAudioWarmth = () => {
     if (!synthRef.current || !soundEnabledRef.current) return;
-    const { filter, gainNode, padGain, celestialGain, lfoGain } = synthRef.current;
+    const { filter, gainNode, padGain, celestialGain, lfoGain, droneGain } = synthRef.current;
     const t = audioCtxRef.current.currentTime;
     
-    // Subtle warmth changes only (no aggressive frequency shifts)
     const reachedAt = charReachedAtRef.current[charProgressIndex];
     const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
-    const warmth = Math.min(1, liveDwell / 3000);
+    const warmth = Math.min(1, liveDwell / 3500);
 
     const tRosos = totalRosasRef.current || 0;
     const totalEnrichment = Math.min(1, Math.log10(tRosos + 1) / 8); 
 
-    // Session-based reward: Grows as you get closer to completing the mystery
     const sessionProgress = (currentPrayerIndex + 1) / (secuencia.length || 1);
     const sessionEnrichment = Math.min(1, sessionProgress);
 
-    // --- Cosmic Modulation (The Great Journey) ---
+    // --- Cosmic Modulation ---
     const cosmic = getCosmicPhases();
     
-    // Saturn (29y) & Pluto (248y) affect the "Ground" (Depth and Sub)
-    const deepBase = cosmic.pluto * 10 + cosmic.saturn * 5;
+    const deepBase = cosmic.pluto * 15 + cosmic.saturn * 8;
     
-    // Mercury (7d) affects LFO speed (The Breath)
-    const lfoSpeed = 0.15 + (cosmic.mercury * 0.1);
+    const lfoSpeed = 0.12 + (cosmic.mercury * 0.08);
     if (synthRef.current.lfo) {
-      synthRef.current.lfo.frequency.setTargetAtTime(lfoSpeed, t, 1.0);
+      synthRef.current.lfo.frequency.setTargetAtTime(lfoSpeed, t, 1.5);
     }
 
-    // --- Filter: extremely subtle opening & resonance increase ---
-    // Jupiter modulates the Seasonal Cutoff range
-    const jupiterMod = cosmic.jupiter * 150;
-    const targetFreq = 400 + warmth * 300 + sessionEnrichment * 400 + totalEnrichment * 200 + jupiterMod + deepBase;
-    filter.frequency.setTargetAtTime(targetFreq, t, 0.5);
+    // --- Filter: extremely subtle opening ---
+    const jupiterMod = cosmic.jupiter * 200;
+    const targetFreq = 450 + warmth * 350 + sessionEnrichment * 500 + totalEnrichment * 250 + jupiterMod + deepBase;
+    filter.frequency.setTargetAtTime(targetFreq, t, 0.8);
     
-    // Neptune (164y) modulates the ethereal "wash" (Resonance)
-    filter.Q.setTargetAtTime(1 + sessionEnrichment * 2 + cosmic.neptune * 1.5, t, 0.5); 
+    filter.Q.setTargetAtTime(1.5 + sessionEnrichment * 3 + cosmic.neptune * 2, t, 0.8); 
 
-    // --- High Celestial Voice: Uranus (84y) modulates shimmer depth ---
-    celestialGain.gain.setTargetAtTime(sessionEnrichment * 0.015 + (cosmic.uranus * 0.005), t, 1.0); 
+    // --- Ambiance Layers ---
+    celestialGain.gain.setTargetAtTime(sessionEnrichment * 0.025 + (cosmic.uranus * 0.01), t, 1.5); 
+    droneGain.gain.setTargetAtTime(0.005 + (cosmic.pluto * 0.005), t, 2.0);
+    lfoGain.gain.setTargetAtTime(sessionEnrichment * 60 + (cosmic.mercury * 30), t, 1.5);
 
-    // --- LFO Shimmer: "Living" sound grows as you deepen prayer ---
-    lfoGain.gain.setTargetAtTime(sessionEnrichment * 50 + (cosmic.mercury * 20), t, 1.0);
+    // --- Volume ---
+    const baseVolume = 0.015 + (totalEnrichment * 0.008);
+    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.006, t, 0.8);
 
-    // --- Volume: constant low gain, no "blaring" ---
-    const baseVolume = 0.012 + (totalEnrichment * 0.005);
-    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.004, t, 0.5);
-
-    // --- Pad: static stability ---
-    padGain.gain.setTargetAtTime(0.01 + totalEnrichment * 0.01, t, 0.5);
+    padGain.gain.setTargetAtTime(0.012 + totalEnrichment * 0.012, t, 1.0);
   };
+
 
   // Verse start chime — pitch matches prayer type
   const playActivationChime = useCallback(() => {
@@ -570,7 +590,7 @@ export default function RoseView({
 
   const findCharAtPointer = (clientX, clientY) => {
     if (wordSpanRefs.current.length === 0 || totalChars === 0) return -1;
-    const M = 15; // ~thumbnail-width margin for forgiving touch/mouse detection
+    const M = 40; // More forgiving for touch/mouse detection
 
     let lastPassedGlobal = -1;
 
@@ -649,15 +669,11 @@ export default function RoseView({
     if (modoInteraccion !== 'swipe' || isPrayerComplete || isVersoComplete) return;
 
     // ─── ACTIVATION GATE ───
-    // Instead of requiring the mouse at the screen edge, activate when the
-    // mouse is in the LEFT HALF of the text area. This is where the first
-    // words are — intuitive for any user.
-    // ─── ACTIVATION CHECK ───
     if (!isVerseActivated) {
       const textRect = textoRef.current?.getBoundingClientRect();
       if (textRect) {
         // Broadened vertical margin for activation
-        const isNearText = clientY >= textRect.top - 80 && clientY <= textRect.bottom + 80;
+        const isNearText = clientY >= textRect.top - 120 && clientY <= textRect.bottom + 120;
         // User can tap/start from anywhere on the text area, not just left half
         if (isNearText) {
           setIsVerseActivated(true);
@@ -722,7 +738,8 @@ export default function RoseView({
     <div style={{
       height: '100%', display: 'flex', flexDirection: 'column',
       overflow: 'hidden', backgroundColor: '#0A0A0A',
-      userSelect: 'none', WebkitUserSelect: 'none'
+      userSelect: 'none', WebkitUserSelect: 'none',
+      touchAction: 'none'
     }}
     ref={containerRef}
     onPointerDown={handlePointerDown}

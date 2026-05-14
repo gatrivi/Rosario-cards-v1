@@ -38,7 +38,11 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
   const aveMariasActuales = rosasInCurrentMaceton % 10;
 
   const handleTapPantalla = (e) => {
-    if (e) e.preventDefault();
+    // If the tap started on a button or the footer, don't trigger prayer
+    if (e.target.closest('button') || e.target.closest('.footer-controls')) {
+      return;
+    }
+
     if (progreso >= VERSOS_AVE_MARIA.length) return;
 
     setFlash(true);
@@ -75,28 +79,34 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
   };
 
   return (
-    <div style={{ 
-      // CONTENEDOR MAESTRO: Bloqueado a las dimensiones de la ventana
-      display: 'flex', 
-      flexDirection: 'column', 
-      width: '100%',
-      maxWidth: '600px', 
-      height: '100%', 
-      maxHeight: '100%', 
-      margin: '0 auto', 
-      backgroundColor: '#0A0A0A',
-      boxSizing: 'border-box',
-      overflow: 'hidden', // ESTO MATA EL SCROLL
-      borderRadius: '12px',
-      touchAction: 'none',
-      position: 'relative'
-    }}>
+    <div 
+      onPointerDown={handleTapPantalla}
+      style={{ 
+        // CONTENEDOR MAESTRO: Bloqueado a las dimensiones de la ventana
+        display: 'flex', 
+        flexDirection: 'column', 
+        width: '100%',
+        maxWidth: '600px', 
+        height: '100%', 
+        maxHeight: '100%', 
+        margin: '0 auto', 
+        backgroundColor: '#0A0A0A',
+        boxSizing: 'border-box',
+        overflow: 'hidden', // ESTO MATA EL SCROLL
+        borderRadius: '12px',
+        touchAction: 'none',
+        position: 'relative',
+        userSelect: 'none', // Previene selección de texto accidental
+        WebkitUserSelect: 'none',
+        cursor: 'pointer'
+      }}
+    >
       
       {/* Visual Feedback Overlay */}
       {flash && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(212, 175, 55, 0.15)',
+          backgroundColor: 'rgba(212, 175, 55, 0.2)',
           zIndex: 100,
           pointerEvents: 'none'
         }} />
@@ -117,15 +127,13 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
 
       {/* ZONA 2: LA ROSA (Crece para llenar la mitad superior del espacio libre) */}
       <div 
-        onPointerDown={handleTapPantalla} 
         style={{ 
           flex: '1 1 50%', 
           display: 'flex', 
           flexDirection: 'column', 
           justifyContent: 'center', 
           alignItems: 'center',
-          cursor: 'pointer',
-          WebkitTapHighlightColor: 'rgba(212, 175, 55, 0.3)'
+          WebkitTapHighlightColor: 'transparent'
         }}
       >
         <div style={{
@@ -145,15 +153,13 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
 
       {/* ZONA 3: EL TELEPROMPTER (Crece para llenar la mitad inferior del espacio libre) */}
       <div 
-        onPointerDown={handleTapPantalla}
         style={{ 
           flex: '1 1 50%', 
           display: 'flex', 
           flexDirection: 'column', 
           justifyContent: 'center',
           position: 'relative',
-          cursor: 'pointer',
-          WebkitTapHighlightColor: 'rgba(212, 175, 55, 0.3)',
+          WebkitTapHighlightColor: 'transparent',
           padding: '0 25px'
         }}
       >
@@ -184,19 +190,32 @@ export default function InteractiveAveMaria({ onRosaCompletada, misterioColor = 
       </div>
 
       {/* ZONA 5: MINI-BARRA "PASEO DEL PERRO" (Altura Fija Automática) */}
-      <div style={{ 
+      <div className="footer-controls" style={{ 
         flex: '0 0 auto', // No crece, no se encoge
         padding: '20px', 
         backgroundColor: '#111', 
         borderTop: '1px solid #222',
         display: 'flex', 
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        zIndex: 101 // Asegurar que esté por encima del overlay de flash
       }}>
         <span style={{ color: '#888', fontSize: '1rem' }}>Carga rápida:</span>
         <div style={{ display: 'flex', gap: '15px' }}>
-          <button onClick={(e) => { e.stopPropagation(); addRosas(1); }} style={{...quickBtnStyle, fontSize: '1rem', padding: '10px 20px'}}>+1</button>
-          <button onClick={(e) => { e.stopPropagation(); addRosas(10); }} style={{...quickBtnStyle, fontSize: '1rem', padding: '10px 20px'}}>+10</button>
+          <button 
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); addRosas(1); }} 
+            style={{...quickBtnStyle, fontSize: '1rem', padding: '10px 20px'}}
+          >
+            +1
+          </button>
+          <button 
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); addRosas(10); }} 
+            style={{...quickBtnStyle, fontSize: '1rem', padding: '10px 20px'}}
+          >
+            +10
+          </button>
         </div>
       </div>
 
