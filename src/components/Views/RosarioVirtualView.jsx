@@ -4,6 +4,7 @@ import { getSequenceData } from './RoseView';
 import RosaEnFocoView from './RosaEnFocoView';
 import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
+import SacredDust from '../common/SacredDust';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
 
 export default function RosarioVirtualView({ 
@@ -23,6 +24,7 @@ export default function RosarioVirtualView({
   const [isCargando, setIsCargando] = useState(false);
   const [cargaOracion, setCargaOracion] = useState(0);
   const [warmthTick, setWarmthTick] = useState(0);
+  const [showBloom, setShowBloom] = useState(false);
   const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
 
   const wordSpanRefs = useRef([]);
@@ -47,6 +49,9 @@ export default function RosarioVirtualView({
       setVersoIndex(prev => prev + 1);
       setCargaOracion(0);
     } else if (currentPrayerIndex < secuencia.length - 1) {
+      // TRIGGER BLOOM on full prayer completion
+      setShowBloom(true);
+      setTimeout(() => setShowBloom(false), 1200);
       onUpdateProgreso(currentPrayerIndex + 1);
     }
   }, [currentPrayerIndex, versoIndex, secuencia, onUpdateProgreso]);
@@ -140,6 +145,19 @@ export default function RosarioVirtualView({
       backgroundPosition: 'center',
       transition: 'background-image 0.8s ease-in-out'
     }}>
+
+      {/* ── Layer 1: Ambient Depth ── */}
+      <SacredDust isCargando={isCargando} />
+
+      {/* ── Layer 1.5: Bloom Effect ── */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+        background: `radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 75%)`,
+        opacity: showBloom ? 1 : 0,
+        transition: showBloom ? 'none' : 'opacity 1s ease-out',
+        pointerEvents: 'none',
+        zIndex: 15
+      }} />
 
       {/* ── Layer 2: Moment Layer (Rosa / Prayer Text) ── */}
       <div style={{
@@ -345,7 +363,7 @@ export default function RosarioVirtualView({
           letterSpacing: '1px',
           fontWeight: 'bold'
         }}>
-          v0.3.6 — La Rosa Trascendente
+          v0.3.9 — La Rosa Trascendente
         </span>
       </div>
 

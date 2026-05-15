@@ -1,5 +1,5 @@
 // This service worker is designed for a PWA that needs to work offline
-const CACHE_NAME = 'rosario-cards-v0.3.0';
+const CACHE_NAME = 'rosario-cards-v0.3.7';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -14,25 +14,16 @@ const urlsToCache = [
 ];
 
 /* eslint-disable no-restricted-globals */
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         return cache.addAll(urlsToCache);
       })
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
+      .then(() => {
+        self.skipWaiting();
+      })
   );
 });
 
@@ -48,6 +39,45 @@ self.addEventListener('activate', event => {
           return null;
         })
       );
+    }).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  const { request } = event;
+
+  // For navigation requests (the page itself), always go to network first
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // For assets, try cache first, then network
+  event.respondWith(
+    caches.match(request).then(response => {
+      if (response) {
+        return response;
+      }
+      return fetch(request).then(networkResponse => {
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+        return networkResponse;
+      });
     })
   );
+});
+
+// Listen for messages from the page
+self.addEventListener('message', event => {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });

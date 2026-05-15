@@ -22,12 +22,12 @@ import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 
-const APP_VERSION = '0.3.6';
+const APP_VERSION = '0.3.9';
 
 
 export default function AppShell() {
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
-  const [vistaActiva, setVistaActiva] = useState('rosary'); 
+  const [vistaActiva, setVistaActiva] = useState('rose'); 
   const [, setSelectedLevel] = useState(null);
   const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);

@@ -157,8 +157,7 @@ const VirtualRosaryPhysics = ({
     const baseBeadOptions = {
       restitution: 0.05,
       friction: 0.3,
-      frictionAir: guided ? 0.3 : 0.12,
-      density: 0.008,
+      frictionAir: guided ? 0.03 : 0.01,
       slop: 0.05,
       collisionFilter: { group: rosaryGroup }
     };
@@ -183,24 +182,12 @@ const VirtualRosaryPhysics = ({
     const centerItem = beadsData.find(b => b.role === 'medal') || beadsData.find(b => b.physicsType === 'center') || pendantItems[pendantItems.length - 1];
     const beadRadius = 10;
 
-    // 1. Centerpiece (Medal) — no longer static, uses a soft anchor instead
+    // 1. Centerpiece (Medal) — free floating, no anchor
     const centerBody = Bodies.circle(cx, cy + loopRadius, 20, getBeadOptions(centerItem));
     centerBody.beadData = centerItem;
     centerBody.circleRadius = 20;
     allBodies.push(centerBody);
     homePositionsRef.current.push({ x: cx, y: cy + loopRadius });
-
-    // Anchor the centerpiece with a soft, invisible 'virtual string'
-    // This lets it move but keeps it from drifting off screen
-    const centerpieceAnchor = Constraint.create({
-      pointA: { x: cx, y: cy + loopRadius },
-      bodyB: centerBody,
-      stiffness: 0.0008,
-      damping: 0.1,
-      length: 0,
-      render: { visible: false }
-    });
-    allConstraints.push(centerpieceAnchor);
 
     // 2. Loop
     const loopBodies = [];
@@ -283,7 +270,7 @@ const VirtualRosaryPhysics = ({
     const mouse = Mouse.create(canvas);
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse: mouse,
-      constraint: { stiffness: guided ? 0.08 : 0.2, render: { visible: false } }
+      constraint: { stiffness: guided ? 0.6 : 0.9, render: { visible: false } }
     });
 
     // Mouse constraint available in both modes, but very soft in guided
@@ -561,7 +548,9 @@ const VirtualRosaryPhysics = ({
       
       const hit = checkBeadHit(event.mouse.position);
       isEmptyTouchingRef.current = !hit;
-      if (!hit && callbacksRef.current.onEmptyPointerDown) {
+      
+      // ALWAYS trigger prayer charge to make it reliable, even if hitting a bead
+      if (callbacksRef.current.onEmptyPointerDown) {
         callbacksRef.current.onEmptyPointerDown(event.sourceEvent);
       }
 
@@ -578,7 +567,8 @@ const VirtualRosaryPhysics = ({
 
       stopSynth();
 
-      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerUp) {
+      const wasEmpty = isEmptyTouchingRef.current;
+      if (wasEmpty && callbacksRef.current.onEmptyPointerUp) {
         callbacksRef.current.onEmptyPointerUp(event.sourceEvent);
       }
       isEmptyTouchingRef.current = false;
@@ -600,8 +590,8 @@ const VirtualRosaryPhysics = ({
         }
       }
 
-      // Cross gesture check (free mode)
-      if (!guidedRef.current && dist > 25 && duration > 150) {
+      // Cross gesture check (free mode) — ONLY if we started on empty space
+      if (!guidedRef.current && wasEmpty && dist > 25 && duration > 150) {
         if (tryActivateMagnetism()) return;
       }
 
@@ -637,7 +627,7 @@ const VirtualRosaryPhysics = ({
 
       const hit = checkBeadHit(pos);
       isEmptyTouchingRef.current = !hit;
-      if (!hit && callbacksRef.current.onEmptyPointerDown) {
+      if (callbacksRef.current.onEmptyPointerDown) {
         callbacksRef.current.onEmptyPointerDown(e);
       }
 
@@ -655,7 +645,8 @@ const VirtualRosaryPhysics = ({
 
       stopSynth();
 
-      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerUp) {
+      const wasEmpty = isEmptyTouchingRef.current;
+      if (wasEmpty && callbacksRef.current.onEmptyPointerUp) {
         callbacksRef.current.onEmptyPointerUp(e);
       }
       isEmptyTouchingRef.current = false;
@@ -676,8 +667,8 @@ const VirtualRosaryPhysics = ({
         }
       }
 
-      // Cross gesture check in guided mode too
-      if (dist > 25 && duration > 150) {
+      // Cross gesture check in guided mode too — ONLY if we started on empty space
+      if (wasEmpty && dist > 25 && duration > 150) {
         if (tryActivateMagnetism()) {
           strokePointsRef.current = [];
           return;
@@ -702,7 +693,7 @@ const VirtualRosaryPhysics = ({
 
         const hit = checkBeadHit(pos);
         isEmptyTouchingRef.current = !hit;
-        if (!hit && callbacksRef.current.onEmptyPointerDown) {
+        if (callbacksRef.current.onEmptyPointerDown) {
           callbacksRef.current.onEmptyPointerDown(e);
         }
 
@@ -722,7 +713,8 @@ const VirtualRosaryPhysics = ({
 
       stopSynth();
 
-      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerUp) {
+      const wasEmpty = isEmptyTouchingRef.current;
+      if (wasEmpty && callbacksRef.current.onEmptyPointerUp) {
         callbacksRef.current.onEmptyPointerUp(e);
       }
       isEmptyTouchingRef.current = false;
@@ -743,8 +735,8 @@ const VirtualRosaryPhysics = ({
         }
       }
 
-      // Cross gesture check
-      if (dist > 25 && duration > 150) {
+      // Cross gesture check — ONLY if we started on empty space
+      if (wasEmpty && dist > 25 && duration > 150) {
         if (tryActivateMagnetism()) {
           strokePointsRef.current = [];
           return;
@@ -811,75 +803,23 @@ const VirtualRosaryPhysics = ({
         magnetismActiveRef.current = false;
       }
 
-      // Calculate displacement for rescue detection
-      let totalDisplacement = 0;
-      let displacedCount = 0;
-      allWorldBodies.forEach((body, i) => {
-        if (!body.beadData || body.isStatic) return;
-        if (mouseConstraint.body === body) return; // Ignore dragged body
-        const home = homePositionsRef.current[i];
-        if (!home) return;
-        const d = Math.hypot((home.x + panOffsetRef.current.x) - body.position.x, (home.y + panOffsetRef.current.y) - body.position.y);
-        totalDisplacement += d;
-        displacedCount++;
-      });
-      const avgDisplacement = displacedCount > 0 ? totalDisplacement / displacedCount : 0;
-
-      // Rescue needed if significantly displaced and not currently magnetizing
-      const wasRescue = needsRescueRef.current;
-      needsRescueRef.current = avgDisplacement > 180 && !magnetismActiveRef.current;
-      if (!wasRescue && needsRescueRef.current) {
-        rescueFlashRef.current = 0.6;
-      }
-
-      // Home forces
-      if (guidedRef.current) {
-        const k = magnetismActiveRef.current ? 0.025 : (needsRescueRef.current ? 0.005 : 0.0001);
-        const damping = magnetismActiveRef.current ? 0.65 : 0.98;
-
-        // Update anchor to match pan
-        if (centerpieceAnchor) {
-          centerpieceAnchor.pointA = { 
-            x: cx + panOffsetRef.current.x, 
-            y: cy + loopRadius + panOffsetRef.current.y 
-          };
-        }
-
+      // Only apply forces during cross-gesture magnetism.
+      // The rosary is otherwise completely free — no home forces, no anchor.
+      if (magnetismActiveRef.current) {
+        const k = 0.025;
+        const damping = 0.65;
         allWorldBodies.forEach((body, i) => {
           if (!body.beadData || body.isStatic) return;
-          if (mouseConstraint.body === body) return; // EXORCISM: Don't fight the user!
-          
           const home = homePositionsRef.current[i];
           if (!home) return;
-
-          if (k > 0) {
-            const dx = (home.x + panOffsetRef.current.x) - body.position.x;
-            const dy = (home.y + panOffsetRef.current.y) - body.position.y;
-            Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
-          }
-
+          const dx = home.x - body.position.x;
+          const dy = home.y - body.position.y;
+          Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
           Body.setVelocity(body, {
             x: body.velocity.x * damping,
             y: body.velocity.y * damping
           });
           Body.setAngularVelocity(body, body.angularVelocity * damping);
-        });
-      }
-
-      // Free mode: gentle magnetism if active (e.g. after cross gesture)
-      if (!guidedRef.current && magnetismActiveRef.current) {
-        const k = 0.008;
-        allWorldBodies.forEach((body, i) => {
-          if (!body.beadData || body.isStatic) return;
-          const home = homePositionsRef.current[i];
-          if (!home) return;
-          const dx = (home.x + panOffsetRef.current.x) - body.position.x;
-          const dy = (home.y + panOffsetRef.current.y) - body.position.y;
-          Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
-          Body.setVelocity(body, {
-            x: body.velocity.x * 0.98,
-            y: body.velocity.y * 0.98
-          });
         });
       }
     };
@@ -1075,19 +1015,19 @@ const VirtualRosaryPhysics = ({
       // ── Rescue hint: faint cross to draw ──
       if (needsRescueRef.current || rescueFlashRef.current > 0) {
         const alpha = needsRescueRef.current
-          ? 0.15 + Math.sin(Date.now() / 600) * 0.08
-          : rescueFlashRef.current * 0.3;
+          ? 0.25 + Math.sin(Date.now() / 400) * 0.15
+          : rescueFlashRef.current * 0.4;
         const crossH = Math.min(width, height) * 0.18;
         const crossW = crossH * 0.65;
         const barY = -crossH * 0.15;
 
         ctx.save();
-        ctx.translate(cx + panOffsetRef.current.x, cy + panOffsetRef.current.y);
+        ctx.translate(cx, cy + loopRadius);
         ctx.globalAlpha = Math.max(0, alpha);
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#D4AF37';
+        ctx.lineWidth = 3;
         ctx.shadowColor = '#d4af37';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
 
         // Vertical
         ctx.beginPath();
@@ -1103,10 +1043,10 @@ const VirtualRosaryPhysics = ({
 
         // Label
         ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
-        ctx.font = '11px sans-serif';
+        ctx.fillStyle = '#D4AF37';
+        ctx.font = 'bold 12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('✝  para reunir', 0, crossH / 2 + 18);
+        ctx.fillText('✝  Gesto Sagrado', 0, crossH / 2 + 18);
 
         ctx.restore();
       }

@@ -13,6 +13,7 @@ import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import RoseDrawing from './RoseDrawing';
 import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
+import SacredDust from '../common/SacredDust';
 import { getCosmicPhases } from '../../utils/cosmicModulator';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
 
@@ -56,11 +57,8 @@ export const getSequenceData = (mysteryType = 'gozosos') => {
 // ─── Component ───
 // ═══════════════════════════════════════════════════════
 
-const MEDITATION_SPEEDS = {
-  oro: 45,      // Fluid
-  incienso: 85, // Balanced
-  mirra: 155    // Deep
-};
+// Word-level reading pace — no longer character-based speeds.
+// Each verse enforces a minimum total duration regardless of word count.
 
 export default function RoseView({ 
   currentPrayerIndex, 
@@ -69,7 +67,7 @@ export default function RoseView({
   onBack, 
   soundEnabled, 
   onToggleSound,
-  meditationRitmo = 'incienso',
+  meditationRitmo = 'incienso', // eslint-disable-line no-unused-vars
   simpleMode = false
 }) {
   const { addRosas, storeRoseData, totalAveMarias } = useAveMariaStats();
@@ -108,6 +106,7 @@ export default function RoseView({
   const [isCargando, setIsCargando] = useState(false);
   const [warmthTick, setWarmthTick] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [showBloom, setShowBloom] = useState(false);
 
   // ─── Refs ───
   const containerRef = useRef(null);
@@ -120,12 +119,19 @@ export default function RoseView({
   const mouseWiggleRef = useRef({ lastX: null, lastY: null, samples: [] });
   const autoAdvanceTimer = useRef(null);
   const holdTimerRef = useRef(null);
+  const holdDelayTimerRef = useRef(null);
   const pointerStartX = useRef(null);
   const pointerStartY = useRef(null);
   const isVerticalGesture = useRef(false);
   const versoIndexRef = useRef(0);
   const advanceVerseRef = useRef(null);
   const roseSeedRef = useRef(0);
+  const lastAdvanceTimeRef = useRef(0);
+  const isVersoCompleteRef = useRef(false);
+  const isPrayerCompleteRef = useRef(false);
+  const charProgressIndexRef = useRef(-1);
+  const wordProgressIndexRef = useRef(-1);
+  const lastWordAdvanceTimeRef = useRef(0);
 
   // Audio
   const audioCtxRef = useRef(null);
@@ -134,6 +140,10 @@ export default function RoseView({
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
   useEffect(() => { versoIndexRef.current = versoIndex; }, [versoIndex]);
+  useEffect(() => { isVersoCompleteRef.current = isVersoComplete; }, [isVersoComplete]);
+  useEffect(() => { isPrayerCompleteRef.current = isPrayerComplete; }, [isPrayerComplete]);
+  useEffect(() => { charProgressIndexRef.current = charProgressIndex; }, [charProgressIndex]);
+  useEffect(() => { wordProgressIndexRef.current = -1; lastWordAdvanceTimeRef.current = 0; }, [currentPrayerIndex, versoIndex]);
 
   // ─── Derived ───
   const totalVersos = rezoData.versos.length;
@@ -169,7 +179,7 @@ export default function RoseView({
     'LL': 130.81, // C3
     'S': 130.81, // C3
   };
-  const getBaseFreq = useCallback(() => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81, [rezoData.id]);
+  const getBaseFreq = useCallback(() => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81, [rezoData.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const initAudio = useCallback(() => {
@@ -413,6 +423,9 @@ export default function RoseView({
   const resetVerseState = () => {
     setVersoIndex(0);
     setCharProgressIndex(-1);
+    charProgressIndexRef.current = -1;
+    wordProgressIndexRef.current = -1;
+    lastWordAdvanceTimeRef.current = 0;
     setIsVerseActivated(false);
     setIsVersoComplete(false);
     setIsPrayerComplete(false);
@@ -426,12 +439,19 @@ export default function RoseView({
 
   const advanceVerse = (direction) => {
     if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+    // Throttle rapid advances (e.g. trackpad wheel, event duplication)
+    const now = Date.now();
+    if (now - lastAdvanceTimeRef.current < 400) return;
+    lastAdvanceTimeRef.current = now;
     const currentIdx = versoIndexRef.current;
     const newIndex = currentIdx + direction;
     if (newIndex >= totalVersos) { setIsVersoComplete(false); setIsPrayerComplete(true); return; }
     if (newIndex < 0) return;
     setVersoIndex(newIndex);
     setCharProgressIndex(-1);
+    charProgressIndexRef.current = -1;
+    wordProgressIndexRef.current = -1;
+    lastWordAdvanceTimeRef.current = 0;
     setIsVerseActivated(false);
     setIsVersoComplete(false);
     charReachedAtRef.current = [];
@@ -486,14 +506,13 @@ export default function RoseView({
     return () => clearInterval(timer);
   }, [charProgressIndex, isVersoComplete, isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Verse auto-advance — brief flash then quick transition
+  // Verse completion — record stats and chime, but DO NOT auto-advance.
+  // The user must release to move to the next verse.
   useEffect(() => {
     if (isVersoComplete && !isPrayerComplete) {
-      // Record verse stats for rose fingerprint
       const dwells = charDwellRef.current.filter(d => d !== undefined && d !== null);
       const avgDwell = dwells.length > 0 ? dwells.reduce((s, d) => s + d, 0) / dwells.length : 200;
       verseWarmthRef.current.push(Math.min(1, avgDwell / 1000));
-      // Compute wiggle from mouse variance
       const ws = mouseWiggleRef.current.samples;
       let wiggle = 0;
       if (ws.length >= 3) {
@@ -502,20 +521,17 @@ export default function RoseView({
         wiggle = Math.min(5, Math.sqrt(variance));
       }
       verseWiggleRef.current.push(wiggle);
-      mouseWiggleRef.current.samples = []; // reset for next verse
-
+      mouseWiggleRef.current.samples = [];
       playVerseCompleteSound(avgDwell);
-      autoAdvanceTimer.current = setTimeout(() => advanceVerse(1), 350);
-      return () => clearTimeout(autoAdvanceTimer.current);
     }
   }, [isVersoComplete, isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Prayer completion
+  // Prayer completion — sound, vibration, rose data, but NO auto-advance.
+  // The user must release to move to the next prayer.
   useEffect(() => {
     if (isPrayerComplete) {
       if (rezoData.id === 'A') {
         addRosas(1);
-        // Store unique rose fingerprint — maps verse warmth/wiggle to path slots
         const N = RoseDrawing.PATH_COUNT;
         const vw = verseWarmthRef.current;
         const vg = verseWiggleRef.current;
@@ -536,44 +552,107 @@ export default function RoseView({
       }
       playPrayerCompleteSound();
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
-      const timer = setTimeout(() => {
-        if (currentPrayerIndex < secuencia.length - 1) onUpdateProgreso(currentPrayerIndex + 1);
-        resetVerseState();
-      }, 600);
-      return () => clearTimeout(timer);
     }
   }, [isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Hold mode (Hybrid: works alongside swipe)
+  // Unified WORD-level advancement — people read in staccatos (words), not characters.
+  const advanceWordCore = () => {
+    const current = wordProgressIndexRef.current;
+    if (current >= currentWords.length - 1) {
+      if (!isVersoCompleteRef.current) {
+        setIsVersoComplete(true);
+        modulateAudio(false);
+        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
+      }
+      return;
+    }
+    const next = current + 1;
+    wordProgressIndexRef.current = next;
+    lastWordAdvanceTimeRef.current = Date.now();
+
+    // Reveal all characters up to the end of this word
+    const prevEndChar = charProgressIndexRef.current;
+    const endChar = wordCharOffsets[next] + currentWords[next].length - 1;
+    charProgressIndexRef.current = endChar;
+    setCharProgressIndex(endChar);
+
+    const now = Date.now();
+    for (let i = prevEndChar + 1; i <= endChar; i++) {
+      if (!charReachedAtRef.current[i]) charReachedAtRef.current[i] = now;
+    }
+
+    if (next >= currentWords.length - 1) {
+      setIsVersoComplete(true);
+      modulateAudio(false);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
+    } else {
+      modulateAudio(true);
+    }
+  };
+
+  const tryAdvanceWord = () => {
+    const now = Date.now();
+    const minInterval = Math.max(
+      400,
+      Math.ceil(6000 / Math.max(1, currentWords.length))
+    );
+    if (now - lastWordAdvanceTimeRef.current < minInterval) return false;
+    advanceWordCore();
+    return true;
+  };
+
+  // Hold mode — reveals one word per tick at reading pace.
   useEffect(() => {
     if (isCargando && !isVersoComplete && !isPrayerComplete) {
-      if (!isVerseActivated) {
-        setIsVerseActivated(true);
-        initAudio();
-        playActivationChime();
-        if (charProgressIndex < 0) setCharProgressIndex(0);
-      }
-      holdTimerRef.current = setInterval(() => {
-        setCharProgressIndex(prev => {
-          const next = prev + 1;
-          if (next >= totalChars) {
-            setIsVersoComplete(true);
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
-            return totalChars - 1;
+      holdDelayTimerRef.current = setTimeout(() => {
+        if (!isVerseActivated) {
+          setIsVerseActivated(true);
+          initAudio();
+          playActivationChime();
+          if (wordProgressIndexRef.current < 0) {
+            wordProgressIndexRef.current = 0;
+            const endChar = wordCharOffsets[0] + currentWords[0].length - 1;
+            charProgressIndexRef.current = endChar;
+            setCharProgressIndex(endChar);
+            const now = Date.now();
+            for (let i = 0; i <= endChar; i++) {
+              if (!charReachedAtRef.current[i]) charReachedAtRef.current[i] = now;
+            }
           }
-          return next;
-        });
-      }, MEDITATION_SPEEDS[meditationRitmo] || 80); 
-      return () => clearInterval(holdTimerRef.current);
+        }
+        const MIN_VERSE_MS = 6000;
+        const wordInterval = Math.max(
+          400,
+          Math.ceil(MIN_VERSE_MS / Math.max(1, currentWords.length))
+        );
+        holdTimerRef.current = setInterval(() => {
+          advanceWordCore();
+        }, wordInterval);
+      }, 150);
+      return () => {
+        if (holdDelayTimerRef.current) clearTimeout(holdDelayTimerRef.current);
+        if (holdTimerRef.current) clearInterval(holdTimerRef.current);
+      };
     }
-    return () => { if (holdTimerRef.current) clearInterval(holdTimerRef.current); };
-  }, [isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, meditationRitmo, charProgressIndex, initAudio, playActivationChime]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      if (holdDelayTimerRef.current) clearTimeout(holdDelayTimerRef.current);
+      if (holdTimerRef.current) clearInterval(holdTimerRef.current);
+    };
+  }, [isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, meditationRitmo, initAudio, playActivationChime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wheel handler
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const handler = (e) => { e.preventDefault(); if (advanceVerseRef.current) advanceVerseRef.current(e.deltaY > 0 ? 1 : -1); };
+    let wheelAccum = 0;
+    const handler = (e) => {
+      e.preventDefault();
+      wheelAccum += e.deltaY;
+      if (Math.abs(wheelAccum) > 50) {
+        if (advanceVerseRef.current) advanceVerseRef.current(wheelAccum > 0 ? 1 : -1);
+        wheelAccum = 0;
+      }
+    };
     el.addEventListener('wheel', handler, { passive: false });
     return () => el.removeEventListener('wheel', handler);
   }, []);
@@ -587,45 +666,19 @@ export default function RoseView({
   // which word the mouse is over, then interpolates within that
   // word to find the specific character. Handles multi-line text.
 
-  const findCharAtPointer = (clientX, clientY) => {
-    if (wordSpanRefs.current.length === 0 || totalChars === 0) return -1;
-    const M = 40; // More forgiving for touch/mouse detection
-
-    let lastPassedGlobal = -1;
-
+  const findWordAtPointer = (clientX, clientY) => {
+    if (wordSpanRefs.current.length === 0) return -1;
+    const M = 60;
     for (let w = 0; w < wordSpanRefs.current.length; w++) {
       const span = wordSpanRefs.current[w];
       if (!span) continue;
       const rect = span.getBoundingClientRect();
-      const wordLen = currentWords[w].length;
-      const baseGlobal = wordCharOffsets[w];
-
-      // Word is on a line ABOVE the pointer → fully passed
-      if (clientY > rect.bottom + M) {
-        lastPassedGlobal = baseGlobal + wordLen - 1;
-        continue;
+      if (clientY >= rect.top - M && clientY <= rect.bottom + M &&
+          clientX >= rect.left - M && clientX <= rect.right + M) {
+        return w;
       }
-
-      // Word is on a line BELOW the pointer → stop
-      if (clientY < rect.top - M) break;
-
-      // Same line — mouse is LEFT of this word (beyond margin)
-      if (clientX < rect.left - M) {
-        return lastPassedGlobal;
-      }
-
-      // Mouse is WITHIN or NEAR this word (extended hit zone)
-      if (clientX <= rect.right + M) {
-        const pctInWord = Math.max(0, Math.min(0.999, (clientX - rect.left) / rect.width));
-        const localChar = Math.floor(pctInWord * wordLen);
-        return baseGlobal + localChar;
-      }
-
-      // Mouse is RIGHT of this word
-      lastPassedGlobal = baseGlobal + wordLen - 1;
     }
-
-    return lastPassedGlobal;
+    return -1;
   };
 
 
@@ -669,54 +722,34 @@ export default function RoseView({
     if (isVerticalGesture.current) return;
     if (isPrayerComplete || isVersoComplete) return;
 
-    // ─── ACTIVATION GATE ───
+    // ─── ACTIVATION ───
     if (!isVerseActivated) {
-      const textRect = textoRef.current?.getBoundingClientRect();
-      if (textRect) {
-        // Broadened vertical margin for activation
-        const isNearText = clientY >= textRect.top - 120 && clientY <= textRect.bottom + 120;
-        if (isNearText) {
-          setIsVerseActivated(true);
-          initAudio();
-          playActivationChime();
-          const charIdx = findCharAtPointer(clientX, clientY);
-          // Don't jump too far on activation (max 5 chars)
-          setCharProgressIndex(Math.max(0, Math.min(charIdx, 5)));
-          modulateAudio(true);
-        }
+      setIsVerseActivated(true);
+      initAudio();
+      playActivationChime();
+      const wordIdx = findWordAtPointer(clientX, clientY);
+      const startWord = Math.max(0, wordIdx);
+      wordProgressIndexRef.current = startWord;
+      lastWordAdvanceTimeRef.current = Date.now();
+      const endChar = wordCharOffsets[startWord] + currentWords[startWord].length - 1;
+      charProgressIndexRef.current = endChar;
+      const now = Date.now();
+      for (let i = 0; i <= endChar; i++) {
+        if (!charReachedAtRef.current[i]) charReachedAtRef.current[i] = now;
       }
+      setCharProgressIndex(endChar);
+      modulateAudio(true);
       return;
     }
 
-    // ─── CHARACTER TRACKING (DOM-based) ───
-    const charIdx = findCharAtPointer(clientX, clientY);
-    if (charIdx < 0) return;
-
-    // Enforce sequential progression (never go backwards)
-    if (charIdx <= charProgressIndex) return;
-
-    // Prevent massive jumps to avoid accidental completion by tapping the end.
-    // This forces the user to actually swipe across the text.
-    const MAX_JUMP = 20; 
-    const nextProgress = Math.min(charIdx, charProgressIndex + MAX_JUMP);
-
-    if (nextProgress > charProgressIndex) {
-      setCharProgressIndex(nextProgress);
-      modulateAudio(true);
-
-      // Finalization threshold:
-      const threshold = totalChars < 15 ? Math.floor(totalChars * 0.8) : totalChars - 1;
-
-      if (nextProgress >= threshold) {
-        setIsVersoComplete(true);
-        modulateAudio(false);
-        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
-      }
-    }
+    // ─── HOVER / DRAG TRACKING ───
+    const wordIdx = findWordAtPointer(clientX, clientY);
+    if (wordIdx < 0) return;
+    if (wordIdx <= wordProgressIndexRef.current) return;
+    tryAdvanceWord();
   };
 
   const handlePointerMove = (e) => { handleTrackPointer(e.clientX, e.clientY, e.pointerType); };
-  const handleMouseMove = (e) => { handleTrackPointer(e.clientX, e.clientY, 'mouse'); };
 
   const handlePointerUp = (e) => {
     setIsCargando(false);
@@ -727,6 +760,19 @@ export default function RoseView({
     pointerStartX.current = null;
     isVerticalGesture.current = false;
     modulateAudio(false);
+
+    // Advance on release if the verse/prayer is complete.
+    // This gives the user control: hold to read, release to move on.
+    if (isPrayerCompleteRef.current) {
+      if (currentPrayerIndex < secuencia.length - 1) {
+        setShowBloom(true);
+        setTimeout(() => setShowBloom(false), 1200);
+        onUpdateProgreso(currentPrayerIndex + 1);
+      }
+      resetVerseState();
+    } else if (!simpleMode && isVersoCompleteRef.current) {
+      advanceVerse(1);
+    }
   };
 
 
@@ -753,9 +799,21 @@ export default function RoseView({
     onPointerMove={handlePointerMove}
     onPointerUp={handlePointerUp}
     onPointerLeave={handlePointerUp}
-    onMouseMove={handleMouseMove}
     >
       
+      {/* ── Layer 1: Ambient Depth ── */}
+      <SacredDust isCargando={isCargando} />
+
+      {/* ── Layer 1.5: Bloom Effect ── */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+        background: `radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 75%)`,
+        opacity: showBloom ? 1 : 0,
+        transition: showBloom ? 'none' : 'opacity 1s ease-out',
+        pointerEvents: 'none',
+        zIndex: 15
+      }} />
+
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
           
           {/* Subtle Mystery Title */}

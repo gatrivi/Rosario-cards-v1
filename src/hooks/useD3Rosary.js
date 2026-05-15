@@ -60,7 +60,7 @@ export const useD3Rosary = (containerRef, graph, onNodeClick, onLinkClick) => {
       .style("position", "absolute")
       .style("top", "0")
       .style("left", "0")
-      .style("pointer-events", "none")
+      .style("pointer-events", "auto")
       .style("opacity", "0.85")
       .style("transition", "opacity 0.2s ease");
 
