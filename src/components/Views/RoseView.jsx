@@ -699,25 +699,6 @@ export default function RoseView({
   // ─── Pointer handlers ───
   // ═══════════════════════════════════════════════════════
 
-  const handlePointerDown = (e) => {
-    initAudio();
-    pointerStartX.current = e.clientX;
-    pointerStartY.current = e.clientY;
-    isVerticalGesture.current = false;
-    
-    // Always start charging (allows hold-to-advance alongside swipe)
-    setIsCargando(true);
-
-    if (e.pointerType === 'touch' && e.target.setPointerCapture) {
-      e.target.setPointerCapture(e.pointerId);
-    }
-    
-    // Simple Mode: Allow advance on simple tap (if not already completed)
-    if (simpleMode && !isVersoComplete && !isPrayerComplete) {
-      advanceVerse(1);
-    }
-  };
-
   const handleTrackPointer = (clientX, clientY, pointerType) => {
     if (!hasInteracted) setHasInteracted(true);
     
