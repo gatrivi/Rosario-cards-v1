@@ -722,8 +722,12 @@ export default function RoseView({
     if (isVerticalGesture.current) return;
     if (isPrayerComplete || isVersoComplete) return;
 
+    const textRect = textoRef.current?.getBoundingClientRect();
+    const isNearText = textRect && 
+      clientY >= textRect.top - 150 && clientY <= textRect.bottom + 150;
+
     // ─── ACTIVATION ───
-    if (!isVerseActivated) {
+    if (!isVerseActivated && (isNearText || isCargando)) {
       setIsVerseActivated(true);
       initAudio();
       playActivationChime();
@@ -739,14 +743,15 @@ export default function RoseView({
       }
       setCharProgressIndex(endChar);
       modulateAudio(true);
-      return;
     }
 
     // ─── HOVER / DRAG TRACKING ───
-    const wordIdx = findWordAtPointer(clientX, clientY);
-    if (wordIdx < 0) return;
-    if (wordIdx <= wordProgressIndexRef.current) return;
-    tryAdvanceWord();
+    if (isVerseActivated) {
+      const wordIdx = findWordAtPointer(clientX, clientY);
+      if (wordIdx < 0) return;
+      if (wordIdx <= wordProgressIndexRef.current) return;
+      tryAdvanceWord();
+    }
   };
 
   const handlePointerMove = (e) => { handleTrackPointer(e.clientX, e.clientY, e.pointerType); };
@@ -802,7 +807,7 @@ export default function RoseView({
     >
       
       {/* ── Layer 1: Ambient Depth ── */}
-      <SacredDust isCargando={isCargando} />
+      <SacredDust isCargando={isCargando || (isVerseActivated && !isVersoComplete)} />
 
       {/* ── Layer 1.5: Bloom Effect ── */}
       <div style={{

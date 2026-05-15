@@ -22,7 +22,7 @@ import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 
-const APP_VERSION = '0.3.9';
+const APP_VERSION = '0.3.10';
 
 
 export default function AppShell() {

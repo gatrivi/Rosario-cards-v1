@@ -363,7 +363,7 @@ export default function RosarioVirtualView({
           letterSpacing: '1px',
           fontWeight: 'bold'
         }}>
-          v0.3.9 — La Rosa Trascendente
+          v0.3.10 — La Rosa Trascendente
         </span>
       </div>
 
