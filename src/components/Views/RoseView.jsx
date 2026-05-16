@@ -438,15 +438,28 @@ export default function RoseView({
   };
 
   const advanceVerse = (direction) => {
+    console.log(`[RoseView] advanceVerse: dir=${direction}, currentVersoIndex=${versoIndexRef.current}, totalVersos=${totalVersos}`);
     if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
     // Throttle rapid advances (e.g. trackpad wheel, event duplication)
     const now = Date.now();
-    if (now - lastAdvanceTimeRef.current < 400) return;
+    if (now - lastAdvanceTimeRef.current < 400) {
+      console.log(`[RoseView] advanceVerse throttled: elapsed=${now - lastAdvanceTimeRef.current}`);
+      return;
+    }
     lastAdvanceTimeRef.current = now;
     const currentIdx = versoIndexRef.current;
     const newIndex = currentIdx + direction;
-    if (newIndex >= totalVersos) { setIsVersoComplete(false); setIsPrayerComplete(true); return; }
-    if (newIndex < 0) return;
+    if (newIndex >= totalVersos) { 
+      console.log(`[RoseView] reached end of versos, setting isPrayerComplete=true`);
+      setIsVersoComplete(false); 
+      setIsPrayerComplete(true); 
+      return; 
+    }
+    if (newIndex < 0) {
+       console.log(`[RoseView] cannot retreat beyond index 0`);
+       return;
+    }
+    console.log(`[RoseView] setting versoIndex to ${newIndex}`);
     setVersoIndex(newIndex);
     setCharProgressIndex(-1);
     charProgressIndexRef.current = -1;
