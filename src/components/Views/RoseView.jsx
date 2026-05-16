@@ -76,6 +76,14 @@ export default function RoseView({
 
   const [secuencia] = useState(() => getSequenceData(misterioActual));
 
+  // ─── Interaction Timing Config ───
+  const RHYTHM_CONFIG = {
+    'oro':      { minVerseMs: 3000, minWordMs: 250 }, // Fast/Focus
+    'incienso': { minVerseMs: 5000, minWordMs: 400 }, // Standard/Contemplative
+    'mirra':    { minVerseMs: 8000, minWordMs: 600 }, // Slow/Deep
+  };
+  const currentRhythm = RHYTHM_CONFIG[meditationRitmo] || RHYTHM_CONFIG.incienso;
+
   // ─── Cloud Sync ───
   const { cloudState, syncToCloud } = useCloudSync();
   const [loadedPrayerIndex, setLoadedPrayerIndex] = useState(false);
@@ -610,8 +618,8 @@ export default function RoseView({
   const tryAdvanceWord = () => {
     const now = Date.now();
     const minInterval = Math.max(
-      400,
-      Math.ceil(6000 / Math.max(1, currentWords.length))
+      currentRhythm.minWordMs,
+      Math.ceil(currentRhythm.minVerseMs / Math.max(1, currentWords.length))
     );
     const elapsed = now - lastWordAdvanceTimeRef.current;
     if (elapsed < minInterval) {
@@ -644,10 +652,9 @@ export default function RoseView({
             }
           }
         }
-        const MIN_VERSE_MS = 6000;
         const wordInterval = Math.max(
-          400,
-          Math.ceil(MIN_VERSE_MS / Math.max(1, currentWords.length))
+          currentRhythm.minWordMs,
+          Math.ceil(currentRhythm.minVerseMs / Math.max(1, currentWords.length))
         );
         console.log(`[RoseView] Hold Interval set to ${wordInterval}ms`);
         holdTimerRef.current = setInterval(() => {
@@ -664,7 +671,7 @@ export default function RoseView({
       if (holdDelayTimerRef.current) clearTimeout(holdDelayTimerRef.current);
       if (holdTimerRef.current) clearInterval(holdTimerRef.current);
     };
-  }, [isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, meditationRitmo, initAudio, playActivationChime]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, currentRhythm, initAudio, playActivationChime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wheel handler
   useEffect(() => {
@@ -694,7 +701,7 @@ export default function RoseView({
 
   const findWordAtPointer = (clientX, clientY) => {
     if (wordSpanRefs.current.length === 0) return -1;
-    const M = 60;
+    const M = 80; // Increased margin for easier detection
     for (let w = 0; w < wordSpanRefs.current.length; w++) {
       const span = wordSpanRefs.current[w];
       if (!span) continue;
@@ -717,7 +724,7 @@ export default function RoseView({
     
     const textRect = textoRef.current?.getBoundingClientRect();
     const isNearText = textRect && 
-      clientY >= textRect.top - 150 && clientY <= textRect.bottom + 150;
+      clientY >= textRect.top - 180 && clientY <= textRect.bottom + 180;
 
     // Log movement and proximity (sampled)
     if (Math.random() < 0.05) {
@@ -789,6 +796,12 @@ export default function RoseView({
 
     if (e.pointerType === 'touch' && e.target.setPointerCapture) {
       e.target.setPointerCapture(e.pointerId);
+    }
+
+    // ADVANCE WORD ON TAP: if already activated, clicking advances to next word
+    if (isVerseActivated && !isVersoComplete && !isPrayerComplete) {
+       console.log(`[RoseView] Tap-to-Advance word attempt`);
+       tryAdvanceWord();
     }
     
     // Simple Mode: Allow advance on simple tap (if not already completed)
