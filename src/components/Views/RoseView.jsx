@@ -210,15 +210,15 @@ export default function RoseView({
       if (!ctx) return;
       audioCtxRef.current = ctx;
 
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = 0;
+      gainNode.connect(ctx.destination);
+
       if (!soundEnabledRef.current) {
         gainNode.gain.value = 0;
       } else {
         audioManager.resume();
       }
-
-      const gainNode = ctx.createGain();
-      gainNode.gain.value = 0;
-      gainNode.connect(ctx.destination);
 
       // --- AMBIANCE LAYER: Deep Monastery Drone (Foundational) ---
       const droneOsc = ctx.createOscillator();
