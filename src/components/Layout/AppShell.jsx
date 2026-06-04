@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
 import RoseView from '../Views/RoseView';
+import BookletView from '../Views/BookletView';
 import MacetonView from '../Views/MacetonView';
 import PeregrinacionView from '../Views/PeregrinacionView';
 import MonkView from '../Views/MonkView';
@@ -22,12 +23,12 @@ import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 
-const APP_VERSION = '0.3.13';
+const APP_VERSION = '0.3.14';
 
 
 export default function AppShell() {
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
-  const [vistaActiva, setVistaActiva] = useState('rose'); 
+  const [vistaActiva, setVistaActiva] = useState('booklet'); 
   const [, setSelectedLevel] = useState(null);
   const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);
@@ -54,7 +55,7 @@ export default function AppShell() {
   }, [settings]);
 
   // --- Lifting Prayer State ---
-  const [misterioActual] = useState(getDefaultMystery());
+  const [misterioActual, setMisterioActual] = useState(getDefaultMystery());
   const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0);
 
   const { forceSetSyncId, syncId, syncStatus } = useCloudSync();
@@ -104,8 +105,24 @@ export default function AppShell() {
     setCurrentPrayerIndex(newIndex);
   }, []);
 
+  const handleMysteryChange = React.useCallback((mystery) => {
+    setMisterioActual(mystery);
+    setCurrentPrayerIndex(0);
+  }, []);
+
   const renderizarVista = () => {
     switch (vistaActiva) {
+      case 'booklet':
+        return (
+          <BookletView
+            currentPrayerIndex={currentPrayerIndex}
+            misterioActual={misterioActual}
+            onUpdateProgreso={handleUpdateProgreso}
+            onMysteryChange={handleMysteryChange}
+            isLeftHanded={settings.isLeftHanded}
+            simpleMode={settings.simpleMode}
+          />
+        );
       case 'monk': return <MonkView />;
       case 'camino': return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
       case 'macetones': return <MacetonView onSelectMaceton={() => setVistaActiva('rosary')} />;
@@ -222,6 +239,7 @@ export default function AppShell() {
         setVistaActiva={setVistaActiva} 
         virtualEnabled={settings.virtualRosaryEnabled}
         isLeftHanded={settings.isLeftHanded}
+        simpleMode={settings.simpleMode}
       />
 
       {/* Version badge */}

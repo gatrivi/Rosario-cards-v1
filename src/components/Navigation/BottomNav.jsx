@@ -33,6 +33,7 @@ function NavButton({ icono, texto, activo, onClick, disabled, simpleMode }) {
 
 export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded, simpleMode = false }) {
   const navItems = [
+    { id: 'booklet', icono: '📖', texto: 'Libro' },
     { id: 'monk', icono: '🧘', texto: 'Monje' },
     { id: 'camino', icono: '🚶', texto: 'Camino' },
     { id: 'tracker', icono: '📅', texto: 'Plan' },
