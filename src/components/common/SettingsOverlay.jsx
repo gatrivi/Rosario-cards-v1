@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function SettingsOverlay({ settings, onUpdateSettings, onClose }) {
+export default function SettingsOverlay({ settings, onUpdateSettings, onClose, appVersion = '', onCheckForUpdate }) {
   return (
     <div style={{
       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -116,9 +116,27 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose })
 
         </div>
 
-        <div style={{ marginTop: '40px', borderTop: '1px solid #222', paddingTop: '20px', textAlign: 'center' }}>
+        {onCheckForUpdate && (
+          <button
+            type="button"
+            onClick={onCheckForUpdate}
+            style={{
+              width: '100%', marginTop: '20px', padding: '14px',
+              background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)',
+              borderRadius: '12px', color: '#D4AF37', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold'
+            }}
+          >
+            🔄 Buscar actualización
+          </button>
+        )}
+
+        <div style={{ marginTop: '24px', borderTop: '1px solid #222', paddingTop: '16px', textAlign: 'center' }}>
           <div style={{ color: '#444', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Rosario Cards v1.2
+            Rosario Cards {appVersion ? `v${appVersion}` : ''}
+          </div>
+          <div style={{ color: '#333', fontSize: '0.65rem', marginTop: '6px' }}>
+            Si no ves cambios: Ajustes → Buscar actualización
           </div>
         </div>
 

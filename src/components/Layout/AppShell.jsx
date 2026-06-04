@@ -22,8 +22,9 @@ import DailyTracker from '../Rosedal/DailyTracker';
 import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
+import { applyPendingUpdate } from '../../utils/appUpdate';
 
-const APP_VERSION = '0.3.14';
+const APP_VERSION = '0.3.15';
 
 
 export default function AppShell() {
@@ -35,6 +36,13 @@ export default function AppShell() {
   const [showSettings, setShowSettings] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    const handleUpdate = () => setUpdateAvailable(true);
+    window.addEventListener('appUpdateAvailable', handleUpdate);
+    return () => window.removeEventListener('appUpdateAvailable', handleUpdate);
+  }, []);
 
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('rosario_settings');
@@ -147,6 +155,7 @@ export default function AppShell() {
           soundEnabled={settings.soundEnabled}
           onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
           meditationRitmo={settings.meditationRitmo}
+          simpleMode={settings.simpleMode}
         />
       );
       default: return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
@@ -224,6 +233,32 @@ export default function AppShell() {
         </div>
       </div>
 
+      {/* Update banner — visible when a new service worker is waiting */}
+      {updateAvailable && (
+        <div style={{
+          position: 'absolute', top: 60, left: 12, right: 12, zIndex: 200,
+          background: 'rgba(20,20,20,0.95)', border: '1px solid #D4AF37',
+          borderRadius: '12px', padding: '12px 14px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+        }}>
+          <span style={{ color: '#ccc', fontSize: '0.85rem' }}>
+            Nueva versión disponible (v{APP_VERSION})
+          </span>
+          <button
+            type="button"
+            onClick={applyPendingUpdate}
+            style={{
+              background: '#D4AF37', color: '#000', border: 'none',
+              borderRadius: '8px', padding: '8px 14px', fontWeight: 'bold',
+              cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0
+            }}
+          >
+            Actualizar
+          </button>
+        </div>
+      )}
+
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', zIndex: 10 }} className="view-enter-active">
         {renderizarVista()}
       </div>
@@ -265,7 +300,9 @@ export default function AppShell() {
         <SettingsOverlay 
           settings={settings} 
           onUpdateSettings={setSettings} 
-          onClose={() => setShowSettings(false)} 
+          onClose={() => setShowSettings(false)}
+          appVersion={APP_VERSION}
+          onCheckForUpdate={applyPendingUpdate}
         />
       )}
 

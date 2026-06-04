@@ -302,7 +302,7 @@ const VirtualRosaryPhysics = ({
         droneOsc.type = 'sine';
         droneOsc.frequency.setValueAtTime(base * 0.25, ctx.currentTime);
         const droneGain = ctx.createGain();
-        droneGain.gain.value = 0.005;
+        droneGain.gain.value = 0.012;
         droneOsc.connect(droneGain);
         droneGain.connect(gainNode);
         droneOsc.start();
@@ -327,7 +327,7 @@ const VirtualRosaryPhysics = ({
         celestialGain.gain.value = 0;
 
         const padGain = ctx.createGain();
-        padGain.gain.value = 0.015;
+        padGain.gain.value = 0.028;
 
         // Reverb Simulation
         const reverbGain = ctx.createGain();
@@ -397,9 +397,9 @@ const VirtualRosaryPhysics = ({
       filter.frequency.setTargetAtTime(targetFreq, t, 0.7);
       filter.Q.setTargetAtTime(1.2 + sessionProgress * 2.5 + cosmic.neptune * 1.8, t, 0.7); 
       celestialGain.gain.setTargetAtTime(sessionProgress * 0.02 + (cosmic.uranus * 0.008), t, 1.2); 
-      droneGain.gain.setTargetAtTime(0.005 + (cosmic.pluto * 0.004), t, 1.5);
+      droneGain.gain.setTargetAtTime(0.012 + (cosmic.pluto * 0.006), t, 1.5);
       lfoGain.gain.setTargetAtTime(sessionProgress * 55 + (cosmic.mercury * 25), t, 1.2);
-      gainNode.gain.setTargetAtTime(0.015 + warmth * 0.008, t, 0.5);
+      gainNode.gain.setTargetAtTime(0.038 + warmth * 0.016, t, 0.5);
     };
 
     const stopSynth = () => {

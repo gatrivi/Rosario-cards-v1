@@ -1,58 +1,70 @@
-// This service worker is designed for a PWA that needs to work offline
-const CACHE_NAME = 'rosario-cards-v0.3.7';
-const urlsToCache = [
+// PWA service worker — bump CACHE_NAME on each release so stale bundles are purged.
+const CACHE_NAME = 'rosario-cards-v0.3.15';
+
+const SHELL_URLS = [
   '/',
   '/index.html',
-  '/static/js/main.chunk.js',
-  '/static/js/0.chunk.js',
-  '/static/js/bundle.js',
   '/manifest.json',
   '/favicon.ico',
   '/favicon.jpg',
   '/logo.png',
-  '/gallery-images/cathedral%20paing.jpg'
 ];
 
 /* eslint-disable no-restricted-globals */
 
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        self.skipWaiting();
-      })
+      .then((cache) => cache.addAll(SHELL_URLS))
+      .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-          return null;
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter((name) => name !== CACHE_NAME)
+            .map((name) => caches.delete(name))
+        )
+      )
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', event => {
-  const { request } = event;
+function isStaticAsset(url) {
+  return url.includes('/static/js/') || url.includes('/static/css/');
+}
 
-  // For navigation requests (the page itself), always go to network first
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return;
+
+  // Navigation: network first, fall back to cache (offline shell)
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .then(response => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Hashed JS/CSS bundles: network first so updates reach installed PWAs
+  if (isStaticAsset(request.url)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
           return response;
         })
         .catch(() => caches.match(request))
@@ -60,23 +72,22 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // For assets, try cache first, then network
+  // Everything else: cache first, then network
   event.respondWith(
-    caches.match(request).then(response => {
-      if (response) {
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
         return response;
-      }
-      return fetch(request).then(networkResponse => {
-        const responseClone = networkResponse.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
-        return networkResponse;
       });
     })
   );
 });
 
-// Listen for messages from the page
-self.addEventListener('message', event => {
+self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
   }

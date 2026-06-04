@@ -147,6 +147,20 @@ export default function RoseView({
   const soundEnabledRef = useRef(soundEnabled);
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
+  useEffect(() => {
+    if (!soundEnabled) {
+      if (synthRef.current?.gainNode && audioCtxRef.current) {
+        synthRef.current.gainNode.gain.setTargetAtTime(
+          0, audioCtxRef.current.currentTime, 0.15
+        );
+      }
+      return;
+    }
+    audioManager.resume().then(() => {
+      if (isCargando || isVerseActivated) modulateAudio(true);
+    });
+  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => { versoIndexRef.current = versoIndex; }, [versoIndex]);
   useEffect(() => { isVersoCompleteRef.current = isVersoComplete; }, [isVersoComplete]);
   useEffect(() => { isPrayerCompleteRef.current = isPrayerComplete; }, [isPrayerComplete]);
@@ -196,7 +210,11 @@ export default function RoseView({
       if (!ctx) return;
       audioCtxRef.current = ctx;
 
-      if (!soundEnabledRef.current) ctx.suspend();
+      if (!soundEnabledRef.current) {
+        gainNode.gain.value = 0;
+      } else {
+        audioManager.resume();
+      }
 
       const gainNode = ctx.createGain();
       gainNode.gain.value = 0;
@@ -207,7 +225,7 @@ export default function RoseView({
       droneOsc.type = 'sine';
       droneOsc.frequency.setValueAtTime(getBaseFreq() * 0.25, ctx.currentTime); // 2 Octaves down
       const droneGain = ctx.createGain();
-      droneGain.gain.value = 0.005; // Very low constant hum
+      droneGain.gain.value = 0.012;
       droneOsc.connect(droneGain);
       droneGain.connect(gainNode);
       droneOsc.start();
@@ -236,7 +254,7 @@ export default function RoseView({
       celestialGain.gain.value = 0;
 
       const padGain = ctx.createGain();
-      padGain.gain.value = 0.015; 
+      padGain.gain.value = 0.028; 
 
       // Reverb Simulation: Long delay + Filter feedback
       const reverbGain = ctx.createGain();
@@ -339,11 +357,11 @@ export default function RoseView({
     droneGain.gain.setTargetAtTime(0.005 + (cosmic.pluto * 0.005), t, 2.0);
     lfoGain.gain.setTargetAtTime(sessionEnrichment * 60 + (cosmic.mercury * 30), t, 1.5);
 
-    // --- Volume ---
-    const baseVolume = 0.015 + (totalEnrichment * 0.008);
-    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.006, t, 0.8);
+    // --- Volume (audible on phone speakers) ---
+    const baseVolume = 0.038 + (totalEnrichment * 0.012);
+    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.018, t, 0.6);
 
-    padGain.gain.setTargetAtTime(0.012 + totalEnrichment * 0.012, t, 1.0);
+    padGain.gain.setTargetAtTime(0.022 + totalEnrichment * 0.018, t, 0.8);
   };
 
 
@@ -673,6 +691,18 @@ export default function RoseView({
     };
   }, [isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, currentRhythm, initAudio, playActivationChime]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Keep organ layers modulating while user holds or reads
+  useEffect(() => {
+    if (!isCargando && !isVerseActivated) return undefined;
+    const tick = setInterval(() => {
+      setWarmthTick((t) => t + 1);
+      if (soundEnabledRef.current && synthRef.current) {
+        updateAudioWarmth();
+      }
+    }, 120);
+    return () => clearInterval(tick);
+  }, [isCargando, isVerseActivated]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Wheel handler
   useEffect(() => {
     const el = containerRef.current;
@@ -719,6 +749,11 @@ export default function RoseView({
   // ─── Pointer handlers ───
   // ═══════════════════════════════════════════════════════
 
+  const THUMB_ZONE_START = 0.62;
+
+  const isInThumbZone = (clientY) =>
+    clientY >= window.innerHeight * THUMB_ZONE_START;
+
   const handleTrackPointer = (clientX, clientY, pointerType) => {
     if (!hasInteracted) setHasInteracted(true);
     
@@ -731,8 +766,13 @@ export default function RoseView({
       console.log(`[RoseView] PointerMove: ${pointerType} at (${clientX}, ${clientY}), isNear: ${isNearText}, active: ${isVerseActivated}, charging: ${isCargando}`);
     }
 
-    // Vertical gesture (touch only)
-    if (pointerType === 'touch' && pointerStartY.current !== null && !isVerticalGesture.current) {
+    // Vertical swipe to change verse — disabled in thumb zone (hold-to-pray area)
+    if (
+      pointerType === 'touch' &&
+      pointerStartY.current !== null &&
+      !isVerticalGesture.current &&
+      !isInThumbZone(clientY)
+    ) {
       const dY = clientY - pointerStartY.current;
       const dX = clientX - (pointerStartX.current || 0);
       if (Math.abs(dY) > 50 && Math.abs(dY) > Math.abs(dX) * 1.5) {
@@ -748,7 +788,8 @@ export default function RoseView({
     if (isPrayerComplete || isVersoComplete) return;
 
     // ─── ACTIVATION ───
-    if (!isVerseActivated && (isNearText || isCargando)) {
+    // Activate when holding anywhere, or near text — thumb zone always activates
+    if (!isVerseActivated && (isNearText || isCargando || isInThumbZone(clientY))) {
       console.log(`[RoseView] Activating Verse! Proximity: ${isNearText}, Charging: ${isCargando}`);
       setIsVerseActivated(true);
       initAudio();
@@ -1002,13 +1043,64 @@ export default function RoseView({
          />
       </div>
 
-      {/* Instruction */}
-      <div style={{ 
-          position: 'absolute', bottom: '20px', width: '100%', textAlign: 'center',
-          fontSize: '0.7rem', color: '#333', letterSpacing: '1px',
-          opacity: (charProgressIndex < 0 && !isVersoComplete && !isPrayerComplete) ? 0.6 : 0, transition: 'opacity 0.5s'
+      {/* Instruction + thumb hold zone (reachable on large phones) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 'min(30vh, 240px)',
+          zIndex: 25,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          paddingBottom: '10px',
+          background: isCargando
+            ? 'linear-gradient(transparent 0%, rgba(212,175,55,0.14) 70%)'
+            : 'linear-gradient(transparent 0%, rgba(0,0,0,0.55) 75%)',
+          touchAction: 'none',
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        <div style={{
+          width: 'min(92%, 420px)',
+          minHeight: '72px',
+          borderRadius: '16px',
+          border: isCargando ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.12)',
+          background: isCargando ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '14px 20px',
+          transition: 'background 0.3s, border-color 0.3s',
+          boxShadow: isCargando ? '0 0 24px rgba(212,175,55,0.2)' : 'none',
+        }}>
+          <span style={{
+            fontSize: simpleMode ? '1.05rem' : '0.85rem',
+            color: isCargando ? '#D4AF37' : '#777',
+            letterSpacing: '0.06em',
+            textAlign: 'center',
+            lineHeight: 1.4,
+          }}>
+            {simpleMode
+              ? (isCargando ? 'Toca para avanzar el verso' : 'Toca aquí para rezar')
+              : (isCargando ? 'Mantén… las palabras avanzan solas' : 'Mantén presionado aquí para rezar')}
+          </span>
+        </div>
+      </div>
+
+      <div style={{
+          position: 'absolute', bottom: 'min(32vh, 250px)', width: '100%', textAlign: 'center',
+          fontSize: '0.65rem', color: '#444', letterSpacing: '1px',
+          opacity: (charProgressIndex < 0 && !isVersoComplete && !isPrayerComplete) ? 0.5 : 0,
+          transition: 'opacity 0.5s', pointerEvents: 'none', zIndex: 5
       }}>
-        Desliza sobre las letras para rezar
+        {simpleMode ? 'Toca la barra inferior' : 'También puedes deslizar sobre las palabras'}
       </div>
 
         <style>{`
