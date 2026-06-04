@@ -1,6 +1,10 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect, useCallback, useState } from 'react';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import { getPrayerData } from './RoseView';
+import {
+  getPrayerVariants,
+  getVariantStorageKey,
+} from '../../data/prayerVariants';
 import './BookletView.css';
 
 const MYSTERY_OPTIONS = [
@@ -38,9 +42,23 @@ function buildSequence(mysteryType) {
         title: data.title,
         text: data.text,
         img: selectPrayerImage(data),
+        variants: getPrayerVariants(id),
       };
     })
     .filter(Boolean);
+}
+
+function renderVerseLines(text) {
+  return text.split('\n').map((line, i) => {
+    if (line.trim() === '') {
+      return <div key={`sp-${i}`} className="booklet-verse-spacer" aria-hidden="true" />;
+    }
+    return (
+      <p key={`ln-${i}`} className="booklet-verse">
+        {line}
+      </p>
+    );
+  });
 }
 
 export default function BookletView({
@@ -62,6 +80,51 @@ export default function BookletView({
     Math.max(total - 1, 0)
   );
   const activePrayer = secuencia[safeIndex];
+
+  const variants = activePrayer?.variants;
+  const [variantId, setVariantId] = useState(() => {
+    if (!activePrayer?.variants?.length) return null;
+    try {
+      const saved = localStorage.getItem(getVariantStorageKey(activePrayer.id));
+      if (saved && activePrayer.variants.some((v) => v.id === saved)) return saved;
+    } catch (_) { /* ignore */ }
+    return activePrayer.variants[0].id;
+  });
+
+  useEffect(() => {
+    if (!activePrayer?.variants?.length) {
+      setVariantId(null);
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(getVariantStorageKey(activePrayer.id));
+      if (saved && activePrayer.variants.some((v) => v.id === saved)) {
+        setVariantId(saved);
+        return;
+      }
+    } catch (_) { /* ignore */ }
+    setVariantId(activePrayer.variants[0].id);
+  }, [activePrayer?.id, activePrayer?.variants]);
+
+  const displayText = useMemo(() => {
+    if (!activePrayer) return '';
+    if (variants && variantId) {
+      const chosen = variants.find((v) => v.id === variantId);
+      if (chosen) return chosen.text;
+    }
+    return activePrayer.text;
+  }, [activePrayer, variants, variantId]);
+
+  const cycleVariant = useCallback(() => {
+    if (!variants?.length) return;
+    const idx = variants.findIndex((v) => v.id === variantId);
+    const next = variants[(idx + 1) % variants.length];
+    setVariantId(next.id);
+    try {
+      localStorage.setItem(getVariantStorageKey(activePrayer.id), next.id);
+    } catch (_) { /* ignore */ }
+  }, [variants, variantId, activePrayer?.id]);
+
   const canGoBack = safeIndex > 0;
   const canGoForward = safeIndex < total - 1;
 
@@ -104,15 +167,14 @@ export default function BookletView({
     );
   }
 
-  const navOrder = isLeftHanded
-    ? ['next', 'content', 'prev']
-    : ['prev', 'content', 'next'];
+  const activeVariantLabel = variants?.find((v) => v.id === variantId)?.label;
+  const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
 
   return (
     <div
       className="booklet-view"
       style={{
-        backgroundImage: `linear-gradient(rgba(8,8,8,0.82), rgba(8,8,8,0.92)), url(${activePrayer.img})`,
+        backgroundImage: `linear-gradient(rgba(8,8,8,0.84), rgba(8,8,8,0.93)), url(${activePrayer.img})`,
       }}
     >
       <header className="booklet-header">
@@ -139,55 +201,52 @@ export default function BookletView({
         >
           {activePrayer.title}
         </h1>
+        {variants && (
+          <button
+            type="button"
+            className="booklet-variant-turn"
+            onClick={cycleVariant}
+            aria-label={`Cambiar versión del ${activePrayer.title}`}
+          >
+            ◇ {activeVariantLabel}
+            <span className="booklet-variant-turn__hint"> · tocar para otra versión</span>
+          </button>
+        )}
       </header>
 
       <article
         className="booklet-text"
-        style={{ fontSize: simpleMode ? '1.35rem' : '1.05rem' }}
+        style={{ fontSize: simpleMode ? '1.35rem' : '1.08rem' }}
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          if (x > rect.width * 0.62) goNext();
+          else if (x < rect.width * 0.38) goPrev();
+        }}
       >
-        {activePrayer.text.split('\n').map((line, i) => (
-          <p key={`${activePrayer.id}-${i}`} className="booklet-line">
-            {line}
-          </p>
-        ))}
+        {renderVerseLines(displayText)}
       </article>
 
-      <footer className="booklet-footer">
-        {navOrder.map((slot) => {
-          if (slot === 'prev') {
-            return (
-              <button
-                key="prev"
-                type="button"
-                className="booklet-nav-btn"
-                onClick={goPrev}
-                disabled={!canGoBack}
-                aria-label="Oración anterior"
-              >
-                ← Anterior
-              </button>
-            );
-          }
-          if (slot === 'next') {
-            return (
-              <button
-                key="next"
-                type="button"
-                className="booklet-nav-btn booklet-nav-btn--primary"
-                onClick={goNext}
-                disabled={!canGoForward}
-                aria-label="Siguiente oración"
-              >
-                Siguiente →
-              </button>
-            );
-          }
-          return (
-            <span key="content" className="booklet-hint">
-              Toca Siguiente para avanzar
-            </span>
-          );
-        })}
+      <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
+        <button
+          type="button"
+          className="booklet-turn booklet-turn--back"
+          onClick={goPrev}
+          disabled={!canGoBack}
+          aria-label="Oración anterior"
+        >
+          ‹ anterior
+        </button>
+        <span className="booklet-turn-ornament" aria-hidden="true">✦</span>
+        <button
+          type="button"
+          className="booklet-turn booklet-turn--forward"
+          onClick={goNext}
+          disabled={!canGoForward}
+          aria-label="Siguiente oración"
+        >
+          siguiente ›
+        </button>
       </footer>
     </div>
   );

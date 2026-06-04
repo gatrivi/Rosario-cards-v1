@@ -33,13 +33,13 @@ function NavButton({ icono, texto, activo, onClick, disabled, simpleMode }) {
 
 export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded, simpleMode = false }) {
   const navItems = [
-    { id: 'booklet', icono: '📖', texto: 'Libro' },
-    { id: 'monk', icono: '🧘', texto: 'Monje' },
-    { id: 'camino', icono: '🚶', texto: 'Camino' },
-    { id: 'tracker', icono: '📅', texto: 'Plan' },
-    { id: 'rosary', icono: '📿', texto: 'Rosario' },
-    { id: 'rose', icono: '🌹', texto: 'Rosa' },
     { id: 'stats', icono: '📊', texto: 'Stats' },
+    { id: 'tracker', icono: '📅', texto: 'Plan' },
+    { id: 'camino', icono: '🚶', texto: 'Camino' },
+    { id: 'booklet', icono: '📖', texto: 'Libro' },
+    { id: 'rose', icono: '🌹', texto: 'Rosa' },
+    { id: 'rosary', icono: '📿', texto: 'Rosario' },
+    { id: 'monk', icono: '🧘', texto: 'Monje' },
   ];
 
   const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;

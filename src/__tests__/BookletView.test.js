@@ -3,10 +3,19 @@ import '@testing-library/jest-dom';
 import BookletView from '../components/Views/BookletView';
 
 const localStorageMock = {
-  getItem: jest.fn(() => 'dark'),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  store: {},
+  getItem: jest.fn(function (key) {
+    return this.store[key] || null;
+  }),
+  setItem: jest.fn(function (key, value) {
+    this.store[key] = value;
+  }),
+  removeItem: jest.fn(function (key) {
+    delete this.store[key];
+  }),
+  clear: jest.fn(function () {
+    this.store = {};
+  }),
 };
 global.localStorage = localStorageMock;
 
@@ -16,6 +25,7 @@ describe('BookletView', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorageMock.clear();
   });
 
   test('renders first prayer in sequence', () => {
@@ -33,7 +43,38 @@ describe('BookletView', () => {
     expect(screen.getByText(/1 \//)).toBeInTheDocument();
   });
 
-  test('advances to next prayer when Siguiente is clicked', () => {
+  test('renders credo in verse lines', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={2}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    expect(screen.getByText('Credo')).toBeInTheDocument();
+    expect(screen.getByText(/Creo en Dios, Padre todopoderoso,/)).toBeInTheDocument();
+    expect(screen.getByText(/la vida eterna\./)).toBeInTheDocument();
+  });
+
+  test('cycles credo variant when variant control is clicked', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={2}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    expect(screen.getByText(/Por versos/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Cambiar versión del Credo/i }));
+    expect(screen.getByText(/Niceno/)).toBeInTheDocument();
+    expect(screen.getByText(/Creo en un solo Dios,/)).toBeInTheDocument();
+  });
+
+  test('advances to next prayer when siguiente is clicked', () => {
     render(
       <BookletView
         currentPrayerIndex={0}
@@ -47,7 +88,7 @@ describe('BookletView', () => {
     expect(onUpdateProgreso).toHaveBeenCalledWith(1);
   });
 
-  test('goes back when Anterior is clicked', () => {
+  test('goes back when anterior is clicked', () => {
     render(
       <BookletView
         currentPrayerIndex={2}
@@ -61,7 +102,7 @@ describe('BookletView', () => {
     expect(onUpdateProgreso).toHaveBeenCalledWith(1);
   });
 
-  test('disables Anterior on first prayer', () => {
+  test('disables anterior on first prayer', () => {
     render(
       <BookletView
         currentPrayerIndex={0}
