@@ -5,6 +5,7 @@ import {
   getPrayerVariants,
   getVariantStorageKey,
 } from '../../data/prayerVariants';
+import PrayerRecorder from '../common/PrayerRecorder';
 import './BookletView.css';
 
 const MYSTERY_OPTIONS = [
@@ -171,13 +172,28 @@ export default function BookletView({
   const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
 
   return (
-    <div
-      className="booklet-view"
-      style={{
-        backgroundImage: `linear-gradient(rgba(8,8,8,0.84), rgba(8,8,8,0.93)), url(${activePrayer.img})`,
-      }}
-    >
+    <div className="booklet-view">
+      {/* Stained glass / vitral background */}
+      <div className="booklet-vitral" aria-hidden="true">
+        <img
+          key={activePrayer.img}
+          src={activePrayer.img}
+          alt=""
+          className="booklet-vitral__img"
+        />
+        <div className="booklet-vitral__shade" />
+      </div>
+
       <header className="booklet-header">
+        <div className="booklet-header__tools">
+          <PrayerRecorder
+            prayerId={activePrayer.id}
+            prayerTitle={activePrayer.title}
+            mystery={misterioActual}
+            sequenceIndex={safeIndex}
+            simpleMode={simpleMode}
+          />
+        </div>
         <div className="booklet-mystery-row">
           {MYSTERY_OPTIONS.map((opt) => (
             <button
@@ -215,7 +231,7 @@ export default function BookletView({
       </header>
 
       <article
-        className="booklet-text"
+        className="booklet-glass-panel"
         style={{ fontSize: simpleMode ? '1.35rem' : '1.08rem' }}
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
@@ -224,7 +240,9 @@ export default function BookletView({
           else if (x < rect.width * 0.38) goPrev();
         }}
       >
-        {renderVerseLines(displayText)}
+        <div className="booklet-glass-inner stained-glass-overlay">
+          {renderVerseLines(displayText)}
+        </div>
       </article>
 
       <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>

@@ -3,24 +3,60 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #0a0a0a;
-  background-size: cover;
-  background-position: center;
-  color: #e8e0d0;
+  position: relative;
+  color: #f8f4e6;
   font-family: Georgia, 'Times New Roman', serif;
 }
 
 .booklet-view--empty {
   align-items: center;
+  background: #0a0a0a;
   justify-content: center;
   padding: 2rem;
   text-align: center;
 }
 
+/* ── Vitral / stained glass background ── */
+.booklet-vitral {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.booklet-vitral__img {
+  filter: brightness(0.72) contrast(1.08) saturate(1.15);
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: opacity 1.2s ease-in-out;
+  width: 100%;
+}
+
+.booklet-vitral__shade {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 10, 26, 0.35) 0%,
+    rgba(13, 10, 26, 0.5) 40%,
+    rgba(13, 10, 26, 0.65) 100%
+  );
+  inset: 0;
+  position: absolute;
+}
+
 .booklet-header {
   flex-shrink: 0;
-  padding: 3.5rem 1.25rem 0.5rem;
+  padding: 3.25rem 1.25rem 0.5rem;
+  position: relative;
   text-align: center;
+  z-index: 2;
+}
+
+.booklet-header__tools {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
 }
 
 .booklet-mystery-row {
@@ -36,7 +72,7 @@
   border: none;
   border-bottom: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 0;
-  color: #666;
+  color: rgba(248, 244, 230, 0.55);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.68rem;
@@ -52,7 +88,7 @@
 }
 
 .booklet-progress {
-  color: rgba(212, 175, 55, 0.5);
+  color: rgba(212, 175, 55, 0.55);
   font-family: inherit;
   font-size: 0.7rem;
   font-style: italic;
@@ -66,6 +102,7 @@
   letter-spacing: 0.04em;
   line-height: 1.3;
   margin: 0 0 0.35rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .booklet-variant-turn {
@@ -82,7 +119,7 @@
 }
 
 .booklet-variant-turn__hint {
-  color: #555;
+  color: rgba(248, 244, 230, 0.45);
   font-size: 0.62rem;
   font-style: italic;
   font-variant: normal;
@@ -90,19 +127,41 @@
   text-transform: none;
 }
 
-.booklet-text {
+/* ── Glass text panel (stained glass overlay) ── */
+.booklet-glass-panel {
   flex: 1;
-  line-height: 1.85;
-  margin: 0;
+  margin: 0 0.75rem;
+  min-height: 0;
   overflow-y: auto;
-  padding: 0.75rem 1.75rem 1rem;
+  padding: 0 0 0.5rem;
+  position: relative;
+  z-index: 2;
   -webkit-overflow-scrolling: touch;
 }
 
+.booklet-glass-inner {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.07);
+  border: 2px solid rgba(212, 175, 55, 0.32);
+  border-radius: 18px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 0 48px rgba(212, 175, 55, 0.06);
+  line-height: 1.85;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.stained-glass-overlay {
+  position: relative;
+}
+
 .booklet-verse {
+  color: #f8f4e6;
   margin: 0;
   padding: 0.15rem 0;
   text-align: center;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75), 0 0 12px rgba(0, 0, 0, 0.4);
   white-space: pre-wrap;
 }
 
@@ -117,9 +176,10 @@
   gap: 1.25rem;
   justify-content: center;
   padding: 0.65rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0));
+  position: relative;
+  z-index: 2;
 }
 
-/* Primary "siguiente" toward thumb side on large phones */
 .booklet-footer--right {
   flex-direction: row;
 }
@@ -140,6 +200,7 @@
   min-height: 44px;
   min-width: 5.5rem;
   padding: 0.5rem 0.25rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   transition: color 0.25s, opacity 0.25s;
 }
 
