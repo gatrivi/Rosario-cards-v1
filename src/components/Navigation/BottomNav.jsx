@@ -39,7 +39,7 @@ export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded, s
     { id: 'booklet', icono: '📖', texto: 'Libro' },
     { id: 'rose', icono: '🌹', texto: 'Rosa' },
     { id: 'rosary', icono: '📿', texto: 'Rosario' },
-    { id: 'monk', icono: '🧘', texto: 'Monje' },
+    { id: 'voz', icono: '🎙️', texto: 'Voz' },
   ];
 
   const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;

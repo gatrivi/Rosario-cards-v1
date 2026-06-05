@@ -114,6 +114,45 @@ export async function countAllRecordings() {
   });
 }
 
+export async function listAllRecordings() {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/**
+ * Per-slot coverage for one mystery set (81 prayers).
+ * @returns {Promise<Array<{ slotIndex, prayerId, title, hasRecording, takeCount }>>}
+ */
+export async function getCoverageMap(mysteryType) {
+  const { buildRosarySequence } = await import('./rosarySequence');
+  const sequence = buildRosarySequence(mysteryType);
+  const all = await listAllRecordings();
+  const bySlot = new Map();
+
+  all.forEach((rec) => {
+    if (rec.mystery !== mysteryType) return;
+    const idx = rec.sequenceIndex;
+    if (!bySlot.has(idx)) bySlot.set(idx, []);
+    bySlot.get(idx).push(rec);
+  });
+
+  return sequence.map((item) => {
+    const clips = bySlot.get(item.index) || [];
+    return {
+      slotIndex: item.index,
+      prayerId: item.id,
+      title: item.title,
+      hasRecording: clips.length > 0,
+      takeCount: clips.length,
+    };
+  });
+}
+
 /** Pick a variant for playback (future auto mode). Prefers slot, then random prayer variant. */
 export async function pickRecordingForSlot(mystery, sequenceIndex, prayerId) {
   const slotClips = await listRecordingsForSlot(mystery, sequenceIndex);

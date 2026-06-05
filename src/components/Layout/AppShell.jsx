@@ -14,6 +14,7 @@ import BookletView from '../Views/BookletView';
 import MacetonView from '../Views/MacetonView';
 import PeregrinacionView from '../Views/PeregrinacionView';
 import MonkView from '../Views/MonkView';
+import RecordingStudioView from '../Views/RecordingStudioView';
 import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
@@ -24,7 +25,7 @@ import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { applyPendingUpdate } from '../../utils/appUpdate';
 
-const APP_VERSION = '0.3.17';
+const APP_VERSION = '0.3.18';
 
 
 export default function AppShell() {
@@ -132,6 +133,13 @@ export default function AppShell() {
           />
         );
       case 'monk': return <MonkView />;
+      case 'voz':
+        return (
+          <RecordingStudioView
+            mysteryType={misterioActual}
+            onMysteryChange={handleMysteryChange}
+          />
+        );
       case 'camino': return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
       case 'macetones': return <MacetonView onSelectMaceton={() => setVistaActiva('rosary')} />;
       case 'stats': return <StatsView />;
