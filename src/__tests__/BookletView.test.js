@@ -28,6 +28,35 @@ describe('BookletView', () => {
     localStorageMock.clear();
   });
 
+  test('renders act of contrition in burst lines', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={1}
+        misterioActual="dolorosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    expect(screen.getByText('Acto de Contrición')).toBeInTheDocument();
+    expect(screen.getByText(/Por mi culpa, por mi culpa, por mi gran culpa\./)).toBeInTheDocument();
+    expect(screen.getByText(/que intercedáis por mí ante Dios, nuestro Señor\./)).toBeInTheDocument();
+  });
+
+  test('renders sign of the cross compactly in burst lines', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    expect(screen.getByText(/En el nombre del Padre,/)).toBeInTheDocument();
+    expect(screen.getByText(/y del Espíritu Santo\./)).toBeInTheDocument();
+  });
+
   test('renders first prayer in sequence', () => {
     render(
       <BookletView

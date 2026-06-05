@@ -342,14 +342,14 @@ const RosarioPrayerBook = {
       id: "SC",
       title: "Señal de la Cruz",
       img: "/gallery-images/cathedral praing.jpg",
-      text: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+      text: "En el nombre del Padre,\ny del Hijo,\ny del Espíritu Santo.\nAmén.",
     },
     {
       id: "AC",
       title: "Acto de Contrición",
       img: "/gallery-images/misterios/contricion.jpg",
       imgmo: "/gallery-images/misterios/modooscuro/contricion.jpg",
-      text: "Yo confieso ante Dios todopoderoso y ante vosotros, hermanos, que he pecado mucho de pensamiento, palabra, obra y omisión. Por mi culpa, por mi culpa, por mi gran culpa. Por eso ruego a Santa María, siempre Virgen, a los ángeles, a los santos y a vosotros, hermanos, que intercedáis por mí ante Dios, nuestro Señor. Amén.",
+      text: "Yo confieso ante Dios todopoderoso\ny ante vosotros, hermanos,\nque he pecado mucho\nde pensamiento, palabra, obra y omisión.\n\nPor mi culpa, por mi culpa, por mi gran culpa.\n\nPor eso ruego a Santa María, siempre Virgen,\na los ángeles, a los santos\ny a vosotros, hermanos,\nque intercedáis por mí ante Dios, nuestro Señor.\nAmén.",
     },
     {
       id: "C",
