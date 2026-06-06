@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import BookletView from '../components/Views/BookletView';
+import BookletView, { getAveMariaRunInfo } from '../components/Views/BookletView';
 
 const localStorageMock = {
   store: {},
@@ -156,5 +156,39 @@ describe('BookletView', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Dolorosos' }));
     expect(onMysteryChange).toHaveBeenCalledWith('dolorosos');
+  });
+
+  test('shows ave maria run position within a decade', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={12}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    expect(screen.getByText(/2 de 10/)).toBeInTheDocument();
+    expect(document.querySelector('.booklet-vitral--ave')).toBeInTheDocument();
+  });
+});
+
+describe('getAveMariaRunInfo', () => {
+  const sequence = [
+    { id: 'P' },
+    { id: 'A' },
+    { id: 'A' },
+    { id: 'A' },
+    { id: 'G' },
+    { id: 'P' },
+    ...Array.from({ length: 10 }, () => ({ id: 'A' })),
+  ];
+
+  test('counts opening chain of three', () => {
+    expect(getAveMariaRunInfo(sequence, 2)).toEqual({ position: 2, total: 3, step: 1 });
+  });
+
+  test('counts full decade of ten', () => {
+    expect(getAveMariaRunInfo(sequence, 8)).toEqual({ position: 3, total: 10, step: 2 });
   });
 });

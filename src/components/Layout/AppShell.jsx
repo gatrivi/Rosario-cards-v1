@@ -25,7 +25,7 @@ import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { applyPendingUpdate } from '../../utils/appUpdate';
 
-const APP_VERSION = '0.3.19';
+const APP_VERSION = '0.3.20';
 
 
 export default function AppShell() {

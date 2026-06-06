@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useCallback, useState } from 'react';
+import React, { useMemo, useEffect, useCallback, useState, useRef } from 'react';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import { getPrayerData } from './RoseView';
 import {
@@ -80,6 +80,23 @@ function renderVerseLines(text) {
   });
 }
 
+/** Position within a consecutive run of Ave Marías (opening chain or decade). */
+export function getAveMariaRunInfo(sequence, index) {
+  if (!sequence[index] || sequence[index].id !== 'A') return null;
+
+  let start = index;
+  while (start > 0 && sequence[start - 1]?.id === 'A') start -= 1;
+
+  let end = index;
+  while (end < sequence.length - 1 && sequence[end + 1]?.id === 'A') end += 1;
+
+  return {
+    position: index - start + 1,
+    total: end - start + 1,
+    step: index - start,
+  };
+}
+
 export default function BookletView({
   currentPrayerIndex,
   misterioActual,
@@ -109,6 +126,8 @@ export default function BookletView({
     } catch (_) { /* ignore */ }
     return activePrayer.variants[0].id;
   });
+  const [avePulse, setAvePulse] = useState(false);
+  const prevIndexRef = useRef(safeIndex);
 
   useEffect(() => {
     if (!activePrayer?.variants?.length) {
@@ -178,6 +197,25 @@ export default function BookletView({
     return () => window.removeEventListener('keydown', handleKey);
   }, [goPrev, goNext]);
 
+  const aveRunInfo = useMemo(
+    () => getAveMariaRunInfo(secuencia, safeIndex),
+    [secuencia, safeIndex]
+  );
+
+  const isAveMaria = activePrayer?.id === 'A' && aveRunInfo;
+  const aveStep = aveRunInfo?.step ?? 0;
+
+  useEffect(() => {
+    if (activePrayer?.id === 'A' && safeIndex !== prevIndexRef.current) {
+      setAvePulse(true);
+      const t = setTimeout(() => setAvePulse(false), 520);
+      prevIndexRef.current = safeIndex;
+      return () => clearTimeout(t);
+    }
+    prevIndexRef.current = safeIndex;
+    return undefined;
+  }, [safeIndex, activePrayer?.id]);
+
   if (!activePrayer) {
     return (
       <div className="booklet-view booklet-view--empty">
@@ -189,10 +227,22 @@ export default function BookletView({
   const activeVariantLabel = variants?.find((v) => v.id === variantId)?.label;
   const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
 
+  const vitralStyle = isAveMaria
+    ? {
+        '--ave-zoom': `${1 + aveStep * 0.01}`,
+        '--ave-brightness': `${0.82 + aveStep * 0.012}`,
+        '--ave-saturate': `${1.12 + aveStep * 0.018}`,
+        '--ave-glare': `${0.08 + aveStep * 0.055}`,
+      }
+    : undefined;
+
   return (
-    <div className="booklet-view">
+    <div className="booklet-view" style={vitralStyle}>
       {/* Stained glass / vitral background */}
-      <div className="booklet-vitral" aria-hidden="true">
+      <div
+        className={`booklet-vitral${isAveMaria ? ' booklet-vitral--ave' : ''}${avePulse ? ' booklet-vitral--pulse' : ''}`}
+        aria-hidden="true"
+      >
         <img
           key={activePrayer.img}
           src={activePrayer.img}
@@ -200,6 +250,7 @@ export default function BookletView({
           className="booklet-vitral__img"
         />
         <div className="booklet-vitral__shade" />
+        {isAveMaria && <div className="booklet-vitral__glare" />}
       </div>
 
       <header className="booklet-header">
@@ -228,9 +279,15 @@ export default function BookletView({
         </div>
         <p className="booklet-progress">
           {safeIndex + 1} / {total}
+          {isAveMaria && (
+            <span className="booklet-ave-count">
+              {' '}
+              · {aveRunInfo.position} de {aveRunInfo.total}
+            </span>
+          )}
         </p>
         <h1
-          className="booklet-title"
+          className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}`}
           style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
         >
           {activePrayer.title}
@@ -258,7 +315,16 @@ export default function BookletView({
           else if (x < rect.width * 0.38) goPrev();
         }}
       >
-        <div className="booklet-glass-inner stained-glass-overlay">
+        <div
+          className={`booklet-glass-inner stained-glass-overlay${isAveMaria ? ' booklet-glass-inner--ave' : ''}`}
+          style={
+            isAveMaria
+              ? {
+                  boxShadow: `0 4px 20px rgba(0, 0, 0, 0.22), inset 0 0 ${24 + aveStep * 6}px rgba(212, 175, 55, ${0.04 + aveStep * 0.018})`,
+                }
+              : undefined
+          }
+        >
           {renderVerseLines(displayText)}
         </div>
       </article>
