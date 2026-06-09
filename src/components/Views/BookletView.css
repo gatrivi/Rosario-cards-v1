@@ -218,14 +218,37 @@
 }
 
 .booklet-optional-btn {
-  background: none;
-  border: none;
-  color: rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 999px;
+  color: rgba(212, 175, 55, 0.72);
   cursor: pointer;
-  font-size: 0.75rem;
+  font-family: inherit;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
   margin-right: 0.35rem;
-  padding: 0 0.2rem;
+  padding: 0.15rem 0.45rem;
   vertical-align: middle;
+}
+
+.booklet-optional-btn__star {
+  margin-right: 0.2rem;
+}
+
+.booklet-optional-btn--glow {
+  animation: booklet-optional-glow 2.2s ease-in-out infinite;
+  border-color: rgba(212, 175, 55, 0.55);
+  color: rgba(255, 230, 170, 0.95);
+}
+
+@keyframes booklet-optional-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(212, 175, 55, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.45), 0 0 18px rgba(212, 175, 55, 0.2);
+  }
 }
 
 .booklet-ave-count {

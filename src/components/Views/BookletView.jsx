@@ -17,7 +17,11 @@ import {
   makeBookletRoseFingerprint,
 } from '../../utils/bookletProgress';
 import { playBookletTransitionSound, playOfferingChime } from '../../utils/bookletSounds';
-import { getPrayerImageCandidates, resolvePrayerImage } from '../../utils/prayerImages';
+import {
+  getPrayerImageCandidates,
+  pickPrayerImage,
+  resolvePrayerImage,
+} from '../../utils/prayerImages';
 import './BookletView.css';
 
 const TRANSITION_PHASE = {
@@ -91,7 +95,7 @@ const SEQ_MAP = {
 function buildSequence(mysteryType) {
   const keys = RosarioPrayerBook[SEQ_MAP[mysteryType]] || RosarioPrayerBook.RGo;
   return keys
-    .map((id) => {
+    .map((id, idx) => {
       const data = getPrayerData(id, mysteryType);
       if (!data) return null;
       const imgCandidates = getPrayerImageCandidates(data, mysteryType);
@@ -99,7 +103,7 @@ function buildSequence(mysteryType) {
         id,
         title: data.title,
         text: data.text,
-        img: resolvePrayerImage(data, mysteryType),
+        img: resolvePrayerImage(data, mysteryType, idx),
         imgCandidates,
         variants: getPrayerVariants(id),
       };
@@ -197,13 +201,35 @@ export default function BookletView({
   const [stepGlow, setStepGlow] = useState(false);
   const [offeringLight, setOfferingLight] = useState(false);
   const [optionalOpen, setOptionalOpen] = useState(false);
+  const [optionalGlow, setOptionalGlow] = useState(false);
+  const optionalIdleRef = useRef(null);
+  const mountedRef = useRef(true);
   const [orbHost, setOrbHost] = useState(null);
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     setOrbHost(document.getElementById('booklet-top-orbs'));
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
+
+  const resetOptionalIdle = useCallback(() => {
+    setOptionalGlow(false);
+    if (optionalIdleRef.current) clearTimeout(optionalIdleRef.current);
+    optionalIdleRef.current = setTimeout(() => {
+      if (mountedRef.current) setOptionalGlow(true);
+    }, 30000);
+  }, []);
+
+  useEffect(() => {
+    resetOptionalIdle();
+    return () => {
+      if (optionalIdleRef.current) clearTimeout(optionalIdleRef.current);
+    };
+  }, [safeIndex, misterioActual, optionalOpen, resetOptionalIdle]);
 
   const setPhase = useCallback((phase) => {
     transitionPhaseRef.current = phase;
@@ -435,6 +461,15 @@ export default function BookletView({
     return undefined;
   }, [safeIndex]);
 
+  const vitralCandidates = useMemo(() => {
+    if (!activePrayer) return [];
+    const all = activePrayer.imgCandidates?.length
+      ? activePrayer.imgCandidates
+      : [activePrayer.img];
+    const picked = pickPrayerImage(all, safeIndex);
+    return [picked, ...all.filter((u) => u !== picked)];
+  }, [activePrayer, safeIndex]);
+
   if (!activePrayer) {
     return (
       <div className="booklet-view booklet-view--empty">
@@ -454,29 +489,20 @@ export default function BookletView({
       : ' booklet-vitral--prayer';
 
   return (
-    <div className="booklet-view" style={vitralStyle}>
+    <div className="booklet-view" style={vitralStyle} onPointerDown={resetOptionalIdle}>
       {/* Stained glass / vitral background */}
       <div
         className={`booklet-vitral${vitralKindClass}${stepGlow ? ' booklet-vitral--step' : ''}`}
         aria-hidden="true"
       >
         <VitralImage
-          key={`${activePrayer.id}-${activePrayer.img}`}
-          candidates={activePrayer.imgCandidates || [activePrayer.img]}
+          key={`${activePrayer.id}-${vitralCandidates[0]}`}
+          candidates={vitralCandidates}
           onReady={handleImageReady}
         />
         <div className="booklet-vitral__shade" />
         <div className="booklet-vitral__glare" />
       </div>
-
-      {(transitionPhase === TRANSITION_PHASE.LINGER ||
-        transitionPhase === TRANSITION_PHASE.ARRIVING) && (
-        <p className="booklet-transition-hint" aria-live="polite">
-          {transitionPhase === TRANSITION_PHASE.LINGER
-            ? 'Un momento con la imagen…'
-            : 'Preparando la siguiente oración…'}
-        </p>
-      )}
 
       <div className={`booklet-prayer-chrome${chromePhaseClass}`}>
         <header className="booklet-header">
@@ -498,13 +524,18 @@ export default function BookletView({
           <p className="booklet-progress">
             <button
               type="button"
-              className="booklet-optional-btn"
-              onClick={() => setOptionalOpen(true)}
-              title="Oraciones opcionales (Ángel, San Benito)"
-              aria-label="Oraciones opcionales"
+              className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
+              onClick={() => {
+                resetOptionalIdle();
+                setOptionalOpen(true);
+              }}
+              title="Oraciones opcionales: Ángel de la Guarda y San Benito"
+              aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
             >
-              ✦
+              <span className="booklet-optional-btn__star" aria-hidden>✦</span>
+              <span className="booklet-optional-btn__label">Ángel · Benito</span>
             </button>
+            {' '}
             {displayIndex + 1} / {total}
             {isAveMaria && (
               <span className="booklet-ave-count">
