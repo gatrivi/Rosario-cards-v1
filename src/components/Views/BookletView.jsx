@@ -363,7 +363,7 @@ export default function BookletView({
         </div>
       </article>
 
-      <PrayForOrbs simpleMode={simpleMode} />
+      <PrayForOrbs simpleMode={simpleMode} offeringPulse={stepPulse} />
 
       <div className="booklet-footer-tools">
         <PrayerRecorder

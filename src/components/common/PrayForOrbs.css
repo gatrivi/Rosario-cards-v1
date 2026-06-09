@@ -17,23 +17,86 @@
   width: 2.6rem;
   height: 2.6rem;
   border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid rgba(255, 220, 150, 0.45);
+  overflow: visible;
+  border: 1px solid rgba(255, 220, 150, 0.4);
   box-shadow:
-    0 0 12px rgba(212, 175, 55, 0.35),
-    inset 0 0 8px rgba(255, 255, 255, 0.15);
+    0 0 10px rgba(212, 175, 55, 0.28),
+    inset 0 0 8px rgba(255, 255, 255, 0.12);
   background: radial-gradient(circle at 30% 25%, rgba(255, 248, 220, 0.25), rgba(20, 16, 30, 0.85));
+  animation: pray-for-orb-breathe 6.5s ease-in-out infinite;
+  animation-delay: calc(var(--orb-i, 0) * 0.85s);
 }
 
-.pray-for-orb--lg {
-  width: 3rem;
-  height: 3rem;
+.pray-for-orb__halo {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 240, 200, 0.12) 0%,
+    rgba(212, 175, 55, 0.08) 45%,
+    transparent 70%
+  );
+  animation: pray-for-halo-pulse 5s ease-in-out infinite;
+  animation-delay: calc(var(--orb-i, 0) * 0.6s);
+  z-index: 0;
+}
+
+.pray-for-orb img,
+.pray-for-orb__emoji {
+  position: relative;
+  z-index: 1;
+  border-radius: 50%;
 }
 
 .pray-for-orb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  overflow: hidden;
+}
+
+@keyframes pray-for-orb-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 8px rgba(212, 175, 55, 0.22),
+      inset 0 0 6px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 14px rgba(255, 230, 170, 0.38),
+      inset 0 0 10px rgba(255, 255, 255, 0.18);
+  }
+}
+
+@keyframes pray-for-halo-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(1.04); }
+}
+
+.pray-for-orb--offering {
+  animation: pray-for-orb-offering 0.65s ease-out;
+}
+
+@keyframes pray-for-orb-offering {
+  0% {
+    box-shadow: 0 0 6px rgba(212, 175, 55, 0.2);
+    filter: brightness(1);
+  }
+  40% {
+    box-shadow: 0 0 22px rgba(255, 245, 210, 0.65);
+    filter: brightness(1.15);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.28);
+    filter: brightness(1);
+  }
+}
+
+.pray-for-orb--lg {
+  width: 3rem;
+  height: 3rem;
 }
 
 .pray-for-orb__emoji {
@@ -196,10 +259,78 @@
   font-size: 1.5rem;
 }
 
+.pray-for-picker__section-label {
+  margin: 0 0 0.4rem;
+  color: rgba(212, 175, 55, 0.65);
+  font-size: 0.68rem;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+}
+
 .pray-for-picker__custom {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 0.75rem;
   margin-bottom: 0.65rem;
+}
+
+.pray-for-picker__batch {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.pray-for-picker__upload--wide {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.pray-for-picker__batch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  max-height: 8rem;
+  overflow-y: auto;
+}
+
+.pray-for-picker__batch-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 3.2rem;
+  font-size: 0.55rem;
+  color: #888;
+  text-align: center;
+}
+
+.pray-for-picker__batch-thumb img {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.pray-for-picker__batch-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.pray-for-picker__batch-actions .pray-for-picker__ok {
+  flex: 1;
+}
+
+.pray-for-picker__ghost {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: transparent;
+  color: #888;
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
 }
 
 .pray-for-picker__input {
@@ -266,4 +397,12 @@
   color: #888;
   font-family: inherit;
   cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pray-for-orb,
+  .pray-for-orb__halo,
+  .pray-for-add-orb__shine {
+    animation: none;
+  }
 }

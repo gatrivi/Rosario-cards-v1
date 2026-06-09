@@ -24,6 +24,20 @@ export function addPrayForIntention(entry) {
   return next;
 }
 
+export function addPrayForIntentions(entries) {
+  const list = loadPrayForIntentions();
+  const stamped = Date.now();
+  const next = [
+    ...list,
+    ...entries.map((entry, i) => ({
+      ...entry,
+      id: entry.id || `custom-${stamped}-${i}`,
+    })),
+  ];
+  savePrayForIntentions(next);
+  return next;
+}
+
 export function removePrayForIntention(id) {
   const next = loadPrayForIntentions().filter((i) => i.id !== id);
   savePrayForIntentions(next);
