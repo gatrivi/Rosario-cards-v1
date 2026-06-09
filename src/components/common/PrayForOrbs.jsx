@@ -10,7 +10,8 @@ import {
   upsertDrawerEntry,
 } from '../../utils/prayForStore';
 import { playOrbTapChime } from '../../utils/bookletSounds';
-import OrbPhotoCrop from './OrbPhotoCrop';
+import OrbPhotoCrop, { orbPhotoTransform } from './OrbPhotoCrop';
+import './OrbPhotoCrop.css';
 import './PrayForOrbs.css';
 
 function defaultIntentionLabel(index) {
@@ -27,7 +28,8 @@ function OrbImage({ intention }) {
         src={intention.image}
         alt=""
         draggable={false}
-        style={{ transform: `scale(${zoom}) translate(${ox}%, ${oy}%)` }}
+        className="orb-crop__img"
+        style={{ transform: orbPhotoTransform(zoom, ox, oy) }}
       />
     </div>
   );
@@ -76,7 +78,10 @@ function DrawerItem({ item, onToggle, onCrop }) {
         <button
           type="button"
           className="pray-for-picker__drawer-edit"
-          onClick={() => onCrop(item)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCrop(item);
+          }}
           aria-label={`Ajustar foto de ${item.label}`}
           title="Ajustar encuadre"
         >
@@ -198,8 +203,37 @@ export default function PrayForOrbs({
     if (photoFileRef.current) photoFileRef.current.value = '';
   };
 
+  const openPreviewCrop = (index) => {
+    const p = photoPreviews[index];
+    if (!p) return;
+    setCropEdit({
+      previewIndex: index,
+      image: p.image,
+      zoom: p.zoom ?? 1,
+      offsetX: p.offsetX ?? 0,
+      offsetY: p.offsetY ?? 0,
+    });
+  };
+
   const saveCropEdit = () => {
-    if (!cropEdit?.drawerId) return;
+    if (!cropEdit) return;
+    if (cropEdit.previewIndex !== undefined) {
+      setPhotoPreviews((prev) =>
+        prev.map((p, i) =>
+          i === cropEdit.previewIndex
+            ? {
+                ...p,
+                zoom: cropEdit.zoom,
+                offsetX: cropEdit.offsetX,
+                offsetY: cropEdit.offsetY,
+              }
+            : p
+        )
+      );
+      setCropEdit(null);
+      return;
+    }
+    if (!cropEdit.drawerId) return;
     setIntentions(
       updateDrawerItem(cropEdit.drawerId, {
         imageZoom: cropEdit.zoom,
@@ -331,22 +365,34 @@ export default function PrayForOrbs({
               {photoPreviews.length === 1 && (
                 <OrbPhotoCrop
                   image={photoPreviews[0].image}
-                  zoom={photoPreviews[0].zoom}
-                  offsetX={photoPreviews[0].offsetX}
-                  offsetY={photoPreviews[0].offsetY}
+                  zoom={photoPreviews[0].zoom ?? 1}
+                  offsetX={photoPreviews[0].offsetX ?? 0}
+                  offsetY={photoPreviews[0].offsetY ?? 0}
                   onChange={(crop) =>
                     setPhotoPreviews([{ ...photoPreviews[0], ...crop }])
                   }
                 />
               )}
               {photoPreviews.length > 1 && (
-                <div className="pray-for-picker__batch-grid">
-                  {photoPreviews.map((item, i) => (
-                    <div key={`photo-${i}`} className="pray-for-picker__batch-thumb">
-                      <img src={item.image} alt="" />
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <p className="pray-for-picker__batch-hint">
+                    Toca cada foto para ajustar el encuadre antes de añadir.
+                  </p>
+                  <div className="pray-for-picker__batch-grid">
+                    {photoPreviews.map((item, i) => (
+                      <button
+                        key={`photo-${i}`}
+                        type="button"
+                        className="pray-for-picker__batch-thumb"
+                        onClick={() => openPreviewCrop(i)}
+                        title={`Ajustar foto ${i + 1}`}
+                      >
+                        <OrbImage intention={item} />
+                        <span className="pray-for-picker__batch-edit" aria-hidden="true">✎</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
               <input
                 type="text"

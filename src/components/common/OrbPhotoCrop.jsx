@@ -1,6 +1,10 @@
 import React, { useRef } from 'react';
 import './OrbPhotoCrop.css';
 
+export function orbPhotoTransform(zoom = 1, offsetX = 0, offsetY = 0) {
+  return `translate(calc(-50% + ${offsetX}%), calc(-50% + ${offsetY}%)) scale(${zoom})`;
+}
+
 export default function OrbPhotoCrop({ image, zoom = 1, offsetX = 0, offsetY = 0, onChange }) {
   const dragRef = useRef(null);
 
@@ -15,8 +19,8 @@ export default function OrbPhotoCrop({ image, zoom = 1, offsetX = 0, offsetY = 0
     if (!dragRef.current) return;
     const dx = e.clientX - dragRef.current.x;
     const dy = e.clientY - dragRef.current.y;
-    const nextX = Math.max(-40, Math.min(40, dragRef.current.offsetX + dx * 0.35));
-    const nextY = Math.max(-40, Math.min(40, dragRef.current.offsetY + dy * 0.35));
+    const nextX = Math.max(-50, Math.min(50, dragRef.current.offsetX + dx * 0.4));
+    const nextY = Math.max(-50, Math.min(50, dragRef.current.offsetY + dy * 0.4));
     emit({ offsetX: nextX, offsetY: nextY });
   };
 
@@ -37,9 +41,8 @@ export default function OrbPhotoCrop({ image, zoom = 1, offsetX = 0, offsetY = 0
           src={image}
           alt=""
           draggable={false}
-          style={{
-            transform: `scale(${zoom}) translate(${offsetX}%, ${offsetY}%)`,
-          }}
+          className="orb-crop__img"
+          style={{ transform: orbPhotoTransform(zoom, offsetX, offsetY) }}
         />
       </div>
       <label className="orb-crop__slider">
@@ -47,13 +50,15 @@ export default function OrbPhotoCrop({ image, zoom = 1, offsetX = 0, offsetY = 0
         <input
           type="range"
           min="1"
-          max="2.5"
+          max="3"
           step="0.05"
           value={zoom}
           onChange={(e) => emit({ zoom: parseFloat(e.target.value) })}
         />
       </label>
-      <p className="orb-crop__hint">Arrastra para centrar el rostro en el círculo</p>
+      <p className="orb-crop__hint">
+        La foto entera se ve primero. Acerca y arrastra para encuadrar el círculo.
+      </p>
     </div>
   );
 }

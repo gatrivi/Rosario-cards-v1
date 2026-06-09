@@ -10,8 +10,12 @@ function isPresetId(id) {
 }
 
 export function drawerFingerprint(entry) {
+  if (entry.drawerId) return `id:${entry.drawerId}`;
   if (entry.presetId) return `preset:${entry.presetId}`;
-  if (entry.image) return `img:${entry.label}:${String(entry.image).slice(0, 64)}`;
+  if (entry.image) {
+    const img = String(entry.image);
+    return `img:${img.length}:${img}`;
+  }
   return `emo:${entry.label}:${entry.emoji || ''}`;
 }
 
@@ -53,7 +57,7 @@ function ensureMigrated() {
 
     const ingest = (item, isActive) => {
       const drawerItem = legacyToDrawer(item, isActive);
-      const fp = drawerFingerprint(drawerItem);
+      const fp = drawerItem.drawerId || drawerFingerprint(drawerItem);
       const existing = map.get(fp);
       if (existing) {
         if (isActive) existing.active = true;
@@ -115,6 +119,20 @@ export function savePrayForIntentions(intentions) {
   savePrayForDrawerRaw(next);
 }
 
+function findDrawerIndex(drawer, item) {
+  if (item.drawerId) {
+    const byId = drawer.findIndex((d) => d.drawerId === item.drawerId);
+    if (byId >= 0) return byId;
+  }
+  if (item.presetId) {
+    return drawer.findIndex((d) => d.presetId === item.presetId);
+  }
+  if (item.image) {
+    return drawer.findIndex((d) => d.image === item.image && !d.presetId);
+  }
+  return -1;
+}
+
 export function upsertDrawerEntry(entry, active = true) {
   const drawer = loadPrayForDrawer();
   const item = {
@@ -123,10 +141,9 @@ export function upsertDrawerEntry(entry, active = true) {
     imageOffsetY: 0,
     active,
     ...entry,
-    drawerId: entry.drawerId || `drawer-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    drawerId: entry.drawerId || `drawer-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
   };
-  const fp = drawerFingerprint(item);
-  const idx = drawer.findIndex((d) => drawerFingerprint(d) === fp);
+  const idx = findDrawerIndex(drawer, item);
   let next;
   if (idx >= 0) {
     next = drawer.map((d, i) =>
@@ -157,23 +174,24 @@ export function addPrayForIntention(entry) {
     imageZoom: entry.imageZoom,
     imageOffsetX: entry.imageOffsetX,
     imageOffsetY: entry.imageOffsetY,
+    drawerId: entry.drawerId,
   }, true);
 }
 
 export function addPrayForIntentions(entries) {
-  entries.forEach((entry) => {
-    upsertDrawerEntry(
-      {
-        label: entry.label,
-        image: entry.image || null,
-        emoji: entry.emoji || null,
-        imageZoom: entry.imageZoom,
-        imageOffsetX: entry.imageOffsetX,
-        imageOffsetY: entry.imageOffsetY,
-      },
-      true
-    );
-  });
+  const drawer = loadPrayForDrawer();
+  const stamped = Date.now();
+  const newItems = entries.map((entry, i) => ({
+    active: true,
+    label: entry.label || `Intención ${i + 1}`,
+    image: entry.image || null,
+    emoji: entry.emoji || null,
+    imageZoom: entry.imageZoom ?? 1,
+    imageOffsetX: entry.imageOffsetX ?? 0,
+    imageOffsetY: entry.imageOffsetY ?? 0,
+    drawerId: `drawer-${stamped}-${i}-${Math.random().toString(36).slice(2, 9)}`,
+  }));
+  savePrayForDrawerRaw([...newItems, ...drawer].slice(0, DRAWER_MAX));
   return loadPrayForIntentions();
 }
 
@@ -185,15 +203,10 @@ export function updateDrawerItem(drawerId, patch) {
   return loadPrayForIntentions();
 }
 
-/** @deprecated use toggleDrawerActive — deactivates, keeps in drawer */
 export function removePrayForIntention(id) {
   const drawer = loadPrayForDrawer();
-  const item = drawer.find((d) => d.drawerId === id || d.presetId === id || d.drawerId === id);
-  if (!item) {
-    const byLegacy = drawer.find((d) => d.presetId === id);
-    if (byLegacy) return toggleDrawerActive(byLegacy.drawerId);
-    return loadPrayForIntentions();
-  }
+  const item = drawer.find((d) => d.drawerId === id || d.presetId === id);
+  if (!item) return loadPrayForIntentions();
   return toggleDrawerActive(item.drawerId);
 }
 
