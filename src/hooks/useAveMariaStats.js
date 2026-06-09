@@ -31,6 +31,23 @@ export function useAveMariaStats() {
     }
   }, [cloudState, loadedFromCloud]);
 
+  const refreshFromStorage = () => {
+    const savedTotal = localStorage.getItem('total_ave_marias');
+    if (savedTotal) setTotalAveMarias(parseInt(savedTotal, 10));
+    const todayStr = new Date().toDateString();
+    const savedDate = localStorage.getItem('ave_marias_date');
+    if (savedDate === todayStr) {
+      const savedDaily = localStorage.getItem('daily_ave_marias');
+      if (savedDaily) setDailyAveMarias(parseInt(savedDaily, 10));
+    }
+  };
+
+  useEffect(() => {
+    const onStatsUpdated = () => refreshFromStorage();
+    window.addEventListener('rosario-stats-updated', onStatsUpdated);
+    return () => window.removeEventListener('rosario-stats-updated', onStatsUpdated);
+  }, []);
+
   // Cargar el total y el diario al montar
   useEffect(() => {
     // Nivel del usuario
@@ -163,6 +180,18 @@ export function useAveMariaStats() {
     } catch { return []; }
   };
 
+  const popRoseData = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
+      if (stored.length === 0) return;
+      stored.pop();
+      localStorage.setItem('rosedal_roses', JSON.stringify(stored));
+      syncToCloud({ rosedal_roses: stored });
+    } catch (e) {
+      console.warn('[Rosedal] popRoseData', e);
+    }
+  };
+
   // Cálculos para la visualización global
   const totalMacetones = Math.floor(totalAveMarias / ROSAS_PER_MACETON);
   const rosasInCurrentMaceton = totalAveMarias % ROSAS_PER_MACETON;
@@ -181,6 +210,7 @@ export function useAveMariaStats() {
     removeRosas,
     storeRoseData,
     getRoseData,
+    popRoseData,
     totalMacetones, 
     rosasInCurrentMaceton,
     ROSAS_PER_MACETON,

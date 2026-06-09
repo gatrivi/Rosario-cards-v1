@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import RoseDrawing from './RoseDrawing';
 
@@ -7,7 +7,15 @@ export default function MacetonView({ onSelectMaceton }) {
     dailyAveMarias, objetivoMacetonesHoy, ROSAS_PER_MACETON, getRoseData, totalAveMarias
   } = useAveMariaStats();
 
+  const [roseTick, setRoseTick] = useState(0);
+  useEffect(() => {
+    const refresh = () => setRoseTick((t) => t + 1);
+    window.addEventListener('rosario-stats-updated', refresh);
+    return () => window.removeEventListener('rosario-stats-updated', refresh);
+  }, []);
+
   const allRoses = getRoseData();
+  void roseTick;
   const enrichment = Math.min(1, Math.log10(totalAveMarias + 1) / 7.8);
 
   // Filter roses for today? Actually, for simplicity and UX, we can just show 

@@ -1,6 +1,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import BookletView, { getAveMariaRunInfo } from '../components/Views/BookletView';
+import { playBookletTransitionSound } from '../utils/bookletSounds';
+
+jest.mock('../utils/bookletSounds', () => ({
+  playBookletTransitionSound: jest.fn(),
+}));
 
 const localStorageMock = {
   store: {},
@@ -26,6 +31,7 @@ describe('BookletView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorageMock.clear();
+    playBookletTransitionSound.mockClear();
   });
 
   test('renders act of contrition in burst lines', () => {
@@ -115,6 +121,23 @@ describe('BookletView', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
     expect(onUpdateProgreso).toHaveBeenCalledWith(1);
+    expect(playBookletTransitionSound).toHaveBeenCalled();
+  });
+
+  test('awards ave maria when leaving hail mary forward', () => {
+    const onAveMariaComplete = jest.fn();
+    render(
+      <BookletView
+        currentPrayerIndex={4}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+        onAveMariaComplete={onAveMariaComplete}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+    expect(onAveMariaComplete).toHaveBeenCalled();
   });
 
   test('goes back when anterior is clicked', () => {

@@ -6,6 +6,12 @@ import {
   getVariantStorageKey,
 } from '../../data/prayerVariants';
 import PrayerRecorder from '../common/PrayerRecorder';
+import {
+  getBookletStepContext,
+  stepContextToVitralVars,
+  makeBookletRoseFingerprint,
+} from '../../utils/bookletProgress';
+import { playBookletTransitionSound } from '../../utils/bookletSounds';
 import './BookletView.css';
 
 const MYSTERY_OPTIONS = [
@@ -104,6 +110,9 @@ export default function BookletView({
   onMysteryChange,
   isLeftHanded = false,
   simpleMode = false,
+  soundEnabled = true,
+  onAveMariaComplete,
+  onAveMariaUndo,
 }) {
   const secuencia = useMemo(
     () => buildSequence(misterioActual),
@@ -126,8 +135,9 @@ export default function BookletView({
     } catch (_) { /* ignore */ }
     return activePrayer.variants[0].id;
   });
-  const [avePulse, setAvePulse] = useState(false);
+  const [stepPulse, setStepPulse] = useState(false);
   const prevIndexRef = useRef(safeIndex);
+  const isFirstRenderRef = useRef(true);
 
   useEffect(() => {
     if (!activePrayer?.variants?.length) {
@@ -166,21 +176,47 @@ export default function BookletView({
   const canGoBack = safeIndex > 0;
   const canGoForward = safeIndex < total - 1;
 
-  const goTo = useCallback(
-    (index) => {
-      if (index < 0 || index >= total) return;
-      onUpdateProgreso(index);
+  const navigateTo = useCallback(
+    (newIndex) => {
+      if (newIndex < 0 || newIndex >= total || newIndex === safeIndex) return;
+
+      const oldIndex = safeIndex;
+      const leaving = secuencia[oldIndex];
+      const entering = secuencia[newIndex];
+      const enteringCtx = getBookletStepContext(secuencia, newIndex, total);
+
+      if (newIndex > oldIndex) {
+        if (leaving?.id === 'A') {
+          const fp = makeBookletRoseFingerprint(
+            getAveMariaRunInfo(secuencia, oldIndex),
+            getBookletStepContext(secuencia, oldIndex, total).mysteryDecade
+          );
+          onAveMariaComplete?.(fp);
+        }
+      } else if (newIndex < oldIndex && secuencia[newIndex]?.id === 'A') {
+        onAveMariaUndo?.();
+      }
+
+      playBookletTransitionSound({
+        prayerId: entering?.id,
+        stepContext: enteringCtx,
+        soundEnabled,
+      });
+
+      setStepPulse(true);
+      setTimeout(() => setStepPulse(false), 520);
+      onUpdateProgreso(newIndex);
     },
-    [onUpdateProgreso, total]
+    [safeIndex, secuencia, total, onUpdateProgreso, onAveMariaComplete, onAveMariaUndo, soundEnabled]
   );
 
   const goPrev = useCallback(() => {
-    if (canGoBack) goTo(safeIndex - 1);
-  }, [canGoBack, goTo, safeIndex]);
+    if (canGoBack) navigateTo(safeIndex - 1);
+  }, [canGoBack, navigateTo, safeIndex]);
 
   const goNext = useCallback(() => {
-    if (canGoForward) goTo(safeIndex + 1);
-  }, [canGoForward, goTo, safeIndex]);
+    if (canGoForward) navigateTo(safeIndex + 1);
+  }, [canGoForward, navigateTo, safeIndex]);
 
   useEffect(() => {
     const handleKey = (event) => {
@@ -197,24 +233,23 @@ export default function BookletView({
     return () => window.removeEventListener('keydown', handleKey);
   }, [goPrev, goNext]);
 
-  const aveRunInfo = useMemo(
-    () => getAveMariaRunInfo(secuencia, safeIndex),
-    [secuencia, safeIndex]
+  const stepContext = useMemo(
+    () => getBookletStepContext(secuencia, safeIndex, total),
+    [secuencia, safeIndex, total]
   );
 
+  const aveRunInfo = stepContext.aveRun;
   const isAveMaria = activePrayer?.id === 'A' && aveRunInfo;
-  const aveStep = aveRunInfo?.step ?? 0;
 
   useEffect(() => {
-    if (activePrayer?.id === 'A' && safeIndex !== prevIndexRef.current) {
-      setAvePulse(true);
-      const t = setTimeout(() => setAvePulse(false), 520);
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
       prevIndexRef.current = safeIndex;
-      return () => clearTimeout(t);
+      return undefined;
     }
     prevIndexRef.current = safeIndex;
     return undefined;
-  }, [safeIndex, activePrayer?.id]);
+  }, [safeIndex]);
 
   if (!activePrayer) {
     return (
@@ -227,20 +262,18 @@ export default function BookletView({
   const activeVariantLabel = variants?.find((v) => v.id === variantId)?.label;
   const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
 
-  const vitralStyle = isAveMaria
-    ? {
-        '--ave-zoom': `${1 + aveStep * 0.01}`,
-        '--ave-brightness': `${0.82 + aveStep * 0.012}`,
-        '--ave-saturate': `${1.12 + aveStep * 0.018}`,
-        '--ave-glare': `${0.08 + aveStep * 0.055}`,
-      }
-    : undefined;
+  const vitralStyle = stepContextToVitralVars(stepContext);
+  const vitralKindClass = isAveMaria
+    ? ' booklet-vitral--ave'
+    : stepContext.kind === 'mystery'
+      ? ' booklet-vitral--mystery'
+      : ' booklet-vitral--prayer';
 
   return (
     <div className="booklet-view" style={vitralStyle}>
       {/* Stained glass / vitral background */}
       <div
-        className={`booklet-vitral${isAveMaria ? ' booklet-vitral--ave' : ''}${avePulse ? ' booklet-vitral--pulse' : ''}`}
+        className={`booklet-vitral${vitralKindClass}${stepPulse ? ' booklet-vitral--pulse' : ''}`}
         aria-hidden="true"
       >
         <img
@@ -250,7 +283,7 @@ export default function BookletView({
           className="booklet-vitral__img"
         />
         <div className="booklet-vitral__shade" />
-        {isAveMaria && <div className="booklet-vitral__glare" />}
+        <div className="booklet-vitral__glare" />
       </div>
 
       <header className="booklet-header">
@@ -285,9 +318,15 @@ export default function BookletView({
               · {aveRunInfo.position} de {aveRunInfo.total}
             </span>
           )}
+          {stepContext.kind === 'mystery' && stepContext.mysteryDecade && (
+            <span className="booklet-ave-count">
+              {' '}
+              · misterio {stepContext.mysteryDecade} de 5
+            </span>
+          )}
         </p>
         <h1
-          className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}`}
+          className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' ? ' booklet-title--mystery' : ''}`}
           style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
         >
           {activePrayer.title}
@@ -316,14 +355,10 @@ export default function BookletView({
         }}
       >
         <div
-          className={`booklet-glass-inner stained-glass-overlay${isAveMaria ? ' booklet-glass-inner--ave' : ''}`}
-          style={
-            isAveMaria
-              ? {
-                  boxShadow: `0 4px 20px rgba(0, 0, 0, 0.22), inset 0 0 ${24 + aveStep * 6}px rgba(212, 175, 55, ${0.04 + aveStep * 0.018})`,
-                }
-              : undefined
-          }
+          className={`booklet-glass-inner stained-glass-overlay booklet-glass-inner--progress${isAveMaria ? ' booklet-glass-inner--ave' : ''}`}
+          style={{
+            boxShadow: `0 4px 20px rgba(0, 0, 0, 0.22), inset 0 0 ${24 + (stepContext.localStep || 0) * 5}px rgba(212, 175, 55, ${0.04 + (parseFloat(vitralStyle['--ave-glare']) || 0.06) * 0.35})`,
+          }}
         >
           {renderVerseLines(displayText)}
         </div>

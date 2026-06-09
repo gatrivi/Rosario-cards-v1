@@ -24,8 +24,11 @@ import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { applyPendingUpdate } from '../../utils/appUpdate';
+import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
-const APP_VERSION = '0.3.20';
+const APP_VERSION = '0.3.21';
+const ROSARY_INDEX_KEY = 'rosario_booklet_index';
+const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 
 
 export default function AppShell() {
@@ -64,8 +67,28 @@ export default function AppShell() {
   }, [settings]);
 
   // --- Lifting Prayer State ---
-  const [misterioActual, setMisterioActual] = useState(getDefaultMystery());
-  const [currentPrayerIndex, setCurrentPrayerIndex] = useState(0);
+  const [misterioActual, setMisterioActual] = useState(() => {
+    try {
+      return localStorage.getItem(ROSARY_MYSTERY_KEY) || getDefaultMystery();
+    } catch {
+      return getDefaultMystery();
+    }
+  });
+  const [currentPrayerIndex, setCurrentPrayerIndex] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ROSARY_INDEX_KEY);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const {
+    addRosas,
+    removeRosas,
+    storeRoseData,
+    popRoseData,
+  } = useAveMariaStats();
 
   const { forceSetSyncId, syncId, syncStatus } = useCloudSync();
 
@@ -112,11 +135,18 @@ export default function AppShell() {
 
   const handleUpdateProgreso = React.useCallback((newIndex) => {
     setCurrentPrayerIndex(newIndex);
+    try {
+      localStorage.setItem(ROSARY_INDEX_KEY, String(newIndex));
+    } catch (_) { /* ignore */ }
   }, []);
 
   const handleMysteryChange = React.useCallback((mystery) => {
     setMisterioActual(mystery);
     setCurrentPrayerIndex(0);
+    try {
+      localStorage.setItem(ROSARY_MYSTERY_KEY, mystery);
+      localStorage.setItem(ROSARY_INDEX_KEY, '0');
+    } catch (_) { /* ignore */ }
   }, []);
 
   const renderizarVista = () => {
@@ -130,6 +160,15 @@ export default function AppShell() {
             onMysteryChange={handleMysteryChange}
             isLeftHanded={settings.isLeftHanded}
             simpleMode={settings.simpleMode}
+            soundEnabled={settings.soundEnabled}
+            onAveMariaComplete={(fingerprint) => {
+              addRosas(1);
+              storeRoseData(fingerprint);
+            }}
+            onAveMariaUndo={() => {
+              removeRosas(1);
+              popRoseData();
+            }}
           />
         );
       case 'monk': return <MonkView />;

@@ -34,10 +34,21 @@
   width: 100%;
 }
 
-.booklet-vitral--ave .booklet-vitral__img {
+.booklet-vitral--ave .booklet-vitral__img,
+.booklet-vitral--mystery .booklet-vitral__img,
+.booklet-vitral--prayer .booklet-vitral__img {
   filter: brightness(var(--ave-brightness, 0.82)) contrast(1.06)
     saturate(var(--ave-saturate, 1.12));
   transform: scale(var(--ave-zoom, 1));
+}
+
+.booklet-vitral--mystery .booklet-vitral__glare {
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 35%,
+    rgba(220, 235, 255, var(--ave-glare, 0.08)) 0%,
+    rgba(180, 200, 255, calc(var(--ave-glare, 0.08) * 0.4)) 40%,
+    transparent 72%
+  );
 }
 
 .booklet-vitral__glare {
