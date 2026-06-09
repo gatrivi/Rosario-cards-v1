@@ -30,7 +30,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: opacity 1.2s ease-in-out, transform 0.55s ease-out, filter 0.55s ease-out;
+  transition: opacity 0.65s ease-out, transform 0.7s ease-out, filter 0.7s ease-out;
   width: 100%;
 }
 
@@ -65,23 +65,74 @@
   transition: opacity 0.55s ease-out;
 }
 
-.booklet-vitral--pulse .booklet-vitral__glare {
-  animation: booklet-ave-flash 0.52s ease-out;
+.booklet-vitral--step .booklet-vitral__glare {
+  animation: booklet-step-glow 0.38s ease-out;
 }
 
-.booklet-vitral--pulse .booklet-vitral__img {
-  animation: booklet-ave-zoom-tick 0.52s ease-out;
+.booklet-vitral--step .booklet-vitral__img {
+  animation: booklet-step-bright 0.38s ease-out;
 }
 
-@keyframes booklet-ave-flash {
-  0% { opacity: 0.35; }
-  35% { opacity: 1; }
+@keyframes booklet-step-glow {
+  0% { opacity: 0.45; }
+  45% { opacity: 0.72; }
   100% { opacity: 0; }
 }
 
-@keyframes booklet-ave-zoom-tick {
-  0% { filter: brightness(calc(var(--ave-brightness, 0.82) + 0.06)) saturate(calc(var(--ave-saturate, 1.12) + 0.08)); }
-  100% { filter: brightness(var(--ave-brightness, 0.82)) saturate(var(--ave-saturate, 1.12)); }
+@keyframes booklet-step-bright {
+  0% {
+    filter: brightness(calc(var(--ave-brightness, 0.82) + 0.02))
+      saturate(calc(var(--ave-saturate, 1.12) + 0.03));
+  }
+  100% {
+    filter: brightness(var(--ave-brightness, 0.82)) saturate(var(--ave-saturate, 1.12));
+  }
+}
+
+.booklet-prayer-chrome {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.booklet-prayer-chrome--leaving {
+  animation: booklet-prayer-out 0.22s ease-in forwards;
+  pointer-events: none;
+}
+
+.booklet-prayer-chrome--hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.booklet-prayer-chrome--entering {
+  animation: booklet-prayer-in 0.3s ease-out forwards;
+}
+
+@keyframes booklet-prayer-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes booklet-prayer-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .booklet-vitral__shade {
@@ -321,5 +372,19 @@
   .booklet-glass-inner {
     max-width: min(22rem, 52vw);
     padding: 0.85rem 1rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booklet-prayer-chrome--leaving,
+  .booklet-prayer-chrome--entering,
+  .booklet-vitral--step .booklet-vitral__glare,
+  .booklet-vitral--step .booklet-vitral__img {
+    animation: none;
+  }
+
+  .booklet-prayer-chrome--hidden {
+    opacity: 1;
+    visibility: visible;
   }
 }

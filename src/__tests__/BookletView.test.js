@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import BookletView, { getAveMariaRunInfo } from '../components/Views/BookletView';
+import BookletView, { BOOKLET_TIMING, getAveMariaRunInfo } from '../components/Views/BookletView';
 import { playBookletTransitionSound } from '../utils/bookletSounds';
 
 jest.mock('../utils/bookletSounds', () => ({
@@ -29,10 +29,27 @@ describe('BookletView', () => {
   const onMysteryChange = jest.fn();
 
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     localStorageMock.clear();
     playBookletTransitionSound.mockClear();
   });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  const advanceBookletTransition = () => {
+    jest.advanceTimersByTime(
+      BOOKLET_TIMING.textOut +
+        BOOKLET_TIMING.linger +
+        48 +
+        BOOKLET_TIMING.imageBeforeText +
+        BOOKLET_TIMING.textIn +
+        80
+    );
+  };
 
   test('renders act of contrition in burst lines', () => {
     render(
@@ -120,6 +137,7 @@ describe('BookletView', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+    advanceBookletTransition();
     expect(onUpdateProgreso).toHaveBeenCalledWith(1);
     expect(playBookletTransitionSound).toHaveBeenCalled();
   });
@@ -137,6 +155,7 @@ describe('BookletView', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+    advanceBookletTransition();
     expect(onAveMariaComplete).toHaveBeenCalled();
   });
 
@@ -151,6 +170,7 @@ describe('BookletView', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /oración anterior/i }));
+    advanceBookletTransition();
     expect(onUpdateProgreso).toHaveBeenCalledWith(1);
   });
 

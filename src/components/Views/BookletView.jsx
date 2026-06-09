@@ -16,17 +16,55 @@ import { playBookletTransitionSound } from '../../utils/bookletSounds';
 import { getPrayerImageCandidates, resolvePrayerImage } from '../../utils/prayerImages';
 import './BookletView.css';
 
-function VitralImage({ candidates }) {
+const TRANSITION_PHASE = {
+  READY: 'ready',
+  LEAVING: 'leaving',
+  LINGER: 'linger',
+  ARRIVING: 'arriving',
+  ENTERING: 'entering',
+};
+
+export const BOOKLET_TIMING = {
+  textOut: 220,
+  linger: 280,
+  imageBeforeText: 480,
+  textIn: 300,
+  stepGlow: 380,
+};
+
+function prefersReducedMotion() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function VitralImage({ candidates, onReady }) {
   const [index, setIndex] = useState(0);
+  const imgRef = useRef(null);
   const src = candidates[index] ?? candidates[candidates.length - 1];
+
+  const notifyReady = useCallback(() => {
+    onReady?.();
+  }, [onReady]);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [candidates]);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) notifyReady();
+  }, [src, notifyReady]);
 
   return (
     <img
+      ref={imgRef}
       src={src}
       alt=""
       className="booklet-vitral__img"
+      onLoad={notifyReady}
       onError={() => {
         if (index < candidates.length - 1) setIndex((i) => i + 1);
+        else notifyReady();
       }}
     />
   );
@@ -134,7 +172,14 @@ export default function BookletView({
     Math.max(currentPrayerIndex, 0),
     Math.max(total - 1, 0)
   );
-  const activePrayer = secuencia[safeIndex];
+  const [displayIndex, setDisplayIndex] = useState(safeIndex);
+  const [transitionPhase, setTransitionPhase] = useState(TRANSITION_PHASE.READY);
+  const transitionPhaseRef = useRef(TRANSITION_PHASE.READY);
+  const transitionTimersRef = useRef([]);
+  const imageReadyRef = useRef(true);
+  const afterImageReadyRef = useRef(null);
+  const activePrayer = secuencia[displayIndex];
+  const isTransitioning = transitionPhase !== TRANSITION_PHASE.READY;
 
   const variants = activePrayer?.variants;
   const [variantId, setVariantId] = useState(() => {
@@ -145,9 +190,63 @@ export default function BookletView({
     } catch (_) { /* ignore */ }
     return activePrayer.variants[0].id;
   });
-  const [stepPulse, setStepPulse] = useState(false);
+  const [stepGlow, setStepGlow] = useState(false);
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
+
+  const setPhase = useCallback((phase) => {
+    transitionPhaseRef.current = phase;
+    setTransitionPhase(phase);
+  }, []);
+
+  const clearTransitionTimers = useCallback(() => {
+    transitionTimersRef.current.forEach((id) => clearTimeout(id));
+    transitionTimersRef.current = [];
+  }, []);
+
+  const scheduleTransition = useCallback((fn, delay) => {
+    const id = setTimeout(fn, delay);
+    transitionTimersRef.current.push(id);
+    return id;
+  }, []);
+
+  useEffect(() => () => clearTransitionTimers(), [clearTransitionTimers]);
+
+  useEffect(() => {
+    clearTransitionTimers();
+    setPhase(TRANSITION_PHASE.READY);
+    setDisplayIndex(safeIndex);
+  }, [misterioActual, clearTransitionTimers, setPhase, safeIndex]);
+
+  useEffect(() => {
+    if (transitionPhaseRef.current === TRANSITION_PHASE.READY && displayIndex !== safeIndex) {
+      setDisplayIndex(safeIndex);
+    }
+  }, [safeIndex, displayIndex]);
+
+  const beginTextEnter = useCallback(() => {
+    setPhase(TRANSITION_PHASE.ENTERING);
+    scheduleTransition(() => setPhase(TRANSITION_PHASE.READY), BOOKLET_TIMING.textIn);
+  }, [scheduleTransition, setPhase]);
+
+  const beginArrivingHold = useCallback(() => {
+    imageReadyRef.current = false;
+    afterImageReadyRef.current = () => {
+      scheduleTransition(beginTextEnter, BOOKLET_TIMING.imageBeforeText);
+    };
+  }, [beginTextEnter, scheduleTransition]);
+
+  const handleImageReady = useCallback(() => {
+    imageReadyRef.current = true;
+    if (
+      transitionPhaseRef.current === TRANSITION_PHASE.ARRIVING &&
+      afterImageReadyRef.current
+    ) {
+      const run = afterImageReadyRef.current;
+      afterImageReadyRef.current = null;
+      run();
+    }
+  }, []);
 
   useEffect(() => {
     if (!activePrayer?.variants?.length) {
@@ -183,14 +282,15 @@ export default function BookletView({
     } catch (_) { /* ignore */ }
   }, [variants, variantId, activePrayer?.id]);
 
-  const canGoBack = safeIndex > 0;
-  const canGoForward = safeIndex < total - 1;
+  const canGoBack = displayIndex > 0;
+  const canGoForward = displayIndex < total - 1;
 
   const navigateTo = useCallback(
     (newIndex) => {
-      if (newIndex < 0 || newIndex >= total || newIndex === safeIndex) return;
+      if (newIndex < 0 || newIndex >= total || newIndex === displayIndex) return;
+      if (transitionPhaseRef.current !== TRANSITION_PHASE.READY) return;
 
-      const oldIndex = safeIndex;
+      const oldIndex = displayIndex;
       const leaving = secuencia[oldIndex];
       const entering = secuencia[newIndex];
       const enteringCtx = getBookletStepContext(secuencia, newIndex, total);
@@ -207,26 +307,66 @@ export default function BookletView({
         onAveMariaUndo?.();
       }
 
-      playBookletTransitionSound({
-        prayerId: entering?.id,
-        stepContext: enteringCtx,
-        soundEnabled,
-      });
+      const finishSwap = () => {
+        setDisplayIndex(newIndex);
+        onUpdateProgreso(newIndex);
+        playBookletTransitionSound({
+          prayerId: entering?.id,
+          stepContext: enteringCtx,
+          soundEnabled,
+        });
+        setStepGlow(true);
+        scheduleTransition(() => setStepGlow(false), BOOKLET_TIMING.stepGlow);
+        setPhase(TRANSITION_PHASE.ARRIVING);
+        beginArrivingHold();
+        scheduleTransition(() => {
+          if (!afterImageReadyRef.current) return;
+          imageReadyRef.current = true;
+          handleImageReady();
+        }, 48);
+      };
 
-      setStepPulse(true);
-      setTimeout(() => setStepPulse(false), 520);
-      onUpdateProgreso(newIndex);
+      if (prefersReducedMotion()) {
+        setDisplayIndex(newIndex);
+        onUpdateProgreso(newIndex);
+        playBookletTransitionSound({
+          prayerId: entering?.id,
+          stepContext: enteringCtx,
+          soundEnabled,
+        });
+        setPhase(TRANSITION_PHASE.READY);
+        return;
+      }
+
+      setPhase(TRANSITION_PHASE.LEAVING);
+      scheduleTransition(() => {
+        setPhase(TRANSITION_PHASE.LINGER);
+        scheduleTransition(finishSwap, BOOKLET_TIMING.linger);
+      }, BOOKLET_TIMING.textOut);
     },
-    [safeIndex, secuencia, total, onUpdateProgreso, onAveMariaComplete, onAveMariaUndo, soundEnabled]
+    [
+      displayIndex,
+      secuencia,
+      total,
+      onUpdateProgreso,
+      onAveMariaComplete,
+      onAveMariaUndo,
+      soundEnabled,
+      scheduleTransition,
+      setPhase,
+      beginArrivingHold,
+      beginTextEnter,
+      handleImageReady,
+    ]
   );
 
   const goPrev = useCallback(() => {
-    if (canGoBack) navigateTo(safeIndex - 1);
-  }, [canGoBack, navigateTo, safeIndex]);
+    if (canGoBack) navigateTo(displayIndex - 1);
+  }, [canGoBack, navigateTo, displayIndex]);
 
   const goNext = useCallback(() => {
-    if (canGoForward) navigateTo(safeIndex + 1);
-  }, [canGoForward, navigateTo, safeIndex]);
+    if (canGoForward) navigateTo(displayIndex + 1);
+  }, [canGoForward, navigateTo, displayIndex]);
 
   useEffect(() => {
     const handleKey = (event) => {
@@ -244,9 +384,19 @@ export default function BookletView({
   }, [goPrev, goNext]);
 
   const stepContext = useMemo(
-    () => getBookletStepContext(secuencia, safeIndex, total),
-    [secuencia, safeIndex, total]
+    () => getBookletStepContext(secuencia, displayIndex, total),
+    [secuencia, displayIndex, total]
   );
+
+  const chromePhaseClass =
+    transitionPhase === TRANSITION_PHASE.LEAVING
+      ? ' booklet-prayer-chrome--leaving'
+      : transitionPhase === TRANSITION_PHASE.LINGER ||
+          transitionPhase === TRANSITION_PHASE.ARRIVING
+        ? ' booklet-prayer-chrome--hidden'
+        : transitionPhase === TRANSITION_PHASE.ENTERING
+          ? ' booklet-prayer-chrome--entering'
+          : '';
 
   const aveRunInfo = stepContext.aveRun;
   const isAveMaria = activePrayer?.id === 'A' && aveRunInfo;
@@ -283,87 +433,93 @@ export default function BookletView({
     <div className="booklet-view" style={vitralStyle}>
       {/* Stained glass / vitral background */}
       <div
-        className={`booklet-vitral${vitralKindClass}${stepPulse ? ' booklet-vitral--pulse' : ''}`}
+        className={`booklet-vitral${vitralKindClass}${stepGlow ? ' booklet-vitral--step' : ''}`}
         aria-hidden="true"
       >
         <VitralImage
           key={`${activePrayer.id}-${activePrayer.img}`}
           candidates={activePrayer.imgCandidates || [activePrayer.img]}
+          onReady={handleImageReady}
         />
         <div className="booklet-vitral__shade" />
         <div className="booklet-vitral__glare" />
       </div>
 
-      <header className="booklet-header">
-        <div className="booklet-mystery-row">
-          {MYSTERY_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              className={`booklet-mystery-pill${
-                misterioActual === opt.id ? ' booklet-mystery-pill--active' : ''
-              }`}
-              onClick={() => onMysteryChange?.(opt.id)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        <p className="booklet-progress">
-          {safeIndex + 1} / {total}
-          {isAveMaria && (
-            <span className="booklet-ave-count">
-              {' '}
-              · {aveRunInfo.position} de {aveRunInfo.total}
-            </span>
-          )}
-          {stepContext.kind === 'mystery' && stepContext.mysteryDecade && (
-            <span className="booklet-ave-count">
-              {' '}
-              · misterio {stepContext.mysteryDecade} de 5
-            </span>
-          )}
-        </p>
-        <h1
-          className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' ? ' booklet-title--mystery' : ''}`}
-          style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
-        >
-          {activePrayer.title}
-        </h1>
-        {variants && (
-          <button
-            type="button"
-            className="booklet-variant-turn"
-            onClick={cycleVariant}
-            aria-label={`Cambiar versión del ${activePrayer.title}`}
+      <div className={`booklet-prayer-chrome${chromePhaseClass}`}>
+        <header className="booklet-header">
+          <div className="booklet-mystery-row">
+            {MYSTERY_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                className={`booklet-mystery-pill${
+                  misterioActual === opt.id ? ' booklet-mystery-pill--active' : ''
+                }`}
+                onClick={() => onMysteryChange?.(opt.id)}
+                disabled={isTransitioning}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="booklet-progress">
+            {displayIndex + 1} / {total}
+            {isAveMaria && (
+              <span className="booklet-ave-count">
+                {' '}
+                · {aveRunInfo.position} de {aveRunInfo.total}
+              </span>
+            )}
+            {stepContext.kind === 'mystery' && stepContext.mysteryDecade && (
+              <span className="booklet-ave-count">
+                {' '}
+                · misterio {stepContext.mysteryDecade} de 5
+              </span>
+            )}
+          </p>
+          <h1
+            className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' ? ' booklet-title--mystery' : ''}`}
+            style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
           >
-            ◇ {activeVariantLabel}
-            <span className="booklet-variant-turn__hint"> · tocar para otra versión</span>
-          </button>
-        )}
-      </header>
+            {activePrayer.title}
+          </h1>
+          {variants && (
+            <button
+              type="button"
+              className="booklet-variant-turn"
+              onClick={cycleVariant}
+              aria-label={`Cambiar versión del ${activePrayer.title}`}
+              disabled={isTransitioning}
+            >
+              ◇ {activeVariantLabel}
+              <span className="booklet-variant-turn__hint"> · tocar para otra versión</span>
+            </button>
+          )}
+        </header>
 
-      <article
-        className="booklet-glass-panel"
-        style={{ fontSize: simpleMode ? '1.35rem' : '1.08rem' }}
-        onClick={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          if (x > rect.width * 0.62) goNext();
-          else if (x < rect.width * 0.38) goPrev();
-        }}
-      >
-        <div
-          className={`booklet-glass-inner stained-glass-overlay booklet-glass-inner--progress${isAveMaria ? ' booklet-glass-inner--ave' : ''}`}
-          style={{
-            boxShadow: `0 4px 20px rgba(0, 0, 0, 0.22), inset 0 0 ${24 + (stepContext.localStep || 0) * 5}px rgba(212, 175, 55, ${0.04 + (parseFloat(vitralStyle['--ave-glare']) || 0.06) * 0.35})`,
+        <article
+          className="booklet-glass-panel"
+          style={{ fontSize: simpleMode ? '1.35rem' : '1.08rem' }}
+          onClick={(e) => {
+            if (isTransitioning) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            if (x > rect.width * 0.62) goNext();
+            else if (x < rect.width * 0.38) goPrev();
           }}
         >
-          {renderVerseLines(displayText)}
-        </div>
-      </article>
+          <div
+            className={`booklet-glass-inner stained-glass-overlay booklet-glass-inner--progress${isAveMaria ? ' booklet-glass-inner--ave' : ''}`}
+            style={{
+              boxShadow: `0 4px 20px rgba(0, 0, 0, 0.22), inset 0 0 ${24 + (stepContext.localStep || 0) * 5}px rgba(212, 175, 55, ${0.04 + (parseFloat(vitralStyle['--ave-glare']) || 0.06) * 0.35})`,
+            }}
+          >
+            {renderVerseLines(displayText)}
+          </div>
+        </article>
+      </div>
 
-      <PrayForOrbs simpleMode={simpleMode} offeringPulse={stepPulse} />
+      <PrayForOrbs simpleMode={simpleMode} offeringPulse={stepGlow} />
 
       <div className="booklet-footer-tools">
         <PrayerRecorder
@@ -381,7 +537,7 @@ export default function BookletView({
           type="button"
           className="booklet-turn booklet-turn--back"
           onClick={goPrev}
-          disabled={!canGoBack}
+          disabled={!canGoBack || isTransitioning}
           aria-label="Oración anterior"
         >
           ‹ anterior
@@ -391,7 +547,7 @@ export default function BookletView({
           type="button"
           className="booklet-turn booklet-turn--forward"
           onClick={goNext}
-          disabled={!canGoForward}
+          disabled={!canGoForward || isTransitioning}
           aria-label="Siguiente oración"
         >
           siguiente ›
