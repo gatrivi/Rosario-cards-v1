@@ -9,17 +9,27 @@ import {
 } from '../../utils/prayForStore';
 import './PrayForOrbs.css';
 
-function labelFromFilename(name) {
-  const base = (name || '').replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
-  return base || 'Intención';
+function defaultIntentionLabel(index) {
+  return `Intención ${index + 1}`;
 }
 
 function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = false }) {
+  const [revealed, setRevealed] = useState(false);
+
+  const handleOrbActivate = (e) => {
+    if (!onRemove || e.target.closest('.pray-for-orb__remove')) return;
+    setRevealed((r) => !r);
+  };
+
   return (
     <div
-      className={`pray-for-orb pray-for-orb--${size}${offering ? ' pray-for-orb--offering' : ''}`}
+      className={`pray-for-orb pray-for-orb--${size}${offering ? ' pray-for-orb--offering' : ''}${revealed ? ' pray-for-orb--revealed' : ''}`}
       style={{ '--orb-i': index }}
       title={intention.label}
+      onClick={handleOrbActivate}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setRevealed(false);
+      }}
     >
       <span className="pray-for-orb__halo" aria-hidden="true" />
       {intention.image ? (
@@ -27,12 +37,14 @@ function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = 
       ) : (
         <span className="pray-for-orb__emoji">{intention.emoji || '🕯️'}</span>
       )}
-      <span className="pray-for-orb__label">{intention.label}</span>
       {onRemove && (
         <button
           type="button"
           className="pray-for-orb__remove"
-          onClick={() => onRemove(intention.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(intention.id);
+          }}
           aria-label={`Quitar ${intention.label}`}
         >
           ×
@@ -45,12 +57,9 @@ function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = 
 export default function PrayForOrbs({ simpleMode = false, offeringPulse = false }) {
   const [intentions, setIntentions] = useState(() => loadPrayForIntentions());
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [customName, setCustomName] = useState('');
-  const [customPreview, setCustomPreview] = useState(null);
-  const [batchPreviews, setBatchPreviews] = useState([]);
-  const [batchNames, setBatchNames] = useState('');
-  const fileRef = useRef(null);
-  const batchFileRef = useRef(null);
+  const [photoPreviews, setPhotoPreviews] = useState([]);
+  const [photoNames, setPhotoNames] = useState('');
+  const photoFileRef = useRef(null);
 
   const refresh = useCallback((list) => {
     setIntentions(list);
@@ -66,15 +75,7 @@ export default function PrayForOrbs({ simpleMode = false, offeringPulse = false 
     refresh(addPrayForIntention({ ...preset }));
   };
 
-  const handleCustomImage = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setCustomPreview(reader.result);
-    reader.readAsDataURL(file);
-  };
-
-  const handleBatchImages = (e) => {
+  const handlePhotoPick = (e) => {
     const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith('image/'));
     if (!files.length) return;
 
@@ -83,55 +84,50 @@ export default function PrayForOrbs({ simpleMode = false, offeringPulse = false 
         (file) =>
           new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onload = () =>
-              resolve({
-                image: reader.result,
-                defaultLabel: labelFromFilename(file.name),
-              });
+            reader.onload = () => resolve({ image: reader.result });
             reader.readAsDataURL(file);
           })
       )
-    ).then(setBatchPreviews);
+    ).then((items) => setPhotoPreviews((prev) => [...prev, ...items]));
   };
 
-  const confirmCustom = () => {
-    const label = customName.trim();
-    if (!label) return;
-    refresh(
-      addPrayForIntention({
-        label,
-        image: customPreview || null,
-        emoji: customPreview ? null : '🕊️',
-      })
-    );
-    setCustomName('');
-    setCustomPreview(null);
-    setPickerOpen(false);
-    if (fileRef.current) fileRef.current.value = '';
-  };
-
-  const confirmBatch = () => {
-    if (!batchPreviews.length) return;
-    const nameParts = batchNames
+  const confirmPhotos = () => {
+    const nameParts = photoNames
       .split(/[,;]+/)
       .map((s) => s.trim())
       .filter(Boolean);
-    const entries = batchPreviews.map((item, i) => ({
-      label: nameParts[i] || nameParts[0] || item.defaultLabel || `Persona ${i + 1}`,
-      image: item.image,
-    }));
-    refresh(addPrayForIntentions(entries));
-    setBatchPreviews([]);
-    setBatchNames('');
+
+    if (!photoPreviews.length) {
+      if (!nameParts[0]) return;
+      refresh(addPrayForIntention({ label: nameParts[0], emoji: '🕊️' }));
+    } else if (photoPreviews.length === 1) {
+      refresh(
+        addPrayForIntention({
+          label: nameParts[0] || defaultIntentionLabel(0),
+          image: photoPreviews[0].image,
+        })
+      );
+    } else {
+      const entries = photoPreviews.map((item, i) => ({
+        label: nameParts[i] || nameParts[0] || defaultIntentionLabel(i),
+        image: item.image,
+      }));
+      refresh(addPrayForIntentions(entries));
+    }
+
+    setPhotoPreviews([]);
+    setPhotoNames('');
     setPickerOpen(false);
-    if (batchFileRef.current) batchFileRef.current.value = '';
+    if (photoFileRef.current) photoFileRef.current.value = '';
   };
 
-  const clearBatch = () => {
-    setBatchPreviews([]);
-    setBatchNames('');
-    if (batchFileRef.current) batchFileRef.current.value = '';
+  const clearPhotos = () => {
+    setPhotoPreviews([]);
+    setPhotoNames('');
+    if (photoFileRef.current) photoFileRef.current.value = '';
   };
+
+  const canConfirm = photoPreviews.length > 0 || photoNames.trim().length > 0;
 
   return (
     <div className="pray-for-bar">
@@ -173,7 +169,7 @@ export default function PrayForOrbs({ simpleMode = false, offeringPulse = false 
           >
             <h3 className="pray-for-picker__title">¿Por quién rezas?</h3>
             <p className="pray-for-picker__sub">
-              Elige una intención, añade un nombre, o sube varias fotos a la vez.
+              Elige una intención o sube una o varias fotos.
             </p>
 
             <div className="pray-for-picker__grid">
@@ -197,88 +193,56 @@ export default function PrayForOrbs({ simpleMode = false, offeringPulse = false 
               })}
             </div>
 
-            <div className="pray-for-picker__custom">
-              <p className="pray-for-picker__section-label">Una persona</p>
-              <input
-                type="text"
-                placeholder="Nombre (ej. mamá, Juan…)"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                className="pray-for-picker__input"
-              />
-              <div className="pray-for-picker__custom-row">
-                <button
-                  type="button"
-                  className="pray-for-picker__upload"
-                  onClick={() => fileRef.current?.click()}
-                >
-                  📷 {customPreview ? 'Cambiar foto' : 'Una foto'}
-                </button>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={handleCustomImage}
-                />
-                {customPreview && (
-                  <img src={customPreview} alt="" className="pray-for-picker__preview" />
-                )}
-              </div>
-              <button
-                type="button"
-                className="pray-for-picker__ok"
-                disabled={!customName.trim()}
-                onClick={confirmCustom}
-              >
-                Añadir intención
-              </button>
-            </div>
-
-            <div className="pray-for-picker__batch">
-              <p className="pray-for-picker__section-label">Varias personas a la vez</p>
+            <div className="pray-for-picker__photos">
+              <p className="pray-for-picker__section-label">Fotos</p>
               <button
                 type="button"
                 className="pray-for-picker__upload pray-for-picker__upload--wide"
-                onClick={() => batchFileRef.current?.click()}
+                onClick={() => photoFileRef.current?.click()}
               >
-                📷 Elegir varias fotos
+                📷 Elegir una o varias fotos
               </button>
               <input
-                ref={batchFileRef}
+                ref={photoFileRef}
                 type="file"
                 accept="image/*"
                 multiple
                 hidden
-                onChange={handleBatchImages}
+                onChange={handlePhotoPick}
               />
-              {batchPreviews.length > 0 && (
-                <>
-                  <div className="pray-for-picker__batch-grid">
-                    {batchPreviews.map((item, i) => (
-                      <div key={`batch-${i}`} className="pray-for-picker__batch-thumb">
-                        <img src={item.image} alt="" />
-                        <span>{item.defaultLabel}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Nombres separados por coma (opcional)"
-                    value={batchNames}
-                    onChange={(e) => setBatchNames(e.target.value)}
-                    className="pray-for-picker__input"
-                  />
-                  <div className="pray-for-picker__batch-actions">
-                    <button type="button" className="pray-for-picker__ghost" onClick={clearBatch}>
-                      Limpiar
-                    </button>
-                    <button type="button" className="pray-for-picker__ok" onClick={confirmBatch}>
-                      Añadir {batchPreviews.length} intenciones
-                    </button>
-                  </div>
-                </>
+              {photoPreviews.length > 0 && (
+                <div className="pray-for-picker__batch-grid">
+                  {photoPreviews.map((item, i) => (
+                    <div key={`photo-${i}`} className="pray-for-picker__batch-thumb">
+                      <img src={item.image} alt="" />
+                    </div>
+                  ))}
+                </div>
               )}
+              <input
+                type="text"
+                placeholder="Nombres separados por coma (opcional)"
+                value={photoNames}
+                onChange={(e) => setPhotoNames(e.target.value)}
+                className="pray-for-picker__input"
+              />
+              <div className="pray-for-picker__batch-actions">
+                {(photoPreviews.length > 0 || photoNames) && (
+                  <button type="button" className="pray-for-picker__ghost" onClick={clearPhotos}>
+                    Limpiar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="pray-for-picker__ok"
+                  disabled={!canConfirm}
+                  onClick={confirmPhotos}
+                >
+                  {photoPreviews.length > 1
+                    ? `Añadir ${photoPreviews.length} intenciones`
+                    : 'Añadir intención'}
+                </button>
+              </div>
             </div>
 
             <button

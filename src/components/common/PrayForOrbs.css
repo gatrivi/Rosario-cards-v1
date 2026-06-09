@@ -9,7 +9,7 @@
   flex-wrap: wrap;
   gap: 0.45rem;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .pray-for-orb {
@@ -107,23 +107,11 @@
   font-size: 1.1rem;
 }
 
-.pray-for-orb__label {
-  position: absolute;
-  bottom: -1.1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.55rem;
-  color: rgba(212, 175, 55, 0.75);
-  white-space: nowrap;
-  max-width: 4.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .pray-for-orb__remove {
   position: absolute;
   top: -2px;
   right: -2px;
+  z-index: 2;
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -134,6 +122,16 @@
   line-height: 1;
   cursor: pointer;
   padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.pray-for-orb:hover .pray-for-orb__remove,
+.pray-for-orb:focus-within .pray-for-orb__remove,
+.pray-for-orb--revealed .pray-for-orb__remove {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .pray-for-add-orb {
@@ -269,13 +267,7 @@
   letter-spacing: 0.08em;
 }
 
-.pray-for-picker__custom {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 0.75rem;
-  margin-bottom: 0.65rem;
-}
-
-.pray-for-picker__batch {
+.pray-for-picker__photos {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 0.75rem;
   margin-bottom: 0.65rem;
@@ -297,13 +289,8 @@
 
 .pray-for-picker__batch-thumb {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
-  width: 3.2rem;
-  font-size: 0.55rem;
-  color: #888;
-  text-align: center;
+  justify-content: center;
 }
 
 .pray-for-picker__batch-thumb img {
@@ -348,13 +335,6 @@
   font-size: 0.85rem;
 }
 
-.pray-for-picker__custom-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
 .pray-for-picker__upload {
   flex: 1;
   padding: 0.5rem;
@@ -365,13 +345,6 @@
   font-family: inherit;
   font-size: 0.78rem;
   cursor: pointer;
-}
-
-.pray-for-picker__preview {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 .pray-for-picker__ok {
