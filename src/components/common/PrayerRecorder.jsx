@@ -144,6 +144,17 @@ export default function PrayerRecorder({
   const hmVariants = clips.filter((c) => c.prayerId === 'A').length;
 
   const disabled = micAvailable === false;
+  const hasClips = clips.length > 0;
+  const isInline = placement === 'footer-inline';
+
+  const handleToggle = () => {
+    if (disabled) return;
+    if (hasClips && isInline) {
+      playClip(clips[clips.length - 1]);
+      return;
+    }
+    setExpanded((v) => !v);
+  };
 
   return (
     <div
@@ -152,16 +163,18 @@ export default function PrayerRecorder({
       <button
         type="button"
         className="prayer-recorder__toggle"
-        onClick={() => !disabled && setExpanded((v) => !v)}
+        onClick={handleToggle}
         aria-expanded={expanded}
         disabled={disabled}
         title={
           disabled
             ? 'Micrófono no disponible en este dispositivo'
-            : 'Grabar tu voz para modo automático'
+            : hasClips && isInline
+              ? 'Reproducir tu grabación'
+              : 'Grabar tu voz para modo automático'
         }
       >
-        🎙️ {clips.length > 0 ? clips.length : ''}
+        {hasClips && isInline ? '▶' : `🎙️${clips.length > 0 && !isInline ? ` ${clips.length}` : ''}`}
       </button>
 
       {expanded && (

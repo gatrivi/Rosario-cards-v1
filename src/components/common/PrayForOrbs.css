@@ -4,6 +4,30 @@
   margin: 0 0.5rem 0.35rem;
 }
 
+.pray-for-bar--header {
+  margin: 0;
+}
+
+.pray-for-bar--header .pray-for-bar__orbs {
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+  justify-content: flex-end;
+}
+
+.pray-for-bar--header .pray-for-orb {
+  width: 2rem;
+  height: 2rem;
+}
+
+.pray-for-bar--header .pray-for-add-orb {
+  width: 2rem;
+  height: 2rem;
+}
+
+.pray-for-bar--header .pray-for-add-orb__text {
+  display: none;
+}
+
 .pray-for-bar__orbs {
   display: flex;
   flex-wrap: wrap;

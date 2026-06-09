@@ -5,6 +5,7 @@ import { playBookletTransitionSound } from '../utils/bookletSounds';
 
 jest.mock('../utils/bookletSounds', () => ({
   playBookletTransitionSound: jest.fn(),
+  playOfferingChime: jest.fn(),
 }));
 
 const localStorageMock = {

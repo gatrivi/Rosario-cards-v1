@@ -15,7 +15,9 @@ export default function SyncManager({ onClose }) {
     const localData = {
       totalAveMarias: parseInt(localStorage.getItem('total_ave_marias') || '0', 10),
       nivelActualId: parseInt(localStorage.getItem('nivel_usuario') || '7', 10),
-      todayDate: new Date().toDateString()
+      bookletIndex: parseInt(localStorage.getItem('rosario_booklet_index') || '0', 10),
+      bookletMystery: localStorage.getItem('rosario_booklet_mystery') || 'dolorosos',
+      todayDate: new Date().toDateString(),
     };
     await initializeNewSync(localData);
   };

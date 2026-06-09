@@ -1,0 +1,42 @@
+.offering-light {
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 90;
+  overflow: hidden;
+}
+
+.offering-light__spark {
+  position: absolute;
+  left: calc(38% + var(--spark-i) * 7%);
+  top: calc(52% + (var(--spark-i) % 3) * 4%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8dc 0%, #d4af37 55%, transparent 100%);
+  box-shadow: 0 0 10px rgba(255, 230, 160, 0.65);
+  animation: offering-spark-fly 0.85s ease-in forwards;
+  animation-delay: calc(var(--spark-i) * 0.06s);
+  opacity: 0;
+}
+
+@keyframes offering-spark-fly {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  15% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(42vw - var(--spark-i) * 18px), -42vh) scale(0.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offering-light__spark {
+    animation: none;
+    display: none;
+  }
+}

@@ -116,3 +116,14 @@ export async function playBookletTransitionSound({
     });
   }
 }
+
+/** Tiny chime when offering a completed prayer to intention orbs. */
+export async function playOfferingChime(soundEnabled = true) {
+  if (!soundEnabled || typeof window === 'undefined') return;
+  const ctx = audioManager.getContext();
+  if (!ctx) return;
+  await audioManager.resume();
+  if (ctx.state === 'suspended') return;
+  playTone(ctx, { freq: 784, gain: 0.035, duration: 0.28, type: 'sine' });
+  playTone(ctx, { freq: 988, gain: 0.022, duration: 0.22, type: 'triangle', delay: 0.07 });
+}

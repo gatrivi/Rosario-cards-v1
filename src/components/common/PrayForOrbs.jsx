@@ -54,7 +54,7 @@ function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = 
   );
 }
 
-export default function PrayForOrbs({ simpleMode = false, offeringPulse = false }) {
+export default function PrayForOrbs({ simpleMode = false, offeringPulse = false, variant = 'bar' }) {
   const [intentions, setIntentions] = useState(() => loadPrayForIntentions());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [photoPreviews, setPhotoPreviews] = useState([]);
@@ -130,7 +130,7 @@ export default function PrayForOrbs({ simpleMode = false, offeringPulse = false 
   const canConfirm = photoPreviews.length > 0 || photoNames.trim().length > 0;
 
   return (
-    <div className="pray-for-bar">
+    <div className={`pray-for-bar${variant === 'header' ? ' pray-for-bar--header' : ''}`}>
       <div className="pray-for-bar__orbs">
         {intentions.map((item, index) => (
           <IntentionOrb

@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useCallback, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
 import { getPrayerData } from './RoseView';
 import {
@@ -7,12 +8,14 @@ import {
 } from '../../data/prayerVariants';
 import PrayerRecorder from '../common/PrayerRecorder';
 import PrayForOrbs from '../common/PrayForOrbs';
+import OfferingLight from '../common/OfferingLight';
+import { loadPrayForIntentions } from '../../utils/prayForStore';
 import {
   getBookletStepContext,
   stepContextToVitralVars,
   makeBookletRoseFingerprint,
 } from '../../utils/bookletProgress';
-import { playBookletTransitionSound } from '../../utils/bookletSounds';
+import { playBookletTransitionSound, playOfferingChime } from '../../utils/bookletSounds';
 import { getPrayerImageCandidates, resolvePrayerImage } from '../../utils/prayerImages';
 import './BookletView.css';
 
@@ -191,8 +194,14 @@ export default function BookletView({
     return activePrayer.variants[0].id;
   });
   const [stepGlow, setStepGlow] = useState(false);
+  const [offeringLight, setOfferingLight] = useState(false);
+  const [orbHost, setOrbHost] = useState(null);
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
+
+  useEffect(() => {
+    setOrbHost(document.getElementById('booklet-top-orbs'));
+  }, []);
 
   const setPhase = useCallback((phase) => {
     transitionPhaseRef.current = phase;
@@ -325,6 +334,12 @@ export default function BookletView({
           handleImageReady();
         }, 48);
       };
+
+      if (newIndex > oldIndex) {
+        setOfferingLight(true);
+        playOfferingChime(soundEnabled);
+        scheduleTransition(() => setOfferingLight(false), 900);
+      }
 
       if (prefersReducedMotion()) {
         setDisplayIndex(newIndex);
@@ -519,18 +534,16 @@ export default function BookletView({
         </article>
       </div>
 
-      <PrayForOrbs simpleMode={simpleMode} offeringPulse={stepGlow} />
+      {orbHost &&
+        createPortal(
+          <PrayForOrbs simpleMode={simpleMode} offeringPulse={stepGlow} variant="header" />,
+          orbHost
+        )}
 
-      <div className="booklet-footer-tools">
-        <PrayerRecorder
-          prayerId={activePrayer.id}
-          prayerTitle={activePrayer.title}
-          mystery={misterioActual}
-          sequenceIndex={safeIndex}
-          simpleMode={simpleMode}
-          placement="footer"
-        />
-      </div>
+      <OfferingLight
+        active={offeringLight}
+        count={Math.max(loadPrayForIntentions().length, 1)}
+      />
 
       <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
         <button
@@ -542,7 +555,14 @@ export default function BookletView({
         >
           ‹ anterior
         </button>
-        <span className="booklet-turn-ornament" aria-hidden="true">✦</span>
+        <PrayerRecorder
+          prayerId={activePrayer.id}
+          prayerTitle={activePrayer.title}
+          mystery={misterioActual}
+          sequenceIndex={displayIndex}
+          simpleMode={simpleMode}
+          placement="footer-inline"
+        />
         <button
           type="button"
           className="booklet-turn booklet-turn--forward"

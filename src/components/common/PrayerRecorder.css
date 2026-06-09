@@ -112,8 +112,26 @@
   border-color: #d4af37;
 }
 
-.prayer-recorder--footer {
+.prayer-recorder--footer,
+.prayer-recorder--footer-inline {
   z-index: 4;
+}
+
+.prayer-recorder--footer-inline .prayer-recorder__toggle {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(212, 175, 55, 0.35);
+  font-size: 0.95rem;
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0.35rem 0.5rem;
+}
+
+.prayer-recorder--footer-inline .prayer-recorder__panel {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
 }
 
 .prayer-recorder--footer .prayer-recorder__panel {

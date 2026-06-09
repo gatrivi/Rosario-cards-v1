@@ -297,23 +297,15 @@
   height: 0.55rem;
 }
 
-.booklet-footer-tools {
-  display: flex;
-  justify-content: center;
-  padding: 0 1rem 0.25rem;
-  position: relative;
-  z-index: 4;
-}
-
 .booklet-footer {
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: 1.25rem;
+  gap: 0.65rem;
   justify-content: center;
-  padding: 0.35rem 1.5rem calc(0.55rem + env(safe-area-inset-bottom, 0));
+  padding: 0.35rem 1rem calc(0.55rem + env(safe-area-inset-bottom, 0));
   position: relative;
-  z-index: 2;
+  z-index: 4;
 }
 
 .booklet-footer--right {

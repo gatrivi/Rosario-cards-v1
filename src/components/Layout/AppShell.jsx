@@ -31,7 +31,7 @@ import {
 } from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
-const APP_VERSION = '0.3.26';
+const APP_VERSION = '0.3.27';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 
@@ -107,7 +107,25 @@ export default function AppShell() {
     popRoseData,
   } = useAveMariaStats();
 
-  const { forceSetSyncId, syncId, syncStatus } = useCloudSync();
+  const { forceSetSyncId, syncId, syncStatus, cloudState, syncToCloud } = useCloudSync();
+
+  const [loadedBookletFromCloud, setLoadedBookletFromCloud] = useState(false);
+  useEffect(() => {
+    if (!cloudState || loadedBookletFromCloud) return;
+    if (cloudState.bookletIndex !== undefined) {
+      setCurrentPrayerIndex(cloudState.bookletIndex);
+      try {
+        localStorage.setItem(ROSARY_INDEX_KEY, String(cloudState.bookletIndex));
+      } catch (_) { /* ignore */ }
+    }
+    if (cloudState.bookletMystery) {
+      setMisterioActual(cloudState.bookletMystery);
+      try {
+        localStorage.setItem(ROSARY_MYSTERY_KEY, cloudState.bookletMystery);
+      } catch (_) { /* ignore */ }
+    }
+    setLoadedBookletFromCloud(true);
+  }, [cloudState, loadedBookletFromCloud]);
 
   const getSyncColor = () => {
     if (syncStatus === 'loading') return '#888';
@@ -155,7 +173,8 @@ export default function AppShell() {
     try {
       localStorage.setItem(ROSARY_INDEX_KEY, String(newIndex));
     } catch (_) { /* ignore */ }
-  }, []);
+    syncToCloud({ bookletIndex: newIndex, todayDate: new Date().toDateString() });
+  }, [syncToCloud]);
 
   const handleMysteryChange = React.useCallback((mystery) => {
     setMisterioActual(mystery);
@@ -164,7 +183,8 @@ export default function AppShell() {
       localStorage.setItem(ROSARY_MYSTERY_KEY, mystery);
       localStorage.setItem(ROSARY_INDEX_KEY, '0');
     } catch (_) { /* ignore */ }
-  }, []);
+    syncToCloud({ bookletMystery: mystery, bookletIndex: 0, todayDate: new Date().toDateString() });
+  }, [syncToCloud]);
 
   const renderizarVista = () => {
     switch (vistaActiva) {
@@ -268,7 +288,16 @@ export default function AppShell() {
             {settings.simpleMode ? '🆘 Ayuda' : '💬'}
           </button>
         </div>
-        <div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', pointerEvents: 'auto' }}>
+          <div
+            id="booklet-top-orbs"
+            style={{
+              display: vistaActiva === 'booklet' ? 'flex' : 'none',
+              alignItems: 'center',
+              maxWidth: 'min(42vw, 11rem)',
+              overflow: 'hidden',
+            }}
+          />
           <button 
             onClick={() => setShowSync(true)}
             style={{ 
