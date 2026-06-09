@@ -26,7 +26,7 @@ import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { applyPendingUpdate } from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
-const APP_VERSION = '0.3.21';
+const APP_VERSION = '0.3.22';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 

@@ -3,7 +3,87 @@
  * Keys match prayer ids in RosarioPrayerBook (e.g. "C" for Credo).
  */
 
+const AVE_LATIN =
+  'Ave Maria, gratia plena, Dominus tecum.\n' +
+  'Benedicta tu in mulieribus,\n' +
+  'et benedictus fructus ventris tui, Iesus.\n' +
+  'Sancta Maria, Mater Dei,\n' +
+  'ora pro nobis peccatoribus,\n' +
+  'nunc et in hora mortis nostrae.\n' +
+  'Amen.';
+
 export const PRAYER_VARIANTS = {
+  SC: [
+    {
+      id: 'es',
+      label: 'Español',
+      text: 'En el nombre del Padre,\ny del Hijo,\ny del Espíritu Santo.\nAmén.',
+    },
+    {
+      id: 'latin',
+      label: 'Latín',
+      text: 'In nomine Patris, et Filii, et Spiritus Sancti.\nAmen.',
+    },
+  ],
+  P: [
+    {
+      id: 'es',
+      label: 'Español',
+      text:
+        'Padre nuestro, que estás en el cielo, santificado sea tu nombre; ' +
+        'venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. ' +
+        'Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros ' +
+        'perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.',
+    },
+    {
+      id: 'latin',
+      label: 'Latín',
+      text:
+        'Pater noster, qui es in caelis, sanctificetur nomen tuum.\n' +
+        'Adveniat regnum tuum.\n' +
+        'Fiat voluntas tua, sicut in caelo, et in terra.\n' +
+        'Panem nostrum cotidianum da nobis hodie.\n' +
+        'Et dimitte nobis debita nostra,\n' +
+        'sicut et nos dimittimus debitoribus nostris.\n' +
+        'Et ne nos inducas in tentationem,\n' +
+        'sed libera nos a malo.\n' +
+        'Amen.',
+    },
+  ],
+  A: [
+    {
+      id: 'es',
+      label: 'Español',
+      text:
+        'Dios te salve, María,\nllena eres de gracia,\nel Señor es contigo.\n' +
+        'Bendita tú eres entre todas las mujeres,\ny bendito es el fruto de tu vientre, Jesús.\n' +
+        'Santa María, Madre de Dios,\nruega por nosotros, pecadores,\n' +
+        'ahora y en la hora de nuestra muerte.\nAmén.',
+    },
+    {
+      id: 'latin',
+      label: 'Latín',
+      text: AVE_LATIN,
+    },
+  ],
+  G: [
+    {
+      id: 'es',
+      label: 'Español',
+      text:
+        'Gloria al Padre, y al Hijo, y al Espíritu Santo.\n' +
+        'Como era en el principio, ahora y siempre,\npor los siglos de los siglos. Amén.',
+    },
+    {
+      id: 'latin',
+      label: 'Latín',
+      text:
+        'Gloria Patri, et Filio, et Spiritui Sancto.\n' +
+        'Sicut erat in principio, et nunc, et semper,\n' +
+        'et in saecula saeculorum.\n' +
+        'Amen.',
+    },
+  ],
   C: [
     {
       id: 'versos',

@@ -11,6 +11,19 @@
 * **Vercel-Ready Code:** All code modifications must maintain compatibility with Vercel deployment pipelines.
 * **Pre-Push Checks:** Before finalizing a task, ensure that standard Vite/React build commands (`npm run build`) execute successfully without TypeScript errors, unresolved imports, or broken CSS grids. 
 
-## 4. Git Operations
+## 4. Visual art modes
+
+See `docs/VISUAL_MODES.md`. Two planned directions:
+
+- **Chiaroscuro** — mostly `modooscuro` paintings (Via Dolorosa, etc.).
+- **Stained glass** — vitral / Latin manuscript style for Libro mode.
+
+Dolorosos mysteries fall back to `modooscuro` assets when primary images are missing.
+
+## 5. Latin prayer text
+
+Latin variants exist in `src/data/prayerVariants.js` for Señal de la Cruz, Padre, Ave, Gloria, and Credo (Por versos / Niceno / Breve). In Libro, tap the ◇ variant control under the prayer title to switch.
+
+## 6. Git Operations
 * **Automated Sync:** Upon completing a feature or fix, and confirming the build is stable, automatically stage the changes.
 * **Commit & Push:** Generate a descriptive commit message detailing the changes, commit the staged files, and push directly to the configured GitHub remote.

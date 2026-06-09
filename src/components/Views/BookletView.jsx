@@ -6,13 +6,31 @@ import {
   getVariantStorageKey,
 } from '../../data/prayerVariants';
 import PrayerRecorder from '../common/PrayerRecorder';
+import PrayForOrbs from '../common/PrayForOrbs';
 import {
   getBookletStepContext,
   stepContextToVitralVars,
   makeBookletRoseFingerprint,
 } from '../../utils/bookletProgress';
 import { playBookletTransitionSound } from '../../utils/bookletSounds';
+import { getPrayerImageCandidates, resolvePrayerImage } from '../../utils/prayerImages';
 import './BookletView.css';
+
+function VitralImage({ candidates }) {
+  const [index, setIndex] = useState(0);
+  const src = candidates[index] ?? candidates[candidates.length - 1];
+
+  return (
+    <img
+      src={src}
+      alt=""
+      className="booklet-vitral__img"
+      onError={() => {
+        if (index < candidates.length - 1) setIndex((i) => i + 1);
+      }}
+    />
+  );
+}
 
 const MYSTERY_OPTIONS = [
   { id: 'gozosos', label: 'Gozosos' },
@@ -28,27 +46,19 @@ const SEQ_MAP = {
   luminosos: 'RL',
 };
 
-function selectPrayerImage(prayer) {
-  if (!prayer) return '/gallery-images/cathedral-painting.jpg';
-  const isDark =
-    typeof localStorage !== 'undefined' &&
-    localStorage.getItem('theme') !== 'light';
-  const img = isDark && prayer.imgmo ? prayer.imgmo : prayer.img;
-  if (Array.isArray(img)) return img[0] || '/gallery-images/cathedral-painting.jpg';
-  return img || '/gallery-images/cathedral-painting.jpg';
-}
-
 function buildSequence(mysteryType) {
   const keys = RosarioPrayerBook[SEQ_MAP[mysteryType]] || RosarioPrayerBook.RGo;
   return keys
     .map((id) => {
       const data = getPrayerData(id, mysteryType);
       if (!data) return null;
+      const imgCandidates = getPrayerImageCandidates(data, mysteryType);
       return {
         id,
         title: data.title,
         text: data.text,
-        img: selectPrayerImage(data),
+        img: resolvePrayerImage(data, mysteryType),
+        imgCandidates,
         variants: getPrayerVariants(id),
       };
     })
@@ -276,26 +286,15 @@ export default function BookletView({
         className={`booklet-vitral${vitralKindClass}${stepPulse ? ' booklet-vitral--pulse' : ''}`}
         aria-hidden="true"
       >
-        <img
-          key={activePrayer.img}
-          src={activePrayer.img}
-          alt=""
-          className="booklet-vitral__img"
+        <VitralImage
+          key={`${activePrayer.id}-${activePrayer.img}`}
+          candidates={activePrayer.imgCandidates || [activePrayer.img]}
         />
         <div className="booklet-vitral__shade" />
         <div className="booklet-vitral__glare" />
       </div>
 
       <header className="booklet-header">
-        <div className="booklet-header__tools">
-          <PrayerRecorder
-            prayerId={activePrayer.id}
-            prayerTitle={activePrayer.title}
-            mystery={misterioActual}
-            sequenceIndex={safeIndex}
-            simpleMode={simpleMode}
-          />
-        </div>
         <div className="booklet-mystery-row">
           {MYSTERY_OPTIONS.map((opt) => (
             <button
@@ -363,6 +362,19 @@ export default function BookletView({
           {renderVerseLines(displayText)}
         </div>
       </article>
+
+      <PrayForOrbs simpleMode={simpleMode} />
+
+      <div className="booklet-footer-tools">
+        <PrayerRecorder
+          prayerId={activePrayer.id}
+          prayerTitle={activePrayer.title}
+          mystery={misterioActual}
+          sequenceIndex={safeIndex}
+          simpleMode={simpleMode}
+          placement="footer"
+        />
+      </div>
 
       <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
         <button

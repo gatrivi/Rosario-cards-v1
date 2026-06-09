@@ -14,8 +14,10 @@ export default function PrayerRecorder({
   mystery,
   sequenceIndex,
   simpleMode = false,
+  placement = 'header',
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [micAvailable, setMicAvailable] = useState(null);
   const [recording, setRecording] = useState(false);
   const [clips, setClips] = useState([]);
   const [status, setStatus] = useState('');
@@ -44,6 +46,14 @@ export default function PrayerRecorder({
   useEffect(() => {
     refreshClips();
   }, [refreshClips]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setMicAvailable(false);
+      return;
+    }
+    setMicAvailable(true);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -133,14 +143,23 @@ export default function PrayerRecorder({
 
   const hmVariants = clips.filter((c) => c.prayerId === 'A').length;
 
+  const disabled = micAvailable === false;
+
   return (
-    <div className={`prayer-recorder${expanded ? ' prayer-recorder--open' : ''}`}>
+    <div
+      className={`prayer-recorder prayer-recorder--${placement}${expanded ? ' prayer-recorder--open' : ''}${disabled ? ' prayer-recorder--disabled' : ''}`}
+    >
       <button
         type="button"
         className="prayer-recorder__toggle"
-        onClick={() => setExpanded((v) => !v)}
+        onClick={() => !disabled && setExpanded((v) => !v)}
         aria-expanded={expanded}
-        title="Grabar tu voz para modo automático"
+        disabled={disabled}
+        title={
+          disabled
+            ? 'Micrófono no disponible en este dispositivo'
+            : 'Grabar tu voz para modo automático'
+        }
       >
         🎙️ {clips.length > 0 ? clips.length : ''}
       </button>
