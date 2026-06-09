@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { PRAY_FOR_PRESETS } from '../../data/prayForDefaults';
 import {
-  addFromDrawer,
   addPrayForIntention,
   addPrayForIntentions,
   loadPrayForDrawer,
   loadPrayForIntentions,
-  removePrayForIntention,
-  savePrayForIntentions,
-  updatePrayForIntention,
+  toggleDrawerActive,
+  updateDrawerItem,
+  upsertDrawerEntry,
 } from '../../utils/prayForStore';
 import { playOrbTapChime } from '../../utils/bookletSounds';
 import OrbPhotoCrop from './OrbPhotoCrop';
@@ -16,47 +15,6 @@ import './PrayForOrbs.css';
 
 function defaultIntentionLabel(index) {
   return `Intención ${index + 1}`;
-}
-
-function DrawerItem({ item, onAdd, onCrop }) {
-  const timerRef = useRef(null);
-  const longRef = useRef(false);
-
-  const clear = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      className="pray-for-picker__drawer-item"
-      title={item.label}
-      onPointerDown={() => {
-        longRef.current = false;
-        clear();
-        if (!item.image) return;
-        timerRef.current = setTimeout(() => {
-          longRef.current = true;
-          onCrop(item);
-        }, 600);
-      }}
-      onPointerUp={() => {
-        clear();
-        if (!longRef.current) onAdd(item.drawerId);
-      }}
-      onPointerLeave={clear}
-      onPointerCancel={clear}
-    >
-      {item.image ? (
-        <OrbImage intention={item} />
-      ) : (
-        <span className="pray-for-picker__emoji">{item.emoji || '🕯️'}</span>
-      )}
-    </button>
-  );
 }
 
 function OrbImage({ intention }) {
@@ -75,59 +33,15 @@ function OrbImage({ intention }) {
   );
 }
 
-function IntentionOrb({
-  intention,
-  onRemove,
-  onEdit,
-  size = 'md',
-  index = 0,
-  offering = false,
-  soundEnabled = true,
-}) {
-  const [revealed, setRevealed] = useState(false);
-  const pressTimerRef = useRef(null);
-  const longPressedRef = useRef(false);
-  const hideTimerRef = useRef(null);
-
-  const clearPress = () => {
-    if (pressTimerRef.current) {
-      clearTimeout(pressTimerRef.current);
-      pressTimerRef.current = null;
-    }
-  };
-
-  const scheduleHide = () => {
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    hideTimerRef.current = setTimeout(() => setRevealed(false), 2800);
-  };
-
-  const handlePointerDown = (e) => {
-    if (e.target.closest('.pray-for-orb__remove, .pray-for-orb__edit')) return;
-    longPressedRef.current = false;
-    clearPress();
-    pressTimerRef.current = setTimeout(() => {
-      longPressedRef.current = true;
-      setRevealed(true);
-      scheduleHide();
-    }, 600);
-  };
-
-  const handlePointerUp = () => {
-    clearPress();
-    if (!longPressedRef.current && !revealed) {
-      playOrbTapChime(soundEnabled);
-    }
-  };
-
+function IntentionOrb({ intention, index = 0, offering = false, soundEnabled = true }) {
   return (
     <div
-      className={`pray-for-orb pray-for-orb--${size}${offering ? ' pray-for-orb--offering' : ''}${revealed ? ' pray-for-orb--revealed' : ''}`}
+      className={`pray-for-orb pray-for-orb--md${offering ? ' pray-for-orb--offering' : ''}`}
       style={{ '--orb-i': index }}
       title={intention.label}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={clearPress}
-      onPointerCancel={clearPress}
+      onClick={() => playOrbTapChime(soundEnabled)}
+      role="img"
+      aria-label={intention.label}
     >
       <span className="pray-for-orb__halo" aria-hidden="true" />
       {intention.image ? (
@@ -135,34 +49,38 @@ function IntentionOrb({
       ) : (
         <span className="pray-for-orb__emoji">{intention.emoji || '🕯️'}</span>
       )}
-      {onEdit && intention.image && revealed && (
+    </div>
+  );
+}
+
+function DrawerItem({ item, onToggle, onCrop }) {
+  return (
+    <div
+      className={`pray-for-picker__drawer-item${item.active ? ' pray-for-picker__drawer-item--active' : ''}`}
+    >
+      <button
+        type="button"
+        className="pray-for-picker__drawer-toggle"
+        onClick={() => onToggle(item.drawerId)}
+        title={item.active ? `Quitar ${item.label} de hoy` : `Rezar por ${item.label}`}
+        aria-pressed={item.active}
+      >
+        {item.image ? (
+          <OrbImage intention={item} />
+        ) : (
+          <span className="pray-for-picker__emoji">{item.emoji || '🕯️'}</span>
+        )}
+        {item.active && <span className="pray-for-picker__tick" aria-hidden="true">✓</span>}
+      </button>
+      {item.image && (
         <button
           type="button"
-          className="pray-for-orb__edit"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(intention);
-            setRevealed(false);
-          }}
-          aria-label={`Ajustar foto de ${intention.label}`}
+          className="pray-for-picker__drawer-edit"
+          onClick={() => onCrop(item)}
+          aria-label={`Ajustar foto de ${item.label}`}
+          title="Ajustar encuadre"
         >
           ✎
-        </button>
-      )}
-      {onRemove && (
-        <button
-          type="button"
-          className="pray-for-orb__remove"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(intention.id);
-            setRevealed(false);
-          }}
-          aria-label={`Quitar ${intention.label}`}
-        >
-          ×
         </button>
       )}
     </div>
@@ -183,31 +101,38 @@ export default function PrayForOrbs({
   const [cropEdit, setCropEdit] = useState(null);
   const photoFileRef = useRef(null);
 
-  const refresh = useCallback((list) => {
-    setIntentions(list);
-    savePrayForIntentions(list);
-  }, []);
-
-  const refreshDrawer = useCallback(() => {
+  const sync = useCallback(() => {
     setDrawer(loadPrayForDrawer());
+    setIntentions(loadPrayForIntentions());
   }, []);
 
   useEffect(() => {
-    if (pickerOpen) refreshDrawer();
-  }, [pickerOpen, refreshDrawer]);
+    if (pickerOpen) sync();
+  }, [pickerOpen, sync]);
 
-  const handleRemove = (id) => {
-    refresh(removePrayForIntention(id));
-    refreshDrawer();
+  const handleToggleDrawer = (drawerId) => {
+    setIntentions(toggleDrawerActive(drawerId));
+    setDrawer(loadPrayForDrawer());
   };
 
   const togglePreset = (preset) => {
-    const exists = intentions.some((i) => i.id === preset.id);
-    if (exists) {
-      handleRemove(preset.id);
+    const existing = loadPrayForDrawer().find((d) => d.presetId === preset.id);
+    if (existing) {
+      handleToggleDrawer(existing.drawerId);
       return;
     }
-    refresh(addPrayForIntention({ ...preset }));
+    setIntentions(
+      upsertDrawerEntry(
+        {
+          label: preset.label,
+          image: preset.image || null,
+          emoji: preset.emoji || null,
+          presetId: preset.id,
+        },
+        true
+      )
+    );
+    sync();
   };
 
   const handlePhotoPick = (e) => {
@@ -235,10 +160,10 @@ export default function PrayForOrbs({
 
     if (!photoPreviews.length) {
       if (!nameParts[0]) return;
-      refresh(addPrayForIntention({ label: nameParts[0], emoji: '🕊️' }));
+      setIntentions(addPrayForIntention({ label: nameParts[0], emoji: '🕊️' }));
     } else if (photoPreviews.length === 1) {
       const p = photoPreviews[0];
-      refresh(
+      setIntentions(
         addPrayForIntention({
           label: nameParts[0] || defaultIntentionLabel(0),
           image: p.image,
@@ -248,19 +173,22 @@ export default function PrayForOrbs({
         })
       );
     } else {
-      const entries = photoPreviews.map((item, i) => ({
-        label: nameParts[i] || nameParts[0] || defaultIntentionLabel(i),
-        image: item.image,
-        imageZoom: item.zoom,
-        imageOffsetX: item.offsetX,
-        imageOffsetY: item.offsetY,
-      }));
-      refresh(addPrayForIntentions(entries));
+      setIntentions(
+        addPrayForIntentions(
+          photoPreviews.map((item, i) => ({
+            label: nameParts[i] || nameParts[0] || defaultIntentionLabel(i),
+            image: item.image,
+            imageZoom: item.zoom,
+            imageOffsetX: item.offsetX,
+            imageOffsetY: item.offsetY,
+          }))
+        )
+      );
     }
 
+    sync();
     setPhotoPreviews([]);
     setPhotoNames('');
-    setPickerOpen(false);
     if (photoFileRef.current) photoFileRef.current.value = '';
   };
 
@@ -270,54 +198,24 @@ export default function PrayForOrbs({
     if (photoFileRef.current) photoFileRef.current.value = '';
   };
 
-  const addDrawerItem = (drawerId) => {
-    refresh(addFromDrawer(drawerId));
-    refreshDrawer();
-  };
-
   const saveCropEdit = () => {
-    if (!cropEdit) return;
-    if (cropEdit.intentionId) {
-      refresh(
-        updatePrayForIntention(cropEdit.intentionId, {
-          imageZoom: cropEdit.zoom,
-          imageOffsetX: cropEdit.offsetX,
-          imageOffsetY: cropEdit.offsetY,
-        })
-      );
-    } else if (cropEdit.previewIndex !== undefined) {
-      setPhotoPreviews((prev) =>
-        prev.map((p, i) =>
-          i === cropEdit.previewIndex
-            ? { ...p, zoom: cropEdit.zoom, offsetX: cropEdit.offsetX, offsetY: cropEdit.offsetY }
-            : p
-        )
-      );
-    } else if (cropEdit.drawerId) {
-      const item = loadPrayForDrawer().find((d) => d.drawerId === cropEdit.drawerId);
-      if (item) {
-        refresh(
-          addPrayForIntention({
-            label: item.label,
-            image: item.image,
-            imageZoom: cropEdit.zoom,
-            imageOffsetX: cropEdit.offsetX,
-            imageOffsetY: cropEdit.offsetY,
-          })
-        );
-        refreshDrawer();
-      }
-    }
+    if (!cropEdit?.drawerId) return;
+    setIntentions(
+      updateDrawerItem(cropEdit.drawerId, {
+        imageZoom: cropEdit.zoom,
+        imageOffsetX: cropEdit.offsetX,
+        imageOffsetY: cropEdit.offsetY,
+      })
+    );
+    sync();
     setCropEdit(null);
   };
 
   const canConfirm = photoPreviews.length > 0 || photoNames.trim().length > 0;
 
-  const drawerAvailable = drawer.filter((d) => {
-    if (d.presetId) return !intentions.some((i) => i.id === d.presetId);
-    return !intentions.some(
-      (i) => i.image === d.image && i.label === d.label && !d.presetId
-    );
+  const sortedDrawer = [...drawer].sort((a, b) => {
+    if (a.active !== b.active) return a.active ? -1 : 1;
+    return (b.archivedAt || 0) - (a.archivedAt || 0);
   });
 
   return (
@@ -326,22 +224,11 @@ export default function PrayForOrbs({
         <div className="pray-for-bar__scroll">
           {intentions.map((item, index) => (
             <IntentionOrb
-              key={item.id}
+              key={item.drawerId || item.id}
               intention={item}
               index={index}
-              size={simpleMode ? 'lg' : 'md'}
               offering={offeringPulse}
               soundEnabled={soundEnabled}
-              onRemove={handleRemove}
-              onEdit={(intention) =>
-                setCropEdit({
-                  image: intention.image,
-                  zoom: intention.imageZoom ?? 1,
-                  offsetX: intention.imageOffsetX ?? 0,
-                  offsetY: intention.imageOffsetY ?? 0,
-                  intentionId: intention.id,
-                })
-              }
             />
           ))}
         </div>
@@ -372,41 +259,39 @@ export default function PrayForOrbs({
             role="dialog"
             aria-label="Elegir intención de oración"
           >
-            <h3 className="pray-for-picker__title">¿Por quién rezas?</h3>
+            <h3 className="pray-for-picker__title">¿Por quién rezas hoy?</h3>
             <p className="pray-for-picker__sub">
-              Elige una intención, recupera una guardada, o sube fotos.
+              Toca para activar o desactivar. Las ✓ aparecen en la barra superior.
             </p>
 
-            {drawerAvailable.length > 0 && (
+            {sortedDrawer.length > 0 && (
               <div className="pray-for-picker__drawer">
-                <p className="pray-for-picker__section-label">Guardadas</p>
+                <p className="pray-for-picker__section-label">Mis intenciones</p>
                 <div className="pray-for-picker__drawer-row">
-                  {drawerAvailable.map((item) => (
+                  {sortedDrawer.map((item) => (
                     <DrawerItem
                       key={item.drawerId}
                       item={item}
-                      onAdd={addDrawerItem}
+                      onToggle={handleToggleDrawer}
                       onCrop={(d) =>
                         setCropEdit({
+                          drawerId: d.drawerId,
                           image: d.image,
                           zoom: d.imageZoom ?? 1,
                           offsetX: d.imageOffsetX ?? 0,
                           offsetY: d.imageOffsetY ?? 0,
-                          drawerId: d.drawerId,
                         })
                       }
                     />
                   ))}
                 </div>
-                <p className="pray-for-picker__drawer-hint">
-                  Toca para añadir · mantén pulsado una foto para ajustar encuadre
-                </p>
               </div>
             )}
 
             <div className="pray-for-picker__grid">
               {PRAY_FOR_PRESETS.map((preset) => {
-                const active = intentions.some((i) => i.id === preset.id);
+                const inDrawer = drawer.find((d) => d.presetId === preset.id);
+                const active = inDrawer?.active;
                 return (
                   <button
                     key={preset.id}
@@ -420,6 +305,7 @@ export default function PrayForOrbs({
                       <span className="pray-for-picker__emoji">{preset.emoji}</span>
                     )}
                     <span>{preset.label}</span>
+                    {active && <span className="pray-for-picker__item-tick">✓</span>}
                   </button>
                 );
               })}

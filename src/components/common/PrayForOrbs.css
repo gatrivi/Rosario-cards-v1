@@ -400,19 +400,30 @@
 }
 
 .pray-for-picker__drawer-item {
+  position: relative;
+  width: 3rem;
+}
+
+.pray-for-picker__drawer-toggle {
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 50%;
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.28);
   background: rgba(255, 255, 255, 0.04);
   padding: 0;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.15);
+  position: relative;
 }
 
-.pray-for-picker__drawer-item .pray-for-orb__photo-wrap,
-.pray-for-picker__drawer-item .pray-for-picker__emoji {
+.pray-for-picker__drawer-item--active .pray-for-picker__drawer-toggle {
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 14px rgba(255, 220, 140, 0.4);
+}
+
+.pray-for-picker__drawer-toggle .pray-for-orb__photo-wrap,
+.pray-for-picker__drawer-toggle .pray-for-picker__emoji {
   width: 100%;
   height: 100%;
   display: flex;
@@ -421,11 +432,43 @@
   font-size: 1.2rem;
 }
 
-.pray-for-picker__drawer-hint {
-  color: #666;
+.pray-for-picker__tick {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #d4af37;
+  color: #111;
   font-size: 0.62rem;
-  margin: 0;
+  font-weight: bold;
+  line-height: 16px;
   text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.pray-for-picker__drawer-edit {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(20, 16, 10, 0.92);
+  color: #d4af37;
+  font-size: 0.55rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.pray-for-picker__item-tick {
+  color: #d4af37;
+  font-size: 0.7rem;
+  margin-top: 0.1rem;
 }
 
 .pray-for-picker--crop {
