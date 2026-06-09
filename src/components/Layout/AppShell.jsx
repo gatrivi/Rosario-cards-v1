@@ -31,7 +31,7 @@ import {
 } from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
-const APP_VERSION = '0.3.28';
+const APP_VERSION = '0.3.29';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 
@@ -281,8 +281,9 @@ export default function AppShell() {
             title="Reportar problema o sugerencia"
             style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#666', borderRadius: '10px', padding: '8px', cursor: 'pointer',
-              fontSize: '1.2rem', backdropFilter: 'blur(5px)'
+              color: '#666', borderRadius: '8px', padding: '6px', cursor: 'pointer',
+              fontSize: '0.96rem', backdropFilter: 'blur(5px)',
+              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
           >
             {settings.simpleMode ? '🆘 Ayuda' : '💬'}
@@ -314,9 +315,9 @@ export default function AppShell() {
             onClick={() => setShowSync(true)}
             style={{ 
               background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
-              color: getSyncColor(), width: '40px', height: '40px',
+              color: getSyncColor(), width: '32px', height: '32px',
               borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
-              fontSize: '1.2rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+              fontSize: '0.96rem', boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
               display: 'flex', justifyContent: 'center', alignItems: 'center'
             }}
             title={`Sincronización: ${syncStatus}`}
@@ -327,9 +328,9 @@ export default function AppShell() {
             onClick={() => setShowSettings(true)}
             style={{ 
               background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
-              color: '#fff', width: '40px', height: '40px',
+              color: '#fff', width: '32px', height: '32px',
               borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
-              fontSize: '1.2rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+              fontSize: '0.96rem', boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
               display: 'flex', justifyContent: 'center', alignItems: 'center'
             }}
           >

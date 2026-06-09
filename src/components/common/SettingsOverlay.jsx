@@ -1,5 +1,27 @@
 import React from 'react';
 
+const SHARE_URL = typeof window !== 'undefined'
+  ? `${window.location.origin}${window.location.pathname}`
+  : 'https://rosario.gatrivi.com';
+
+async function shareApp() {
+  const payload = {
+    title: 'Rosario Cards',
+    text: 'Reza el Rosario con imágenes, intenciones y tu propia voz.',
+    url: SHARE_URL,
+  };
+  if (typeof navigator !== 'undefined' && navigator.share) {
+    try {
+      await navigator.share(payload);
+      return;
+    } catch (_) { /* cancelled or failed */ }
+  }
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(SHARE_URL);
+    alert('Enlace copiado — compártelo con quien quieras.');
+  }
+}
+
 export default function SettingsOverlay({ settings, onUpdateSettings, onClose, appVersion = '', onCheckForUpdate }) {
   return (
     <div style={{
@@ -116,12 +138,25 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose, a
 
         </div>
 
+        <button
+          type="button"
+          onClick={shareApp}
+          style={{
+            width: '100%', marginTop: '20px', padding: '14px',
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+            fontSize: '0.95rem', fontWeight: 'bold'
+          }}
+        >
+          📤 Compartir la app
+        </button>
+
         {onCheckForUpdate && (
           <button
             type="button"
             onClick={onCheckForUpdate}
             style={{
-              width: '100%', marginTop: '20px', padding: '14px',
+              width: '100%', marginTop: '10px', padding: '14px',
               background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)',
               borderRadius: '12px', color: '#D4AF37', cursor: 'pointer',
               fontSize: '0.95rem', fontWeight: 'bold'

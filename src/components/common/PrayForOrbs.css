@@ -32,14 +32,14 @@
 
 .pray-for-bar--header .pray-for-orb {
   flex-shrink: 0;
-  height: 1.75rem;
-  width: 1.75rem;
+  height: 1.925rem;
+  width: 1.925rem;
 }
 
 .pray-for-bar--header .pray-for-add-orb {
   flex-shrink: 0;
-  height: 1.75rem;
-  width: 1.75rem;
+  height: 1.925rem;
+  width: 1.925rem;
 }
 
 .pray-for-bar--header .pray-for-add-orb__icon {
@@ -118,6 +118,22 @@
   border-radius: 50%;
 }
 
+.pray-for-orb__photo-wrap {
+  border-radius: 50%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.pray-for-orb__photo-wrap img {
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center center;
+  width: 100%;
+}
+
 .pray-for-orb img {
   width: 100%;
   height: 100%;
@@ -173,6 +189,38 @@
   justify-content: center;
   height: 100%;
   font-size: 1.1rem;
+}
+
+.pray-for-orb__edit {
+  position: absolute;
+  bottom: -3px;
+  left: -3px;
+  z-index: 2;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(20, 16, 10, 0.9);
+  color: #d4af37;
+  font-size: 0.55rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.pray-for-orb--revealed .pray-for-orb__edit {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: hover) {
+  .pray-for-orb:hover .pray-for-orb__edit {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .pray-for-orb__remove {
@@ -338,6 +386,50 @@
   font-size: 0.68rem;
   font-variant: small-caps;
   letter-spacing: 0.08em;
+}
+
+.pray-for-picker__drawer {
+  margin-bottom: 0.75rem;
+}
+
+.pray-for-picker__drawer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.pray-for-picker__drawer-item {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.pray-for-picker__drawer-item .pray-for-orb__photo-wrap,
+.pray-for-picker__drawer-item .pray-for-picker__emoji {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.pray-for-picker__drawer-hint {
+  color: #666;
+  font-size: 0.62rem;
+  margin: 0;
+  text-align: center;
+}
+
+.pray-for-picker--crop {
+  max-width: 18rem;
 }
 
 .pray-for-picker__photos {

@@ -1,23 +1,84 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { PRAY_FOR_PRESETS } from '../../data/prayForDefaults';
 import {
+  addFromDrawer,
   addPrayForIntention,
   addPrayForIntentions,
+  loadPrayForDrawer,
   loadPrayForIntentions,
   removePrayForIntention,
   savePrayForIntentions,
+  updatePrayForIntention,
 } from '../../utils/prayForStore';
 import { playOrbTapChime } from '../../utils/bookletSounds';
+import OrbPhotoCrop from './OrbPhotoCrop';
 import './PrayForOrbs.css';
 
 function defaultIntentionLabel(index) {
   return `Intención ${index + 1}`;
 }
 
+function DrawerItem({ item, onAdd, onCrop }) {
+  const timerRef = useRef(null);
+  const longRef = useRef(false);
+
+  const clear = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className="pray-for-picker__drawer-item"
+      title={item.label}
+      onPointerDown={() => {
+        longRef.current = false;
+        clear();
+        if (!item.image) return;
+        timerRef.current = setTimeout(() => {
+          longRef.current = true;
+          onCrop(item);
+        }, 600);
+      }}
+      onPointerUp={() => {
+        clear();
+        if (!longRef.current) onAdd(item.drawerId);
+      }}
+      onPointerLeave={clear}
+      onPointerCancel={clear}
+    >
+      {item.image ? (
+        <OrbImage intention={item} />
+      ) : (
+        <span className="pray-for-picker__emoji">{item.emoji || '🕯️'}</span>
+      )}
+    </button>
+  );
+}
+
+function OrbImage({ intention }) {
+  const zoom = intention.imageZoom ?? 1;
+  const ox = intention.imageOffsetX ?? 0;
+  const oy = intention.imageOffsetY ?? 0;
+  return (
+    <div className="pray-for-orb__photo-wrap">
+      <img
+        src={intention.image}
+        alt=""
+        draggable={false}
+        style={{ transform: `scale(${zoom}) translate(${ox}%, ${oy}%)` }}
+      />
+    </div>
+  );
+}
+
 function IntentionOrb({
   intention,
   onRemove,
-  onTap,
+  onEdit,
   size = 'md',
   index = 0,
   offering = false,
@@ -41,7 +102,7 @@ function IntentionOrb({
   };
 
   const handlePointerDown = (e) => {
-    if (e.target.closest('.pray-for-orb__remove')) return;
+    if (e.target.closest('.pray-for-orb__remove, .pray-for-orb__edit')) return;
     longPressedRef.current = false;
     clearPress();
     pressTimerRef.current = setTimeout(() => {
@@ -54,13 +115,8 @@ function IntentionOrb({
   const handlePointerUp = () => {
     clearPress();
     if (!longPressedRef.current && !revealed) {
-      onTap?.();
       playOrbTapChime(soundEnabled);
     }
-  };
-
-  const handlePointerLeave = () => {
-    clearPress();
   };
 
   return (
@@ -70,14 +126,29 @@ function IntentionOrb({
       title={intention.label}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerLeave}
-      onPointerCancel={handlePointerLeave}
+      onPointerLeave={clearPress}
+      onPointerCancel={clearPress}
     >
       <span className="pray-for-orb__halo" aria-hidden="true" />
       {intention.image ? (
-        <img src={intention.image} alt="" draggable={false} />
+        <OrbImage intention={intention} />
       ) : (
         <span className="pray-for-orb__emoji">{intention.emoji || '🕯️'}</span>
+      )}
+      {onEdit && intention.image && revealed && (
+        <button
+          type="button"
+          className="pray-for-orb__edit"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(intention);
+            setRevealed(false);
+          }}
+          aria-label={`Ajustar foto de ${intention.label}`}
+        >
+          ✎
+        </button>
       )}
       {onRemove && (
         <button
@@ -105,9 +176,11 @@ export default function PrayForOrbs({
   soundEnabled = true,
 }) {
   const [intentions, setIntentions] = useState(() => loadPrayForIntentions());
+  const [drawer, setDrawer] = useState(() => loadPrayForDrawer());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [photoPreviews, setPhotoPreviews] = useState([]);
   const [photoNames, setPhotoNames] = useState('');
+  const [cropEdit, setCropEdit] = useState(null);
   const photoFileRef = useRef(null);
 
   const refresh = useCallback((list) => {
@@ -115,10 +188,23 @@ export default function PrayForOrbs({
     savePrayForIntentions(list);
   }, []);
 
+  const refreshDrawer = useCallback(() => {
+    setDrawer(loadPrayForDrawer());
+  }, []);
+
+  useEffect(() => {
+    if (pickerOpen) refreshDrawer();
+  }, [pickerOpen, refreshDrawer]);
+
+  const handleRemove = (id) => {
+    refresh(removePrayForIntention(id));
+    refreshDrawer();
+  };
+
   const togglePreset = (preset) => {
     const exists = intentions.some((i) => i.id === preset.id);
     if (exists) {
-      refresh(removePrayForIntention(preset.id));
+      handleRemove(preset.id);
       return;
     }
     refresh(addPrayForIntention({ ...preset }));
@@ -133,7 +219,8 @@ export default function PrayForOrbs({
         (file) =>
           new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onload = () => resolve({ image: reader.result });
+            reader.onload = () =>
+              resolve({ image: reader.result, zoom: 1, offsetX: 0, offsetY: 0 });
             reader.readAsDataURL(file);
           })
       )
@@ -150,16 +237,23 @@ export default function PrayForOrbs({
       if (!nameParts[0]) return;
       refresh(addPrayForIntention({ label: nameParts[0], emoji: '🕊️' }));
     } else if (photoPreviews.length === 1) {
+      const p = photoPreviews[0];
       refresh(
         addPrayForIntention({
           label: nameParts[0] || defaultIntentionLabel(0),
-          image: photoPreviews[0].image,
+          image: p.image,
+          imageZoom: p.zoom,
+          imageOffsetX: p.offsetX,
+          imageOffsetY: p.offsetY,
         })
       );
     } else {
       const entries = photoPreviews.map((item, i) => ({
         label: nameParts[i] || nameParts[0] || defaultIntentionLabel(i),
         image: item.image,
+        imageZoom: item.zoom,
+        imageOffsetX: item.offsetX,
+        imageOffsetY: item.offsetY,
       }));
       refresh(addPrayForIntentions(entries));
     }
@@ -176,7 +270,55 @@ export default function PrayForOrbs({
     if (photoFileRef.current) photoFileRef.current.value = '';
   };
 
+  const addDrawerItem = (drawerId) => {
+    refresh(addFromDrawer(drawerId));
+    refreshDrawer();
+  };
+
+  const saveCropEdit = () => {
+    if (!cropEdit) return;
+    if (cropEdit.intentionId) {
+      refresh(
+        updatePrayForIntention(cropEdit.intentionId, {
+          imageZoom: cropEdit.zoom,
+          imageOffsetX: cropEdit.offsetX,
+          imageOffsetY: cropEdit.offsetY,
+        })
+      );
+    } else if (cropEdit.previewIndex !== undefined) {
+      setPhotoPreviews((prev) =>
+        prev.map((p, i) =>
+          i === cropEdit.previewIndex
+            ? { ...p, zoom: cropEdit.zoom, offsetX: cropEdit.offsetX, offsetY: cropEdit.offsetY }
+            : p
+        )
+      );
+    } else if (cropEdit.drawerId) {
+      const item = loadPrayForDrawer().find((d) => d.drawerId === cropEdit.drawerId);
+      if (item) {
+        refresh(
+          addPrayForIntention({
+            label: item.label,
+            image: item.image,
+            imageZoom: cropEdit.zoom,
+            imageOffsetX: cropEdit.offsetX,
+            imageOffsetY: cropEdit.offsetY,
+          })
+        );
+        refreshDrawer();
+      }
+    }
+    setCropEdit(null);
+  };
+
   const canConfirm = photoPreviews.length > 0 || photoNames.trim().length > 0;
+
+  const drawerAvailable = drawer.filter((d) => {
+    if (d.presetId) return !intentions.some((i) => i.id === d.presetId);
+    return !intentions.some(
+      (i) => i.image === d.image && i.label === d.label && !d.presetId
+    );
+  });
 
   return (
     <div className={`pray-for-bar${variant === 'header' ? ' pray-for-bar--header' : ''}`}>
@@ -190,7 +332,16 @@ export default function PrayForOrbs({
               size={simpleMode ? 'lg' : 'md'}
               offering={offeringPulse}
               soundEnabled={soundEnabled}
-              onRemove={() => refresh(removePrayForIntention(item.id))}
+              onRemove={handleRemove}
+              onEdit={(intention) =>
+                setCropEdit({
+                  image: intention.image,
+                  zoom: intention.imageZoom ?? 1,
+                  offsetX: intention.imageOffsetX ?? 0,
+                  offsetY: intention.imageOffsetY ?? 0,
+                  intentionId: intention.id,
+                })
+              }
             />
           ))}
         </div>
@@ -223,8 +374,35 @@ export default function PrayForOrbs({
           >
             <h3 className="pray-for-picker__title">¿Por quién rezas?</h3>
             <p className="pray-for-picker__sub">
-              Elige una intención o sube una o varias fotos.
+              Elige una intención, recupera una guardada, o sube fotos.
             </p>
+
+            {drawerAvailable.length > 0 && (
+              <div className="pray-for-picker__drawer">
+                <p className="pray-for-picker__section-label">Guardadas</p>
+                <div className="pray-for-picker__drawer-row">
+                  {drawerAvailable.map((item) => (
+                    <DrawerItem
+                      key={item.drawerId}
+                      item={item}
+                      onAdd={addDrawerItem}
+                      onCrop={(d) =>
+                        setCropEdit({
+                          image: d.image,
+                          zoom: d.imageZoom ?? 1,
+                          offsetX: d.imageOffsetX ?? 0,
+                          offsetY: d.imageOffsetY ?? 0,
+                          drawerId: d.drawerId,
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+                <p className="pray-for-picker__drawer-hint">
+                  Toca para añadir · mantén pulsado una foto para ajustar encuadre
+                </p>
+              </div>
+            )}
 
             <div className="pray-for-picker__grid">
               {PRAY_FOR_PRESETS.map((preset) => {
@@ -248,7 +426,7 @@ export default function PrayForOrbs({
             </div>
 
             <div className="pray-for-picker__photos">
-              <p className="pray-for-picker__section-label">Fotos</p>
+              <p className="pray-for-picker__section-label">Fotos nuevas</p>
               <button
                 type="button"
                 className="pray-for-picker__upload pray-for-picker__upload--wide"
@@ -264,7 +442,18 @@ export default function PrayForOrbs({
                 hidden
                 onChange={handlePhotoPick}
               />
-              {photoPreviews.length > 0 && (
+              {photoPreviews.length === 1 && (
+                <OrbPhotoCrop
+                  image={photoPreviews[0].image}
+                  zoom={photoPreviews[0].zoom}
+                  offsetX={photoPreviews[0].offsetX}
+                  offsetY={photoPreviews[0].offsetY}
+                  onChange={(crop) =>
+                    setPhotoPreviews([{ ...photoPreviews[0], ...crop }])
+                  }
+                />
+              )}
+              {photoPreviews.length > 1 && (
                 <div className="pray-for-picker__batch-grid">
                   {photoPreviews.map((item, i) => (
                     <div key={`photo-${i}`} className="pray-for-picker__batch-thumb">
@@ -305,6 +494,40 @@ export default function PrayForOrbs({
               onClick={() => setPickerOpen(false)}
             >
               Listo
+            </button>
+          </div>
+        </div>
+      )}
+
+      {cropEdit && (
+        <div
+          className="pray-for-picker-backdrop"
+          onClick={() => setCropEdit(null)}
+          role="presentation"
+        >
+          <div
+            className="pray-for-picker pray-for-picker--crop"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-label="Ajustar foto"
+          >
+            <h3 className="pray-for-picker__title">Encuadre</h3>
+            <OrbPhotoCrop
+              image={cropEdit.image}
+              zoom={cropEdit.zoom}
+              offsetX={cropEdit.offsetX}
+              offsetY={cropEdit.offsetY}
+              onChange={(crop) => setCropEdit((prev) => ({ ...prev, ...crop }))}
+            />
+            <button type="button" className="pray-for-picker__ok" onClick={saveCropEdit}>
+              Guardar
+            </button>
+            <button
+              type="button"
+              className="pray-for-picker__close"
+              onClick={() => setCropEdit(null)}
+            >
+              Cancelar
             </button>
           </div>
         </div>
