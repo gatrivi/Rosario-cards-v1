@@ -31,7 +31,7 @@ import {
 } from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
-const APP_VERSION = '0.3.27';
+const APP_VERSION = '0.3.28';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 
@@ -288,13 +288,25 @@ export default function AppShell() {
             {settings.simpleMode ? '🆘 Ayuda' : '💬'}
           </button>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', pointerEvents: 'auto' }}>
+        <div style={{
+          display: 'flex',
+          gap: '6px',
+          alignItems: 'center',
+          pointerEvents: 'auto',
+          flex: '1 1 auto',
+          justifyContent: 'flex-end',
+          minWidth: 0,
+          marginLeft: '8px',
+        }}>
           <div
             id="booklet-top-orbs"
             style={{
               display: vistaActiva === 'booklet' ? 'flex' : 'none',
               alignItems: 'center',
-              maxWidth: 'min(42vw, 11rem)',
+              flex: '1 1 auto',
+              justifyContent: 'flex-end',
+              minWidth: 0,
+              maxWidth: 'calc(100vw - 9.5rem)',
               overflow: 'hidden',
             }}
           />

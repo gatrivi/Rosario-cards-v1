@@ -492,12 +492,21 @@ export default function BookletView({
               </span>
             )}
           </p>
-          <h1
-            className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' ? ' booklet-title--mystery' : ''}`}
-            style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
+          <PrayerRecorder
+            prayerId={activePrayer.id}
+            prayerTitle={activePrayer.title}
+            mystery={misterioActual}
+            sequenceIndex={displayIndex}
+            simpleMode={simpleMode}
+            placement="title"
           >
-            {activePrayer.title}
-          </h1>
+            <h1
+              className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' ? ' booklet-title--mystery' : ''}`}
+              style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
+            >
+              {activePrayer.title}
+            </h1>
+          </PrayerRecorder>
           {variants && (
             <button
               type="button"
@@ -536,7 +545,12 @@ export default function BookletView({
 
       {orbHost &&
         createPortal(
-          <PrayForOrbs simpleMode={simpleMode} offeringPulse={stepGlow} variant="header" />,
+          <PrayForOrbs
+            simpleMode={simpleMode}
+            offeringPulse={stepGlow}
+            variant="header"
+            soundEnabled={soundEnabled}
+          />,
           orbHost
         )}
 
@@ -555,14 +569,7 @@ export default function BookletView({
         >
           ‹ anterior
         </button>
-        <PrayerRecorder
-          prayerId={activePrayer.id}
-          prayerTitle={activePrayer.title}
-          mystery={misterioActual}
-          sequenceIndex={displayIndex}
-          simpleMode={simpleMode}
-          placement="footer-inline"
-        />
+        <span className="booklet-turn-ornament" aria-hidden="true">✦</span>
         <button
           type="button"
           className="booklet-turn booklet-turn--forward"

@@ -134,6 +134,51 @@
   z-index: 60;
 }
 
+.prayer-recorder--title {
+  position: relative;
+  z-index: 3;
+}
+
+.prayer-recorder__title-row {
+  align-items: center;
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: 2rem 1fr 2rem;
+  width: 100%;
+}
+
+.prayer-recorder__title-slot {
+  min-width: 0;
+}
+
+.prayer-recorder__side-btn {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 50%;
+  color: rgba(212, 175, 55, 0.9);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  height: 2rem;
+  line-height: 1;
+  padding: 0;
+  width: 2rem;
+}
+
+.prayer-recorder__side-spacer {
+  display: block;
+  height: 2rem;
+  width: 2rem;
+}
+
+.prayer-recorder--title .prayer-recorder__panel {
+  left: 50%;
+  margin-top: 0.45rem;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 60;
+}
+
 .prayer-recorder--footer .prayer-recorder__panel {
   position: absolute;
   bottom: calc(100% + 0.35rem);

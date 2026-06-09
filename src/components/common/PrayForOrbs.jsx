@@ -7,18 +7,60 @@ import {
   removePrayForIntention,
   savePrayForIntentions,
 } from '../../utils/prayForStore';
+import { playOrbTapChime } from '../../utils/bookletSounds';
 import './PrayForOrbs.css';
 
 function defaultIntentionLabel(index) {
   return `Intención ${index + 1}`;
 }
 
-function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = false }) {
+function IntentionOrb({
+  intention,
+  onRemove,
+  onTap,
+  size = 'md',
+  index = 0,
+  offering = false,
+  soundEnabled = true,
+}) {
   const [revealed, setRevealed] = useState(false);
+  const pressTimerRef = useRef(null);
+  const longPressedRef = useRef(false);
+  const hideTimerRef = useRef(null);
 
-  const handleOrbActivate = (e) => {
-    if (!onRemove || e.target.closest('.pray-for-orb__remove')) return;
-    setRevealed((r) => !r);
+  const clearPress = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  };
+
+  const scheduleHide = () => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setRevealed(false), 2800);
+  };
+
+  const handlePointerDown = (e) => {
+    if (e.target.closest('.pray-for-orb__remove')) return;
+    longPressedRef.current = false;
+    clearPress();
+    pressTimerRef.current = setTimeout(() => {
+      longPressedRef.current = true;
+      setRevealed(true);
+      scheduleHide();
+    }, 600);
+  };
+
+  const handlePointerUp = () => {
+    clearPress();
+    if (!longPressedRef.current && !revealed) {
+      onTap?.();
+      playOrbTapChime(soundEnabled);
+    }
+  };
+
+  const handlePointerLeave = () => {
+    clearPress();
   };
 
   return (
@@ -26,14 +68,14 @@ function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = 
       className={`pray-for-orb pray-for-orb--${size}${offering ? ' pray-for-orb--offering' : ''}${revealed ? ' pray-for-orb--revealed' : ''}`}
       style={{ '--orb-i': index }}
       title={intention.label}
-      onClick={handleOrbActivate}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setRevealed(false);
-      }}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerLeave}
+      onPointerCancel={handlePointerLeave}
     >
       <span className="pray-for-orb__halo" aria-hidden="true" />
       {intention.image ? (
-        <img src={intention.image} alt="" />
+        <img src={intention.image} alt="" draggable={false} />
       ) : (
         <span className="pray-for-orb__emoji">{intention.emoji || '🕯️'}</span>
       )}
@@ -41,9 +83,11 @@ function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = 
         <button
           type="button"
           className="pray-for-orb__remove"
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             onRemove(intention.id);
+            setRevealed(false);
           }}
           aria-label={`Quitar ${intention.label}`}
         >
@@ -54,7 +98,12 @@ function IntentionOrb({ intention, onRemove, size = 'md', index = 0, offering = 
   );
 }
 
-export default function PrayForOrbs({ simpleMode = false, offeringPulse = false, variant = 'bar' }) {
+export default function PrayForOrbs({
+  simpleMode = false,
+  offeringPulse = false,
+  variant = 'bar',
+  soundEnabled = true,
+}) {
   const [intentions, setIntentions] = useState(() => loadPrayForIntentions());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [photoPreviews, setPhotoPreviews] = useState([]);
@@ -132,16 +181,19 @@ export default function PrayForOrbs({ simpleMode = false, offeringPulse = false,
   return (
     <div className={`pray-for-bar${variant === 'header' ? ' pray-for-bar--header' : ''}`}>
       <div className="pray-for-bar__orbs">
-        {intentions.map((item, index) => (
-          <IntentionOrb
-            key={item.id}
-            intention={item}
-            index={index}
-            size={simpleMode ? 'lg' : 'md'}
-            offering={offeringPulse}
-            onRemove={() => refresh(removePrayForIntention(item.id))}
-          />
-        ))}
+        <div className="pray-for-bar__scroll">
+          {intentions.map((item, index) => (
+            <IntentionOrb
+              key={item.id}
+              intention={item}
+              index={index}
+              size={simpleMode ? 'lg' : 'md'}
+              offering={offeringPulse}
+              soundEnabled={soundEnabled}
+              onRemove={() => refresh(removePrayForIntention(item.id))}
+            />
+          ))}
+        </div>
         <button
           type="button"
           className="pray-for-add-orb"
@@ -151,7 +203,9 @@ export default function PrayForOrbs({ simpleMode = false, offeringPulse = false,
         >
           <span className="pray-for-add-orb__shine" />
           <span className="pray-for-add-orb__icon">🕯️</span>
-          {!simpleMode && <span className="pray-for-add-orb__text">Rezar por</span>}
+          {!simpleMode && variant !== 'header' && (
+            <span className="pray-for-add-orb__text">Rezar por</span>
+          )}
         </button>
       </div>
 

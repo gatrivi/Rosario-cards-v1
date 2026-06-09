@@ -15,10 +15,12 @@ export default function PrayerRecorder({
   sequenceIndex,
   simpleMode = false,
   placement = 'header',
+  children,
 }) {
   const [expanded, setExpanded] = useState(false);
   const [micAvailable, setMicAvailable] = useState(null);
   const [recording, setRecording] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [clips, setClips] = useState([]);
   const [status, setStatus] = useState('');
   const mediaRecorderRef = useRef(null);
@@ -48,6 +50,11 @@ export default function PrayerRecorder({
   }, [refreshClips]);
 
   useEffect(() => {
+    setPlaying(false);
+    setExpanded(false);
+  }, [prayerId, sequenceIndex]);
+
+  useEffect(() => {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       setMicAvailable(false);
       return;
@@ -61,6 +68,7 @@ export default function PrayerRecorder({
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
       if (audioRef.current) {
+        audioRef.current.pause();
         URL.revokeObjectURL(audioRef.current.src);
       }
     };
@@ -124,6 +132,14 @@ export default function PrayerRecorder({
     setStatus('');
   };
 
+  const stopPlayback = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setPlaying(false);
+  };
+
   const playClip = (clip) => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -133,7 +149,18 @@ export default function PrayerRecorder({
     if (!url) return;
     const audio = new Audio(url);
     audioRef.current = audio;
+    audio.onended = () => setPlaying(false);
+    audio.onpause = () => setPlaying(false);
     audio.play();
+    setPlaying(true);
+  };
+
+  const togglePlayback = () => {
+    if (playing) {
+      stopPlayback();
+      return;
+    }
+    if (clips.length > 0) playClip(clips[clips.length - 1]);
   };
 
   const handleDelete = async (id) => {
@@ -145,12 +172,107 @@ export default function PrayerRecorder({
 
   const disabled = micAvailable === false;
   const hasClips = clips.length > 0;
-  const isInline = placement === 'footer-inline';
+  const isTitle = placement === 'title';
+
+  const panel = expanded && (
+    <div className="prayer-recorder__panel">
+      <p className="prayer-recorder__title">
+        {simpleMode ? 'Graba tu voz' : 'Voz propia · modo automático'}
+      </p>
+      {prayerId === 'A' && (
+        <p className="prayer-recorder__hint">
+          Puedes grabar muchas tomas del Ave María ({hmVariants} guardadas).
+          La app rotará entre ellas para que no suene repetitivo.
+        </p>
+      )}
+      <div className="prayer-recorder__controls">
+        {!recording ? (
+          <button type="button" className="prayer-recorder__btn" onClick={startRecording}>
+            ● Grabar
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="prayer-recorder__btn prayer-recorder__btn--stop"
+            onClick={stopRecording}
+          >
+            ■ Detener
+          </button>
+        )}
+        {status && <span className="prayer-recorder__status">{status}</span>}
+      </div>
+      {clips.length > 0 && (
+        <ul className="prayer-recorder__list">
+          {clips.map((clip) => (
+            <li key={clip.id} className="prayer-recorder__item">
+              <button
+                type="button"
+                className="prayer-recorder__play"
+                onClick={() => playClip(clip)}
+              >
+                ▶ {clip.label || clip.prayerKey}
+              </button>
+              <button
+                type="button"
+                className="prayer-recorder__delete"
+                onClick={() => handleDelete(clip.id)}
+                aria-label="Eliminar grabación"
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  if (isTitle) {
+    return (
+      <div
+        className={`prayer-recorder prayer-recorder--title${expanded ? ' prayer-recorder--open' : ''}${disabled ? ' prayer-recorder--disabled' : ''}`}
+      >
+        <div className="prayer-recorder__title-row">
+          {hasClips ? (
+            <button
+              type="button"
+              className="prayer-recorder__side-btn"
+              onClick={togglePlayback}
+              disabled={disabled}
+              aria-label={playing ? 'Pausar grabación' : 'Reproducir grabación'}
+              title={playing ? 'Pausar' : 'Reproducir'}
+            >
+              {playing ? '⏸' : '▶'}
+            </button>
+          ) : (
+            <span className="prayer-recorder__side-spacer" aria-hidden="true" />
+          )}
+          <div className="prayer-recorder__title-slot">{children}</div>
+          {!hasClips ? (
+            <button
+              type="button"
+              className="prayer-recorder__side-btn"
+              onClick={() => !disabled && setExpanded((v) => !v)}
+              disabled={disabled}
+              aria-expanded={expanded}
+              aria-label="Grabar tu voz"
+              title="Grabar tu voz"
+            >
+              🎙️
+            </button>
+          ) : (
+            <span className="prayer-recorder__side-spacer" aria-hidden="true" />
+          )}
+        </div>
+        {panel}
+      </div>
+    );
+  }
 
   const handleToggle = () => {
     if (disabled) return;
-    if (hasClips && isInline) {
-      playClip(clips[clips.length - 1]);
+    if (hasClips && placement === 'footer-inline') {
+      togglePlayback();
       return;
     }
     setExpanded((v) => !v);
@@ -169,66 +291,20 @@ export default function PrayerRecorder({
         title={
           disabled
             ? 'Micrófono no disponible en este dispositivo'
-            : hasClips && isInline
-              ? 'Reproducir tu grabación'
+            : hasClips && placement === 'footer-inline'
+              ? playing
+                ? 'Pausar'
+                : 'Reproducir tu grabación'
               : 'Grabar tu voz para modo automático'
         }
       >
-        {hasClips && isInline ? '▶' : `🎙️${clips.length > 0 && !isInline ? ` ${clips.length}` : ''}`}
+        {hasClips && placement === 'footer-inline'
+          ? playing
+            ? '⏸'
+            : '▶'
+          : `🎙️${clips.length > 0 ? ` ${clips.length}` : ''}`}
       </button>
-
-      {expanded && (
-        <div className="prayer-recorder__panel">
-          <p className="prayer-recorder__title">
-            {simpleMode ? 'Graba tu voz' : 'Voz propia · modo automático'}
-          </p>
-          {prayerId === 'A' && (
-            <p className="prayer-recorder__hint">
-              Puedes grabar muchas tomas del Ave María ({hmVariants} guardadas).
-              La app rotará entre ellas para que no suene repetitivo.
-            </p>
-          )}
-          <div className="prayer-recorder__controls">
-            {!recording ? (
-              <button type="button" className="prayer-recorder__btn" onClick={startRecording}>
-                ● Grabar
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="prayer-recorder__btn prayer-recorder__btn--stop"
-                onClick={stopRecording}
-              >
-                ■ Detener
-              </button>
-            )}
-            {status && <span className="prayer-recorder__status">{status}</span>}
-          </div>
-          {clips.length > 0 && (
-            <ul className="prayer-recorder__list">
-              {clips.map((clip) => (
-                <li key={clip.id} className="prayer-recorder__item">
-                  <button
-                    type="button"
-                    className="prayer-recorder__play"
-                    onClick={() => playClip(clip)}
-                  >
-                    ▶ {clip.label || clip.prayerKey}
-                  </button>
-                  <button
-                    type="button"
-                    className="prayer-recorder__delete"
-                    onClick={() => handleDelete(clip.id)}
-                    aria-label="Eliminar grabación"
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      {panel}
     </div>
   );
 }

@@ -117,6 +117,16 @@ export async function playBookletTransitionSound({
   }
 }
 
+/** Soft tap when touching an intention orb. */
+export async function playOrbTapChime(soundEnabled = true) {
+  if (!soundEnabled || typeof window === 'undefined') return;
+  const ctx = audioManager.getContext();
+  if (!ctx) return;
+  await audioManager.resume();
+  if (ctx.state === 'suspended') return;
+  playTone(ctx, { freq: 587, gain: 0.028, duration: 0.12, type: 'sine' });
+}
+
 /** Tiny chime when offering a completed prayer to intention orbs. */
 export async function playOfferingChime(soundEnabled = true) {
   if (!soundEnabled || typeof window === 'undefined') return;
