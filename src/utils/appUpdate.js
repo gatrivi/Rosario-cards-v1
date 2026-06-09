@@ -4,11 +4,13 @@
 
 import audioManager from './audioManager';
 
-/** Soft two-note chime when a new build is waiting — audible cue to refresh. */
+/** Soft chime when a new build is waiting — always plays (independent of prayer sounds). */
 export async function playUpdateAvailableSound() {
   if (typeof window === 'undefined') return;
-  const soundOn = localStorage.getItem('rosario_sound_enabled') !== 'false';
-  if (!soundOn) return;
+
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    navigator.vibrate([40, 60, 40]);
+  }
 
   const ctx = audioManager.getContext();
   if (!ctx) return;
@@ -30,8 +32,27 @@ export async function playUpdateAvailableSound() {
   };
 
   const t = ctx.currentTime;
-  playNote(784, t, 0.08);
-  playNote(988, t + 0.22, 0.07);
+  playNote(659.25, t, 0.075);
+  playNote(830.61, t + 0.2, 0.07);
+  playNote(987.77, t + 0.4, 0.065);
+}
+
+let updateReminderTimer = null;
+
+/** Schedule one gentle repeat if the user is still on an old build. */
+export function scheduleUpdateReminder(onReminder) {
+  if (updateReminderTimer) clearTimeout(updateReminderTimer);
+  updateReminderTimer = setTimeout(() => {
+    updateReminderTimer = null;
+    onReminder?.();
+  }, 90000);
+}
+
+export function clearUpdateReminder() {
+  if (updateReminderTimer) {
+    clearTimeout(updateReminderTimer);
+    updateReminderTimer = null;
+  }
 }
 
 export function applyPendingUpdate() {

@@ -23,10 +23,15 @@ import DailyTracker from '../Rosedal/DailyTracker';
 import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
-import { applyPendingUpdate, playUpdateAvailableSound } from '../../utils/appUpdate';
+import {
+  applyPendingUpdate,
+  playUpdateAvailableSound,
+  scheduleUpdateReminder,
+  clearUpdateReminder,
+} from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 
-const APP_VERSION = '0.3.23';
+const APP_VERSION = '0.3.24';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 
@@ -46,9 +51,18 @@ export default function AppShell() {
     const handleUpdate = () => {
       setUpdateAvailable(true);
       playUpdateAvailableSound();
+      scheduleUpdateReminder(() => {
+        setUpdateAvailable((still) => {
+          if (still) playUpdateAvailableSound();
+          return still;
+        });
+      });
     };
     window.addEventListener('appUpdateAvailable', handleUpdate);
-    return () => window.removeEventListener('appUpdateAvailable', handleUpdate);
+    return () => {
+      window.removeEventListener('appUpdateAvailable', handleUpdate);
+      clearUpdateReminder();
+    };
   }, []);
 
   const [settings, setSettings] = useState(() => {

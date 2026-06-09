@@ -136,7 +136,8 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose, a
             Rosario Cards {appVersion ? `v${appVersion}` : ''}
           </div>
           <div style={{ color: '#333', fontSize: '0.65rem', marginTop: '6px' }}>
-            Si no ves cambios: Ajustes → Buscar actualización
+            Si no ves cambios: Ajustes → Buscar actualización.
+            Oirás un trino cuando haya parche listo.
           </div>
         </div>
 

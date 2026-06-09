@@ -150,6 +150,8 @@
   cursor: pointer;
   color: #d4af37;
   overflow: hidden;
+  animation: pray-for-orb-breathe 7s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
 }
 
 .pray-for-add-orb__shine {
