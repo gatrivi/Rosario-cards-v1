@@ -15,6 +15,7 @@ export default function PrayerRecorder({
   sequenceIndex,
   simpleMode = false,
   placement = 'header',
+  isLeftHanded = false,
   children,
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -232,7 +233,7 @@ export default function PrayerRecorder({
       <div
         className={`prayer-recorder prayer-recorder--title${expanded ? ' prayer-recorder--open' : ''}${disabled ? ' prayer-recorder--disabled' : ''}`}
       >
-        <div className="prayer-recorder__title-row">
+        <div className={`prayer-recorder__title-row${isLeftHanded ? ' prayer-recorder__title-row--left' : ''}`}>
           {hasClips ? (
             <button
               type="button"

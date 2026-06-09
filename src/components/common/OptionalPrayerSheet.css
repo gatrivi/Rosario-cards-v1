@@ -1,0 +1,77 @@
+.optional-prayer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 480;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.optional-prayer-sheet {
+  background: linear-gradient(160deg, #141018, #1e1828);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 14px;
+  max-width: 20rem;
+  padding: 1rem;
+  width: 100%;
+}
+
+.optional-prayer-sheet__hint {
+  color: #888;
+  font-size: 0.68rem;
+  margin: 0 0 0.65rem;
+  text-align: center;
+}
+
+.optional-prayer-sheet__tabs,
+.optional-prayer-sheet__langs {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.optional-prayer-sheet__tab,
+.optional-prayer-sheet__lang {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ccc;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 0.35rem 0.55rem;
+}
+
+.optional-prayer-sheet__tab.active,
+.optional-prayer-sheet__lang.active {
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #d4af37;
+}
+
+.optional-prayer-sheet__text {
+  color: #f8f4e6;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.optional-prayer-sheet__text p {
+  margin: 0 0 0.35rem;
+}
+
+.optional-prayer-sheet__close {
+  width: 100%;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 8px;
+  color: #d4af37;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0.55rem;
+}

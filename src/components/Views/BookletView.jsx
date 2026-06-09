@@ -7,6 +7,7 @@ import {
   getVariantStorageKey,
 } from '../../data/prayerVariants';
 import PrayerRecorder from '../common/PrayerRecorder';
+import OptionalPrayerSheet from '../common/OptionalPrayerSheet';
 import PrayForOrbs from '../common/PrayForOrbs';
 import OfferingLight from '../common/OfferingLight';
 import { loadPrayForIntentions } from '../../utils/prayForStore';
@@ -195,6 +196,7 @@ export default function BookletView({
   });
   const [stepGlow, setStepGlow] = useState(false);
   const [offeringLight, setOfferingLight] = useState(false);
+  const [optionalOpen, setOptionalOpen] = useState(false);
   const [orbHost, setOrbHost] = useState(null);
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
@@ -494,6 +496,15 @@ export default function BookletView({
             ))}
           </div>
           <p className="booklet-progress">
+            <button
+              type="button"
+              className="booklet-optional-btn"
+              onClick={() => setOptionalOpen(true)}
+              title="Oraciones opcionales (Ángel, San Benito)"
+              aria-label="Oraciones opcionales"
+            >
+              ✦
+            </button>
             {displayIndex + 1} / {total}
             {isAveMaria && (
               <span className="booklet-ave-count">
@@ -515,6 +526,7 @@ export default function BookletView({
             sequenceIndex={displayIndex}
             simpleMode={simpleMode}
             placement="title"
+            isLeftHanded={isLeftHanded}
           >
             <h1
               className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' ? ' booklet-title--mystery' : ''}`}
@@ -574,6 +586,8 @@ export default function BookletView({
         active={offeringLight}
         count={Math.max(loadPrayForIntentions().length, 1)}
       />
+
+      {optionalOpen && <OptionalPrayerSheet onClose={() => setOptionalOpen(false)} />}
 
       <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
         <button

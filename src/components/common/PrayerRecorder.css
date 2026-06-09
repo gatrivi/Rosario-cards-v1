@@ -147,6 +147,14 @@
   width: 100%;
 }
 
+.prayer-recorder__title-row--left {
+  direction: rtl;
+}
+
+.prayer-recorder__title-row--left .prayer-recorder__title-slot {
+  direction: ltr;
+}
+
 .prayer-recorder__title-slot {
   min-width: 0;
 }
