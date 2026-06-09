@@ -225,7 +225,7 @@ export default function BookletView({
     clearTransitionTimers();
     setPhase(TRANSITION_PHASE.READY);
     setDisplayIndex(safeIndex);
-  }, [misterioActual, clearTransitionTimers, setPhase, safeIndex]);
+  }, [misterioActual, clearTransitionTimers, setPhase]);
 
   useEffect(() => {
     if (transitionPhaseRef.current === TRANSITION_PHASE.READY && displayIndex !== safeIndex) {
@@ -243,6 +243,13 @@ export default function BookletView({
     afterImageReadyRef.current = () => {
       scheduleTransition(beginTextEnter, BOOKLET_TIMING.imageBeforeText);
     };
+    scheduleTransition(() => {
+      if (!afterImageReadyRef.current) return;
+      imageReadyRef.current = true;
+      const run = afterImageReadyRef.current;
+      afterImageReadyRef.current = null;
+      run();
+    }, 900);
   }, [beginTextEnter, scheduleTransition]);
 
   const handleImageReady = useCallback(() => {
@@ -459,6 +466,15 @@ export default function BookletView({
         <div className="booklet-vitral__shade" />
         <div className="booklet-vitral__glare" />
       </div>
+
+      {(transitionPhase === TRANSITION_PHASE.LINGER ||
+        transitionPhase === TRANSITION_PHASE.ARRIVING) && (
+        <p className="booklet-transition-hint" aria-live="polite">
+          {transitionPhase === TRANSITION_PHASE.LINGER
+            ? 'Un momento con la imagen…'
+            : 'Preparando la siguiente oración…'}
+        </p>
+      )}
 
       <div className={`booklet-prayer-chrome${chromePhaseClass}`}>
         <header className="booklet-header">

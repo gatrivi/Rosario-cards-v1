@@ -2,13 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import AppShell from './components/Layout/AppShell';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <AppShell />
+    <ErrorBoundary>
+      <AppShell />
+    </ErrorBoundary>
   </React.StrictMode>
 );
 

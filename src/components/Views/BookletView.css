@@ -135,6 +135,21 @@
   }
 }
 
+.booklet-transition-hint {
+  color: rgba(212, 175, 55, 0.7);
+  font-size: 0.72rem;
+  font-style: italic;
+  left: 0;
+  margin: 0;
+  padding: 0 1rem;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 42%;
+  z-index: 3;
+}
+
 .booklet-vitral__shade {
   background: linear-gradient(
     180deg,

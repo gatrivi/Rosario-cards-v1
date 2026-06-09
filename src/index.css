@@ -5,3 +5,35 @@ body {
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
+
+.error-boundary {
+  align-items: center;
+  color: #f8f4e6;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-boundary__title {
+  color: #d4af37;
+  margin: 0 0 0.5rem;
+}
+
+.error-boundary__msg {
+  color: #aaa;
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.error-boundary__btn {
+  background: #d4af37;
+  border: none;
+  border-radius: 8px;
+  color: #111;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0.6rem 1.2rem;
+}
