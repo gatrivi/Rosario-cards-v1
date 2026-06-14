@@ -380,5 +380,14 @@ export default class CosmicResonator {
       this.LFO_Jovianus.stop();
     } catch (_) {}
   }
+
+  // Lean getter for real-time audio dynamics (audio->visual bridge).
+  getVoxDynamics() {
+    return {
+      mercuryHz: this.LFO_Mercurius?.frequency?.value ?? this.organBase.breathHz,
+      cutoffHz: this.LP_Celest?.frequency?.value ?? this.organBase.cutoffBase,
+      lpQ: this.LP_Celest?.Q?.value ?? 1.2,
+    };
+  }
 }
 

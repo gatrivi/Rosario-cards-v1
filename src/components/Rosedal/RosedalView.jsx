@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import InteractiveAveMaria from './InteractiveAveMaria';
+import JardinDeRosasView from '../Views/JardinDeRosasView';
 
 export default function RosedalView() {
   // Desestructuramos los datos del contexto/hook
@@ -15,6 +16,20 @@ export default function RosedalView() {
   const macetonesCompletados = Math.floor(dailyAveMarias / ROSAS_PER_MACETON);
 
   const handleRosaCompletada = () => {
+    const roseSeed = Date.now().toString();
+    try {
+      const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
+      stored.push({
+        timestamp: roseSeed,
+        warmthProfile: [],
+        wiggleProfile: [],
+        verseCount: 0,
+      });
+      if (stored.length > 500) stored.splice(0, stored.length - 500);
+      localStorage.setItem('rosedal_roses', JSON.stringify(stored));
+    } catch (e) {
+      // Ignore storage issues; progress tracking should never break.
+    }
     logAveMaria(); 
   };
 
@@ -63,8 +78,12 @@ export default function RosedalView() {
 
       {/* COMPONENTE DE ORACIÓN QUE OCUPA EL RESTO DE LA PANTALLA */}
       <div style={{ flex: '1 1 auto', minHeight: 0 }}>
-         {/* Aquí metemos el FitScreenAveMaria que encaja perfecto */}
-         <InteractiveAveMaria onRosaCompletada={handleRosaCompletada} />
+         <div style={{ flex: '0 0 auto' }}>
+           <InteractiveAveMaria onRosaCompletada={handleRosaCompletada} />
+         </div>
+         <div style={{ flex: '1 1 auto', minHeight: 0, marginTop: '20px' }}>
+           <JardinDeRosasView />
+         </div>
       </div>
 
     </div>

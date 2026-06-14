@@ -181,7 +181,8 @@ const VirtualRosaryPhysics = ({
       restitution: 0.0,
       friction: 0.5,
       frictionAir: 0.06,
-      slop: 0.05,
+      // Allow gentle 2D ghosting overlap without explosive separation.
+      slop: 0.40,
       collisionFilter: { group: rosaryGroup }
     };
 
@@ -712,8 +713,8 @@ const VirtualRosaryPhysics = ({
 
       // Absolute distance correction pass (anti-stretch for long sessions).
       // Deterministic ordering: use the same edge sequence as constraint creation.
-      const CORR_K = 0.06;
-      const CORR_ERR_THRESH = 2.5;
+      const CORR_K = 0.02;
+      const CORR_ERR_THRESH = 3.5;
       for (let i = 0; i < correctionEdges.length; i++) {
         const e = correctionEdges[i];
         const a = e.bodyA;
@@ -827,6 +828,18 @@ const VirtualRosaryPhysics = ({
 
       const baseAlpha = 0.8;
 
+      // Audio->visual bridge (Mercury LFO + LP filter thresholds).
+      const voxDyn = VoxOrganiRef.current?.getVoxDynamics?.() ?? null;
+      const mercuryHz = voxDyn?.mercuryHz ?? 0.1;
+      const cutoffHz = voxDyn?.cutoffHz ?? 450;
+      const lpQ = voxDyn?.lpQ ?? 1.2;
+      const t = Date.now() / 1000;
+      const lfoPhase01 = (Math.sin(t * mercuryHz * Math.PI * 2) + 1) * 0.5; // 0..1
+      const shimmerNorm = Math.max(0, Math.min(1, (cutoffHz - 450) / 900));
+      const jitterAmp = 0.35 + lfoPhase01 * 0.9 + Math.max(0, lpQ - 1.2) * 0.45;
+      const dustAlphaBoost = 0.9 + lfoPhase01 * 0.9 + shimmerNorm * 0.45;
+      if (typeof window !== 'undefined') window.__voxDustAlphaBoost = dustAlphaBoost;
+
       for (const c of allConstraints) {
         if (!c.bodyA || !c.bodyB) continue; // Safety check
         const dataA = c.bodyA.beadData;
@@ -838,8 +851,14 @@ const VirtualRosaryPhysics = ({
         ctx.beginPath();
         const posA = { x: c.bodyA.position.x + c.pointA.x, y: c.bodyA.position.y + c.pointA.y };
         const posB = { x: c.bodyB.position.x + c.pointB.x, y: c.bodyB.position.y + c.pointB.y };
-        ctx.moveTo(posA.x, posA.y);
-        ctx.lineTo(posB.x, posB.y);
+        // Gentle ink-line wiggle from Mercury LFO (subtle, non-jarring).
+        const midX = (posA.x + posB.x) * 0.5;
+        const midY = (posA.y + posB.y) * 0.5;
+        const phase = (midX * 0.02 + midY * 0.02) + t * mercuryHz * 3.0;
+        const jx = Math.sin(phase) * jitterAmp * 0.65;
+        const jy = Math.cos(phase) * jitterAmp * 0.65;
+        ctx.moveTo(posA.x + jx, posA.y + jy);
+        ctx.lineTo(posB.x - jx, posB.y - jy);
 
         if (isPrayedA && isPrayedB) {
           ctx.strokeStyle = '#d4af37';
@@ -878,7 +897,7 @@ const VirtualRosaryPhysics = ({
         if (isActive || isBeingDragged) {
           ctx.save();
           ctx.beginPath();
-          const pulse = Math.sin(Date.now() / 200) * 3;
+          const pulse = Math.sin(Date.now() / 200) * 3 * (0.75 + shimmerNorm * 0.6);
           const haloR = (body.circleRadius || 15) + (isBeingDragged ? 12 : 8) + pulse;
           ctx.arc(0, 0, haloR, 0, Math.PI * 2);
           const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, haloR);
@@ -1021,7 +1040,7 @@ const VirtualRosaryPhysics = ({
       // ── Magnetism active flash ──
       if (magnetismActiveRef.current) {
         ctx.save();
-        ctx.globalAlpha = 0.03 + Math.sin(Date.now() / 100) * 0.02;
+        ctx.globalAlpha = (0.03 + Math.sin(Date.now() / 100) * 0.02) * dustAlphaBoost;
         ctx.fillStyle = '#d4af37';
         ctx.fillRect(0, 0, width, height);
         ctx.restore();

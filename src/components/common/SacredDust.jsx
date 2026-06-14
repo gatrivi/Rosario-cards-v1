@@ -31,6 +31,10 @@ export default function SacredDust({ isCargando = false, count = 25 }) {
       ctx.clearRect(0, 0, width, height);
 
       const intensity = isCargando ? 2.5 : 1.0;
+      const audioAlphaBoost =
+        typeof window !== 'undefined' && typeof window.__voxDustAlphaBoost === 'number'
+          ? window.__voxDustAlphaBoost
+          : 1;
 
       particles.forEach(p => {
         // Movement
@@ -45,7 +49,7 @@ export default function SacredDust({ isCargando = false, count = 25 }) {
 
         // Pulse opacity
         const pulse = Math.sin(Date.now() / 2000 + p.seed) * 0.05;
-        const finalOpacity = Math.min(1, (p.opacity + pulse) * (isCargando ? 1.8 : 1));
+        const finalOpacity = Math.min(1, ((p.opacity + pulse) * (isCargando ? 1.8 : 1)) * audioAlphaBoost);
 
         ctx.beginPath();
         ctx.arc(p.x * width / 100, p.y * height / 100, p.size, 0, Math.PI * 2);

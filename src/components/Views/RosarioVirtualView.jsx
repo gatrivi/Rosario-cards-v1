@@ -25,6 +25,7 @@ export default function RosarioVirtualView({
   const [cargaOracion, setCargaOracion] = useState(0);
   const [warmthTick, setWarmthTick] = useState(0);
   const [showBloom, setShowBloom] = useState(false);
+  const [roseSeedForRender, setRoseSeedForRender] = useState('0');
   const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
 
   const wordSpanRefs = useRef([]);
@@ -50,6 +51,23 @@ export default function RosarioVirtualView({
       setCargaOracion(0);
     } else if (currentPrayerIndex < secuencia.length - 1) {
       // TRIGGER BLOOM on full prayer completion
+      if (activePrayer?.id === 'A') {
+        const roseSeed = Date.now().toString();
+        setRoseSeedForRender(roseSeed);
+        try {
+          const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
+          stored.push({
+            timestamp: roseSeed,
+            warmthProfile: [],
+            wiggleProfile: [],
+            verseCount: 0,
+          });
+          if (stored.length > 500) stored.splice(0, stored.length - 500);
+          localStorage.setItem('rosedal_roses', JSON.stringify(stored));
+        } catch (e) {
+          // Ignore storage issues; audio/flow should never block.
+        }
+      }
       setShowBloom(true);
       setTimeout(() => setShowBloom(false), 1200);
       onUpdateProgreso(currentPrayerIndex + 1);
@@ -192,7 +210,7 @@ export default function RosarioVirtualView({
             externalIsCargando={isCargando}
             onComplete={handleAdvance}
             simpleMode={simpleMode}
-            seed={currentPrayerIndex}
+            seed={roseSeedForRender}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', width: '100%' }}>
