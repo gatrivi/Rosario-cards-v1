@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import Matter from 'matter-js';
 import { getRosaryBeads, getPhysicalMapping } from '../../data/physicsRosaryData';
+import { buildRosaryEdges } from '../../data/rosaryTopology';
+import CosmicResonator from '../../audio/CosmicResonator';
 import audioManager from '../../utils/audioManager';
 import { SACRED_SYMBOLS, SYMBOL_MAP } from '../../data/SacredSymbols';
 
@@ -69,7 +71,9 @@ const VirtualRosaryPhysics = ({
   const canvasRef = useRef(null);
   const engineRef = useRef(Engine.create({
     gravity: { x: 0, y: 0 },
-    positionIterations: 20
+    positionIterations: 8,
+    velocityIterations: 6,
+    constraintIterations: 4,
   }));
   const pulseRef = useRef(0);
   const activeIndexRef = useRef(activePrayerIndex);
@@ -102,7 +106,8 @@ const VirtualRosaryPhysics = ({
 
   // Audio system refs
   const audioCtxRef = useRef(null);
-  const synthRef = useRef(null);
+  const VoxOrganiRef = useRef(null);
+  const totalPhysicalBeadsRef = useRef(61);
 
   // Gesture & magnetism refs
   const strokePointsRef = useRef([]);
@@ -119,12 +124,29 @@ const VirtualRosaryPhysics = ({
       activeIndexRef.current = activePrayerIndex;
       pulseRef.current = 1;
       setTimeout(() => { pulseRef.current = 0; }, 600);
+      if (VoxOrganiRef.current) {
+        const denom = totalPhysicalBeadsRef.current || 1;
+        const p = (activePrayerIndex + 1) / denom;
+        VoxOrganiRef.current.setProgress(p);
+      }
     }
   }, [activePrayerIndex]);
 
   useEffect(() => {
     activeIndexRef.current = activePrayerIndex;
   }, [activePrayerIndex]);
+
+  // Mystery/chord changes must trigger SanctusFlush inside the resonator.
+  useEffect(() => {
+    if (VoxOrganiRef.current) VoxOrganiRef.current.setMystery(misterioActual);
+  }, [misterioActual]);
+
+  // Sound toggle.
+  useEffect(() => {
+    if (!VoxOrganiRef.current) return;
+    VoxOrganiRef.current.soundEnabled = soundEnabled;
+    if (!soundEnabled) VoxOrganiRef.current.silenceToHum();
+  }, [soundEnabled]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -151,13 +173,14 @@ const VirtualRosaryPhysics = ({
     const cy = height * 0.45;
     const loopRadius = Math.min(width * 0.38, 200);
 
-    const rosaryGroup = Matter.Body.nextGroup(true);
+    // collisionStart must fire between beads; previously nextGroup(true) disabled collisions.
+    const rosaryGroup = Matter.Body.nextGroup(false);
 
     // Physics tuned for contemplative weight: dry impacts, deliberate movement
     const baseBeadOptions = {
-      restitution: 0.05,
-      friction: 0.3,
-      frictionAir: guided ? 0.03 : 0.01,
+      restitution: 0.0,
+      friction: 0.5,
+      frictionAir: 0.06,
       slop: 0.05,
       collisionFilter: { group: rosaryGroup }
     };
@@ -166,13 +189,13 @@ const VirtualRosaryPhysics = ({
       const opts = { ...baseBeadOptions };
       // Padre Nuestro beads are heavier — require denser drag
       if (data.role === 'lone') {
-        opts.density = 0.025;
-        opts.friction = 0.4;
+        opts.density = 0.020;
       }
       // Crucifix and medal have more heft
       if (data.physicsType === 'cross' || data.role === 'medal') {
-        opts.density = 0.05;
+        opts.density = 0.060;
       }
+      if (data.role === 'medal') opts.density = 0.040;
       return opts;
     };
 
@@ -186,8 +209,9 @@ const VirtualRosaryPhysics = ({
     const centerBody = Bodies.circle(cx, cy + loopRadius, 20, getBeadOptions(centerItem));
     centerBody.beadData = centerItem;
     centerBody.circleRadius = 20;
+    centerBody.home = { x: cx, y: cy + loopRadius };
     allBodies.push(centerBody);
-    homePositionsRef.current.push({ x: cx, y: cy + loopRadius });
+    homePositionsRef.current.push(centerBody.home);
 
     // 2. Loop
     const loopBodies = [];
@@ -202,9 +226,10 @@ const VirtualRosaryPhysics = ({
       const body = Bodies.circle(x, y, beadRadius, getBeadOptions(data));
       body.beadData = data;
       body.circleRadius = beadRadius;
+      body.home = { x, y };
       loopBodies.push(body);
       allBodies.push(body);
-      homePositionsRef.current.push({ x, y });
+      homePositionsRef.current.push(body.home);
     });
 
     // 3. Pendant (Tail)
@@ -226,43 +251,41 @@ const VirtualRosaryPhysics = ({
       body.beadData = data;
       pendantBodies.push(body);
       allBodies.push(body);
-      homePositionsRef.current.push({ x: cx, y: py - (data.physicsType === 'cross' ? 40 : beadRadius + 5) });
+      const homeY = py - (data.physicsType === 'cross' ? 40 : beadRadius + 5);
+      body.home = { x: cx, y: homeY };
+      homePositionsRef.current.push(body.home);
     });
 
-    // Connections — loose, rope-like constraints
-    const getConstraintProps = (bodyA, bodyB) => {
-      const rA = bodyA.beadData?.role;
-      const rB = bodyB.beadData?.role;
-      if (rA === 'lone' || rB === 'lone') {
-        return { length: 35, stiffness: 0.35, damping: 0.4 };
-      }
-      if (rA === 'crucifix' || rB === 'crucifix' || rA === 'medal' || rB === 'medal') {
-        return { length: 25, stiffness: 0.45, damping: 0.3 };
-      }
-      return { length: 20, stiffness: 0.4, damping: 0.3 };
+    const getLinkParams = (link, bodyA, bodyB) => {
+      const r = Math.max(bodyA.circleRadius || 10, bodyB.circleRadius || 10);
+      if (link === 'tight_link') return { length: 2 * r + 1, stiffness: 0.85, damping: 0.12 };
+      if (link === 'long_chain') return { length: 2 * r + 18, stiffness: 0.65, damping: 0.18 };
+      return { length: 2 * r + 8, stiffness: 0.80, damping: 0.15 }; // short_chain
     };
 
-    loopBodies.forEach((bodyB, i) => {
-      const bodyA = i === 0 ? centerBody : loopBodies[i - 1];
-      const props = getConstraintProps(bodyA, bodyB);
-      allConstraints.push(Constraint.create({ bodyA, bodyB, ...props, render: { visible: false } }));
-    });
-
-    if (loopBodies.length > 0) {
-      const bodyA = loopBodies[loopBodies.length - 1];
-      const bodyB = centerBody;
-      const props = getConstraintProps(bodyA, bodyB);
-      allConstraints.push(Constraint.create({ bodyA, bodyB, ...props, render: { visible: false } }));
-    }
-
-    pendantBodies.forEach((bodyB, i) => {
-      const bodyA = i === 0 ? centerBody : pendantBodies[i - 1];
-      const isCrossB = bodyB.beadData.physicsType === 'cross';
-      const isCrossA = bodyA.beadData?.physicsType === 'cross';
-      const offsetA = isCrossA ? { x: 0, y: 15 } : { x: 0, y: 0 };
-      const offsetB = isCrossB ? { x: 0, y: -15 } : { x: 0, y: 0 };
-      const props = getConstraintProps(bodyA, bodyB);
-      allConstraints.push(Constraint.create({ bodyA, pointA: offsetA, bodyB, pointB: offsetB, ...props, render: { visible: false } }));
+    // Deterministic topology edges (explicit medal port closures).
+    const edges = buildRosaryEdges({ centerBody, loopBodies, pendantBodies });
+    const correctionEdges = [];
+    edges.forEach((edge) => {
+      const params = getLinkParams(edge.link, edge.bodyA, edge.bodyB);
+      const c = Constraint.create({
+        bodyA: edge.bodyA,
+        bodyB: edge.bodyB,
+        pointA: edge.pointA,
+        pointB: edge.pointB,
+        length: params.length,
+        stiffness: params.stiffness,
+        damping: params.damping,
+        render: { visible: false }
+      });
+      allConstraints.push(c);
+      correctionEdges.push({
+        bodyA: edge.bodyA,
+        bodyB: edge.bodyB,
+        pointA: edge.pointA,
+        pointB: edge.pointB,
+        targetLength: params.length,
+      });
     });
 
     World.add(world, [...allBodies, ...allConstraints]);
@@ -276,137 +299,32 @@ const VirtualRosaryPhysics = ({
     // Mouse constraint available in both modes, but very soft in guided
     World.add(world, mouseConstraint);
 
-    const getBaseFreq = () => {
-      const mapping = getPhysicalMapping(misterioActual);
-      const activeIdx = activeIndexRef.current;
-      const beadIndex = mapping[activeIdx];
-      const beadData = beadsData[beadIndex];
-      const role = beadData?.role || 'A';
-      return PRAYER_FREQ[role] || PRAYER_FREQ[role[0]] || 164.81;
-    };
+    const ensureVoxOrgani = () => {
+      if (!soundEnabled) return false;
+      if (VoxOrganiRef.current) return true;
 
-    const initSynth = () => {
-      if (!audioCtxRef.current) {
-        const ctx = audioManager.getContext();
-        if (!ctx) return;
-        audioCtxRef.current = ctx;
+      const ctx = audioManager.getContext();
+      if (!ctx) return false;
 
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 0;
-        gainNode.connect(ctx.destination);
+      audioCtxRef.current = ctx;
+      VoxOrganiRef.current = new CosmicResonator(ctx, { misterioActual, soundEnabled });
 
-        const base = getBaseFreq();
-
-        // --- AMBIANCE LAYER: Deep Sub Ground ---
-        const droneOsc = ctx.createOscillator();
-        droneOsc.type = 'sine';
-        droneOsc.frequency.setValueAtTime(base * 0.25, ctx.currentTime);
-        const droneGain = ctx.createGain();
-        droneGain.gain.value = 0.012;
-        droneOsc.connect(droneGain);
-        droneGain.connect(gainNode);
-        droneOsc.start();
-
-        // --- SACRED ORGAN LAYERS ---
-        const osc = ctx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(base, ctx.currentTime);
-
-        const osc2 = ctx.createOscillator();
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(base * 1.5, ctx.currentTime);
-
-        const osc3 = ctx.createOscillator();
-        osc3.type = 'sine';
-        osc3.frequency.setValueAtTime(base * 0.5, ctx.currentTime);
-        
-        const osc4 = ctx.createOscillator();
-        osc4.type = 'sine';
-        osc4.frequency.setValueAtTime(base * 4, ctx.currentTime);
-        const celestialGain = ctx.createGain();
-        celestialGain.gain.value = 0;
-
-        const padGain = ctx.createGain();
-        padGain.gain.value = 0.028;
-
-        // Reverb Simulation
-        const reverbGain = ctx.createGain();
-        reverbGain.gain.value = 0.25;
-        const delay = ctx.createDelay();
-        delay.delayTime.value = 0.55;
-        const feedback = ctx.createGain();
-        feedback.gain.value = 0.45;
-        const reverbFilter = ctx.createBiquadFilter();
-        reverbFilter.type = 'lowpass';
-        reverbFilter.frequency.value = 700;
-        
-        delay.connect(feedback);
-        feedback.connect(reverbFilter);
-        reverbFilter.connect(delay);
-        delay.connect(reverbGain);
-
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 550;
-        filter.Q.value = 1.2;
-
-        const lfo = ctx.createOscillator();
-        const lfoGain = ctx.createGain();
-        lfo.type = 'sine';
-        lfo.frequency.value = 0.12;
-        lfoGain.gain.value = 0;
-        lfo.connect(lfoGain);
-        lfoGain.connect(filter.frequency);
-        lfo.start();
-
-        osc.connect(filter);
-        osc2.connect(filter);
-        osc3.connect(padGain);
-        osc4.connect(celestialGain);
-        celestialGain.connect(filter);
-        padGain.connect(filter);
-        filter.connect(gainNode);
-        filter.connect(delay);
-        reverbGain.connect(gainNode);
-
-        osc.start();
-        osc2.start();
-        osc3.start();
-        osc4.start();
-
-        synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain, droneGain };
-      }
+      // Seed progress immediately for seamless first interaction.
+      totalPhysicalBeadsRef.current = beadsData.length || 61;
+      const denom = totalPhysicalBeadsRef.current || 1;
+      const p = (activeIndexRef.current + 1) / denom;
+      VoxOrganiRef.current.setProgress(p);
+      return true;
     };
 
     const updateAudioWarmth = (warmth = 0.1) => {
-      if (!synthRef.current || !soundEnabled) return;
-      const { filter, gainNode, celestialGain, lfoGain, droneGain } = synthRef.current;
-      const ctx = audioCtxRef.current;
-      const t = ctx.currentTime;
-      
-      const sessionProgress = (activeIndexRef.current + 1) / (beadsData.length || 1);
-      const cosmic = { mercury: 0.5, jupiter: 0.5, saturn: 0.5, pluto: 0.5, uranus: 0.5, neptune: 0.5 }; // Fallback
-      try {
-        const { getCosmicPhases } = require('../../utils/cosmicModulator');
-        const c = getCosmicPhases();
-        if (c) Object.assign(cosmic, c);
-      } catch(e){}
-
-      const deepBase = cosmic.pluto * 12 + cosmic.saturn * 6;
-      const targetFreq = 450 + warmth * 400 + sessionProgress * 500 + deepBase;
-      filter.frequency.setTargetAtTime(targetFreq, t, 0.7);
-      filter.Q.setTargetAtTime(1.2 + sessionProgress * 2.5 + cosmic.neptune * 1.8, t, 0.7); 
-      celestialGain.gain.setTargetAtTime(sessionProgress * 0.02 + (cosmic.uranus * 0.008), t, 1.2); 
-      droneGain.gain.setTargetAtTime(0.012 + (cosmic.pluto * 0.006), t, 1.5);
-      lfoGain.gain.setTargetAtTime(sessionProgress * 55 + (cosmic.mercury * 25), t, 1.2);
-      gainNode.gain.setTargetAtTime(0.038 + warmth * 0.016, t, 0.5);
+      if (!ensureVoxOrgani()) return;
+      VoxOrganiRef.current.setWarmth(warmth);
     };
 
     const stopSynth = () => {
-      if (synthRef.current) {
-        // Keep a tiny "sacred background" hum
-        synthRef.current.gainNode.gain.setTargetAtTime(0.002, audioCtxRef.current.currentTime, 0.8);
-      }
+      if (!VoxOrganiRef.current) return;
+      VoxOrganiRef.current.silenceToHum();
     };
 
     const checkBeadHit = (pos) => {
@@ -420,50 +338,17 @@ const VirtualRosaryPhysics = ({
       return potentialBodies.find(b => b.beadData);
     };
 
-    const audioCtx = audioManager.getContext();
     const playChime = (force, type, index, isProgress = false) => {
-      if (!audioCtx) return;
-      if (!soundEnabled || audioCtx.state === 'suspended') {
-        if (soundEnabled) audioCtx.resume();
-        else return;
-      }
-
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-
-      const baseFreq = isProgress ? 1200 : (type === 'chain' ? 800 : (type === 'large' ? 300 : 500));
-      const chargeFactor = 1 + (index / beadsData.length) * 0.5;
-      osc.frequency.setValueAtTime(baseFreq * chargeFactor, audioCtx.currentTime);
-      osc.type = isProgress ? 'sine' : (type === 'chain' ? 'triangle' : 'sine');
-
-      const volume = isProgress ? 0.12 : Math.min(force * 0.2, 0.1);
-      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 1);
+      if (!ensureVoxOrgani()) return;
+      const impact = isProgress ? 4.5 : force;
+      const beadPhysicsType = isProgress ? 'medal' : type;
+      VoxOrganiRef.current.chime(impact, beadPhysicsType, index);
     };
 
     const playMagnetismChime = () => {
-      if (!audioCtx) return;
-      if (!soundEnabled || audioCtx.state === 'suspended') {
-        if (soundEnabled) audioCtx.resume();
-        else return;
-      }
-      // Deep, distant bell for the cross gesture
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 1.5);
-      osc.type = 'sine';
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 2.5);
+      if (!ensureVoxOrgani()) return;
+      // Cross-gesture resonance: map to deep tone via 'cross'.
+      VoxOrganiRef.current.chime(5.2, 'cross', activeIndexRef.current);
     };
 
     // ─── Haptic feedback ───
@@ -555,7 +440,7 @@ const VirtualRosaryPhysics = ({
       }
 
       if (soundEnabled) {
-        initSynth();
+        ensureVoxOrgani();
         updateAudioWarmth(hit ? 0.3 : 0.1);
       }
     };
@@ -632,7 +517,7 @@ const VirtualRosaryPhysics = ({
       }
 
       if (soundEnabled) {
-        initSynth();
+        ensureVoxOrgani();
         updateAudioWarmth(hit ? 0.3 : 0.1);
       }
     };
@@ -698,7 +583,7 @@ const VirtualRosaryPhysics = ({
         }
 
         if (soundEnabled) {
-          initSynth();
+          ensureVoxOrgani();
           updateAudioWarmth(hit ? 0.3 : 0.1);
         }
       }
@@ -804,24 +689,106 @@ const VirtualRosaryPhysics = ({
       }
 
       // Only apply forces during cross-gesture magnetism.
-      // The rosary is otherwise completely free — no home forces, no anchor.
-      if (magnetismActiveRef.current) {
-        const k = 0.025;
-        const damping = 0.65;
-        allWorldBodies.forEach((body, i) => {
-          if (!body.beadData || body.isStatic) return;
-          const home = homePositionsRef.current[i];
-          if (!home) return;
-          const dx = home.x - body.position.x;
-          const dy = home.y - body.position.y;
-          Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
-          Body.setVelocity(body, {
-            x: body.velocity.x * damping,
-            y: body.velocity.y * damping
-          });
+      // Always-on weak tether (velvet reform) + stronger temporary boost during magnetism.
+      const K_REST = 0.0007;
+      const K_MAG = 0.025;
+      const damping = 0.65;
+      const k = magnetismActiveRef.current ? K_MAG : K_REST;
+
+      allWorldBodies.forEach((body) => {
+        if (!body.beadData || body.isStatic) return;
+        const home = body.home;
+        if (!home) return;
+
+        const dx = home.x - body.position.x;
+        const dy = home.y - body.position.y;
+        Body.applyForce(body, body.position, { x: dx * k * body.mass, y: dy * k * body.mass });
+
+        if (magnetismActiveRef.current) {
+          Body.setVelocity(body, { x: body.velocity.x * damping, y: body.velocity.y * damping });
           Body.setAngularVelocity(body, body.angularVelocity * damping);
-        });
+        }
+      });
+
+      // Absolute distance correction pass (anti-stretch for long sessions).
+      // Deterministic ordering: use the same edge sequence as constraint creation.
+      const CORR_K = 0.06;
+      const CORR_ERR_THRESH = 2.5;
+      for (let i = 0; i < correctionEdges.length; i++) {
+        const e = correctionEdges[i];
+        const a = e.bodyA;
+        const b = e.bodyB;
+        if (!a || !b) continue;
+        if (a.isStatic && b.isStatic) continue;
+
+        const ax = a.position.x + e.pointA.x;
+        const ay = a.position.y + e.pointA.y;
+        const bx = b.position.x + e.pointB.x;
+        const by = b.position.y + e.pointB.y;
+
+        const dx = bx - ax;
+        const dy = by - ay;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 1e-6) continue;
+
+        const err = dist - e.targetLength;
+        if (Math.abs(err) < CORR_ERR_THRESH) continue;
+
+        const ux = dx / dist;
+        const uy = dy / dist;
+        const invA = a.isStatic ? 0 : 1 / (a.mass || 1);
+        const invB = b.isStatic ? 0 : 1 / (b.mass || 1);
+        const sumInv = invA + invB;
+        if (sumInv <= 0) continue;
+
+        const da = (invA / sumInv) * err * CORR_K;
+        const db = (invB / sumInv) * err * CORR_K;
+
+        a.position.x += ux * da;
+        a.position.y += uy * da;
+        b.position.x -= ux * db;
+        b.position.y -= uy * db;
+
+        // Gentle velocity damp after correction to prevent oscillation buildup.
+        if (!a.isStatic) Body.setVelocity(a, { x: a.velocity.x * 0.85, y: a.velocity.y * 0.85 });
+        if (!b.isStatic) Body.setVelocity(b, { x: b.velocity.x * 0.85, y: b.velocity.y * 0.85 });
       }
+
+      // Containment clamp to prevent offscreen drift on low-end devices.
+      const margin = 20;
+      const maxSpeed = 25;
+      allWorldBodies.forEach((body) => {
+        if (!body.beadData || body.isStatic) return;
+        const r = body.circleRadius || 15;
+
+        const loX = margin + r;
+        const hiX = width - margin - r;
+        const loY = margin + r;
+        const hiY = height - margin - r;
+
+        if (body.position.x < loX) {
+          body.position.x = loX;
+          if (body.velocity.x < 0) body.velocity.x = 0;
+        } else if (body.position.x > hiX) {
+          body.position.x = hiX;
+          if (body.velocity.x > 0) body.velocity.x = 0;
+        }
+
+        if (body.position.y < loY) {
+          body.position.y = loY;
+          if (body.velocity.y < 0) body.velocity.y = 0;
+        } else if (body.position.y > hiY) {
+          body.position.y = hiY;
+          if (body.velocity.y > 0) body.velocity.y = 0;
+        }
+
+        const speed = Math.hypot(body.velocity.x, body.velocity.y);
+        if (speed > maxSpeed) {
+          const s = maxSpeed / speed;
+          body.velocity.x *= s;
+          body.velocity.y *= s;
+        }
+      });
     };
 
     const onCollisionStart = (event) => {

@@ -383,7 +383,7 @@ export default function RosarioVirtualView({
           letterSpacing: '1px',
           fontWeight: 'bold'
         }}>
-          v0.3.34 — La Rosa Trascendente
+          v0.3.35 — El Cosmos Resonante
         </span>
       </div>
 

@@ -1,0 +1,88 @@
+# Virtual Rosary Physics Blueprint (final_v4)
+
+Source doc defines the formal physics/topological structure for the Virtual Rosary.
+
+## Blueprint (JSON)
+```json
+{
+  "rosary_physics_blueprint": "final_v4",
+  "metadata": {
+    "total_beads": 59,
+    "lone_beads_total": 6,
+    "lone_beads_tail": 2,
+    "lone_beads_loop": 4,
+    "decade_beads_total": 50
+  },
+  "nodes": {
+    "types": {
+      "crucifix": { "shape": "custom_cross" },
+      "medal": { "shape": "custom_y_split" },
+      "bead": { "shape": "circle", "radius": "uniform" }
+    }
+  },
+  "constraints": {
+    "tight_link": { "type": "distance", "relative_length": "minimal", "description": "Connects beads within a group (10s and 3s)." },
+    "long_chain": { "type": "distance", "relative_length": "maximal", "description": "Isolates lone beads on BOTH sides to create negative space." },
+    "short_chain": { "type": "distance", "relative_length": "medium", "description": "Connects the crucifix to the tail, and anchors the loop ends back to the medal." }
+  },
+  "topology": {
+    "tail": [
+      { "node_id": "crucifix", "type": "crucifix" },
+      { "link": "short_chain" },
+      { "node_id": "tail_our_father", "type": "bead", "role": "lone_bead" },
+      { "link": "long_chain" },
+      { "node_id": "tail_hail_mary_1", "type": "bead", "role": "group_bead" },
+      { "link": "tight_link" },
+      { "node_id": "tail_hail_mary_2", "type": "bead", "role": "group_bead" },
+      { "link": "tight_link" },
+      { "node_id": "tail_hail_mary_3", "type": "bead", "role": "group_bead" },
+      { "link": "long_chain" },
+      { "node_id": "decade_1_our_father", "type": "bead", "role": "lone_bead", "note": "Physically on the tail, logically belongs to Decade 1." },
+      { "link": "long_chain" },
+      { "node_id": "medal", "type": "medal", "joint": "y_split_base" }
+    ],
+    "loop": {
+      "start_attachment": {
+        "from_node": "medal_port_right",
+        "link": "short_chain",
+        "to_node": "decade_1_hm_1"
+      },
+      "sequence": [
+        { "group_id": "decade_1", "type": "bead_cluster", "count": 10, "internal_link": "tight_link" },
+        { "link": "long_chain" },
+        { "node_id": "decade_2_our_father", "type": "bead", "role": "lone_bead" },
+        { "link": "long_chain" },
+        { "group_id": "decade_2", "type": "bead_cluster", "count": 10, "internal_link": "tight_link" },
+        { "link": "long_chain" },
+        { "node_id": "decade_3_our_father", "type": "bead", "role": "lone_bead" },
+        { "link": "long_chain" },
+        { "group_id": "decade_3", "type": "bead_cluster", "count": 10, "internal_link": "tight_link" },
+        { "link": "long_chain" },
+        { "node_id": "decade_4_our_father", "type": "bead", "role": "lone_bead" },
+        { "link": "long_chain" },
+        { "group_id": "decade_4", "type": "bead_cluster", "count": 10, "internal_link": "tight_link" },
+        { "link": "long_chain" },
+        { "node_id": "decade_5_our_father", "type": "bead", "role": "lone_bead" },
+        { "link": "long_chain" },
+        { "group_id": "decade_5", "type": "bead_cluster", "count": 10, "internal_link": "tight_link" }
+      ],
+      "end_attachment": {
+        "from_node": "decade_5_hm_10",
+        "link": "short_chain",
+        "to_node": "medal_port_left"
+      }
+    }
+  }
+}
+```
+
+## Constraint semantics
+- `tight_link`: group beads; aims for visual touching/nearly touching (Decades and the 3 Hail Marys in the tail).
+- `long_chain`: isolates lone beads; creates negative space around Our Fathers/Mysteries.
+- `short_chain`: anchors crucifix-to-tail and loop ends back to the medal; “transition” segments.
+
+## Physical layout notes
+- `medal` behaves as a `y_split` joint.
+- `tail` includes: crucifix + 1 Our Father + 3 Hail Marys + an Our Father that is physically on tail but logically belongs to Decade 1.
+- `loop` includes 5 decades (10 beads each), separated by 4 lone beads.
+
