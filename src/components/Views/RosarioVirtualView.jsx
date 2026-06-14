@@ -19,7 +19,7 @@ export default function RosarioVirtualView({
   onToggleSimpleMode
 }) {
   const [versoIndex, setVersoIndex] = useState(0);
-  const [guided, setGuided] = useState(true);
+  const [guided, setGuided] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const [isCargando, setIsCargando] = useState(false);
   const [cargaOracion, setCargaOracion] = useState(0);
@@ -79,6 +79,14 @@ export default function RosarioVirtualView({
     return () => clearInterval(timerRef.current);
   }, [isAveMaria, isCargando, cargaOracion]);
 
+  // Disable auto-prayer charging when switching to Libre mode.
+  useEffect(() => {
+    if (guided) return;
+    setIsCargando(false);
+    setCargaOracion(0);
+    setWarmthTick(0);
+  }, [guided]);
+
   useEffect(() => {
     if (!isAveMaria && cargaOracion >= 100) {
       if (navigator.vibrate) navigator.vibrate(20);
@@ -121,6 +129,14 @@ export default function RosarioVirtualView({
       onUpdateProgreso(currentPrayerIndex - 1);
     }
   }, [currentPrayerIndex, versoIndex, onUpdateProgreso]);
+
+  const handleEmptyPointerMove = useCallback(() => {
+    // If the user is dragging/panning on empty space, cancel charging.
+    // This avoids accidental auto-advance during free interaction.
+    setIsCargando(false);
+    setCargaOracion(0);
+    setWarmthTick(0);
+  }, []);
 
   const handleNodeClick = useCallback((index) => {
     onUpdateProgreso(index);
@@ -236,8 +252,12 @@ export default function RosarioVirtualView({
           onRetreat={handleRetreat}
           onSwipeAdvance={handleAdvance}
           onSwipeRetreat={handleRetreat}
-          onEmptyPointerDown={() => setIsCargando(true)}
+          onEmptyPointerDown={() => {
+            if (!guided) return;
+            setIsCargando(true);
+          }}
           onEmptyPointerUp={() => setIsCargando(false)}
+          onEmptyPointerMove={handleEmptyPointerMove}
           activePrayerIndex={currentPrayerIndex}
           misterioActual={misterioActual}
           soundEnabled={soundEnabled}
@@ -363,7 +383,7 @@ export default function RosarioVirtualView({
           letterSpacing: '1px',
           fontWeight: 'bold'
         }}>
-          v0.3.13 — La Rosa Trascendente
+          v0.3.34 — La Rosa Trascendente
         </span>
       </div>
 

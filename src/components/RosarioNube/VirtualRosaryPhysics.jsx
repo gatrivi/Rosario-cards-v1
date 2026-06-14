@@ -549,8 +549,8 @@ const VirtualRosaryPhysics = ({
       const hit = checkBeadHit(event.mouse.position);
       isEmptyTouchingRef.current = !hit;
       
-      // ALWAYS trigger prayer charge to make it reliable, even if hitting a bead
-      if (callbacksRef.current.onEmptyPointerDown) {
+      // Only trigger "empty hold/charge" when we actually started on empty space.
+      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerDown) {
         callbacksRef.current.onEmptyPointerDown(event.sourceEvent);
       }
 
@@ -627,7 +627,7 @@ const VirtualRosaryPhysics = ({
 
       const hit = checkBeadHit(pos);
       isEmptyTouchingRef.current = !hit;
-      if (callbacksRef.current.onEmptyPointerDown) {
+      if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerDown) {
         callbacksRef.current.onEmptyPointerDown(e);
       }
 
@@ -693,7 +693,7 @@ const VirtualRosaryPhysics = ({
 
         const hit = checkBeadHit(pos);
         isEmptyTouchingRef.current = !hit;
-        if (callbacksRef.current.onEmptyPointerDown) {
+        if (isEmptyTouchingRef.current && callbacksRef.current.onEmptyPointerDown) {
           callbacksRef.current.onEmptyPointerDown(e);
         }
 
