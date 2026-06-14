@@ -23,6 +23,7 @@ import DailyTracker from '../Rosedal/DailyTracker';
 import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
+import audioManager from '../../utils/audioManager';
 import {
   applyPendingUpdate,
   playUpdateAvailableSound,
@@ -255,6 +256,16 @@ export default function AppShell() {
     ua: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
   };
 
+  const handleStartAmbientAudio = async () => {
+    try {
+      const ctx = audioManager.getContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') await ctx.resume();
+    } catch (_) {
+      // Silent fallback: if the browser still blocks, user can try again.
+    }
+  };
+
   return (
     <div style={{
       height: '100dvh', 
@@ -398,6 +409,33 @@ export default function AppShell() {
       }}>
         v{APP_VERSION}
       </div>
+
+      {/* Mobile / locked-Audio fallback */}
+      {settings.soundEnabled && (
+        <button
+          type="button"
+          onClick={handleStartAmbientAudio}
+          style={{
+            position: 'absolute',
+            bottom: '86px',
+            right: '10px',
+            zIndex: 1001,
+            background: 'rgba(20,20,20,0.72)',
+            border: '1px solid rgba(212,175,55,0.35)',
+            color: '#D4AF37',
+            borderRadius: '999px',
+            padding: '8px 12px',
+            fontWeight: 'bold',
+            fontSize: '0.78rem',
+            cursor: 'pointer',
+            backdropFilter: 'blur(8px)',
+            pointerEvents: 'auto'
+          }}
+          title="Inicia el sonido ambiente (si el navegador lo bloqueó)"
+        >
+          Start Ambient Audio
+        </button>
+      )}
 
       {/* OVERLAYS */}
       {showSync && <SyncManager onClose={() => setShowSync(false)} />}

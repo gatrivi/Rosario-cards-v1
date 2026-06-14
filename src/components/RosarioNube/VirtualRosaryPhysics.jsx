@@ -175,6 +175,7 @@ const VirtualRosaryPhysics = ({
 
     // collisionStart must fire between beads; previously nextGroup(true) disabled collisions.
     const rosaryGroup = Matter.Body.nextGroup(false);
+    const beadCategory = 0x0001;
 
     // Physics tuned for contemplative weight: dry impacts, deliberate movement
     const baseBeadOptions = {
@@ -182,8 +183,10 @@ const VirtualRosaryPhysics = ({
       friction: 0.5,
       frictionAir: 0.06,
       // Allow gentle 2D ghosting overlap without explosive separation.
-      slop: 0.40,
-      collisionFilter: { group: rosaryGroup }
+      slop: 0.05,
+      // Sensor beads: collisions still trigger collisionStart, but they do not physically "push".
+      isSensor: true,
+      collisionFilter: { category: beadCategory, mask: beadCategory }
     };
 
     const getBeadOptions = (data) => {
@@ -205,6 +208,14 @@ const VirtualRosaryPhysics = ({
 
     const centerItem = beadsData.find(b => b.role === 'medal') || beadsData.find(b => b.physicsType === 'center') || pendantItems[pendantItems.length - 1];
     const beadRadius = 10;
+
+    // AudioContext resume guard:
+    // browsers can keep ctx in "suspended" until a direct user gesture happens.
+    const resumeAudioIfSuspendedInline = () => {
+      const ctx = audioManager.getContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') ctx.resume();
+    };
 
     // 1. Centerpiece (Medal) — free floating, no anchor
     const centerBody = Bodies.circle(cx, cy + loopRadius, 20, getBeadOptions(centerItem));
@@ -427,6 +438,7 @@ const VirtualRosaryPhysics = ({
     let mouseDownPos = { x: 0, y: 0, time: 0 };
 
     const onMouseDown = (event) => {
+      if (soundEnabled) resumeAudioIfSuspendedInline();
       mouseDownPos = { x: event.mouse.position.x, y: event.mouse.position.y, time: Date.now() };
       swipeStartRef.current = { x: event.mouse.position.x, y: event.mouse.position.y };
       lastMousePosRef.current = { x: event.mouse.position.x, y: event.mouse.position.y };
@@ -504,6 +516,7 @@ const VirtualRosaryPhysics = ({
 
     // Guided mode: canvas listeners for click/swipe + cross gesture
     const onGuidedMouseDown = (e) => {
+      if (soundEnabled) resumeAudioIfSuspendedInline();
       const rect = canvas.getBoundingClientRect();
       const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       mouseDownPos = { x: pos.x, y: pos.y, time: Date.now() };
@@ -570,6 +583,7 @@ const VirtualRosaryPhysics = ({
 
     const onGuidedTouchStart = (e) => {
       if (e.touches.length === 1) {
+        if (soundEnabled) resumeAudioIfSuspendedInline();
         const rect = canvas.getBoundingClientRect();
         const pos = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
         mouseDownPos = { x: pos.x, y: pos.y, time: Date.now() };
@@ -648,6 +662,7 @@ const VirtualRosaryPhysics = ({
     let initialTouchScale = 1;
 
     const handleTouchStart = (e) => {
+      if (soundEnabled) resumeAudioIfSuspendedInline();
       if (!guidedRef.current && e.touches.length === 2) {
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         initialTouchDist = d;
@@ -715,6 +730,8 @@ const VirtualRosaryPhysics = ({
       // Deterministic ordering: use the same edge sequence as constraint creation.
       const CORR_K = 0.02;
       const CORR_ERR_THRESH = 3.5;
+      // Clamp position deltas so correction doesn't fight overlap/collisions.
+      const MAX_POS_SHIFT = 2.0; // pixels per frame per body
       for (let i = 0; i < correctionEdges.length; i++) {
         const e = correctionEdges[i];
         const a = e.bodyA;
@@ -745,14 +762,23 @@ const VirtualRosaryPhysics = ({
         const da = (invA / sumInv) * err * CORR_K;
         const db = (invB / sumInv) * err * CORR_K;
 
-        a.position.x += ux * da;
-        a.position.y += uy * da;
-        b.position.x -= ux * db;
-        b.position.y -= uy * db;
+        const daClamped = Math.max(-MAX_POS_SHIFT, Math.min(MAX_POS_SHIFT, da));
+        const dbClamped = Math.max(-MAX_POS_SHIFT, Math.min(MAX_POS_SHIFT, db));
 
-        // Gentle velocity damp after correction to prevent oscillation buildup.
-        if (!a.isStatic) Body.setVelocity(a, { x: a.velocity.x * 0.85, y: a.velocity.y * 0.85 });
-        if (!b.isStatic) Body.setVelocity(b, { x: b.velocity.x * 0.85, y: b.velocity.y * 0.85 });
+        a.position.x += ux * daClamped;
+        a.position.y += uy * daClamped;
+        b.position.x -= ux * dbClamped;
+        b.position.y -= uy * dbClamped;
+
+        // Immediately drain kinetic energy after explicit distance correction.
+        if (!a.isStatic) {
+          a.velocity.x *= 0.5;
+          a.velocity.y *= 0.5;
+        }
+        if (!b.isStatic) {
+          b.velocity.x *= 0.5;
+          b.velocity.y *= 0.5;
+        }
       }
 
       // Containment clamp to prevent offscreen drift on low-end devices.

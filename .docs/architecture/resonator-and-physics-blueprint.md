@@ -115,7 +115,7 @@ A global project-wide migration to Ecclesiastical Latin naming conventions is pl
 
 ---
 
-## Phase 1 — Technical Implementation Notes (Completed in `v0.3.35`)
+## Phase 1 — Technical Implementation Notes (Complete + verified stable in `v0.3.35`)
 
 ### A) Deterministic topology data
 - Added `src/data/rosaryTopology.js`.
@@ -163,7 +163,7 @@ A global project-wide migration to Ecclesiastical Latin naming conventions is pl
 
 ---
 
-## Phase 2 — Technical Implementation Notes (Implemented Audio Graph + Wiring)
+## Phase 2 — Technical Implementation Notes (Complete + verified stable in `v0.3.35`)
 
 ### A) New deterministic offline organ generator
 - Added `src/utils/audioConstants.js`:
