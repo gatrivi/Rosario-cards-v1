@@ -1,0 +1,32 @@
+# This is an example configuration file
+# To learn more, see the full config.yaml reference: https://docs.continue.dev/reference
+
+name: Example Config
+version: 1.0.0
+schema: v1
+
+# Define which models can be used
+# https://docs.continue.dev/customization/models
+name: DeepSeek Config
+version: 1.0.0
+schema: v1
+models:
+  - name: DeepSeek V4 Pro
+    provider: deepseek
+    model: deepseek-v4-pro
+    apiKey: sk-25912a16c9d148ac97d5e62c15b462ba
+  - name: DeepSeek V4 Flash
+    provider: deepseek
+    model: deepseek-v4-flash
+    apiKey: sk-25912a16c9d148ac97d5e62c15b462ba
+
+tabAutocompleteModel:
+  name: DeepSeek V4 Flash
+  provider: deepseek
+  model: deepseek-v4-flash
+  apiKey: sk-25912a16c9d148ac97d5e62c15b462ba 
+
+# MCP Servers that Continue can access
+# https://docs.continue.dev/customization/mcp-tools
+mcpServers:
+  - uses: anthropic/memory-mcp
