@@ -5,7 +5,7 @@
  * This code and its associated "Cosmic Alignment" algorithms, interaction models,
  * and procedural devotional logic are protected as intellectual and spiritual property.
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import audioManager from '../../utils/audioManager';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { useCloudSync } from '../../hooks/useCloudSync';
@@ -74,7 +74,11 @@ export default function RoseView({
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
 
-  const [secuencia] = useState(() => getSequenceData(misterioActual));
+  const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
+  const safeIndex = Math.min(
+    Math.max(currentPrayerIndex, 0),
+    Math.max(secuencia.length - 1, 0)
+  );
 
   // ─── Interaction Timing Config ───
   const RHYTHM_CONFIG = {
@@ -90,8 +94,8 @@ export default function RoseView({
 
   useEffect(() => {
     if (cloudState && !loadedPrayerIndex) {
-      if (cloudState.currentPrayerIndex !== undefined && cloudState.todayDate === new Date().toDateString()) {
-         onUpdateProgreso(Math.min(cloudState.currentPrayerIndex, secuencia.length - 1));
+      if (cloudState.bookletIndex !== undefined && cloudState.todayDate === new Date().toDateString()) {
+         onUpdateProgreso(Math.min(cloudState.bookletIndex, secuencia.length - 1));
       }
       setLoadedPrayerIndex(true);
     }
@@ -103,7 +107,7 @@ export default function RoseView({
     }
   }, [currentPrayerIndex, loadedPrayerIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const rezoData = secuencia[currentPrayerIndex];
+  const rezoData = secuencia[safeIndex] || secuencia[0];
 
   // ─── Interaction State ───
   const [versoIndex, setVersoIndex] = useState(0);
@@ -166,6 +170,15 @@ export default function RoseView({
   useEffect(() => { isPrayerCompleteRef.current = isPrayerComplete; }, [isPrayerComplete]);
   useEffect(() => { charProgressIndexRef.current = charProgressIndex; }, [charProgressIndex]);
   useEffect(() => { wordProgressIndexRef.current = -1; lastWordAdvanceTimeRef.current = 0; }, [currentPrayerIndex, versoIndex]);
+
+  useEffect(() => {
+    setVersoIndex(0);
+    setCharProgressIndex(-1);
+    setIsVerseActivated(false);
+    setIsVersoComplete(false);
+    setIsPrayerComplete(false);
+    setIsCargando(false);
+  }, [currentPrayerIndex]);
 
   // ─── Derived ───
   const totalVersos = rezoData.versos.length;
@@ -899,10 +912,6 @@ export default function RoseView({
       touchAction: 'none'
     }}
     ref={containerRef}
-    onPointerDown={handlePointerDown}
-    onPointerMove={handlePointerMove}
-    onPointerUp={handlePointerUp}
-    onPointerLeave={handlePointerUp}
     >
       
       {/* ── Layer 1: Ambient Depth ── */}

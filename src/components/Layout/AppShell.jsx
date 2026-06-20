@@ -229,6 +229,9 @@ export default function AppShell() {
           soundEnabled={settings.soundEnabled}
           isLeftHanded={settings.isLeftHanded}
           simpleMode={settings.simpleMode}
+          onToggleSimpleMode={() => setSettings(s => ({ ...s, simpleMode: !s.simpleMode }))}
+          onShowStats={() => setVistaActiva('stats')}
+          onShowRosedal={() => setVistaActiva('rose')}
         />
       );
       case 'rose': return (

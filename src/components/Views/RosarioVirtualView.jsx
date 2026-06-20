@@ -27,6 +27,10 @@ export default function RosarioVirtualView({
   const [showBloom, setShowBloom] = useState(false);
   const [roseSeedForRender, setRoseSeedForRender] = useState('0');
   const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
+  const safeIndex = Math.min(
+    Math.max(currentPrayerIndex, 0),
+    Math.max(secuencia.length - 1, 0)
+  );
 
   const wordSpanRefs = useRef([]);
   const charReachedAtRef = useRef([]);
@@ -74,7 +78,7 @@ export default function RosarioVirtualView({
     }
   }, [currentPrayerIndex, versoIndex, secuencia, onUpdateProgreso]);
 
-  const activePrayer = secuencia[currentPrayerIndex];
+  const activePrayer = secuencia[safeIndex];
   const isAveMaria = activePrayer?.id === 'A';
   const bgImage = activePrayer?.img || '/gallery-images/cathedral-painting.jpg';
 
@@ -305,7 +309,7 @@ export default function RosarioVirtualView({
           {activePrayer?.title || 'Meditación'}
         </span>
         <span style={{ color: 'rgba(212,175,55,0.35)', fontSize: '0.55rem', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
-          {currentPrayerIndex + 1}/{secuencia.length}
+          {safeIndex + 1}/{secuencia.length}
         </span>
         {activePrayer?.versos?.length > 1 && (
           <span style={{ color: 'rgba(212,175,55,0.3)', fontSize: '0.5rem', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>

@@ -16,12 +16,13 @@ export const MEDAL_PORTS = {
   right: { x: 9, y: -5 },
 };
 
-const isLoopLoneIndex = (loopIndex) => {
-  // Blueprint v4 pattern (loop ring = 5 decades of 10 group-beads + 4 lone beads).
-  // Using the assumption that loopBodies preserves this exact sequence ordering:
-  // [cluster(10)] [lone] [cluster(10)] [lone] [cluster(10)] [lone] [cluster(10)] [lone] [cluster(10)]
-  const lonePositions = new Set([10, 21, 32, 43]); // 0-based within loopBodies (expected N=54)
-  return lonePositions.has(loopIndex);
+const isLoneBody = (body) => {
+  const d = body?.beadData;
+  if (!d) return false;
+  if (d.role === 'lone') return true;
+  // Mystery announcements are always lone physical beads on the loop
+  const id = d.liturgicId || '';
+  return id.startsWith('MG') || id.startsWith('MD') || id.startsWith('ML');
 };
 
 /**
@@ -41,8 +42,8 @@ export const buildRosaryEdges = ({ centerBody, loopBodies, pendantBodies }) => {
   for (let i = 0; i < loopBodies.length - 1; i++) {
     const bodyA = loopBodies[i];
     const bodyB = loopBodies[i + 1];
-    const loneA = isLoopLoneIndex(i);
-    const loneB = isLoopLoneIndex(i + 1);
+    const loneA = isLoneBody(bodyA);
+    const loneB = isLoneBody(bodyB);
     const link = (loneA || loneB) ? 'long_chain' : 'tight_link';
 
     edges.push({
@@ -58,21 +59,21 @@ export const buildRosaryEdges = ({ centerBody, loopBodies, pendantBodies }) => {
     const loopFirst = loopBodies[0];
     const loopLast = loopBodies[loopBodies.length - 1];
 
-    // Start attachment: loopFirst -> medal_port_right
+    // loopFirst exits medal-left (toward decades); loopLast enters medal-right
+    // so mystery lone beads sit on the correct side relative to the tail.
     edges.push({
       bodyA: loopFirst,
       bodyB: centerBody,
       pointA: { x: 0, y: 0 },
-      pointB: MEDAL_PORTS.right,
+      pointB: MEDAL_PORTS.left,
       link: 'short_chain',
     });
 
-    // End attachment: loopLast -> medal_port_left
     edges.push({
       bodyA: loopLast,
       bodyB: centerBody,
       pointA: { x: 0, y: 0 },
-      pointB: MEDAL_PORTS.left,
+      pointB: MEDAL_PORTS.right,
       link: 'short_chain',
     });
   }
