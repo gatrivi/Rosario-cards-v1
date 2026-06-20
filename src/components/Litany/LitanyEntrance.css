@@ -1,0 +1,295 @@
+/* LitanyEntrance.css - Epic Boss-style Entrance Animation */
+
+.litany-entrance-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Light rays emanating from center */
+.light-rays {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+
+.light-rays.active {
+  opacity: 1;
+}
+
+.ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 200px;
+  background: linear-gradient(to bottom, var(--ray-color) 0%, transparent 100%);
+  transform-origin: center bottom;
+  border-radius: 2px;
+  animation: ray-expand 1.2s ease-out;
+}
+
+.ray-1 {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+.ray-2 {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.ray-3 {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.ray-4 {
+  transform: translate(-50%, -50%) rotate(135deg);
+}
+.ray-5 {
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+.ray-6 {
+  transform: translate(-50%, -50%) rotate(225deg);
+}
+.ray-7 {
+  transform: translate(-50%, -50%) rotate(270deg);
+}
+.ray-8 {
+  transform: translate(-50%, -50%) rotate(315deg);
+}
+
+@keyframes ray-expand {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    height: 200px;
+    opacity: 0.8;
+  }
+}
+
+/* Central glow */
+.central-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+
+.central-glow.active {
+  opacity: 1;
+}
+
+.glow-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Title */
+.entrance-title {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out;
+}
+
+.entrance-title.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.main-title {
+  font-size: clamp(32px, 8vw, 64px);
+  font-weight: bold;
+  font-family: "Cloister Black", serif;
+  margin: 0 0 16px 0;
+  animation: title-glow 2s ease-in-out infinite alternate;
+}
+
+.subtitle {
+  font-size: clamp(16px, 4vw, 24px);
+  font-family: "Cloister Black", serif;
+  margin: 0;
+  font-style: italic;
+  animation: subtitle-fade 2s ease-in-out infinite alternate;
+}
+
+@keyframes title-glow {
+  0% {
+    text-shadow: 0 0 20px var(--ray-color), 0 0 40px var(--ray-color);
+  }
+  100% {
+    text-shadow: 0 0 30px var(--ray-color), 0 0 60px var(--ray-color);
+  }
+}
+
+@keyframes subtitle-fade {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Celebration particles */
+.celebration-particles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+
+.celebration-particles.active {
+  opacity: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--particle-color);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: particle-burst 1.5s ease-out var(--delay) forwards;
+}
+
+@keyframes particle-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1) rotate(var(--angle))
+      translateY(-100px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.5) rotate(var(--angle))
+      translateY(-200px);
+    opacity: 0;
+  }
+}
+
+/* Stained glass overlay effect */
+.stained-glass-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+      45deg,
+      rgba(212, 175, 55, 0.1) 0%,
+      transparent 25%,
+      transparent 75%,
+      rgba(212, 175, 55, 0.1) 100%
+    ),
+    linear-gradient(
+      -45deg,
+      rgba(212, 175, 55, 0.05) 0%,
+      transparent 25%,
+      transparent 75%,
+      rgba(212, 175, 55, 0.05) 100%
+    );
+  pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .light-rays {
+    width: 300px;
+    height: 300px;
+  }
+
+  .ray {
+    height: 150px;
+  }
+
+  .glow-circle {
+    width: 80px;
+    height: 80px;
+  }
+
+  .main-title {
+    font-size: clamp(24px, 6vw, 48px);
+  }
+
+  .subtitle {
+    font-size: clamp(14px, 3vw, 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .light-rays {
+    width: 250px;
+    height: 250px;
+  }
+
+  .ray {
+    height: 120px;
+  }
+
+  .glow-circle {
+    width: 60px;
+    height: 60px;
+  }
+
+  .main-title {
+    font-size: clamp(20px, 5vw, 36px);
+  }
+
+  .subtitle {
+    font-size: clamp(12px, 2.5vw, 16px);
+  }
+}
+
+/* Exit animation */
+.litany-entrance-overlay {
+  animation: entrance-fade-in 0.5s ease-out;
+}
+
+@keyframes entrance-fade-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}

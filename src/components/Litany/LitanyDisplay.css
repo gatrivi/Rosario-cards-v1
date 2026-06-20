@@ -1,0 +1,112 @@
+/* LitanyDisplay.css - Stained Glass Theme */
+
+.litany-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  min-height: 100%;
+  gap: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.litany-counter {
+  font-size: 14px;
+  color: var(--catholic-gold);
+  opacity: 0.8;
+  font-family: "Cloister Black", serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  position: relative;
+  z-index: 11;
+}
+
+.litany-invocation {
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: bold;
+  line-height: 1.6;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: "Cloister Black", serif;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 11;
+}
+
+.litany-response {
+  font-size: clamp(16px, 3.5vw, 20px);
+  font-weight: 500;
+  line-height: 1.5;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: "Cloister Black", serif;
+  font-style: italic;
+  opacity: 0.9;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 11;
+}
+
+.litany-navigation {
+  margin-top: 20px;
+  position: relative;
+  z-index: 11;
+}
+
+.nav-hint {
+  font-size: 12px;
+  color: var(--catholic-gold);
+  opacity: 0.7;
+  font-family: "Cloister Black", serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .litany-display {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .litany-invocation {
+    font-size: clamp(16px, 4vw, 20px);
+  }
+
+  .litany-response {
+    font-size: clamp(14px, 3.5vw, 18px);
+  }
+}
+
+@media (max-width: 480px) {
+  .litany-display {
+    padding: 10px;
+    gap: 12px;
+  }
+}
+
+/* Animation for verse transitions */
+.litany-invocation,
+.litany-response {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects for interactive elements */
+.litany-display:hover .litany-invocation {
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+}
+
+.litany-display:hover .litany-response {
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+}

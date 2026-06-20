@@ -21,7 +21,13 @@ import {
   getPrayerImageCandidates,
   pickPrayerImage,
   resolvePrayerImage,
+  getLitanyVerseImageCandidates,
+  resolveLitanyVerseImage,
 } from '../../utils/prayerImages';
+import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
+import LitanyDisplay from '../Litany/LitanyDisplay';
+import LitanyProgressBars from '../Litany/LitanyProgressBars';
+import LitanyEntrance from '../Litany/LitanyEntrance';
 import './BookletView.css';
 
 const TRANSITION_PHASE = {
@@ -106,6 +112,8 @@ function buildSequence(mysteryType) {
         img: resolvePrayerImage(data, mysteryType, idx),
         imgCandidates,
         variants: getPrayerVariants(id),
+        verses: data.verses,
+        sections: data.sections,
       };
     })
     .filter(Boolean);
@@ -207,6 +215,26 @@ export default function BookletView({
   const [orbHost, setOrbHost] = useState(null);
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
+  const [litanyVerseIndex, setLitanyVerseIndex] = useState(0);
+  const [showLitanyEntrance, setShowLitanyEntrance] = useState(false);
+  const litanyEntranceShownRef = useRef(false);
+
+  const isLitany = isLitanyPrayer(activePrayer);
+  const litanyVerse = isLitany ? getLitanyVerse(litanyVerseIndex) : null;
+  const litanyVerseTotal = activePrayer?.verses?.length || 0;
+
+  useEffect(() => {
+    if (activePrayer?.id === 'LL') {
+      setLitanyVerseIndex(0);
+      if (!litanyEntranceShownRef.current) {
+        setShowLitanyEntrance(true);
+        litanyEntranceShownRef.current = true;
+      }
+    } else {
+      setLitanyVerseIndex(0);
+      setShowLitanyEntrance(false);
+    }
+  }, [displayIndex, activePrayer?.id]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -326,8 +354,19 @@ export default function BookletView({
     } catch (_) { /* ignore */ }
   }, [variants, variantId, activePrayer?.id]);
 
-  const canGoBack = displayIndex > 0;
-  const canGoForward = displayIndex < total - 1;
+  const bumpLitanyVerse = useCallback((delta) => {
+    setLitanyVerseIndex((prev) => {
+      const max = litanyVerseTotal - 1;
+      if (max < 0) return 0;
+      return Math.min(Math.max(prev + delta, 0), max);
+    });
+    setStepGlow(true);
+    scheduleTransition(() => setStepGlow(false), BOOKLET_TIMING.stepGlow);
+  }, [litanyVerseTotal, scheduleTransition]);
+
+  const canGoBack = displayIndex > 0 || (isLitany && litanyVerseIndex > 0);
+  const canGoForward =
+    displayIndex < total - 1 || (isLitany && litanyVerseIndex < litanyVerseTotal - 1);
 
   const navigateTo = useCallback(
     (newIndex) => {
@@ -411,12 +450,20 @@ export default function BookletView({
   );
 
   const goPrev = useCallback(() => {
-    if (canGoBack) navigateTo(displayIndex - 1);
-  }, [canGoBack, navigateTo, displayIndex]);
+    if (isLitany && litanyVerseIndex > 0) {
+      bumpLitanyVerse(-1);
+      return;
+    }
+    if (displayIndex > 0) navigateTo(displayIndex - 1);
+  }, [isLitany, litanyVerseIndex, bumpLitanyVerse, navigateTo, displayIndex]);
 
   const goNext = useCallback(() => {
-    if (canGoForward) navigateTo(displayIndex + 1);
-  }, [canGoForward, navigateTo, displayIndex]);
+    if (isLitany && litanyVerseIndex < litanyVerseTotal - 1) {
+      bumpLitanyVerse(1);
+      return;
+    }
+    if (displayIndex < total - 1) navigateTo(displayIndex + 1);
+  }, [isLitany, litanyVerseIndex, litanyVerseTotal, bumpLitanyVerse, navigateTo, displayIndex, total]);
 
   useEffect(() => {
     const handleKey = (event) => {
@@ -463,12 +510,17 @@ export default function BookletView({
 
   const vitralCandidates = useMemo(() => {
     if (!activePrayer) return [];
+    if (isLitany && litanyVerse) {
+      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer);
+      const picked = resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex);
+      return [picked, ...all.filter((u) => u !== picked)];
+    }
     const all = activePrayer.imgCandidates?.length
       ? activePrayer.imgCandidates
       : [activePrayer.img];
     const picked = pickPrayerImage(all, safeIndex);
     return [picked, ...all.filter((u) => u !== picked)];
-  }, [activePrayer, safeIndex]);
+  }, [activePrayer, safeIndex, isLitany, litanyVerse, litanyVerseIndex]);
 
   if (!activePrayer) {
     return (
@@ -496,7 +548,7 @@ export default function BookletView({
         aria-hidden="true"
       >
         <VitralImage
-          key={`${activePrayer.id}-${vitralCandidates[0]}`}
+          key={`${activePrayer.id}-${isLitany ? litanyVerseIndex : ''}-${vitralCandidates[0]}`}
           candidates={vitralCandidates}
           onReady={handleImageReady}
         />
@@ -537,6 +589,12 @@ export default function BookletView({
             </button>
             {' '}
             {displayIndex + 1} / {total}
+            {isLitany && litanyVerseTotal > 0 && (
+              <span className="booklet-ave-count">
+                {' '}
+                · letanía {litanyVerseIndex + 1} / {litanyVerseTotal}
+              </span>
+            )}
             {isAveMaria && (
               <span className="booklet-ave-count">
                 {' '}
@@ -591,13 +649,29 @@ export default function BookletView({
             else if (x < rect.width * 0.38) goPrev();
           }}
         >
+          {isLitany && activePrayer.sections && (
+            <LitanyProgressBars
+              currentVerseIndex={litanyVerseIndex}
+              sections={activePrayer.sections}
+              currentMystery={misterioActual}
+            />
+          )}
           <div
-            className={`booklet-glass-inner stained-glass-overlay booklet-glass-inner--progress${isAveMaria ? ' booklet-glass-inner--ave' : ''}`}
+            className={`booklet-glass-inner stained-glass-overlay booklet-glass-inner--progress${isAveMaria ? ' booklet-glass-inner--ave' : ''}${isLitany ? ' booklet-glass-inner--litany' : ''}`}
             style={{
               boxShadow: `0 4px 20px rgba(0, 0, 0, 0.22), inset 0 0 ${24 + (stepContext.localStep || 0) * 5}px rgba(212, 175, 55, ${0.04 + (parseFloat(vitralStyle['--ave-glare']) || 0.06) * 0.35})`,
             }}
           >
-            {renderVerseLines(displayText)}
+            {isLitany && litanyVerse ? (
+              <LitanyDisplay
+                verse={litanyVerse}
+                verseIndex={litanyVerseIndex}
+                totalVerses={litanyVerseTotal}
+                currentMystery={misterioActual}
+              />
+            ) : (
+              renderVerseLines(displayText)
+            )}
           </div>
         </article>
       </div>
@@ -619,6 +693,13 @@ export default function BookletView({
       />
 
       {optionalOpen && <OptionalPrayerSheet onClose={() => setOptionalOpen(false)} />}
+
+      {showLitanyEntrance && (
+        <LitanyEntrance
+          currentMystery={misterioActual}
+          onComplete={() => setShowLitanyEntrance(false)}
+        />
+      )}
 
       <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
         <button

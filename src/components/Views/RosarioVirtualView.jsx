@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import VirtualRosaryPhysics from '../RosarioNube/VirtualRosaryPhysics';
+import RosaryAdapter from '../RosarioNube/RosaryAdapter';
 import { getSequenceData } from './RoseView';
 import RosaEnFocoView from './RosaEnFocoView';
 import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
 import SacredDust from '../common/SacredDust';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
+import LitanyDisplay from '../Litany/LitanyDisplay';
+import LitanyProgressBars from '../Litany/LitanyProgressBars';
 
 export default function RosarioVirtualView({ 
   currentPrayerIndex, 
@@ -80,7 +82,10 @@ export default function RosarioVirtualView({
 
   const activePrayer = secuencia[safeIndex];
   const isAveMaria = activePrayer?.id === 'A';
-  const bgImage = activePrayer?.img || '/gallery-images/cathedral-painting.jpg';
+  const isLitany = activePrayer?.id === 'LL';
+  const bgImage = isLitany && activePrayer?.verseImages?.length
+    ? activePrayer.verseImages[Math.min(versoIndex, activePrayer.verseImages.length - 1)]
+    : (activePrayer?.imgmo || activePrayer?.img || '/gallery-images/cathedral-painting.jpg');
 
   // Logic for non-AveMaria charging
   useEffect(() => {
@@ -164,8 +169,6 @@ export default function RosarioVirtualView({
     onUpdateProgreso(index);
   }, [onUpdateProgreso]);
 
-  const handleLinkClick = useCallback(() => {}, []);
-
   // Determine Symbol
   const prayerId = activePrayer?.id;
   let symbolKey = SYMBOL_MAP[prayerId] || 'cross';
@@ -216,6 +219,22 @@ export default function RosarioVirtualView({
             simpleMode={simpleMode}
             seed={roseSeedForRender}
           />
+        ) : isLitany ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '100%', maxWidth: '520px' }}>
+            {activePrayer.litanySections && (
+              <LitanyProgressBars
+                currentVerseIndex={versoIndex}
+                sections={activePrayer.litanySections}
+                currentMystery={misterioActual}
+              />
+            )}
+            <LitanyDisplay
+              verse={activePrayer.litanyVerses?.[versoIndex]}
+              verseIndex={versoIndex}
+              totalVerses={activePrayer.litanyVerses?.length || 0}
+              currentMystery={misterioActual}
+            />
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', width: '100%' }}>
             <div style={{ 
@@ -267,9 +286,8 @@ export default function RosarioVirtualView({
         position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
         zIndex: 20
       }}>
-        <VirtualRosaryPhysics
+        <RosaryAdapter
           onNodeClick={handleNodeClick}
-          onLinkClick={handleLinkClick}
           onAdvance={simpleMode ? handleAdvance : (!isAveMaria ? handleAdvance : null)}
           onRetreat={handleRetreat}
           onSwipeAdvance={handleAdvance}
@@ -283,7 +301,6 @@ export default function RosarioVirtualView({
           activePrayerIndex={currentPrayerIndex}
           misterioActual={misterioActual}
           soundEnabled={soundEnabled}
-          isLeftHanded={isLeftHanded}
           guided={guided}
         />
       </div>

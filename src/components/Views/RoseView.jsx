@@ -16,6 +16,8 @@ import SacredText from './SacredText';
 import SacredDust from '../common/SacredDust';
 import { getCosmicPhases } from '../../utils/cosmicModulator';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
+import { formatLitanyLine } from '../../utils/litanyHelpers';
+import { resolveLitanyVerseImage } from '../../utils/prayerImages';
 
 
 // ─── Prayer data helpers ───
@@ -46,8 +48,34 @@ export const getSequenceData = (mysteryType = 'gozosos') => {
     else if (id === 'F') { icono = '🔥'; color = '#FF4500'; }
     else if (id.startsWith('M')) { icono = '📖'; color = '#4682B4'; }
     else if (id === 'LL' || id === 'S') { icono = '👑'; color = '#800080'; }
+
+    if (id === 'LL' && rawData.verses?.length) {
+      const verseImages = rawData.verses.map((v, i) => resolveLitanyVerseImage(v, rawData, i));
+      const versos = rawData.verses.map(formatLitanyLine);
+      return {
+        id,
+        title: rawData.title,
+        icono,
+        color,
+        versos,
+        img: rawData.imgmo || rawData.img,
+        imgmo: rawData.imgmo,
+        verseImages,
+        litanyVerses: rawData.verses,
+        litanySections: rawData.sections,
+      };
+    }
+
     const versos = rawData.text.split(/(?<=[.,;:!])\s+|\n+/).map(v => v.trim()).filter(v => v.length > 0);
-    return { id, title: rawData.title, icono, color, versos, img: rawData.img, imgmo: rawData.imgmo };
+    return {
+      id,
+      title: rawData.title,
+      icono,
+      color,
+      versos,
+      img: rawData.imgmo || rawData.img,
+      imgmo: rawData.imgmo,
+    };
   }).filter(Boolean);
 };
 

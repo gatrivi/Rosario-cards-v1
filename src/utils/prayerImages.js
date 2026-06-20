@@ -1,6 +1,9 @@
 const FALLBACK = '/gallery-images/cathedral-painting.jpg';
 const MODO = '/gallery-images/misterios/modooscuro/';
 
+/** Prefer modooscuro (imgmo) over light/mododia paths for devotional backgrounds. */
+const PREFER_MODOOSCURO = true;
+
 /** Filename-themed extras (matched against prayer id + title). */
 const THEMATIC = [
   { re: /contrición|contricion/i, files: ['contricion.jpg', 'contricion2.png'] },
@@ -47,29 +50,57 @@ export function pickPrayerImage(candidates, seed = 0) {
   return candidates[idx];
 }
 
+function pushImage(candidates, url, push) {
+  if (url && !candidates.includes(url)) push(url);
+}
+
+/** Build ordered candidate URLs for a litany verse background. */
+export function getLitanyVerseImageCandidates(verse, prayerFallback = null) {
+  const candidates = [];
+  const push = (url) => pushImage(candidates, url, (u) => candidates.push(u));
+
+  if (!verse) {
+    if (prayerFallback?.imgmo) push(prayerFallback.imgmo);
+    if (prayerFallback?.img) push(prayerFallback.img);
+    push(FALLBACK);
+    return candidates;
+  }
+
+  if (PREFER_MODOOSCURO) {
+    if (verse.imgmo) push(verse.imgmo);
+    if (verse.img) push(verse.img);
+  } else {
+    if (verse.img) push(verse.img);
+    if (verse.imgmo) push(verse.imgmo);
+  }
+
+  if (prayerFallback?.imgmo) push(prayerFallback.imgmo);
+  if (prayerFallback?.img) push(prayerFallback.img);
+  push(FALLBACK);
+  return candidates;
+}
+
+export function resolveLitanyVerseImage(verse, prayerFallback = null, seed = 0) {
+  return pickPrayerImage(getLitanyVerseImageCandidates(verse, prayerFallback), seed);
+}
+
 /** Build ordered candidate URLs for a prayer vitral image. */
 export function getPrayerImageCandidates(prayer, mysteryType) {
   if (!prayer) return [FALLBACK];
 
-  const isDark =
-    typeof localStorage !== 'undefined' &&
-    localStorage.getItem('theme') !== 'light';
-
   const candidates = [];
-  const push = (url) => {
-    if (url && !candidates.includes(url)) candidates.push(url);
-  };
+  const push = (url) => pushImage(candidates, url, (u) => candidates.push(u));
 
   if (prayer.id?.startsWith('MD') && MODOOSCURO_DOLOR[prayer.id]) {
     push(MODOOSCURO_DOLOR[prayer.id]);
   }
 
-  if (isDark && prayer.imgmo) push(prayer.imgmo);
+  if (PREFER_MODOOSCURO && prayer.imgmo) push(prayer.imgmo);
   if (prayer.img) {
     if (Array.isArray(prayer.img)) prayer.img.forEach(push);
     else push(prayer.img);
   }
-  if (!isDark && prayer.imgmo) push(prayer.imgmo);
+  if (!PREFER_MODOOSCURO && prayer.imgmo) push(prayer.imgmo);
 
   if (prayer.id?.startsWith('MD')) {
     push('/gallery-images/misterios/modooscuro/misteriodolor0.jpg');
