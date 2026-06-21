@@ -1,47 +1,130 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import RosaryAdapter from '../RosarioNube/RosaryAdapter';
-import { getSequenceData } from './RoseView';
-import RosaEnFocoView from './RosaEnFocoView';
-import SacredDrawing from './SacredDrawing';
-import SacredText from './SacredText';
 import SacredDust from '../common/SacredDust';
-import { SYMBOL_MAP } from '../../data/SacredSymbols';
-import LitanyDisplay from '../Litany/LitanyDisplay';
-import LitanyProgressBars from '../Litany/LitanyProgressBars';
+import VitralBackground from '../common/VitralBackground';
+import BookletPrayerPanel from './BookletPrayerPanel';
+import { buildSequence } from '../../utils/bookletSequence';
+import { resolveDisplayText, loadSavedVariantId } from '../../utils/bookletDisplayText';
+import {
+  pickPrayerImage,
+  getLitanyVerseImageCandidates,
+  resolveLitanyVerseImage,
+} from '../../utils/prayerImages';
+import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
+import { getBookletStepContext, stepContextToVitralVars, makeBookletRoseFingerprint } from '../../utils/bookletProgress';
+import { getAveMariaRunInfo } from './BookletView';
+import { getMysteryColors } from '../RosarioNube/utils/mysteryColors';
+import './BookletView.css';
+import './RosarioVirtualView.css';
 
-export default function RosarioVirtualView({ 
-  currentPrayerIndex, 
-  misterioActual, 
-  onUpdateProgreso, 
-  soundEnabled, 
-  isLeftHanded, 
+export default function RosarioVirtualView({
+  currentPrayerIndex,
+  misterioActual,
+  onUpdateProgreso,
+  soundEnabled,
+  isLeftHanded,
   simpleMode = false,
   onShowStats,
   onShowRosedal,
-  onToggleSimpleMode
+  onToggleSimpleMode,
+  onAveMariaComplete,
 }) {
-  const [versoIndex, setVersoIndex] = useState(0);
+  const [litanyVerseIndex, setLitanyVerseIndex] = useState(0);
   const [guided, setGuided] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const [isCargando, setIsCargando] = useState(false);
   const [cargaOracion, setCargaOracion] = useState(0);
-  const [warmthTick, setWarmthTick] = useState(0);
   const [showBloom, setShowBloom] = useState(false);
-  const [roseSeedForRender, setRoseSeedForRender] = useState('0');
-  const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
-  const safeIndex = Math.min(
-    Math.max(currentPrayerIndex, 0),
-    Math.max(secuencia.length - 1, 0)
-  );
-
-  const wordSpanRefs = useRef([]);
-  const charReachedAtRef = useRef([]);
-  const charDwellRef = useRef([]);
   const timerRef = useRef(null);
 
+  const mysteryColors = useMemo(() => getMysteryColors(misterioActual), [misterioActual]);
+  const accentColor = mysteryColors.highlight;
+  const secuencia = useMemo(() => buildSequence(misterioActual), [misterioActual]);
+  const total = secuencia.length;
+  const safeIndex = Math.min(
+    Math.max(currentPrayerIndex, 0),
+    Math.max(total - 1, 0)
+  );
+
+  const activePrayer = secuencia[safeIndex];
+  const isLitany = isLitanyPrayer(activePrayer);
+  const litanyVerse = isLitany ? getLitanyVerse(litanyVerseIndex) : null;
+  const litanyVerseTotal = activePrayer?.verses?.length || 0;
+
+  const stepContext = useMemo(
+    () => getBookletStepContext(secuencia, safeIndex, total),
+    [secuencia, safeIndex, total]
+  );
+  const vitralStyle = useMemo(() => stepContextToVitralVars(stepContext), [stepContext]);
+  const aveRunInfo = stepContext.aveRun;
+  const isAveMaria = activePrayer?.id === 'A' && aveRunInfo;
+  const vitralKind = isAveMaria
+    ? 'ave'
+    : stepContext.kind === 'mystery'
+      ? 'mystery'
+      : 'prayer';
+
+  const variantId = useMemo(
+    () => (activePrayer ? loadSavedVariantId(activePrayer) : null),
+    [activePrayer]
+  );
+  const displayText = useMemo(
+    () => resolveDisplayText(activePrayer, variantId),
+    [activePrayer, variantId]
+  );
+
+  const vitralCandidates = useMemo(() => {
+    if (!activePrayer) return ['/gallery-images/cathedral.jpg'];
+    if (isLitany && litanyVerse) {
+      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer);
+      const picked = resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex);
+      return [picked, ...all.filter((u) => u !== picked)];
+    }
+    const all = activePrayer.imgCandidates?.length
+      ? activePrayer.imgCandidates
+      : [activePrayer.img];
+    const picked = pickPrayerImage(all, safeIndex);
+    return [picked, ...all.filter((u) => u !== picked)];
+  }, [activePrayer, safeIndex, isLitany, litanyVerse, litanyVerseIndex]);
+
   useEffect(() => {
-    setVersoIndex(0);
-    setCargaOracion(0);
+    console.log('📿 RosarioVirtualView mount/update', {
+      misterioActual,
+      currentPrayerIndex,
+      safeIndex,
+      total,
+      prayerId: activePrayer?.id,
+      title: activePrayer?.title,
+    });
+  }, [misterioActual, currentPrayerIndex, safeIndex, total, activePrayer?.id, activePrayer?.title]);
+
+  useEffect(() => {
+    const preview = displayText ? `${displayText.slice(0, 48)}…` : '(empty)';
+    console.log('📖 Rosario prayer panel', {
+      variant: 'rosary',
+      prayerId: activePrayer?.id,
+      displayTextLen: displayText?.length ?? 0,
+      preview,
+      variantId,
+      isLitany,
+      litanyVerseIndex,
+      willRenderPanel: Boolean(activePrayer),
+    });
+    if (!displayText?.length && activePrayer) {
+      console.warn('⚠️ Rosario displayText empty for', activePrayer.id, activePrayer.title);
+    }
+  }, [activePrayer, displayText, variantId, isLitany, litanyVerseIndex]);
+
+  useEffect(() => {
+    console.log('🖼️ Rosario vitral', {
+      kind: vitralKind,
+      candidate: vitralCandidates[0],
+      candidateCount: vitralCandidates.length,
+    });
+  }, [vitralKind, vitralCandidates]);
+
+  useEffect(() => {
+    setLitanyVerseIndex(0);
   }, [currentPrayerIndex]);
 
   useEffect(() => {
@@ -51,244 +134,174 @@ export default function RosarioVirtualView({
 
   const handleAdvance = useCallback(() => {
     setShowHint(false);
-    const activePrayer = secuencia[currentPrayerIndex];
-    if (activePrayer?.versos && versoIndex < activePrayer.versos.length - 1) {
-      setVersoIndex(prev => prev + 1);
-      setCargaOracion(0);
-    } else if (currentPrayerIndex < secuencia.length - 1) {
-      // TRIGGER BLOOM on full prayer completion
-      if (activePrayer?.id === 'A') {
-        const roseSeed = Date.now().toString();
-        setRoseSeedForRender(roseSeed);
-        try {
-          const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
-          stored.push({
-            timestamp: roseSeed,
-            warmthProfile: [],
-            wiggleProfile: [],
-            verseCount: 0,
-          });
-          if (stored.length > 500) stored.splice(0, stored.length - 500);
-          localStorage.setItem('rosedal_roses', JSON.stringify(stored));
-        } catch (e) {
-          // Ignore storage issues; audio/flow should never block.
-        }
+    const prayer = secuencia[currentPrayerIndex];
+    if (isLitanyPrayer(prayer) && litanyVerseIndex < litanyVerseTotal - 1) {
+      setLitanyVerseIndex((v) => v + 1);
+      setCargaOracion(100);
+      return;
+    }
+    if (currentPrayerIndex < secuencia.length - 1) {
+      if (prayer?.id === 'A') {
+        const fp = makeBookletRoseFingerprint(
+          getAveMariaRunInfo(secuencia, currentPrayerIndex),
+          getBookletStepContext(secuencia, currentPrayerIndex, total).mysteryDecade
+        );
+        onAveMariaComplete?.(fp);
       }
       setShowBloom(true);
       setTimeout(() => setShowBloom(false), 1200);
       onUpdateProgreso(currentPrayerIndex + 1);
+      setCargaOracion(100);
     }
-  }, [currentPrayerIndex, versoIndex, secuencia, onUpdateProgreso]);
+  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, secuencia, total, onUpdateProgreso, onAveMariaComplete]);
 
-  const activePrayer = secuencia[safeIndex];
-  const isAveMaria = activePrayer?.id === 'A';
-  const isLitany = activePrayer?.id === 'LL';
-  const bgImage = isLitany && activePrayer?.verseImages?.length
-    ? activePrayer.verseImages[Math.min(versoIndex, activePrayer.verseImages.length - 1)]
-    : (activePrayer?.imgmo || activePrayer?.img || '/gallery-images/cathedral-painting.jpg');
-
-  // Logic for non-AveMaria charging
   useEffect(() => {
-    if (!isAveMaria && isCargando && cargaOracion < 100) {
+    if (isCargando && cargaOracion < 100) {
       timerRef.current = setInterval(() => {
-        setWarmthTick(t => t + 1);
-        setCargaOracion(prev => {
+        setCargaOracion((prev) => {
           if (prev >= 100) {
             clearInterval(timerRef.current);
             return 100;
           }
-          return prev + 2.5; 
+          return prev + 2.5;
         });
       }, 30);
     } else {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [isAveMaria, isCargando, cargaOracion]);
+  }, [isCargando, cargaOracion]);
 
-  // Disable auto-prayer charging when switching to Libre mode.
   useEffect(() => {
     if (guided) return;
     setIsCargando(false);
-    setCargaOracion(0);
-    setWarmthTick(0);
   }, [guided]);
 
   useEffect(() => {
-    if (!isAveMaria && cargaOracion >= 100) {
+    if (guided && isCargando && cargaOracion >= 100) {
       if (navigator.vibrate) navigator.vibrate(20);
       handleAdvance();
     }
-  }, [isAveMaria, cargaOracion, handleAdvance]);
-
-  const currentVerseText = activePrayer?.versos?.[versoIndex] || '';
-  const words = useMemo(() => currentVerseText.split(/\s+/).filter(w => w.length > 0), [currentVerseText]);
-  const wordCharOffsets = useMemo(() => {
-    let off = 0;
-    return words.map(w => {
-      const res = off;
-      off += w.length;
-      return res;
-    });
-  }, [words]);
-  const totalChars = wordCharOffsets.length > 0 ? wordCharOffsets[wordCharOffsets.length - 1] + words[words.length - 1].length : 0;
-  const charProgressIndex = Math.floor(cargaOracion / 100 * totalChars);
+  }, [guided, isCargando, cargaOracion, handleAdvance]);
 
   useEffect(() => {
-    if (charProgressIndex >= 0) {
-      const now = Date.now();
-      for (let i = 0; i <= charProgressIndex; i++) {
-        if (!charReachedAtRef.current[i]) charReachedAtRef.current[i] = now;
+    const onRepeatTouch = (event) => {
+      const { prayerIndex } = event.detail || {};
+      if (prayerIndex !== currentPrayerIndex) return;
+      setShowHint(false);
+      const prayer = secuencia[currentPrayerIndex];
+      if (isLitanyPrayer(prayer) && litanyVerseIndex < litanyVerseTotal - 1) {
+        setLitanyVerseIndex((v) => v + 1);
+        setCargaOracion(100);
+        return;
       }
-    }
-  }, [charProgressIndex]);
+      window.dispatchEvent(
+        new CustomEvent('contentExhausted', { detail: { prayerIndex: currentPrayerIndex } })
+      );
+    };
 
-  useEffect(() => {
-    charReachedAtRef.current = [];
-    charDwellRef.current = [];
-  }, [versoIndex, currentPrayerIndex]);
+    const onContentExhausted = (event) => {
+      const { prayerIndex } = event.detail || {};
+      if (prayerIndex === currentPrayerIndex) handleAdvance();
+    };
+
+    const onHeartBead = () => {
+      const litanyIdx = secuencia.findIndex((p) => p?.id === 'LL');
+      if (litanyIdx >= 0) {
+        onUpdateProgreso(litanyIdx);
+        setLitanyVerseIndex(0);
+        setCargaOracion(100);
+      }
+    };
+
+    window.addEventListener('beadRepeatTouch', onRepeatTouch);
+    window.addEventListener('contentExhausted', onContentExhausted);
+    window.addEventListener('heartBeadPressed', onHeartBead);
+    return () => {
+      window.removeEventListener('beadRepeatTouch', onRepeatTouch);
+      window.removeEventListener('contentExhausted', onContentExhausted);
+      window.removeEventListener('heartBeadPressed', onHeartBead);
+    };
+  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, secuencia, handleAdvance, onUpdateProgreso]);
 
   const handleRetreat = useCallback(() => {
     setShowHint(false);
-    if (versoIndex > 0) {
-      setVersoIndex(prev => prev - 1);
-    } else if (currentPrayerIndex > 0) {
+    if (isLitany && litanyVerseIndex > 0) {
+      setLitanyVerseIndex((v) => v - 1);
+      return;
+    }
+    if (currentPrayerIndex > 0) {
       onUpdateProgreso(currentPrayerIndex - 1);
     }
-  }, [currentPrayerIndex, versoIndex, onUpdateProgreso]);
+  }, [currentPrayerIndex, litanyVerseIndex, isLitany, onUpdateProgreso]);
 
   const handleEmptyPointerMove = useCallback(() => {
-    // If the user is dragging/panning on empty space, cancel charging.
-    // This avoids accidental auto-advance during free interaction.
+    if (!guided) return;
     setIsCargando(false);
     setCargaOracion(0);
-    setWarmthTick(0);
-  }, []);
+  }, [guided]);
 
-  const handleNodeClick = useCallback((index) => {
+  const revealPrayer = useCallback((index) => {
+    console.log('✨ Rosario revealPrayer', { index, prayerId: secuencia[index]?.id });
+    setShowHint(false);
+    setLitanyVerseIndex(0);
+    setCargaOracion(100);
+    setIsCargando(false);
     onUpdateProgreso(index);
   }, [onUpdateProgreso]);
 
-  // Determine Symbol
-  const prayerId = activePrayer?.id;
-  let symbolKey = SYMBOL_MAP[prayerId] || 'cross';
-  if (prayerId && prayerId.startsWith('M')) {
-    const mPrefix = misterioActual.endsWith('os') ? misterioActual.slice(0, -2) : misterioActual;
-    const mNum = prayerId.slice(2);
-    symbolKey = `${mPrefix}_${mNum}`;
-  }
+  const handleNodeClick = useCallback((index) => {
+    revealPrayer(index);
+  }, [revealPrayer]);
+
+  const handleBeadHoldStart = useCallback((index) => {
+    console.log('🙏 Rosario bead hold start', { index, prayerId: secuencia[index]?.id });
+    revealPrayer(index);
+  }, [revealPrayer, secuencia]);
+
+  const handleBeadHoldEnd = useCallback(() => {}, []);
 
   return (
-    <div style={{
-      height: '100%', position: 'relative', backgroundColor: '#050505', overflow: 'hidden',
-      backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)), url(${bgImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      transition: 'background-image 0.8s ease-in-out'
-    }}>
+    <div
+      className={`rosary-view-root${simpleMode ? ' rosary-view-root--simple' : ''}`}
+      style={{ ...vitralStyle, '--rosary-accent': accentColor }}
+    >
+      <VitralBackground
+        key={`${activePrayer?.id}-${litanyVerseIndex}-${vitralCandidates[0]}`}
+        candidates={vitralCandidates}
+        kind={vitralKind}
+        variant="rosary"
+        stepGlow={showBloom}
+      />
 
-      {/* ── Layer 1: Ambient Depth ── */}
       <SacredDust isCargando={isCargando} />
 
-      {/* ── Layer 1.5: Bloom Effect ── */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-        background: `radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 75%)`,
-        opacity: showBloom ? 1 : 0,
-        transition: showBloom ? 'none' : 'opacity 1s ease-out',
-        pointerEvents: 'none',
-        zIndex: 15
-      }} />
+      <div className={`rosary-bloom${showBloom ? ' rosary-bloom--active' : ' rosary-bloom--idle'}`} />
 
-      {/* ── Layer 2: Moment Layer (Rosa / Prayer Text) ── */}
-      <div style={{
-        position: 'absolute',
-        top: 0, left: 0, width: '100%', height: '100%',
-        zIndex: 5,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 20px'
-      }}>
-        {isAveMaria ? (
-          <RosaEnFocoView 
-            misterioColor="#D4AF37" 
-            externalIsCargando={isCargando}
-            onComplete={handleAdvance}
+      {activePrayer && (
+        <div className="rosary-prayer-layer-wrap">
+          <BookletPrayerPanel
+            displayText={displayText}
             simpleMode={simpleMode}
-            seed={roseSeedForRender}
+            isAveMaria={Boolean(isAveMaria)}
+            isLitany={isLitany}
+            litanyVerse={litanyVerse}
+            litanyVerseIndex={litanyVerseIndex}
+            litanyVerseTotal={litanyVerseTotal}
+            litanySections={activePrayer.sections}
+            misterioActual={misterioActual}
+            stepContext={stepContext}
+            variant="rosary"
           />
-        ) : isLitany ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '100%', maxWidth: '520px' }}>
-            {activePrayer.litanySections && (
-              <LitanyProgressBars
-                currentVerseIndex={versoIndex}
-                sections={activePrayer.litanySections}
-                currentMystery={misterioActual}
-              />
-            )}
-            <LitanyDisplay
-              verse={activePrayer.litanyVerses?.[versoIndex]}
-              verseIndex={versoIndex}
-              totalVerses={activePrayer.litanyVerses?.length || 0}
-              currentMystery={misterioActual}
-            />
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', width: '100%' }}>
-            <div style={{ 
-              opacity: 0.7, 
-              transform: isCargando ? 'scale(1.25)' : 'scale(1.2)',
-              transition: 'transform 0.4s ease'
-            }}>
-              <SacredDrawing 
-                symbolKey={symbolKey} 
-                progress={cargaOracion / 100} 
-                size={simpleMode ? 140 : 100}
-                decadeIndex={currentPrayerIndex % 10}
-                liveWarmth={isCargando ? 0.8 : 0.2}
-              />
-            </div>
-            
-            <div style={{
-              zIndex: 10, 
-              transition: 'transform 0.4s ease',
-              transform: isCargando ? 'scale(1.02)' : 'scale(1)',
-              filter: isCargando ? 'drop-shadow(0 0 15px rgba(212,175,55,0.2))' : 'none',
-              maxWidth: '90%',
-              color: '#D4AF37',
-              fontSize: simpleMode ? 'clamp(1.8rem, 5vh, 2.8rem)' : 'clamp(1.3rem, 3.5vh, 1.8rem)',
-              lineHeight: 1.6,
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontStyle: 'italic',
-              textShadow: '0 2px 15px rgba(0,0,0,0.9)',
-            }}>
-              <SacredText 
-                words={words}
-                wordCharOffsets={wordCharOffsets}
-                charProgressIndex={charProgressIndex}
-                isVersoComplete={cargaOracion >= 100}
-                isPrayerComplete={false}
-                charReachedAtRef={charReachedAtRef}
-                charDwellRef={charDwellRef}
-                wordSpanRefs={wordSpanRefs}
-                warmthTick={warmthTick}
-                simpleMode={simpleMode}
-              />
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* ── Layer 3: Rosary — forefront, fully interactive */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-        zIndex: 20
-      }}>
+      <div className="rosary-canvas-layer">
         <RosaryAdapter
           onNodeClick={handleNodeClick}
-          onAdvance={simpleMode ? handleAdvance : (!isAveMaria ? handleAdvance : null)}
+          onBeadHoldStart={handleBeadHoldStart}
+          onBeadHoldEnd={handleBeadHoldEnd}
+          onAdvance={handleAdvance}
           onRetreat={handleRetreat}
           onSwipeAdvance={handleAdvance}
           onSwipeRetreat={handleRetreat}
@@ -305,163 +318,55 @@ export default function RosarioVirtualView({
         />
       </div>
 
-
-      {/* ── Floating chrome: title, verse indicator, mode toggle (z-index above rosary) */}
-      <div style={{
-        position: 'absolute',
-        top: '12px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 25,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        pointerEvents: 'none'
-      }}>
-        <span style={{
-          color: '#D4AF37', fontSize: '0.6rem', textTransform: 'uppercase',
-          letterSpacing: '2px', fontWeight: 'bold', opacity: 0.8,
-          textShadow: '0 1px 4px rgba(0,0,0,0.8)'
-        }}>
+      <div className="rosary-title-bar">
+        <span className="rosary-title-bar__label" style={{ color: accentColor }}>
           {activePrayer?.title || 'Meditación'}
         </span>
-        <span style={{ color: 'rgba(212,175,55,0.35)', fontSize: '0.55rem', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
+        <span className="rosary-title-bar__step" style={{ color: `${accentColor}59` }}>
           {safeIndex + 1}/{secuencia.length}
         </span>
-        {activePrayer?.versos?.length > 1 && (
-          <span style={{ color: 'rgba(212,175,55,0.3)', fontSize: '0.5rem', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
-            {versoIndex + 1}/{activePrayer.versos.length}
+        {isLitany && litanyVerseTotal > 0 && (
+          <span className="rosary-title-bar__step" style={{ color: 'rgba(212,175,55,0.3)' }}>
+            {litanyVerseIndex + 1}/{litanyVerseTotal}
           </span>
         )}
       </div>
 
-      {/* Mode toggle & Version - moved to bottom for accessibility */}
-      <div style={{
-        position: 'absolute',
-        bottom: '12px',
-        right: isLeftHanded ? 'auto' : '12px',
-        left: isLeftHanded ? '12px' : 'auto',
-        zIndex: 25,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
-        gap: '8px',
-        pointerEvents: 'none'
-      }}>
-        <div style={{ display: 'flex', gap: '8px', pointerEvents: 'auto' }}>
+      <div className={`rosary-chrome ${isLeftHanded ? 'rosary-chrome--left' : 'rosary-chrome--right'}`}>
+        <div className="rosary-chrome__row">
           <button
+            type="button"
+            className={`glass-chrome-btn${simpleMode ? ' glass-chrome-btn--active' : ' glass-chrome-btn--muted'}`}
             onClick={onToggleSimpleMode}
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(212,175,55,0.2)',
-              color: simpleMode ? '#D4AF37' : '#555',
-              borderRadius: '10px',
-              padding: '4px 8px',
-              fontSize: '0.65rem',
-              cursor: 'pointer',
-              backdropFilter: 'blur(4px)',
-            }}
             title="Modo Simple"
           >
             👵
           </button>
-          <button
-            onClick={onShowRosedal}
-            style={{
-              background: 'rgba(212,175,55,0.12)',
-              border: '1px solid rgba(212,175,55,0.2)',
-              color: '#D4AF37',
-              borderRadius: '10px',
-              padding: '4px 8px',
-              fontSize: '0.65rem',
-              cursor: 'pointer',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
+          <button type="button" className="glass-chrome-btn" onClick={onShowRosedal}>
             🌹
           </button>
-          <button
-            onClick={onShowStats}
-            style={{
-              background: 'rgba(212,175,55,0.12)',
-              border: '1px solid rgba(212,175,55,0.2)',
-              color: '#D4AF37',
-              borderRadius: '10px',
-              padding: '4px 8px',
-              fontSize: '0.65rem',
-              cursor: 'pointer',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
+          <button type="button" className="glass-chrome-btn" onClick={onShowStats}>
             📊
           </button>
           <button
-            onClick={() => setGuided(g => !g)}
-            style={{
-              background: guided ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(212,175,55,0.2)',
-              color: guided ? '#D4AF37' : '#555',
-              borderRadius: '10px',
-              padding: '4px 10px',
-              fontSize: '0.6rem',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backdropFilter: 'blur(4px)',
-              textShadow: '0 1px 3px rgba(0,0,0,0.8)'
-            }}
+            type="button"
+            className={`glass-chrome-btn${guided ? ' glass-chrome-btn--active' : ' glass-chrome-btn--muted'}`}
+            onClick={() => setGuided((g) => !g)}
           >
             {guided ? 'Guiado' : 'Libre'}
           </button>
         </div>
-        <span style={{ 
-          fontSize: '0.45rem', 
-          color: 'rgba(212, 175, 55, 0.4)', 
-          letterSpacing: '1px',
-          fontWeight: 'bold'
-        }}>
-          v0.3.35 — El Cosmos Resonante
-        </span>
+        <span className="rosary-chrome__version">v0.3.35 — El Cosmos Resonante</span>
       </div>
 
-      {/* Hint overlay */}
       {showHint && guided && (
-        <div style={{
-          position: 'absolute',
-          top: '18%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 30,
-          background: 'rgba(0,0,0,0.55)',
-          backdropFilter: 'blur(8px)',
-          padding: '12px 20px',
-          borderRadius: '16px',
-          border: '1px solid rgba(212,175,55,0.15)',
-          color: '#ccc',
-          fontSize: '0.85rem',
-          textAlign: 'center',
-          animation: 'fadeOut 0.5s ease 7s forwards',
-          pointerEvents: 'none'
-        }}>
-          <div style={{ color: '#D4AF37', fontWeight: 'bold', marginBottom: '4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2px' }}>
-            Modo Guiado
-          </div>
-          Mantén presionado para rezar • Desliza ← → para avanzar<br />
+        <div className="rosary-hint">
+          <div className="rosary-hint__title">Modo Guiado</div>
+          Mantén presionado para rezar • Desliza ← → para avanzar
+          <br />
           <span style={{ opacity: 0.6, fontSize: '0.75rem' }}>Dibuja ✝ para reunir las cuentas</span>
         </div>
       )}
-
-      <style>{`
-        @keyframes textFade {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeOut {
-          to { opacity: 0; transform: translateY(-10px); }
-        }
-      `}</style>
     </div>
   );
 }

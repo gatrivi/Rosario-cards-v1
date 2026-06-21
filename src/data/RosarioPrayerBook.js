@@ -406,6 +406,7 @@ const RosarioPrayerBook = {
         num: 1,
         title: "MG1: La Anunciación del Ángel a María",
         img: "/gallery-images/misterios/misteriogozo1.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogozo1.webp",
         text: "El arcángel Gabriel anuncia a María que será la Madre del Salvador\nl\nCitas Escriturísticas:\n\nLucas 1:28: Y entrando el ángel en donde ella estaba, dijo: ¡Salve, muy favorecida! El Señor es contigo; bendita tú entre las mujeres.\nLucas 1:38: Entonces María dijo: He aquí la sierva del Señor; hágase conmigo conforme a tu palabra.\nIsaías 7:14: Por tanto, el Señor mismo os dará señal: He aquí que la virgen concebirá, y dará a luz un hijo, y llamará su nombre Emanuel.",
       },
       {
@@ -413,6 +414,7 @@ const RosarioPrayerBook = {
         num: 2,
         title: "MG2: La Visitación de María a su prima Isabel",
         img: "/gallery-images/misterios/misteriogozo2.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogozo2.webp",
         text: "María visita a su prima Isabel, quien reconoce en ella a la Madre del Señor\nl\nCitas Escriturísticas:\n\nLucas 1:42-43: Y exclamó a gran voz, y dijo: Bendita tú entre las mujeres, y bendito el fruto de tu vientre. ¿Por qué se me concede esto a mí, que la madre de mi Señor venga a mí?\nLucas 1:46-47: Entonces María dijo: Engrandece mi alma al Señor; Y mi espíritu se regocija en Dios mi Salvador.\nLucas 1:41: Y aconteció que cuando oyó Isabel la salutación de María, la criatura saltó en su vientre; e Isabel fue llena del Espíritu Santo.",
       },
       {
@@ -420,6 +422,7 @@ const RosarioPrayerBook = {
         num: 3,
         title: "MG3: El Nacimiento de Jesús en Belén",
         img: "/gallery-images/misterios/misteriogozo3.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogozo3.webp",
         text: "El Verbo se hace carne y nace de la Virgen María en Belén\nl\nCitas Escriturísticas:\n\nJuan 1:14: Y aquel Verbo fue hecho carne, y habitó entre nosotros (y vimos su gloria, gloria como del unigénito del Padre), lleno de gracia y de verdad.\nLucas 2:7: Y dio a luz a su hijo primogénito, y lo envolvió en pañales, y lo acostó en un pesebre, porque no había lugar para ellos en el mesón.\nLucas 2:10-11: Pero el ángel les dijo: No temáis; porque he aquí os doy nuevas de gran gozo, que será para todo el pueblo: que os ha nacido hoy, en la ciudad de David, un Salvador, que es CRISTO el Señor.",
       },
       {
@@ -427,6 +430,7 @@ const RosarioPrayerBook = {
         num: 4,
         title: "MG4: La Presentación del Niño Jesús en el Templo",
         img: "/gallery-images/misterios/misteriogozo4.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogozo4.webp",
         text: "María y José presentan al Niño Jesús en el Templo, donde es reconocido por Simeón y Ana\nl\nCitas Escriturísticas:\n\nLucas 2:29-30: Ahora, Señor, despides a tu siervo en paz, Conforme a tu palabra; Porque han visto mis ojos tu salvación.\nLucas 2:34-35: Y los bendijo Simeón, y dijo a su madre María: He aquí, éste está puesto para caída y para levantamiento de muchos en Israel, y para señal que será contradicha; y una espada traspasará tu misma alma.\nLevítico 12:6-8: Y cuando los días de su purificación fueren cumplidos, por hijo o por hija, traerá un cordero de un año para holocausto, y un palomino o una tórtola para expiación.",
       },
       {
@@ -434,6 +438,7 @@ const RosarioPrayerBook = {
         num: 5,
         title: "MG5: El Niño Jesús perdido y hallado en el Templo",
         img: "/gallery-images/misterios/misteriogozo5.jpg",
+        imgmo: "/gallery-images/misterios/modooscuro/misteriogozo5.webp",
         text: "Jesús, a los doce años, se queda en el Templo enseñando a los doctores\nl\nCitas Escriturísticas:\n\nLucas 2:46-47: Y aconteció que tres días después le hallaron en el templo, sentado en medio de los doctores de la ley, oyéndoles y preguntándoles. Y todos los que le oían, se maravillaban de su inteligencia y de sus respuestas.\nLucas 2:49: Entonces él les dijo: ¿Por qué me buscabais? ¿No sabíais que en los negocios de mi Padre me es necesario estar?\nLucas 2:52: Y Jesús crecía en sabiduría y en estatura, y en gracia para con Dios y los hombres.",
       },
     ],

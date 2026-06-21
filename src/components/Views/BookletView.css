@@ -1,3 +1,5 @@
+@import '../../styles/glass.css';
+
 .booklet-view {
   height: 100%;
   display: flex;
@@ -14,79 +16,6 @@
   justify-content: center;
   padding: 2rem;
   text-align: center;
-}
-
-/* ── Vitral / stained glass background ── */
-.booklet-vitral {
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
-}
-
-.booklet-vitral__img {
-  filter: brightness(0.82) contrast(1.05) saturate(1.12);
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  transition: opacity 0.65s ease-out, transform 0.7s ease-out, filter 0.7s ease-out;
-  width: 100%;
-}
-
-.booklet-vitral--ave .booklet-vitral__img,
-.booklet-vitral--mystery .booklet-vitral__img,
-.booklet-vitral--prayer .booklet-vitral__img {
-  filter: brightness(var(--ave-brightness, 0.82)) contrast(1.06)
-    saturate(var(--ave-saturate, 1.12));
-  transform: scale(var(--ave-zoom, 1));
-}
-
-.booklet-vitral--mystery .booklet-vitral__glare {
-  background: radial-gradient(
-    ellipse 80% 60% at 50% 35%,
-    rgba(220, 235, 255, var(--ave-glare, 0.08)) 0%,
-    rgba(180, 200, 255, calc(var(--ave-glare, 0.08) * 0.4)) 40%,
-    transparent 72%
-  );
-}
-
-.booklet-vitral__glare {
-  background: radial-gradient(
-    ellipse 85% 65% at 50% 38%,
-    rgba(255, 248, 220, var(--ave-glare, 0.08)) 0%,
-    rgba(212, 175, 55, calc(var(--ave-glare, 0.08) * 0.45)) 35%,
-    transparent 72%
-  );
-  inset: 0;
-  mix-blend-mode: screen;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 0.55s ease-out;
-}
-
-.booklet-vitral--step .booklet-vitral__glare {
-  animation: booklet-step-glow 0.38s ease-out;
-}
-
-.booklet-vitral--step .booklet-vitral__img {
-  animation: booklet-step-bright 0.38s ease-out;
-}
-
-@keyframes booklet-step-glow {
-  0% { opacity: 0.45; }
-  45% { opacity: 0.72; }
-  100% { opacity: 0; }
-}
-
-@keyframes booklet-step-bright {
-  0% {
-    filter: brightness(calc(var(--ave-brightness, 0.82) + 0.02))
-      saturate(calc(var(--ave-saturate, 1.12) + 0.03));
-  }
-  100% {
-    filter: brightness(var(--ave-brightness, 0.82)) saturate(var(--ave-saturate, 1.12));
-  }
 }
 
 .booklet-prayer-chrome {
@@ -150,17 +79,6 @@
   z-index: 3;
 }
 
-.booklet-vitral__shade {
-  background: linear-gradient(
-    180deg,
-    rgba(13, 10, 26, 0.18) 0%,
-    rgba(13, 10, 26, 0.28) 45%,
-    rgba(13, 10, 26, 0.42) 100%
-  );
-  inset: 0;
-  position: absolute;
-}
-
 .booklet-header {
   flex-shrink: 0;
   padding: 4.5rem 1rem 0.35rem;
@@ -175,13 +93,27 @@
   margin-bottom: 0.35rem;
 }
 
+.booklet-mystery-bar {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(12, 10, 22, 0.32);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 12px;
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.18),
+    inset 0 0 20px rgba(212, 175, 55, 0.04);
+  margin: 0 auto 0.55rem;
+  max-width: min(24rem, 94vw);
+  padding: 0.15rem 0.35rem;
+}
+
 .booklet-mystery-row {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   justify-content: center;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0;
   min-height: 44px;
   padding-top: 0.15rem;
 }
@@ -317,28 +249,14 @@
 }
 
 .booklet-glass-inner {
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  background: rgba(12, 10, 22, 0.38);
-  border: 1px solid rgba(212, 175, 55, 0.28);
-  border-radius: 14px;
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.22),
-    inset 0 0 24px rgba(212, 175, 55, 0.04);
-  line-height: 1.62;
   margin: 0 auto;
   max-width: min(20rem, 92vw);
   padding: 0.7rem 0.85rem 0.85rem;
   transition: box-shadow 0.55s ease-out, border-color 0.45s ease-out;
-  width: fit-content;
 }
 
 .booklet-glass-inner--ave {
   border-color: rgba(255, 220, 150, calc(0.28 + var(--ave-glare, 0.08) * 0.5));
-}
-
-.stained-glass-overlay {
-  position: relative;
 }
 
 .booklet-verse {
@@ -359,9 +277,9 @@
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: 0.65rem;
+  gap: 0.5rem;
   justify-content: center;
-  padding: 0.35rem 1rem calc(0.55rem + env(safe-area-inset-bottom, 0));
+  padding: 0.28rem 0.85rem calc(0.4rem + env(safe-area-inset-bottom, 0));
   position: relative;
   z-index: 4;
 }
@@ -374,42 +292,12 @@
   flex-direction: row-reverse;
 }
 
-.booklet-turn {
-  background: none;
-  border: none;
-  color: rgba(212, 175, 55, 0.65);
-  cursor: pointer;
-  font-family: inherit;
+.booklet-footer--large .glass-turn {
   font-size: 0.88rem;
-  font-variant: small-caps;
-  letter-spacing: 0.14em;
-  min-height: 44px;
-  min-width: 5.5rem;
-  padding: 0.5rem 0.25rem;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-  transition: color 0.25s, opacity 0.25s;
 }
 
-.booklet-turn--forward {
-  color: rgba(212, 175, 55, 0.9);
-  font-size: 0.95rem;
-}
-
-.booklet-footer--large .booklet-turn {
-  font-size: 1.05rem;
-}
-
-.booklet-footer--large .booklet-turn--forward {
-  font-size: 1.12rem;
-}
-
-.booklet-turn:disabled {
-  cursor: default;
-  opacity: 0.2;
-}
-
-.booklet-turn:not(:disabled):active {
-  color: #f5e6a0;
+.booklet-footer--large .glass-turn--forward {
+  font-size: 0.92rem;
 }
 
 .booklet-turn-ornament {
@@ -429,7 +317,9 @@
   .booklet-prayer-chrome--leaving,
   .booklet-prayer-chrome--entering,
   .booklet-vitral--step .booklet-vitral__glare,
-  .booklet-vitral--step .booklet-vitral__img {
+  .vitral-bg--step .vitral-bg__glare,
+  .booklet-vitral--step .booklet-vitral__img,
+  .vitral-bg--step .vitral-bg__img {
     animation: none;
   }
 

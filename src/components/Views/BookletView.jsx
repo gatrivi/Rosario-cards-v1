@@ -1,9 +1,6 @@
 import React, { useMemo, useEffect, useCallback, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import RosarioPrayerBook from '../../data/RosarioPrayerBook';
-import { getPrayerData } from './RoseView';
 import {
-  getPrayerVariants,
   getVariantStorageKey,
 } from '../../data/prayerVariants';
 import PrayerRecorder from '../common/PrayerRecorder';
@@ -18,16 +15,16 @@ import {
 } from '../../utils/bookletProgress';
 import { playBookletTransitionSound, playOfferingChime } from '../../utils/bookletSounds';
 import {
-  getPrayerImageCandidates,
   pickPrayerImage,
-  resolvePrayerImage,
   getLitanyVerseImageCandidates,
   resolveLitanyVerseImage,
 } from '../../utils/prayerImages';
 import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
-import LitanyDisplay from '../Litany/LitanyDisplay';
-import LitanyProgressBars from '../Litany/LitanyProgressBars';
 import LitanyEntrance from '../Litany/LitanyEntrance';
+import VitralBackground from '../common/VitralBackground';
+import BookletPrayerPanel from './BookletPrayerPanel';
+import { buildSequence } from '../../utils/bookletSequence';
+import { resolveDisplayText } from '../../utils/bookletDisplayText';
 import './BookletView.css';
 
 const TRANSITION_PHASE = {
@@ -51,104 +48,12 @@ function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-function VitralImage({ candidates, onReady }) {
-  const [index, setIndex] = useState(0);
-  const imgRef = useRef(null);
-  const src = candidates[index] ?? candidates[candidates.length - 1];
-
-  const notifyReady = useCallback(() => {
-    onReady?.();
-  }, [onReady]);
-
-  useEffect(() => {
-    setIndex(0);
-  }, [candidates]);
-
-  useEffect(() => {
-    const img = imgRef.current;
-    if (img?.complete && img.naturalWidth > 0) notifyReady();
-  }, [src, notifyReady]);
-
-  return (
-    <img
-      ref={imgRef}
-      src={src}
-      alt=""
-      className="booklet-vitral__img"
-      onLoad={notifyReady}
-      onError={() => {
-        if (index < candidates.length - 1) setIndex((i) => i + 1);
-        else notifyReady();
-      }}
-    />
-  );
-}
-
 const MYSTERY_OPTIONS = [
   { id: 'gozosos', label: 'Gozosos' },
   { id: 'dolorosos', label: 'Dolorosos' },
   { id: 'gloriosos', label: 'Gloriosos' },
   { id: 'luminosos', label: 'Luminosos' },
 ];
-
-const SEQ_MAP = {
-  gozosos: 'RGo',
-  dolorosos: 'RDo',
-  gloriosos: 'RGl',
-  luminosos: 'RL',
-};
-
-function buildSequence(mysteryType) {
-  const keys = RosarioPrayerBook[SEQ_MAP[mysteryType]] || RosarioPrayerBook.RGo;
-  return keys
-    .map((id, idx) => {
-      const data = getPrayerData(id, mysteryType);
-      if (!data) return null;
-      const imgCandidates = getPrayerImageCandidates(data, mysteryType);
-      return {
-        id,
-        title: data.title,
-        text: data.text,
-        img: resolvePrayerImage(data, mysteryType, idx),
-        imgCandidates,
-        variants: getPrayerVariants(id),
-        verses: data.verses,
-        sections: data.sections,
-      };
-    })
-    .filter(Boolean);
-}
-
-function splitIntoBursts(text) {
-  if (!text) return [];
-
-  if (text.includes('\n')) {
-    return text.split('\n').map((line) => {
-      const trimmed = line.trim();
-      if (!trimmed) return { type: 'spacer' };
-      return { type: 'verse', text: trimmed };
-    });
-  }
-
-  return text
-    .split(/(?<=[.,;:!])\s+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .map((verse) => ({ type: 'verse', text: verse }));
-}
-
-function renderVerseLines(text) {
-  return splitIntoBursts(text).map((item, i) => {
-    if (item.type === 'spacer') {
-      return <div key={`sp-${i}`} className="booklet-verse-spacer" aria-hidden="true" />;
-    }
-    return (
-      <p key={`ln-${i}`} className="booklet-verse">
-        {item.text}
-      </p>
-    );
-  });
-}
 
 /** Position within a consecutive run of Ave Marías (opening chain or decade). */
 export function getAveMariaRunInfo(sequence, index) {
@@ -281,7 +186,7 @@ export default function BookletView({
     clearTransitionTimers();
     setPhase(TRANSITION_PHASE.READY);
     setDisplayIndex(safeIndex);
-  }, [misterioActual, clearTransitionTimers, setPhase]);
+  }, [misterioActual, clearTransitionTimers, setPhase, safeIndex]);
 
   useEffect(() => {
     if (transitionPhaseRef.current === TRANSITION_PHASE.READY && displayIndex !== safeIndex) {
@@ -335,14 +240,10 @@ export default function BookletView({
     setVariantId(activePrayer.variants[0].id);
   }, [activePrayer?.id, activePrayer?.variants]);
 
-  const displayText = useMemo(() => {
-    if (!activePrayer) return '';
-    if (variants && variantId) {
-      const chosen = variants.find((v) => v.id === variantId);
-      if (chosen) return chosen.text;
-    }
-    return activePrayer.text;
-  }, [activePrayer, variants, variantId]);
+  const displayText = useMemo(
+    () => resolveDisplayText(activePrayer, variantId),
+    [activePrayer, variantId]
+  );
 
   const cycleVariant = useCallback(() => {
     if (!variants?.length) return;
@@ -444,7 +345,6 @@ export default function BookletView({
       scheduleTransition,
       setPhase,
       beginArrivingHold,
-      beginTextEnter,
       handleImageReady,
     ]
   );
@@ -534,44 +434,41 @@ export default function BookletView({
   const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
 
   const vitralStyle = stepContextToVitralVars(stepContext);
-  const vitralKindClass = isAveMaria
-    ? ' booklet-vitral--ave'
+  const vitralKind = isAveMaria
+    ? 'ave'
     : stepContext.kind === 'mystery'
-      ? ' booklet-vitral--mystery'
-      : ' booklet-vitral--prayer';
+      ? 'mystery'
+      : 'prayer';
 
   return (
     <div className="booklet-view" style={vitralStyle} onPointerDown={resetOptionalIdle}>
-      {/* Stained glass / vitral background */}
-      <div
-        className={`booklet-vitral${vitralKindClass}${stepGlow ? ' booklet-vitral--step' : ''}`}
-        aria-hidden="true"
-      >
-        <VitralImage
-          key={`${activePrayer.id}-${isLitany ? litanyVerseIndex : ''}-${vitralCandidates[0]}`}
-          candidates={vitralCandidates}
-          onReady={handleImageReady}
-        />
-        <div className="booklet-vitral__shade" />
-        <div className="booklet-vitral__glare" />
-      </div>
+      <VitralBackground
+        key={`${activePrayer.id}-${isLitany ? litanyVerseIndex : ''}-${vitralCandidates[0]}`}
+        candidates={vitralCandidates}
+        kind={vitralKind}
+        stepGlow={stepGlow}
+        onReady={handleImageReady}
+        useBookletClasses
+      />
 
       <div className={`booklet-prayer-chrome${chromePhaseClass}`}>
         <header className="booklet-header">
-          <div className="booklet-mystery-row">
-            {MYSTERY_OPTIONS.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                className={`booklet-mystery-pill${
-                  misterioActual === opt.id ? ' booklet-mystery-pill--active' : ''
-                }`}
-                onClick={() => onMysteryChange?.(opt.id)}
-                disabled={isTransitioning}
-              >
-                {opt.label}
-              </button>
-            ))}
+          <div className="booklet-mystery-bar">
+            <div className="booklet-mystery-row">
+              {MYSTERY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  className={`booklet-mystery-pill${
+                    misterioActual === opt.id ? ' booklet-mystery-pill--active' : ''
+                  }`}
+                  onClick={() => onMysteryChange?.(opt.id)}
+                  disabled={isTransitioning}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
           <p className="booklet-progress">
             <button
@@ -638,42 +535,21 @@ export default function BookletView({
           )}
         </header>
 
-        <article
-          className="booklet-glass-panel"
-          style={{ fontSize: simpleMode ? '1.35rem' : '1.08rem' }}
-          onClick={(e) => {
-            if (isTransitioning) return;
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            if (x > rect.width * 0.62) goNext();
-            else if (x < rect.width * 0.38) goPrev();
-          }}
-        >
-          {isLitany && activePrayer.sections && (
-            <LitanyProgressBars
-              currentVerseIndex={litanyVerseIndex}
-              sections={activePrayer.sections}
-              currentMystery={misterioActual}
-            />
-          )}
-          <div
-            className={`booklet-glass-inner stained-glass-overlay booklet-glass-inner--progress${isAveMaria ? ' booklet-glass-inner--ave' : ''}${isLitany ? ' booklet-glass-inner--litany' : ''}`}
-            style={{
-              boxShadow: `0 4px 20px rgba(0, 0, 0, 0.22), inset 0 0 ${24 + (stepContext.localStep || 0) * 5}px rgba(212, 175, 55, ${0.04 + (parseFloat(vitralStyle['--ave-glare']) || 0.06) * 0.35})`,
-            }}
-          >
-            {isLitany && litanyVerse ? (
-              <LitanyDisplay
-                verse={litanyVerse}
-                verseIndex={litanyVerseIndex}
-                totalVerses={litanyVerseTotal}
-                currentMystery={misterioActual}
-              />
-            ) : (
-              renderVerseLines(displayText)
-            )}
-          </div>
-        </article>
+        <BookletPrayerPanel
+          displayText={displayText}
+          simpleMode={simpleMode}
+          isAveMaria={Boolean(isAveMaria)}
+          isLitany={isLitany}
+          litanyVerse={litanyVerse}
+          litanyVerseIndex={litanyVerseIndex}
+          litanyVerseTotal={litanyVerseTotal}
+          litanySections={activePrayer.sections}
+          misterioActual={misterioActual}
+          stepContext={stepContext}
+          variant="booklet"
+          isTransitioning={isTransitioning}
+          onTapNav={(dir) => (dir === 'next' ? goNext() : goPrev())}
+        />
       </div>
 
       {orbHost &&
@@ -701,10 +577,10 @@ export default function BookletView({
         />
       )}
 
-      <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
+      <footer className={`booklet-footer glass-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
         <button
           type="button"
-          className="booklet-turn booklet-turn--back"
+          className="glass-turn booklet-turn--back"
           onClick={goPrev}
           disabled={!canGoBack || isTransitioning}
           aria-label="Oración anterior"
@@ -714,7 +590,7 @@ export default function BookletView({
         <span className="booklet-turn-ornament" aria-hidden="true">✦</span>
         <button
           type="button"
-          className="booklet-turn booklet-turn--forward"
+          className="glass-turn glass-turn--forward booklet-turn--forward"
           onClick={goNext}
           disabled={!canGoForward || isTransitioning}
           aria-label="Siguiente oración"

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import RoseDrawing from './RoseDrawing';
 
-export default function MacetonView({ onSelectMaceton }) {
+export default function MacetonView({ onSelectMaceton, onViewGarden }) {
   const { 
     dailyAveMarias, objetivoMacetonesHoy, ROSAS_PER_MACETON, getRoseData, totalAveMarias
   } = useAveMariaStats();
@@ -49,6 +49,25 @@ export default function MacetonView({ onSelectMaceton }) {
         <p style={{ color: '#888', fontSize: '0.85rem' }}>
           Hoy: <span style={{ color: '#D4AF37', fontWeight: 'bold' }}>{Math.floor(dailyAveMarias / 50)} / {objetivoMacetonesHoy}</span> Rosarios cultivados
         </p>
+        {onViewGarden && (
+          <button
+            type="button"
+            onClick={onViewGarden}
+            style={{
+              marginTop: '12px',
+              background: 'transparent',
+              border: '1px solid rgba(212,175,55,0.35)',
+              color: '#D4AF37',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Ver jardín completo
+          </button>
+        )}
       </div>
 
       <div style={{

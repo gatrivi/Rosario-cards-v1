@@ -4,6 +4,23 @@ const SHARE_URL = typeof window !== 'undefined'
   ? `${window.location.origin}${window.location.pathname}`
   : 'https://rosario.gatrivi.com';
 
+const ROSARY_ZOOM_PRESETS = [
+  { id: 'S', label: 'Pequeño', zoom: 0.75 },
+  { id: 'M', label: 'Normal', zoom: 1.0 },
+  { id: 'L', label: 'Grande', zoom: 1.25 },
+  { id: 'XL', label: 'Inmenso', zoom: 1.5 },
+];
+
+function readRosaryZoom() {
+  if (typeof window === 'undefined') return 1.0;
+  return parseFloat(localStorage.getItem('rosaryZoom')) || 1.0;
+}
+
+function setRosaryZoom(zoom) {
+  localStorage.setItem('rosaryZoom', String(zoom));
+  window.dispatchEvent(new CustomEvent('rosaryZoomChange', { detail: { zoom } }));
+}
+
 async function shareApp() {
   const payload = {
     title: 'Rosario Cards',
@@ -22,7 +39,13 @@ async function shareApp() {
   }
 }
 
-export default function SettingsOverlay({ settings, onUpdateSettings, onClose, appVersion = '', onCheckForUpdate }) {
+export default function SettingsOverlay({ settings, onUpdateSettings, onClose, appVersion = '', onCheckForUpdate, onStartAmbientAudio }) {
+  const [rosaryZoom, setRosaryZoomState] = React.useState(readRosaryZoom);
+  const activeZoomPreset = ROSARY_ZOOM_PRESETS.find((p) => p.zoom === rosaryZoom)?.id
+    ?? ROSARY_ZOOM_PRESETS.reduce((best, p) =>
+      Math.abs(p.zoom - rosaryZoom) < Math.abs(best.zoom - rosaryZoom) ? p : best
+    ).id;
+
   return (
     <div style={{
       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -107,6 +130,65 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose, a
               />
               <span className="slider round"></span>
             </label>
+          </div>
+
+          {settings.soundEnabled && onStartAmbientAudio && (
+            <div>
+              <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '4px' }}>Sonido ambiente</div>
+              <div style={{ color: '#666', fontSize: '0.75rem', marginBottom: '10px' }}>
+                Si el navegador bloqueó el audio, tócalo para activarlo
+              </div>
+              <button
+                type="button"
+                onClick={onStartAmbientAudio}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(212,175,55,0.35)',
+                  background: 'rgba(212,175,55,0.1)',
+                  color: '#D4AF37',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                }}
+              >
+                Iniciar sonido ambiente
+              </button>
+            </div>
+          )}
+
+          {/* Rosary size */}
+          <div>
+            <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '4px' }}>Tamaño del Rosario</div>
+            <div style={{ color: '#666', fontSize: '0.75rem', marginBottom: '10px' }}>
+              Puede quedar fuera de pantalla — arrástralo para encontrarlo
+            </div>
+            <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '5px', borderRadius: '12px' }}>
+              {ROSARY_ZOOM_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => {
+                    setRosaryZoom(preset.zoom);
+                    setRosaryZoomState(preset.zoom);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '10px 4px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: activeZoomPreset === preset.id ? '#D4AF37' : 'transparent',
+                    color: activeZoomPreset === preset.id ? '#000' : '#888',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {preset.id}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Meditation Rhythm (The Three Gifts) */}

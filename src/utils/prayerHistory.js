@@ -159,6 +159,6 @@ class PrayerHistory {
   }
 }
 
-// Export as singleton
-export default new PrayerHistory();
+const prayerHistory = new PrayerHistory();
+export default prayerHistory;
 

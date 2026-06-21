@@ -17,13 +17,13 @@ export const litanyLauretanaSections = [
   {
     "name": "Marian Titles",
     "start": 9,
-    "end": 56,
-    "total": 48
+    "end": 59,
+    "total": 51
   },
   {
     "name": "Closing",
-    "start": 57,
-    "end": 61,
+    "start": 60,
+    "end": 64,
     "total": 5
   }
 ];

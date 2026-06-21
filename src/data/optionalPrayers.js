@@ -10,6 +10,12 @@ export const OPTIONAL_PRAYERS = [
           'Ángel de Dios, que eres mi guardián, porque el Señor me ha confiado a tu custodia, ilumíname, guárdame, rígeme y gobiérname. Amén.',
       },
       {
+        id: 'es_dulce',
+        label: 'ES rima',
+        text:
+          'Ángel de la guarda,\ndulce compañía,\nno me desampares,\nni de noche ni de día.\n\nÁngel de mi guarda,\ndulce compañía,\nno me desampares,\nni de noche ni de día.\n\nHasta que me pongas\nen paz y alegría,\ncon todos los santos,\nJesús, José y María.\n\nAmén.',
+      },
+      {
         id: 'en',
         label: 'EN',
         text:

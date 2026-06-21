@@ -27,6 +27,11 @@ export function useAveMariaStats() {
        if (cloudState.dailyAveMarias !== undefined && cloudState.todayDate === new Date().toDateString()) {
          setDailyAveMarias(cloudState.dailyAveMarias);
        }
+       if (Array.isArray(cloudState.rosedal_roses)) {
+         try {
+           localStorage.setItem('rosedal_roses', JSON.stringify(cloudState.rosedal_roses));
+         } catch (_) { /* ignore */ }
+       }
        setLoadedFromCloud(true);
     }
   }, [cloudState, loadedFromCloud]);
@@ -151,7 +156,7 @@ export function useAveMariaStats() {
     try {
       const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
       stored.push({
-        timestamp: Date.now(),
+        timestamp: roseData.timestamp ?? Date.now(),
         warmthProfile: roseData.warmthProfile || [],
         wiggleProfile: roseData.wiggleProfile || [],
         verseCount: roseData.verseCount || 0,

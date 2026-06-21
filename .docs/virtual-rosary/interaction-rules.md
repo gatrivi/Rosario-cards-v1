@@ -1,6 +1,6 @@
 # Virtual Rosary Interaction Rules
 
-Selection invariants (interactive mapping):
+Selection invariants (interactive mapping). Source: merged from `src/agents-virtual-rosary.md`.
 
 1. Selecting a **lone bead** => shows the corresponding **mystery**.
 2. Selecting **any bead in a decade** => shows a **Hail Mary**.

@@ -7,11 +7,13 @@
  * Modification or redistribution for commercial purposes is prohibited without 
  * express spiritual and legal consent.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
 import RoseView from '../Views/RoseView';
 import BookletView from '../Views/BookletView';
 import MacetonView from '../Views/MacetonView';
+import JardinDeRosasView from '../Views/JardinDeRosasView';
 import PeregrinacionView from '../Views/PeregrinacionView';
 import MonkView from '../Views/MonkView';
 import RecordingStudioView from '../Views/RecordingStudioView';
@@ -22,6 +24,15 @@ import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
 import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
+import {
+  IconFeedback,
+  IconHelp,
+  IconSync,
+  IconSyncLoading,
+  IconSettings,
+  IconHandLeft,
+  IconHandRight,
+} from '../Navigation/NavIcons';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 import audioManager from '../../utils/audioManager';
 import {
@@ -31,15 +42,22 @@ import {
   clearUpdateReminder,
 } from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
+import { getViewIdFromPath, getPathForView, VALID_PATHS } from '../../navigation/routes';
 
 const APP_VERSION = '0.3.35';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
+const VALID_MYSTERIES = new Set(['gozosos', 'dolorosos', 'gloriosos', 'luminosos']);
 
 
 export default function AppShell() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const vistaActiva = getViewIdFromPath(location.pathname);
+  const initializedFromUrl = useRef(false);
+
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
-  const [vistaActiva, setVistaActiva] = useState('booklet'); 
   const [, setSelectedLevel] = useState(null);
   const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);
@@ -136,6 +154,45 @@ export default function AppShell() {
     return '#fff';
   };
 
+  useEffect(() => {
+    if (initializedFromUrl.current) return;
+    initializedFromUrl.current = true;
+
+    const misterio = searchParams.get('misterio');
+    const paso = searchParams.get('paso');
+    if (misterio && VALID_MYSTERIES.has(misterio)) {
+      setMisterioActual(misterio);
+      try {
+        localStorage.setItem(ROSARY_MYSTERY_KEY, misterio);
+      } catch (_) { /* ignore */ }
+    }
+    if (paso !== null) {
+      const idx = parseInt(paso, 10);
+      if (!Number.isNaN(idx) && idx >= 0) {
+        setCurrentPrayerIndex(idx);
+        try {
+          localStorage.setItem(ROSARY_INDEX_KEY, String(idx));
+        } catch (_) { /* ignore */ }
+      }
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('misterio', misterioActual);
+      next.set('paso', String(currentPrayerIndex));
+      if (prev.toString() === next.toString()) return prev;
+      return next;
+    }, { replace: true });
+  }, [misterioActual, currentPrayerIndex, setSearchParams]);
+
+  useEffect(() => {
+    if (!VALID_PATHS.has(location.pathname)) {
+      navigate('/libro', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   // --- URL Detection for Sync Key ---
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -217,8 +274,14 @@ export default function AppShell() {
             onMysteryChange={handleMysteryChange}
           />
         );
-      case 'camino': return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
-      case 'macetones': return <MacetonView onSelectMaceton={() => setVistaActiva('rosary')} />;
+      case 'camino': return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); navigate(getPathForView('macetones')); }} />;
+      case 'macetones': return (
+        <MacetonView
+          onSelectMaceton={() => navigate(getPathForView('rose'))}
+          onViewGarden={() => navigate(getPathForView('jardin'))}
+        />
+      );
+      case 'jardin': return <JardinDeRosasView />;
       case 'stats': return <StatsView />;
       case 'tracker': return <DailyTracker />;
       case 'rosary': return (
@@ -230,8 +293,12 @@ export default function AppShell() {
           isLeftHanded={settings.isLeftHanded}
           simpleMode={settings.simpleMode}
           onToggleSimpleMode={() => setSettings(s => ({ ...s, simpleMode: !s.simpleMode }))}
-          onShowStats={() => setVistaActiva('stats')}
-          onShowRosedal={() => setVistaActiva('rose')}
+          onShowStats={() => navigate(getPathForView('stats'))}
+          onShowRosedal={() => navigate(getPathForView('rose'))}
+          onAveMariaComplete={(fingerprint) => {
+            addRosas(1);
+            storeRoseData(fingerprint);
+          }}
         />
       );
       case 'rose': return (
@@ -239,14 +306,14 @@ export default function AppShell() {
           currentPrayerIndex={currentPrayerIndex}
           misterioActual={misterioActual}
           onUpdateProgreso={handleUpdateProgreso}
-          onBack={() => setVistaActiva('macetones')}
+          onBack={() => navigate(getPathForView('macetones'))}
           soundEnabled={settings.soundEnabled}
           onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
           meditationRitmo={settings.meditationRitmo}
           simpleMode={settings.simpleMode}
         />
       );
-      default: return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); setVistaActiva('macetones'); }} />;
+      default: return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); navigate(getPathForView('macetones')); }} />;
     }
   };
 
@@ -295,12 +362,21 @@ export default function AppShell() {
             title="Reportar problema o sugerencia"
             style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#666', borderRadius: '8px', padding: '6px', cursor: 'pointer',
-              fontSize: '0.96rem', backdropFilter: 'blur(5px)',
-              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              color: '#666', borderRadius: '8px', padding: settings.simpleMode ? '6px 10px' : '6px',
+              cursor: 'pointer', backdropFilter: 'blur(5px)',
+              width: settings.simpleMode ? 'auto' : '32px', height: '32px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              fontSize: '0.75rem',
             }}
           >
-            {settings.simpleMode ? '🆘 Ayuda' : '💬'}
+            {settings.simpleMode ? (
+              <>
+                <IconHelp size={18} />
+                Ayuda
+              </>
+            ) : (
+              <IconFeedback size={18} />
+            )}
           </button>
         </div>
         <div style={{
@@ -336,7 +412,7 @@ export default function AppShell() {
             }}
             title={`Sincronización: ${syncStatus}`}
           >
-            {syncStatus === 'loading' ? '⌛' : '☁️'}
+            {syncStatus === 'loading' ? <IconSyncLoading size={18} /> : <IconSync size={18} />}
           </button>
           <button 
             onClick={() => setShowSettings(true)}
@@ -344,11 +420,11 @@ export default function AppShell() {
               background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
               color: '#fff', width: '32px', height: '32px',
               borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
-              fontSize: '0.96rem', boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
+              boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
               display: 'flex', justifyContent: 'center', alignItems: 'center'
             }}
           >
-            ⚙️
+            <IconSettings size={18} />
           </button>
         </div>
       </div>
@@ -390,9 +466,6 @@ export default function AppShell() {
       />
 
       <BottomNav 
-        vistaActiva={vistaActiva} 
-        setVistaActiva={setVistaActiva} 
-        virtualEnabled={settings.virtualRosaryEnabled}
         isLeftHanded={settings.isLeftHanded}
         simpleMode={settings.simpleMode}
       />
@@ -413,33 +486,6 @@ export default function AppShell() {
         v{APP_VERSION}
       </div>
 
-      {/* Mobile / locked-Audio fallback */}
-      {settings.soundEnabled && (
-        <button
-          type="button"
-          onClick={handleStartAmbientAudio}
-          style={{
-            position: 'absolute',
-            bottom: '86px',
-            right: '10px',
-            zIndex: 1001,
-            background: 'rgba(20,20,20,0.72)',
-            border: '1px solid rgba(212,175,55,0.35)',
-            color: '#D4AF37',
-            borderRadius: '999px',
-            padding: '8px 12px',
-            fontWeight: 'bold',
-            fontSize: '0.78rem',
-            cursor: 'pointer',
-            backdropFilter: 'blur(8px)',
-            pointerEvents: 'auto'
-          }}
-          title="Inicia el sonido ambiente (si el navegador lo bloqueó)"
-        >
-          Start Ambient Audio
-        </button>
-      )}
-
       {/* OVERLAYS */}
       {showSync && <SyncManager onClose={() => setShowSync(false)} />}
       {/* MODALS */}
@@ -450,6 +496,7 @@ export default function AppShell() {
           onClose={() => setShowSettings(false)}
           appVersion={APP_VERSION}
           onCheckForUpdate={applyPendingUpdate}
+          onStartAmbientAudio={handleStartAmbientAudio}
         />
       )}
 
@@ -621,7 +668,7 @@ function HandToggle({ isLeftHanded, onToggle }) {
           filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))'
         }}
       >
-        {isLeftHanded ? '🫱' : '🫲'}
+        {isLeftHanded ? <IconHandRight size={28} /> : <IconHandLeft size={28} />}
       </button>
       <style>{`
         @keyframes fade-in {

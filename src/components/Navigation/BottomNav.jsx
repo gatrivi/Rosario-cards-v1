@@ -1,71 +1,63 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { NAV_ICONS } from './NavIcons';
+import { getViewIdFromPath, getPathForView } from '../../navigation/routes';
+import './BottomNav.css';
 
-function NavButton({ icono, texto, activo, onClick, disabled, simpleMode }) {
+function NavButton({ iconId, texto, activo, onClick, disabled, simpleMode }) {
+  const Icon = NAV_ICONS[iconId];
+  const iconSize = simpleMode ? 28 : 22;
+
   return (
-    <button 
-      onClick={disabled ? null : onClick}
+    <button
+      type="button"
+      onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
-        background: 'transparent',
-        border: 'none',
-        color: disabled ? '#333' : (activo ? '#D4AF37' : '#666'),
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        transition: 'color 0.2s ease',
-        WebkitTapHighlightColor: 'transparent',
-        opacity: disabled ? 0.5 : 1
-      }}
+      className={`bottom-nav__btn${activo ? ' bottom-nav__btn--active' : ''}`}
     >
-      <span style={{ fontSize: simpleMode ? '1.8rem' : '1.5rem', marginBottom: '4px', filter: activo ? 'drop-shadow(0 0 5px rgba(212,175,55,0.5))' : (disabled ? 'grayscale(1)' : 'none') }}>
-        {icono}
+      <span className="bottom-nav__icon">
+        {Icon ? <Icon size={iconSize} /> : null}
       </span>
-      <span style={{ fontSize: simpleMode ? '0.8rem' : (disabled ? '0.6rem' : '0.7rem'), fontWeight: activo ? 'bold' : 'normal' }}>
+      <span
+        className={`bottom-nav__label${
+          simpleMode ? ' bottom-nav__label--large' : ''
+        }${disabled ? ' bottom-nav__label--disabled' : ''}`}
+      >
         {texto}
       </span>
     </button>
   );
 }
 
-export default function BottomNav({ vistaActiva, setVistaActiva, isLeftHanded, simpleMode = false }) {
+export default function BottomNav({ isLeftHanded, simpleMode = false }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const vistaActiva = getViewIdFromPath(location.pathname);
+
   const navItems = [
-    { id: 'stats', icono: '📊', texto: 'Stats' },
-    { id: 'tracker', icono: '📅', texto: 'Plan' },
-    { id: 'camino', icono: '🚶', texto: 'Camino' },
-    { id: 'booklet', icono: '📖', texto: 'Libro' },
-    { id: 'rose', icono: '🌹', texto: 'Rosa' },
-    { id: 'rosary', icono: '📿', texto: 'Rosario' },
-    { id: 'voz', icono: '🎙️', texto: 'Voz' },
+    { id: 'stats', texto: 'Stats' },
+    { id: 'tracker', texto: 'Plan' },
+    { id: 'camino', texto: 'Camino' },
+    { id: 'booklet', texto: 'Libro' },
+    { id: 'rose', texto: 'Rosa' },
+    { id: 'rosary', texto: 'Rosario' },
+    { id: 'voz', texto: 'Voz' },
   ];
 
   const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      height: '70px',
-      backgroundColor: '#111',
-      borderTop: '1px solid #222',
-      flexShrink: 0,
-      position: 'relative',
-      zIndex: 50
-    }}>
+    <nav className="bottom-nav glass-footer" aria-label="Navegación principal">
       {orderedItems.map((item) => (
-        <NavButton 
+        <NavButton
           key={item.id}
-          icono={item.icono} 
-          texto={item.texto} 
-          activo={vistaActiva === item.id} 
-          onClick={() => setVistaActiva(item.id)} 
+          iconId={item.id}
+          texto={item.texto}
+          activo={vistaActiva === item.id}
+          onClick={() => navigate(getPathForView(item.id))}
           simpleMode={simpleMode}
         />
       ))}
-    </div>
+    </nav>
   );
 }

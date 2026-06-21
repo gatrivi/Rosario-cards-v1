@@ -162,6 +162,7 @@ export default function RoseView({
   const holdDelayTimerRef = useRef(null);
   const pointerStartX = useRef(null);
   const pointerStartY = useRef(null);
+  const pointerStartedInTextRef = useRef(false);
   const isVerticalGesture = useRef(false);
   const versoIndexRef = useRef(0);
   const advanceVerseRef = useRef(null);
@@ -797,6 +798,16 @@ export default function RoseView({
 
   const handleTrackPointer = (clientX, clientY, pointerType) => {
     if (!hasInteracted) setHasInteracted(true);
+
+    const mw = mouseWiggleRef.current;
+    if (mw.lastX != null && mw.lastY != null) {
+      const dx = clientX - mw.lastX;
+      const dy = clientY - mw.lastY;
+      mw.samples.push(Math.sqrt(dx * dx + dy * dy));
+      if (mw.samples.length > 40) mw.samples.shift();
+    }
+    mw.lastX = clientX;
+    mw.lastY = clientY;
     
     const textRect = textoRef.current?.getBoundingClientRect();
     const isNearText = textRect && 
@@ -807,12 +818,12 @@ export default function RoseView({
       console.log(`[RoseView] PointerMove: ${pointerType} at (${clientX}, ${clientY}), isNear: ${isNearText}, active: ${isVerseActivated}, charging: ${isCargando}`);
     }
 
-    // Vertical swipe to change verse — disabled in thumb zone (hold-to-pray area)
+    // Vertical swipe on text zone; thumb zone is hold-only unless gesture started on text
     if (
       pointerType === 'touch' &&
       pointerStartY.current !== null &&
       !isVerticalGesture.current &&
-      !isInThumbZone(clientY)
+      (pointerStartedInTextRef.current || !isInThumbZone(clientY))
     ) {
       const dY = clientY - pointerStartY.current;
       const dX = clientX - (pointerStartX.current || 0);
@@ -872,6 +883,14 @@ export default function RoseView({
     pointerStartX.current = e.clientX;
     pointerStartY.current = e.clientY;
     isVerticalGesture.current = false;
+    const textRect = textoRef.current?.getBoundingClientRect();
+    pointerStartedInTextRef.current = Boolean(
+      textRect &&
+      e.clientY >= textRect.top &&
+      e.clientY <= textRect.bottom &&
+      e.clientX >= textRect.left &&
+      e.clientX <= textRect.right
+    );
     
     // Always start charging (allows hold-to-advance alongside swipe)
     setIsCargando(true);
@@ -940,6 +959,10 @@ export default function RoseView({
       touchAction: 'none'
     }}
     ref={containerRef}
+    onPointerDown={handlePointerDown}
+    onPointerMove={handlePointerMove}
+    onPointerUp={handlePointerUp}
+    onPointerLeave={handlePointerUp}
     >
       
       {/* ── Layer 1: Ambient Depth ── */}
@@ -1065,7 +1088,6 @@ export default function RoseView({
       }}>
          <SacredText 
             ref={textoRef}
-            text={currentVerseText}
             words={currentWords}
             wordCharOffsets={wordCharOffsets}
             charProgressIndex={charProgressIndex}
@@ -1098,11 +1120,8 @@ export default function RoseView({
             ? 'linear-gradient(transparent 0%, rgba(212,175,55,0.14) 70%)'
             : 'linear-gradient(transparent 0%, rgba(0,0,0,0.55) 75%)',
           touchAction: 'none',
+          pointerEvents: 'none',
         }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
       >
         <div style={{
           width: 'min(92%, 420px)',

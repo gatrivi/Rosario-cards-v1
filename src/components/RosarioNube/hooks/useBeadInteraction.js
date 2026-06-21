@@ -42,7 +42,7 @@ export const useBeadInteraction = (getRosarySequence) => {
   // Listen for enter chain prayers event
   useEffect(() => {
     const handleEnterChainPrayers = (event) => {
-      const { prayerIndex, chainIndices } = event.detail;
+      const { prayerIndex } = event.detail;
 
       setPressSameBeadId(`chain-${prayerIndex}`);
       setChainBeadHighlight(`chain-${prayerIndex}`);

@@ -10,6 +10,9 @@ import { useRosaryDragging } from "./hooks/useRosaryDragging";
 import { useBeadInteraction } from "./hooks/useBeadInteraction";
 import { useRosaryState } from "./hooks/useRosaryState";
 
+const BEAD_OPACITY = 0.62;
+const BEAD_DRAG_OPACITY = 0.28;
+
 /**
  * InteractiveRosary Component
  *
@@ -24,6 +27,8 @@ const InteractiveRosary = ({
   currentMystery = "gozosos",
   currentPrayerIndex = 0,
   onBeadClick,
+  onBeadHoldStart,
+  onBeadHoldEnd,
   prayers,
   className = "",
   rosaryFriction = 0.05,
@@ -59,6 +64,7 @@ const InteractiveRosary = ({
     onSwipeRetreat,
   });
   const swipeStartRef = useRef(null);
+  const draggedBeadBodyRef = useRef(null);
 
   // Use custom hooks for state management
   const { isVisible, developerMode, rosaryZoom } = useRosaryState();
@@ -147,6 +153,16 @@ const InteractiveRosary = ({
     onBeadClickRef.current = onBeadClick;
   }, [onBeadClick]);
 
+  const onBeadHoldStartRef = useRef(onBeadHoldStart);
+  useEffect(() => {
+    onBeadHoldStartRef.current = onBeadHoldStart;
+  }, [onBeadHoldStart]);
+
+  const onBeadHoldEndRef = useRef(onBeadHoldEnd);
+  useEffect(() => {
+    onBeadHoldEndRef.current = onBeadHoldEnd;
+  }, [onBeadHoldEnd]);
+
   // Initialize physics world with current zoom
   const initializePhysics = useCallback(() => {
     if (!sceneRef.current) return;
@@ -230,11 +246,16 @@ const InteractiveRosary = ({
     // Using working MatterScene.tsx values to fix slingshot dragging
     // Now with vitality-based restitution for "living rosary" effect
     const beadOptions = (color, extraOptions = {}) => ({
-      restitution: baseRestitution, // Vitality-based bounciness
-      friction: 0.5, // Increased from 0.1 (fixes slingshot)
-      frictionAir: vitalityFriction, // Vitality-modulated air resistance
+      restitution: baseRestitution,
+      friction: 0.5,
+      frictionAir: vitalityFriction,
       density: 0.001,
-      render: { fillStyle: color, strokeStyle: colors.chain, lineWidth: 1 },
+      render: {
+        fillStyle: color,
+        strokeStyle: colors.chain,
+        lineWidth: 1,
+        opacity: BEAD_OPACITY,
+      },
       ...extraOptions,
     });
 
@@ -1123,12 +1144,8 @@ const InteractiveRosary = ({
         };
 
         if (newCount === 1) {
-          // FIRST TOUCH: Navigate to main prayer immediately
-          console.log(`🎯 First touch - navigating to prayer`);
-          onBeadClickRef.current(effectivePrayerIndex, effectivePrayerId);
-
-          // Record prayer in history for vitality tracking
-          prayerHistory.recordPrayer(effectivePrayerIndex, currentMystery);
+          // FIRST TOUCH: reveal handled by onBeadHoldStart (mousedown hold)
+          console.log(`🎯 First touch - hold reveal`);
 
           // Clear scroll-triggered chain entry indicators
           // This handles both tapping the original bead again OR tapping the invisible bead
@@ -1285,31 +1302,72 @@ const InteractiveRosary = ({
       }
     });
 
-    // Track bead dragging for dynamic text positioning
+    // Hold vs drag: hold reveals prayer; drag starts after movement threshold
     let isDragging = false;
+    let isHoldActive = false;
     let draggedBead = null;
+    let holdStart = null;
+    let holdBody = null;
+    const DRAG_THRESHOLD_PX = 10;
+
+    const resolveBeadPrayerTarget = (clickedBead) => {
+      if (clickedBead.prayerIndex === undefined) return null;
+      let effectivePrayerIndex = clickedBead.prayerIndex;
+      let effectivePrayerId = clickedBead.prayerId;
+      if (areClosingPrayersUnlocked) {
+        const tailToClosingMap = { 5: 79, 6: 80, 9: 81 };
+        if (tailToClosingMap[clickedBead.prayerIndex] !== undefined) {
+          const rosarySequence = getRosarySequence();
+          effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
+          effectivePrayerId = rosarySequence[effectivePrayerIndex];
+        }
+      }
+      return { effectivePrayerIndex, effectivePrayerId };
+    };
 
     Matter.Events.on(mouseConstraint, "mousedown", (event) => {
-      let clickedBody = event.source.body;
+      const clickedBody = event.source.body;
       if (!clickedBody) return;
 
       const clickedBead = matterInstance.current?.allBeads.find(
         (b) => b.id === clickedBody.id
       );
-      if (!clickedBead) return;
+      if (!clickedBead || clickedBead.isHeartMedal) return;
 
-      isDragging = true;
+      const target = resolveBeadPrayerTarget(clickedBead);
+      if (!target) return;
+
+      isHoldActive = true;
+      holdStart = { x: mouse.position.x, y: mouse.position.y };
+      holdBody = clickedBody;
       draggedBead = clickedBead;
 
-      // Make rosary mostly transparent while dragging
-      window.dispatchEvent(
-        new CustomEvent("beadDragStart", {
-          detail: { isDragging: true },
-        })
+      onBeadHoldStartRef.current?.(
+        target.effectivePrayerIndex,
+        target.effectivePrayerId
       );
+      prayerHistory.recordPrayer(target.effectivePrayerIndex, currentMystery);
     });
 
     Matter.Events.on(mouseConstraint, "mousemove", (event) => {
+      if (isHoldActive && !isDragging && holdStart && holdBody) {
+        const dist = Math.hypot(
+          mouse.position.x - holdStart.x,
+          mouse.position.y - holdStart.y
+        );
+        if (dist > DRAG_THRESHOLD_PX) {
+          isDragging = true;
+          if (holdBody.render) {
+            draggedBeadBodyRef.current = holdBody;
+            holdBody.render.opacity = BEAD_DRAG_OPACITY;
+          }
+          window.dispatchEvent(
+            new CustomEvent("beadDragStart", { detail: { isDragging: true } })
+          );
+        }
+        return;
+      }
+
       if (!isDragging || !draggedBead) return;
 
       const beadY = draggedBead.position.y;
@@ -1396,6 +1454,14 @@ const InteractiveRosary = ({
         swipeStartRef.current = null;
       }
 
+      if (isHoldActive) {
+        onBeadHoldEndRef.current?.();
+        isHoldActive = false;
+        holdStart = null;
+        holdBody = null;
+        if (!isDragging) draggedBead = null;
+      }
+
       if (isDragging) {
         // Reset text position when dragging ends
         window.dispatchEvent(
@@ -1409,6 +1475,10 @@ const InteractiveRosary = ({
         );
 
         // Restore rosary opacity when dragging ends
+        if (draggedBeadBodyRef.current?.render) {
+          draggedBeadBodyRef.current.render.opacity = BEAD_OPACITY;
+          draggedBeadBodyRef.current = null;
+        }
         window.dispatchEvent(
           new CustomEvent("beadDragEnd", {
             detail: { isDragging: false },
@@ -1428,7 +1498,7 @@ const InteractiveRosary = ({
 
       // VITALITY VISUAL FEEDBACK: Subtle golden glow at high vitality (optional enhancement)
       if (vitality > 0.7) {
-        const glowAlpha = ((vitality - 0.7) / 0.3) * 0.1; // 0 to 0.1 (very subtle)
+        const glowAlpha = ((vitality - 0.7) / 0.3) * 0.06;
         context.fillStyle = `rgba(255, 245, 200, ${glowAlpha})`;
         context.fillRect(0, 0, width, height); // Subtle golden overlay
       }

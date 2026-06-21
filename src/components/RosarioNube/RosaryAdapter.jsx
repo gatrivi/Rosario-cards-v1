@@ -11,6 +11,8 @@ export default function RosaryAdapter({
   soundEnabled = true,
   guided = true,
   onNodeClick,
+  onBeadHoldStart,
+  onBeadHoldEnd,
   onAdvance,
   onRetreat,
   onSwipeAdvance,
@@ -37,11 +39,20 @@ export default function RosaryAdapter({
     [onNodeClick]
   );
 
+  const handleBeadHoldStart = useCallback(
+    (prayerIndex) => {
+      if (onBeadHoldStart) onBeadHoldStart(prayerIndex);
+    },
+    [onBeadHoldStart]
+  );
+
   return (
     <InteractiveRosary
       currentMystery={misterioActual}
       currentPrayerIndex={activePrayerIndex}
       onBeadClick={handleBeadClick}
+      onBeadHoldStart={handleBeadHoldStart}
+      onBeadHoldEnd={onBeadHoldEnd}
       prayers={RosarioPrayerBook}
       soundEnabled={soundEnabled}
       guided={guided}

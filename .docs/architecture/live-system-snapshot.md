@@ -1,3 +1,5 @@
+> **Superseded in part:** For current production stack see [current-stack-jun-2026.md](./current-stack-jun-2026.md) and [rosary-ux-recovery-jun-2026.md](../virtual-rosary/rosary-ux-recovery-jun-2026.md). This file describes the pre-recovery monolithic `VirtualRosaryPhysics.jsx`.
+
 ## 1) `VirtualRosaryPhysics` file + code structure
 **File:** `src/components/RosarioNube/VirtualRosaryPhysics.jsx`
 

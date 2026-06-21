@@ -17,7 +17,8 @@ const VERSOS_AVE_MARIA = [
 
 export default function RosaEnFocoView({ 
   misterioColor = "#D4AF37", 
-  externalIsCargando = null, 
+  externalIsCargando = null,
+  externalCarga = null,
   onComplete = null,
   simpleMode = false,
   seed = 123
@@ -33,8 +34,9 @@ export default function RosaEnFocoView({
   const charDwellRef = useRef([]);
 
   const isCargando = externalIsCargando !== null ? externalIsCargando : internalIsCargando;
-  const versoActualIndex = Math.min(Math.floor(carga / 100), 9);
-  const progresoVisual = carga / 1000;
+  const effectiveCarga = externalCarga != null ? Math.max(carga, externalCarga) : carga;
+  const versoActualIndex = Math.min(Math.floor(effectiveCarga / 100), 9);
+  const progresoVisual = effectiveCarga / 1000;
 
   const currentVerseText = VERSOS_AVE_MARIA[versoActualIndex];
   const words = useMemo(() => currentVerseText.split(/\s+/).filter(w => w.length > 0), [currentVerseText]);
@@ -49,7 +51,7 @@ export default function RosaEnFocoView({
   }, [words]);
 
   const totalChars = wordCharOffsets.length > 0 ? wordCharOffsets[wordCharOffsets.length - 1] + words[words.length - 1].length : 0;
-  const charProgressIndex = Math.floor((carga % 100) / 100 * totalChars);
+  const charProgressIndex = Math.floor((effectiveCarga % 100) / 100 * totalChars);
 
   useEffect(() => {
     // Reset refs when verse changes

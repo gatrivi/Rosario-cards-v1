@@ -1,0 +1,87 @@
+/* Rosary: slightly lighter so beads stay readable */
+.vitral-bg--rosary .vitral-bg__shade {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 10, 26, 0.12) 0%,
+    rgba(13, 10, 26, 0.2) 45%,
+    rgba(13, 10, 26, 0.32) 100%
+  );
+}
+
+/* Booklet class aliases */
+.booklet-vitral,
+.vitral-bg {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.booklet-vitral__img,
+.vitral-bg__img {
+  filter: brightness(0.82) contrast(1.05) saturate(1.12);
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: opacity 0.65s ease-out, transform 0.7s ease-out, filter 0.7s ease-out;
+  width: 100%;
+}
+
+.booklet-vitral--ave .booklet-vitral__img,
+.booklet-vitral--mystery .booklet-vitral__img,
+.booklet-vitral--prayer .booklet-vitral__img,
+.vitral-bg--ave .vitral-bg__img,
+.vitral-bg--mystery .vitral-bg__img,
+.vitral-bg--prayer .vitral-bg__img {
+  filter: brightness(var(--ave-brightness, 0.82)) contrast(1.06)
+    saturate(var(--ave-saturate, 1.12));
+  transform: scale(var(--ave-zoom, 1));
+}
+
+.booklet-vitral__shade,
+.vitral-bg__shade {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 10, 26, 0.18) 0%,
+    rgba(13, 10, 26, 0.28) 45%,
+    rgba(13, 10, 26, 0.42) 100%
+  );
+  inset: 0;
+  position: absolute;
+}
+
+.booklet-vitral__glare,
+.vitral-bg__glare {
+  background: radial-gradient(
+    ellipse 85% 65% at 50% 38%,
+    rgba(255, 248, 220, var(--ave-glare, 0.08)) 0%,
+    rgba(212, 175, 55, calc(var(--ave-glare, 0.08) * 0.45)) 35%,
+    transparent 72%
+  );
+  inset: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 0.55s ease-out;
+}
+
+.booklet-vitral--mystery .booklet-vitral__glare,
+.vitral-bg--mystery .vitral-bg__glare {
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 35%,
+    rgba(220, 235, 255, var(--ave-glare, 0.08)) 0%,
+    rgba(180, 200, 255, calc(var(--ave-glare, 0.08) * 0.4)) 40%,
+    transparent 72%
+  );
+}
+
+.booklet-vitral--step .booklet-vitral__glare,
+.vitral-bg--step .vitral-bg__glare {
+  animation: vitral-step-glow 0.38s ease-out;
+}
+
+.booklet-vitral--step .booklet-vitral__img,
+.vitral-bg--step .vitral-bg__img {
+  animation: vitral-step-bright 0.38s ease-out;
+}

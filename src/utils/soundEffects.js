@@ -496,6 +496,40 @@ class SoundEffects {
   }
 
   /**
+   * Soft bead tap — used when an action is unavailable (e.g. heart medal, litany locked).
+   */
+  playBeadCollision(frequency = 400, volume = 0.1, duration = 0.05) {
+    if (!this.enabled) return;
+    this.initAudioContext();
+    if (!this.audioContext) return;
+
+    try {
+      const ctx = this.audioContext;
+      if (ctx.state === "suspended") ctx.resume();
+
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + duration
+      );
+
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Error playing bead collision:", e);
+    }
+  }
+
+  /**
    * Play move-to-next-bead chime - distinctive chime when ready to move to next bead
    * Lower pitch than chain prayer, signals completion of current bead's prayers
    */
@@ -746,7 +780,7 @@ class SoundEffects {
   }
 }
 
-// Export singleton instances and classes
+const soundEffects = new SoundEffects();
 export { SoundEffects, PrayerHistory };
-export default new SoundEffects();
+export default soundEffects;
 export const prayerHistory = new PrayerHistory();

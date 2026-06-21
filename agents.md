@@ -1,5 +1,7 @@
 ## ROSARIO CARDS — Agent Context & Audit
 
+> **Canonical deep context:** [`.docs/index.md`](.docs/index.md) → [`.docs/architecture/current-stack-jun-2026.md`](.docs/architecture/current-stack-jun-2026.md) for live stack (Jun 2026). This file is a legacy audit snapshot; prefer `.docs/` for feature queries.
+
 **Repo:** `C:\zengatrivi\REACTJS\rosario-cards-v0` (GitHub: `gatrivi/Rosario-cards-v1`)  
 **Stack:** React 19, Create React App, Matter.js, D3, react-icons  
 **User handle:** gatrivi

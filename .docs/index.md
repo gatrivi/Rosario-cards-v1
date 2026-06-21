@@ -1,73 +1,70 @@
-# Rosario Cards Docs (v0.3.35 baseline)
+# Rosario Cards — Documentation Index
+
+**Start here.** Canonical context for agents and humans. Model-efficient: tables, paths, invariants.
+
+**Live stack (Jun 2026):** [architecture/current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md)
 
 ## Tree
+
 ```text
 .docs/
-  index.md
-  product/
-    overview.md
+  index.md                          ← you are here
   architecture/
-    architecture-overview.md
+    current-stack-jun-2026.md       ← production views, data, audio, inventory
+    architecture-overview.md          ← high-level map (baseline)
+    live-system-snapshot.md           ← pre-recovery monolith detail (partially stale)
+    resonator-and-physics-blueprint.md
   virtual-rosary/
-    interaction-rules.md
-    physics-blueprint-v4.md
+    rosary-ux-recovery-jun-2026.md    ← Jun 2026 session: 3 bugs fixed, stack
+    interaction-rules.md              ← bead/chain selection MUSTS
+    topology-current.md               ← production vs v4 canonical
+    physics-stable-archive.md         ← archived Matter module
+    physics-blueprint-v4.md           ← formal v4 JSON topology
   visual/
-    visual-modes.md
+    visual-modes.md                   ← chiaroscuro vs vitral
   sacred-cosmic/
     cosmic-modulator.md
     sacred-edition-overview.md
   roadmap/
     future-features.md
+  litany/
+    index.md                          ← Letanía Lauretana roadmap + sound-engine handoff
+    data-model.md
+    assets-and-images.md
+    views-integration.md
+    audio-integration.md
+    known-issues.md
   dev-notes/
     beads-dom-prototype.md
     rosary-dom-physics-prototype.md
+    legacy-agent-prompts/             ← historical root agent files
   todos/
     view-prayers-todo.md
+  product/
+    overview.md
 ```
 
-## What’s inside (by file)
+## Quick links by topic
 
-`product/overview.md`  
-Product intent + interaction philosophy + user-facing feature set.
+| Topic | Doc |
+|-------|-----|
+| **What runs today** | [current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) |
+| **Rosary recovery status** | [rosary-ux-recovery-jun-2026.md](./virtual-rosary/rosary-ux-recovery-jun-2026.md) |
+| **Bead click rules** | [interaction-rules.md](./virtual-rosary/interaction-rules.md) |
+| **Topology / merge plan** | [topology-current.md](./virtual-rosary/topology-current.md) |
+| **Archived physics module** | [physics-stable-archive.md](./virtual-rosary/physics-stable-archive.md) |
+| **Litany images** | [litany/index.md](./litany/index.md), `src/data/litanyLauretana.js` |
+| **Litany sound engine** | [litany/audio-integration.md](./litany/audio-integration.md) |
+| **Visual assets policy** | [visual-modes.md](./visual/visual-modes.md) |
+| **Cosmic / Sacred Edition** | [sacred-cosmic/](./sacred-cosmic/) |
+| **Future work** | [future-features.md](./roadmap/future-features.md) |
 
-`architecture/architecture-overview.md`  
-High-level system map: views/modes, core subsystems, key runtime libraries.
+## Stack (one line)
 
-`virtual-rosary/interaction-rules.md`  
-Interaction invariants for the physics rosary: what each bead/chain selects.
+React 19 · CRA · Matter.js · D3 · Web Audio · localStorage + jsonblob sync
 
-`virtual-rosary/physics-blueprint-v4.md`  
-Formal physical/topological blueprint (Rosary “final_v4”): constraints + topology.
+**Root markdown:** only `README.md` + `agents.md`. All other context lives here in `.docs/`.
 
-`visual/visual-modes.md`  
-Art-direction modes (chiaroscuro vs stained glass/vitral) and current fallbacks.
+Research scratch: `notes/` (not migrated).
 
-`sacred-cosmic/cosmic-modulator.md`  
-“Sacred Cosmic Edition” deterministic modulation model (planetary phases, seeds).
-
-`sacred-cosmic/sacred-edition-overview.md`  
-“Sacred Edition” feature spec: mystery iconography, meditation pacing, offline sync.
-
-`roadmap/future-features.md`  
-Planned expansions and interaction experiments.
-
-`dev-notes/beads-dom-prototype.md`  
-Dev notes for a DOM-based draggable-beads prototype (drag, constraints, collisions, audio).
-
-`dev-notes/rosary-dom-physics-prototype.md`  
-Expanded prototype notes for a complete DOM rosary (bead-chain + loop/threads + scaling).
-
-`todos/view-prayers-todo.md`  
-Collection of “todo/levels” notes around prayer views and planned capabilities.
-
-## Overarching tech stack (baseline)
-- React 19 + Create React App
-- Matter.js (physics-based rosary)
-- D3 (legacy/other visual utilities)
-- react-icons (UI icons)
-- Web Audio API (procedural chimes/synthesis)
-- Canvas/SVG (procedural drawings + overlays)
-- Local persistence + cloud sync (see docs below for “Sacred Edition” sync behavior)
-
-> Root `README.md` is intentionally not modified or deleted (per safety rule). This docs set only extracts/condenses architecture/product notes into `.docs/`.
-
+> Root `README.md` unchanged (project entry).
