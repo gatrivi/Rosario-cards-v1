@@ -9,9 +9,31 @@ import { useRosaryPosition } from "./hooks/useRosaryPosition";
 import { useRosaryDragging } from "./hooks/useRosaryDragging";
 import { useBeadInteraction } from "./hooks/useBeadInteraction";
 import { useRosaryState } from "./hooks/useRosaryState";
+import {
+  toPrayerIds,
+  getPrayerIdAt,
+  buildRosaryPhysicsIndices,
+  getDecadeAveIndex,
+} from "../../utils/rosarySequenceUtils";
 
 const BEAD_OPACITY = 0.62;
 const BEAD_DRAG_OPACITY = 0.28;
+
+function destroyMatterInstance(instance) {
+  if (!instance) return;
+  const { render, runner, world, engine, eventHandlers } = instance;
+  if (eventHandlers?.length) {
+    eventHandlers.forEach(({ target, name, fn }) => {
+      Matter.Events.off(target, name, fn);
+    });
+  }
+  if (render) Matter.Render.stop(render);
+  if (runner) Matter.Runner.stop(runner);
+  if (world) Matter.World.clear(world, false);
+  if (engine) Matter.Engine.clear(engine);
+  if (render?.canvas) render.canvas.remove();
+  if (render) render.textures = {};
+}
 
 /**
  * InteractiveRosary Component
@@ -24,6 +46,7 @@ const BEAD_DRAG_OPACITY = 0.28;
  * - Main loop: 50 beads (5 decades of 10 beads each)
  */
 const InteractiveRosary = ({
+  sequence,
   currentMystery = "gozosos",
   currentPrayerIndex = 0,
   onBeadClick,
@@ -47,6 +70,7 @@ const InteractiveRosary = ({
 }) => {
   const sceneRef = useRef(null);
   const matterInstance = useRef(null);
+  const sequenceRef = useRef(sequence);
   const currentPrayerIndexRef = useRef(currentPrayerIndex);
   const developerModeRef = useRef(false);
   const collisionSoundsRef = useRef(soundEnabled);
@@ -77,7 +101,17 @@ const InteractiveRosary = ({
     setDragStart,
   } = useRosaryPosition();
 
-  const getRosarySequence = useRosarySequence(prayers, currentMystery);
+  const fallbackGetSequence = useRosarySequence(prayers, currentMystery);
+
+  useEffect(() => {
+    sequenceRef.current = sequence;
+  }, [sequence]);
+
+  const getRosarySequence = useCallback(() => {
+    if (sequenceRef.current?.length) return sequenceRef.current;
+    const ids = fallbackGetSequence();
+    return ids;
+  }, [fallbackGetSequence]);
 
   const {
     lastTouchedBeadId,
@@ -180,17 +214,16 @@ const InteractiveRosary = ({
 
     // --- Cleanup previous instance if it exists ---
     if (matterInstance.current) {
-      const { render, runner, world, engine } = matterInstance.current;
-      Matter.Render.stop(render);
-      Matter.Runner.stop(runner);
-      Matter.World.clear(world, false);
-      Matter.Engine.clear(engine);
-      if (render.canvas) {
-        render.canvas.remove();
-      }
-      render.textures = {};
+      destroyMatterInstance(matterInstance.current);
+      matterInstance.current = null;
       console.log("🧹 InteractiveRosary: Cleaned up previous instance");
     }
+
+    const eventHandlers = [];
+    const trackEvent = (target, name, fn) => {
+      Matter.Events.on(target, name, fn);
+      eventHandlers.push({ target, name, fn });
+    };
 
     // --- Engine and World ---
     const engine = Matter.Engine.create({
@@ -212,8 +245,10 @@ const InteractiveRosary = ({
 
     // --- Get Colors and Sequence ---
     const colors = getMysteryColors(currentMystery);
-    const rosarySequence = getRosarySequence();
-    console.log("📿 Rosary sequence length:", rosarySequence.length);
+    const prayerIds = toPrayerIds(getRosarySequence());
+    const physicsMaps = buildRosaryPhysicsIndices(prayerIds);
+    const pid = (index) => prayerIds[index] || "unknown";
+    console.log("📿 Rosary sequence length:", prayerIds.length);
 
     // --- Parameters ---
     const baseBeadSize = 8; // Base bead size
@@ -326,9 +361,8 @@ const InteractiveRosary = ({
     };
 
     // --- Layout & Bead Creation ---
-    const centerX = width / 2 + rosaryPosition.x;
-    // Center the rosary in the full screen height
-    const centerY = height / 2 + rosaryPosition.y;
+    const centerX = width / 2;
+    const centerY = height / 2;
     const baseRadius = Math.min(width, height) / 3.5;
     const radius = baseRadius * rosaryZoom; // Apply zoom to radius
     const baseChainSegmentLength = 15;
@@ -356,8 +390,8 @@ const InteractiveRosary = ({
     const numLoopPoints = numMainBeads + 1; // +1 because heart bead closes the loop
 
     // Lone bead positions (after every 10 beads)
-    const loneBeadPositions = [10, 21, 32, 43]; // Positions in the 54-bead array
-    const loneBeadPrayerIndices = [23, 37, 51, 65]; // MGo2, MGo3, MGo4, MGo5
+    const loneBeadPositions = [10, 21, 32, 43];
+    const loneBeadPrayerIndices = physicsMaps.loneBeadPrayerIndices;
 
     for (let i = 0; i < numMainBeads; i++) {
       const angle = ((i + 1) / numLoopPoints) * 2 * Math.PI - Math.PI / 2;
@@ -372,26 +406,11 @@ const InteractiveRosary = ({
       let prayerId;
 
       if (isLoneBead) {
-        // This is a lone bead (decade marker)
         prayerIndex = loneBeadPrayerIndices[loneBeadIndex];
-        prayerId = rosarySequence[prayerIndex] || "unknown";
+        prayerId = pid(prayerIndex);
       } else {
-        // This is a regular bead (Hail Mary)
-        // Calculate which group of 10 we're in (0-4)
-        let adjustedPosition = i;
-        // Subtract lone beads that come before this position
-        for (let j = 0; j < loneBeadPositions.length; j++) {
-          if (loneBeadPositions[j] < i) adjustedPosition--;
-        }
-
-        const decadeNum = Math.floor(adjustedPosition / 10);
-        const posInDecade = adjustedPosition % 10;
-
-        // Decade structure: LL(skip) P(skip) A×10 G(skip) F(skip)
-        // Decade 1 starts at 10, Decade 2 at 24, etc. (+14 each)
-        const decadeStart = 10 + decadeNum * 14;
-        prayerIndex = decadeStart + 1 + posInDecade; // +1 to skip P
-        prayerId = rosarySequence[prayerIndex] || "unknown";
+        prayerIndex = getDecadeAveIndex(prayerIds, i);
+        prayerId = pid(prayerIndex);
       }
 
       const bead = Matter.Bodies.circle(
@@ -433,23 +452,22 @@ const InteractiveRosary = ({
       // Assign prayer indices to long chains between decades
       // These are G (Glory Be) and F (Fatima) prayers
       if (isLongSpring) {
-        const decadeNum = Math.floor(i / 11); // Every 11th connection is long (after 10 beads + 1 lone)
-        // After each set of 10 beads: G and F prayers
-        // Decade 1: indices 21, 22; Decade 2: 35, 36; etc.
-        const prayerIndex = 21 + decadeNum * 14;
-        constraint.prayerIndex = prayerIndex; // This will be G prayer
-        constraint.prayerId = rosarySequence[prayerIndex];
+        const decadeNum = Math.floor(i / 11);
+        const gPair = physicsMaps.gloriaFatimaPairs[decadeNum];
+        const gIdx = gPair?.g ?? 21 + decadeNum * 14;
+        const fIdx = gPair?.f ?? gIdx + 1;
+        constraint.prayerIndex = gIdx;
+        constraint.prayerId = pid(gIdx);
 
-        // Add F prayer as a separate constraint (Fatima prayer)
         const fatimaConstraint = Matter.Constraint.create({
-          ...springOptions(adjustedLength * 0.8), // Slightly shorter for visual distinction
+          ...springOptions(adjustedLength * 0.8),
           bodyA: beadA,
           bodyB: beadB,
           pointA: getPoleOffset(beadA, beadB, beadSize),
           pointB: getPoleOffset(beadB, beadA, beadSize),
-          prayerIndex: prayerIndex + 1, // F prayer (Fatima) - next index
-          prayerId: rosarySequence[prayerIndex + 1],
-          render: { visible: false }, // Hide this constraint visually
+          prayerIndex: fIdx,
+          prayerId: pid(fIdx),
+          render: { visible: false },
         });
         constraints.push(fatimaConstraint);
       }
@@ -471,11 +489,12 @@ const InteractiveRosary = ({
       (centerBead.position.x + mainLoopBeads[0].position.x) / 2;
     const heartToMainMidY =
       (centerBead.position.y + mainLoopBeads[0].position.y) / 2;
+    const loopEntryP = physicsMaps.loopEntryP;
     const heartToMainInvisible = createInvisibleBead(
       heartToMainMidX,
       heartToMainMidY,
-      10,
-      rosarySequence[10]
+      loopEntryP,
+      pid(loopEntryP)
     );
     allBeads.push(heartToMainInvisible);
 
@@ -487,8 +506,8 @@ const InteractiveRosary = ({
         bodyB: heartToMainInvisible,
         pointA: getPoleOffset(centerBead, heartToMainInvisible, centerBeadSize),
         pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
-        prayerIndex: 10,
-        prayerId: rosarySequence[10],
+        prayerIndex: loopEntryP,
+        prayerId: pid(loopEntryP),
       })
     );
 
@@ -500,8 +519,8 @@ const InteractiveRosary = ({
         bodyB: mainLoopBeads[0],
         pointA: { x: 0, y: 0 }, // CENTER anchor on invisible bead
         pointB: getPoleOffset(mainLoopBeads[0], heartToMainInvisible, beadSize),
-        prayerIndex: 10,
-        prayerId: rosarySequence[10],
+        prayerIndex: loopEntryP,
+        prayerId: pid(loopEntryP),
       })
     );
 
@@ -517,8 +536,8 @@ const InteractiveRosary = ({
     const mainToHeartInvisible = createInvisibleBead(
       mainToHeartMidX,
       mainToHeartMidY,
-      77,
-      rosarySequence[77]
+      physicsMaps.lastGloria,
+      pid(physicsMaps.lastGloria)
     );
     allBeads.push(mainToHeartInvisible);
 
@@ -534,8 +553,8 @@ const InteractiveRosary = ({
           beadSize
         ),
         pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
-        prayerIndex: 77,
-        prayerId: rosarySequence[77],
+        prayerIndex: physicsMaps.lastGloria,
+        prayerId: pid(physicsMaps.lastGloria),
       })
     );
 
@@ -547,8 +566,8 @@ const InteractiveRosary = ({
         bodyB: centerBead,
         pointA: { x: 0, y: 0 }, // CENTER anchor on invisible bead
         pointB: getPoleOffset(centerBead, mainToHeartInvisible, centerBeadSize),
-        prayerIndex: 77,
-        prayerId: rosarySequence[77],
+        prayerIndex: physicsMaps.lastGloria,
+        prayerId: pid(physicsMaps.lastGloria),
       })
     );
 
@@ -560,15 +579,13 @@ const InteractiveRosary = ({
         bodyB: centerBead,
         pointA: { x: 0, y: 0 }, // CENTER anchor
         pointB: getPoleOffset(centerBead, mainToHeartInvisible, centerBeadSize),
-        prayerIndex: 78, // F prayer (Fatima) - index 78
-        prayerId: rosarySequence[78],
+        prayerIndex: physicsMaps.lastFatima,
+        prayerId: pid(physicsMaps.lastFatima),
         render: { visible: false }, // Hide this constraint visually
       })
     );
 
-    // Add closing prayers (indices 79, 80, 81) as separate constraints
-    // These are said "on the chain" after the rosary is complete
-    const closingPrayers = [79, 80, 81]; // LL, S, Papa
+    const closingPrayers = physicsMaps.closingPrayers;
     closingPrayers.forEach((prayerIndex, index) => {
       constraints.push(
         Matter.Constraint.create({
@@ -586,7 +603,7 @@ const InteractiveRosary = ({
             centerBeadSize
           ),
           prayerIndex: prayerIndex,
-          prayerId: rosarySequence[prayerIndex],
+          prayerId: pid(prayerIndex),
           render: { visible: false }, // Hide these constraints visually
         })
       );
@@ -599,8 +616,8 @@ const InteractiveRosary = ({
     let lastY = centerBead.position.y;
 
     // Create 5 tail beads going UP from cross to heart
-    const tailIndices = [3, 4, 5, 6, 9]; // Our Father, A, A, A, 1st Mystery (going UP from cross to heart)
-    const tailBeadNumbers = [1, 2, 3, 4, 5]; // Display numbers
+    const tailIndices = physicsMaps.tailIndices;
+    const tailBeadNumbers = [1, 2, 3, 4, 5];
 
     for (let i = 0; i < numTailBeads; i++) {
       const x = centerBead.position.x;
@@ -609,11 +626,11 @@ const InteractiveRosary = ({
       const bead = Matter.Bodies.circle(
         x,
         lastY,
-        beadSize, // All tail beads are regular size
+        beadSize,
         beadOptions(colors.beads, {
           beadNumber: tailBeadNumbers[i],
           prayerIndex: tailIndices[i],
-          prayerId: rosarySequence[tailIndices[i]] || "unknown",
+          prayerId: pid(tailIndices[i]),
         })
       );
       tailBeads.push(bead);
@@ -635,8 +652,8 @@ const InteractiveRosary = ({
     const heartToTailInvisible = createInvisibleBead(
       heartToTailMidX,
       heartToTailMidY,
-      7,
-      rosarySequence[7]
+      physicsMaps.openingGloria,
+      pid(physicsMaps.openingGloria)
     );
     allBeads.push(heartToTailInvisible);
 
@@ -648,8 +665,8 @@ const InteractiveRosary = ({
         bodyB: heartToTailInvisible,
         pointA: getPoleOffset(centerBead, heartToTailInvisible, centerBeadSize),
         pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
-        prayerIndex: 7,
-        prayerId: rosarySequence[7],
+        prayerIndex: physicsMaps.openingGloria,
+        prayerId: pid(physicsMaps.openingGloria),
       })
     );
 
@@ -665,38 +682,36 @@ const InteractiveRosary = ({
           heartToTailInvisible,
           beadSize
         ),
-        prayerIndex: 7,
-        prayerId: rosarySequence[7],
+        prayerIndex: physicsMaps.openingGloria,
+        prayerId: pid(physicsMaps.openingGloria),
       })
     );
 
-    // Add Fatima prayer (index 8) as a separate constraint on the invisible bead
-    // This represents the prayer said "on the chain" between Gloria and 1st Mystery
     constraints.push(
       Matter.Constraint.create({
-        ...springOptions(heartToTailLength * 0.4), // Shorter for visual distinction
+        ...springOptions(heartToTailLength * 0.4),
         bodyA: heartToTailInvisible,
         bodyB: tailBeads[numTailBeads - 1],
-        pointA: { x: 0, y: 0 }, // CENTER anchor
+        pointA: { x: 0, y: 0 },
         pointB: getOppositePoleOffset(
           tailBeads[numTailBeads - 1],
           heartToTailInvisible,
           beadSize
         ),
-        prayerIndex: 8, // F prayer (Fatima) - index 8
-        prayerId: rosarySequence[8],
-        render: { visible: false }, // Hide this constraint visually
+        prayerIndex: physicsMaps.openingFatima,
+        prayerId: pid(physicsMaps.openingFatima),
+        render: { visible: false },
       })
     );
 
-    // Connect tail beads with proper chain lengths and prayer indices
-    // tailBeads[0] = Our Father bead (prayer index 3, closest to cross)
-    // tailBeads[1] = first of 3 A beads (prayer index 4)
-    // tailBeads[2] = second of 3 A beads (prayer index 5)
-    // tailBeads[3] = third of 3 A beads (prayer index 6)
-    // tailBeads[4] = lone bead 1st Mystery (prayer index 9, closest to heart)
-
-    const tailChainPrayerIndices = [1, 2, null, 7];
+    const acIdx = prayerIds.indexOf('AC');
+    const cIdx = prayerIds.indexOf('C');
+    const tailChainPrayerIndices = [
+      acIdx >= 0 ? acIdx : 1,
+      cIdx >= 0 ? cIdx : 2,
+      null,
+      physicsMaps.openingGloria,
+    ];
     // Chain 0 (Cross to Our Father): AC (index 1)
     // Chain 1 (Our Father to first A): C (index 2) - Credo
     // Chain 2 (between 3 A beads): none
@@ -731,7 +746,7 @@ const InteractiveRosary = ({
 
       if (prayerIndex !== null) {
         constraint.prayerIndex = prayerIndex;
-        constraint.prayerId = rosarySequence[prayerIndex];
+        constraint.prayerId = pid(prayerIndex);
       }
 
       constraints.push(constraint);
@@ -774,8 +789,8 @@ const InteractiveRosary = ({
       isCrossComposite: true, // Custom flag
       crossParts: crossParts, // Store reference for rendering
       beadNumber: 0, // Entire cross is bead number 0
-      prayerIndex: 0, // Links to first prayer (Sign of the Cross)
-      prayerId: rosarySequence[0] || "unknown", // First prayer in sequence
+      prayerIndex: 0,
+      prayerId: pid(0),
     });
     allBeads.push(crossBody);
 
@@ -791,11 +806,12 @@ const InteractiveRosary = ({
       (crossParts[0].position.x + tailBeads[0].position.x) / 2;
     const crossToTailMidY =
       (crossParts[0].position.y + tailBeads[0].position.y) / 2;
+    const crossChainIdx = acIdx >= 0 ? acIdx : 1;
     const crossToTailInvisible = createInvisibleBead(
       crossToTailMidX,
       crossToTailMidY,
-      1,
-      rosarySequence[1]
+      crossChainIdx,
+      pid(crossChainIdx)
     );
     allBeads.push(crossToTailInvisible);
 
@@ -808,8 +824,8 @@ const InteractiveRosary = ({
         bodyB: crossToTailInvisible,
         pointA: { x: 0, y: -cbs / 2 }, // TOP edge of head square (north)
         pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
-        prayerIndex: 1,
-        prayerId: rosarySequence[1],
+        prayerIndex: crossChainIdx,
+        prayerId: pid(crossChainIdx),
       })
     );
 
@@ -825,8 +841,8 @@ const InteractiveRosary = ({
           crossToTailInvisible,
           beadSize
         ),
-        prayerIndex: 1,
-        prayerId: rosarySequence[1],
+        prayerIndex: crossChainIdx,
+        prayerId: pid(crossChainIdx),
       })
     );
 
@@ -850,7 +866,7 @@ const InteractiveRosary = ({
     Matter.Composite.add(world, mouseConstraint);
     render.mouse = mouse;
 
-    Matter.Events.on(mouseConstraint, "mousedown", (event) => {
+    trackEvent(mouseConstraint, "mousedown", (event) => {
       if (event.source.body) return;
       if (soundEnabledRef.current) {
         audioReadyRef.current = true;
@@ -864,7 +880,7 @@ const InteractiveRosary = ({
       emptyCallbacksRef.current.onEmptyPointerDown?.(event);
     });
 
-    Matter.Events.on(mouseConstraint, "mousemove", (event) => {
+    trackEvent(mouseConstraint, "mousemove", (event) => {
       if (!event.source.body && swipeStartRef.current) {
         emptyCallbacksRef.current.onEmptyPointerMove?.(event);
       }
@@ -997,7 +1013,7 @@ const InteractiveRosary = ({
     };
 
     // --- Collision Detection ---
-    Matter.Events.on(engine, "collisionStart", (event) => {
+    trackEvent(engine, "collisionStart", (event) => {
       // Only play sounds if collision sounds are enabled
       if (!collisionSoundsRef.current) return;
 
@@ -1019,12 +1035,21 @@ const InteractiveRosary = ({
     });
 
     // --- Event Listeners ---
-    // Multi-touch bead interaction system with chain prayer support
-    // TOUCH LOGIC:
-    // - 1st click: Navigate to bead's main prayer
-    // - 2nd+ clicks (if chain prayers exist): Navigate through Gloria/Fatima or Mystery/Our Father
-    // - Multi-touch detection: Touches must be >300ms apart (not drags)
-    Matter.Events.on(mouseConstraint, "mousedown", (event) => {
+    let isDragging = false;
+    let isHoldActive = false;
+    let draggedBead = null;
+    let holdStart = null;
+    let holdBody = null;
+    const DRAG_THRESHOLD_PX = 10;
+
+    const tailToClosingMap = {};
+    if (physicsMaps.closingPrayers.length >= 3 && tailIndices.length >= 5) {
+      tailToClosingMap[tailIndices[2]] = physicsMaps.closingPrayers[0];
+      tailToClosingMap[tailIndices[3]] = physicsMaps.closingPrayers[1];
+      tailToClosingMap[tailIndices[4]] = physicsMaps.closingPrayers[2];
+    }
+
+    trackEvent(mouseConstraint, "mousedown", (event) => {
       let clickedBody = event.source.body;
       if (!clickedBody) return;
 
@@ -1072,22 +1097,22 @@ const InteractiveRosary = ({
       let effectivePrayerId = clickedBead.prayerId;
 
       if (areClosingPrayersUnlocked) {
-        // Map tail beads to closing prayers: indices 5→79 (LL), 6→80 (S), 9→81 (Papa)
-        const tailToClosingMap = {
-          5: 79, // Third Ave Maria → Litany of Loreto (LL)
-          6: 80, // Third Ave Maria → Salve Regina (S)
-          9: 81, // First Mystery → Pope's Prayer (Papa)
-        };
-
         if (tailToClosingMap[clickedBead.prayerIndex] !== undefined) {
-          const rosarySequence = getRosarySequence();
+          const seq = getRosarySequence();
           effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
-          effectivePrayerId = rosarySequence[effectivePrayerIndex];
+          effectivePrayerId = getPrayerIdAt(seq, effectivePrayerIndex);
           console.log(
             `🎯 Closing prayers unlocked - redirecting tail bead ${clickedBead.prayerIndex} → ${effectivePrayerIndex} (${effectivePrayerId})`
           );
         }
       }
+
+      isHoldActive = true;
+      holdStart = { x: mouse.position.x, y: mouse.position.y };
+      holdBody = clickedBody;
+      draggedBead = clickedBead;
+      onBeadHoldStartRef.current?.(effectivePrayerIndex, effectivePrayerId);
+      prayerHistory.recordPrayer(effectivePrayerIndex, currentMystery);
 
       const now = Date.now();
       const beadId = clickedBead.id;
@@ -1112,31 +1137,24 @@ const InteractiveRosary = ({
         );
 
         // Check if this bead has chain prayers
-        const rosarySequence = getRosarySequence();
+        const seq = getRosarySequence();
         const hasChainPrayers = (prayerIndex) => {
-          if (prayerIndex >= rosarySequence.length - 1) return false;
+          if (prayerIndex >= seq.length - 1) return false;
 
           const chainPrayers = [];
-
-          // Look ahead to find all consecutive chain prayers
-          // Chain prayers are: AC, C, G, F (prayers said "on the chain")
-          // Stop when we hit a bead prayer: SC, P, A, M*, LL, S, Papa
           const beadPrayers = ["SC", "P", "A", "LL", "S", "Papa"];
 
-          for (let i = prayerIndex + 1; i < rosarySequence.length; i++) {
-            const nextPrayer = rosarySequence[i];
+          for (let i = prayerIndex + 1; i < seq.length; i++) {
+            const nextPrayer = getPrayerIdAt(seq, i);
 
-            // Check if this is a mystery prayer (starts with M)
             if (nextPrayer && nextPrayer.startsWith("M")) {
-              break; // Stop at mystery beads
+              break;
             }
 
-            // Check if this is a bead prayer
             if (beadPrayers.includes(nextPrayer)) {
-              break; // Stop at bead prayers
+              break;
             }
 
-            // This is a chain prayer (AC, C, G, or F)
             chainPrayers.push(i);
           }
 
@@ -1230,7 +1248,7 @@ const InteractiveRosary = ({
 
             if (chainIndex < chainPrayers.length) {
               const chainPrayerIndex = chainPrayers[chainIndex];
-              const prayerId = rosarySequence[chainPrayerIndex];
+              const prayerId = getPrayerIdAt(seq, chainPrayerIndex);
 
               console.log(
                 `⛓️ Navigating to chain prayer ${chainIndex + 1}/${
@@ -1265,8 +1283,8 @@ const InteractiveRosary = ({
 
                 // Blink next bead
                 const nextPrayerIndex = chainPrayerIndex + 1;
-                if (nextPrayerIndex < rosarySequence.length) {
-                  const nextPrayerId = rosarySequence[nextPrayerIndex];
+                if (nextPrayerIndex < seq.length) {
+                  const nextPrayerId = getPrayerIdAt(seq, nextPrayerIndex);
                   const nextBead = matterInstance.current?.allBeads.find(
                     (b) => b.prayerId === nextPrayerId
                   );
@@ -1302,54 +1320,7 @@ const InteractiveRosary = ({
       }
     });
 
-    // Hold vs drag: hold reveals prayer; drag starts after movement threshold
-    let isDragging = false;
-    let isHoldActive = false;
-    let draggedBead = null;
-    let holdStart = null;
-    let holdBody = null;
-    const DRAG_THRESHOLD_PX = 10;
-
-    const resolveBeadPrayerTarget = (clickedBead) => {
-      if (clickedBead.prayerIndex === undefined) return null;
-      let effectivePrayerIndex = clickedBead.prayerIndex;
-      let effectivePrayerId = clickedBead.prayerId;
-      if (areClosingPrayersUnlocked) {
-        const tailToClosingMap = { 5: 79, 6: 80, 9: 81 };
-        if (tailToClosingMap[clickedBead.prayerIndex] !== undefined) {
-          const rosarySequence = getRosarySequence();
-          effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
-          effectivePrayerId = rosarySequence[effectivePrayerIndex];
-        }
-      }
-      return { effectivePrayerIndex, effectivePrayerId };
-    };
-
-    Matter.Events.on(mouseConstraint, "mousedown", (event) => {
-      const clickedBody = event.source.body;
-      if (!clickedBody) return;
-
-      const clickedBead = matterInstance.current?.allBeads.find(
-        (b) => b.id === clickedBody.id
-      );
-      if (!clickedBead || clickedBead.isHeartMedal) return;
-
-      const target = resolveBeadPrayerTarget(clickedBead);
-      if (!target) return;
-
-      isHoldActive = true;
-      holdStart = { x: mouse.position.x, y: mouse.position.y };
-      holdBody = clickedBody;
-      draggedBead = clickedBead;
-
-      onBeadHoldStartRef.current?.(
-        target.effectivePrayerIndex,
-        target.effectivePrayerId
-      );
-      prayerHistory.recordPrayer(target.effectivePrayerIndex, currentMystery);
-    });
-
-    Matter.Events.on(mouseConstraint, "mousemove", (event) => {
+    trackEvent(mouseConstraint, "mousemove", (event) => {
       if (isHoldActive && !isDragging && holdStart && holdBody) {
         const dist = Math.hypot(
           mouse.position.x - holdStart.x,
@@ -1426,7 +1397,7 @@ const InteractiveRosary = ({
       );
     });
 
-    Matter.Events.on(mouseConstraint, "mouseup", (event) => {
+    trackEvent(mouseConstraint, "mouseup", (event) => {
       const cb = emptyCallbacksRef.current;
       if (!event.source.body) {
         cb.onEmptyPointerUp?.(event);
@@ -1492,7 +1463,7 @@ const InteractiveRosary = ({
     });
 
     // --- Render bead numbers ---
-    Matter.Events.on(render, "afterRender", () => {
+    trackEvent(render, "afterRender", () => {
       const context = render.context;
       const activeIdx = progressIndexRef.current;
 
@@ -1981,11 +1952,11 @@ const InteractiveRosary = ({
 
         // NEW: Gentle slow glow for next bead (orientation hint) - 35% of current bead intensity
         // Works automatically for cross → tail transition and all other sections
-        const rosarySequence = getRosarySequence();
+        const seqLen = getRosarySequence().length;
         const nextBeadIndex = currentPrayerIndexRef.current + 1;
         if (
           bead.prayerIndex === nextBeadIndex &&
-          nextBeadIndex < rosarySequence.length
+          nextBeadIndex < seqLen
         ) {
           // Gentle, slow pulsing glow - 35% of current bead's 60-100% = 21-35%
           // 1800ms period = very slow, peaceful animation
@@ -2338,6 +2309,7 @@ const InteractiveRosary = ({
       mouseConstraint,
       allBeads,
       centerBead,
+      eventHandlers,
     };
 
     console.log("✅ InteractiveRosary: Initialization complete!");
@@ -2346,20 +2318,18 @@ const InteractiveRosary = ({
     currentMystery,
     rosaryZoom,
     developerMode,
-    rosaryPosition.x,
-    rosaryPosition.y,
     rosaryFriction,
-    // Note: UI state like blinkingBeadId, chainBeadHighlight, etc. are intentionally
-    // excluded to avoid unnecessary physics reinitialization on UI updates
+    getRosarySequence,
+    // Note: rosaryPosition uses CSS transform — do not re-init physics on drag
   ]);
 
   // Main useEffect that calls initializePhysics
   useEffect(() => {
     initializePhysics();
 
-    // Cleanup on component unmount
     return () => {
-      console.log("🧹 InteractiveRosary: Component unmounting");
+      destroyMatterInstance(matterInstance.current);
+      matterInstance.current = null;
     };
   }, [initializePhysics]);
 
@@ -2397,6 +2367,7 @@ const InteractiveRosary = ({
         left: 0,
         pointerEvents: "all",
         cursor: isDraggingRosary ? "grabbing" : cursorStyle,
+        transform: `translate(${rosaryPosition.x}px, ${rosaryPosition.y}px)`,
       }}
       onMouseDown={handleRosaryMouseDown}
       onMouseMove={handleRosaryMouseMove}

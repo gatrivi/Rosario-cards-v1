@@ -2,12 +2,24 @@
 
 .booklet-view {
   height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
   color: #f8f4e6;
   font-family: Georgia, 'Times New Roman', serif;
+  --booklet-footer-h: 3.25rem;
+}
+
+.booklet-view .booklet-vitral__shade {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 10, 26, 0.14) 0%,
+    rgba(13, 10, 26, 0.2) 42%,
+    rgba(13, 10, 26, 0.32) 78%,
+    rgba(13, 10, 26, 0.38) 100%
+  );
 }
 
 .booklet-view--empty {
@@ -94,14 +106,12 @@
 }
 
 .booklet-mystery-bar {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: rgba(12, 10, 22, 0.32);
-  border: 1px solid rgba(212, 175, 55, 0.22);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background: rgba(12, 10, 22, 0.14);
+  border: 1px solid rgba(212, 175, 55, 0.16);
   border-radius: 12px;
-  box-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.18),
-    inset 0 0 20px rgba(212, 175, 55, 0.04);
+  box-shadow: inset 0 0 16px rgba(212, 175, 55, 0.03);
   margin: 0 auto 0.55rem;
   max-width: min(24rem, 94vw);
   padding: 0.15rem 0.35rem;
@@ -138,6 +148,16 @@
 .booklet-mystery-pill--active {
   border-bottom-color: #d4af37;
   color: #d4af37;
+}
+
+.booklet-mercy-hint {
+  color: rgba(212, 175, 55, 0.45);
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  margin: -0.15rem 0 0.35rem;
+  text-align: center;
 }
 
 .booklet-progress {
@@ -188,6 +208,75 @@
   font-style: normal;
   font-weight: normal;
   letter-spacing: 0.04em;
+}
+
+.booklet-devotion {
+  color: rgba(212, 175, 55, 0.72);
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  margin: 0 0 0.2rem;
+  text-align: center;
+}
+
+.booklet-devotion--mercy {
+  color: rgba(255, 220, 170, 0.88);
+}
+
+.booklet-devotion__title {
+  display: block;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+}
+
+.booklet-devotion__subtitle {
+  color: rgba(248, 244, 230, 0.5);
+  display: block;
+  font-size: 0.62rem;
+  font-style: italic;
+  font-variant: normal;
+  letter-spacing: 0.06em;
+  margin-top: 0.1rem;
+  text-transform: none;
+}
+
+.booklet-devotion--mercy .booklet-devotion__subtitle {
+  color: rgba(255, 230, 190, 0.62);
+}
+
+.booklet-optional-chip {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 999px;
+  color: rgba(255, 220, 160, 0.85);
+  display: inline-block;
+  font-size: 0.52rem;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  margin-left: 0.45rem;
+  padding: 0.1rem 0.4rem;
+  text-transform: lowercase;
+  vertical-align: middle;
+}
+
+.booklet-mercy-info {
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 50%;
+  color: rgba(212, 175, 55, 0.7);
+  cursor: help;
+  font-family: inherit;
+  font-size: 0.62rem;
+  height: 1.1rem;
+  line-height: 1;
+  margin-right: 0.2rem;
+  padding: 0;
+  vertical-align: middle;
+  width: 1.1rem;
 }
 
 .booklet-title {
@@ -242,7 +331,7 @@
   margin: 0.25rem 0.75rem 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 0;
+  padding: 0 0 var(--booklet-footer-h);
   position: relative;
   z-index: 2;
   -webkit-overflow-scrolling: touch;
@@ -275,13 +364,37 @@
 
 .booklet-footer {
   align-items: center;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 10, 22, 0) 0%,
+    rgba(12, 10, 22, 0.72) 35%,
+    rgba(12, 10, 22, 0.9) 100%
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: none;
+  box-shadow: none;
   display: flex;
   flex-shrink: 0;
   gap: 0.5rem;
   justify-content: center;
-  padding: 0.28rem 0.85rem calc(0.4rem + env(safe-area-inset-bottom, 0));
+  left: 0;
+  margin-top: auto;
+  min-height: var(--booklet-footer-h);
+  padding: 0.35rem 0.85rem 0.45rem;
+  pointer-events: none;
   position: relative;
-  z-index: 4;
+  right: 0;
+  z-index: 60;
+}
+
+.booklet-footer .glass-turn {
+  pointer-events: auto;
+  background: rgba(12, 10, 22, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-color: rgba(212, 175, 55, 0.32);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
 }
 
 .booklet-footer--right {

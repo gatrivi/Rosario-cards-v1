@@ -344,11 +344,36 @@ export default function RoseView({
       osc3.start();
       osc4.start();
 
-      synthRef.current = { osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain, droneGain };
+      synthRef.current = {
+        osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain, droneGain, droneOsc,
+      };
     } else if (audioCtxRef.current.state === 'suspended' && soundEnabledRef.current) {
       audioCtxRef.current.resume();
     }
   }, [getBaseFreq]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const disposeRoseAudio = useCallback(() => {
+    const synth = synthRef.current;
+    if (!synth) return;
+    const ctx = audioCtxRef.current;
+    const t = (ctx?.currentTime ?? 0) + 0.02;
+    try {
+      if (synth.gainNode) synth.gainNode.gain.setValueAtTime(0, t);
+      ['droneOsc', 'osc', 'osc2', 'osc3', 'osc4', 'lfo'].forEach((key) => {
+        const node = synth[key];
+        if (node?.stop) {
+          try {
+            node.stop(t);
+          } catch (_) { /* already stopped */ }
+        }
+      });
+    } catch (_) { /* ignore teardown errors */ }
+    synthRef.current = null;
+  }, []);
+
+  useEffect(() => () => {
+    disposeRoseAudio();
+  }, [disposeRoseAudio]);
 
   // Called on pointer activity (on/off toggle)
   const modulateAudio = (active) => {

@@ -6,6 +6,7 @@ import RosarioPrayerBook from '../../data/RosarioPrayerBook';
  * Bridges RosarioVirtualView callbacks to origin/master InteractiveRosary.
  */
 export default function RosaryAdapter({
+  sequence,
   activePrayerIndex = 0,
   misterioActual = 'gozosos',
   soundEnabled = true,
@@ -48,6 +49,7 @@ export default function RosaryAdapter({
 
   return (
     <InteractiveRosary
+      sequence={sequence}
       currentMystery={misterioActual}
       currentPrayerIndex={activePrayerIndex}
       onBeadClick={handleBeadClick}

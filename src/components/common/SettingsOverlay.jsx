@@ -100,6 +100,24 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose, a
             </label>
           </div>
 
+          {/* Divine Mercy optional opening */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: '1rem' }}>Apertura Divina Misericordia</div>
+              <div style={{ color: '#666', fontSize: '0.75rem' }} title="Oraciones de Sangre y Agua al inicio del rosario de la Misericordia. Solo afecta Libro.">
+                Sangre y Agua al inicio (Libro)
+              </div>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={settings.mercyOptionalOpening !== false}
+                onChange={(e) => onUpdateSettings({ ...settings, mercyOptionalOpening: e.target.checked })}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
           {/* Left Handed Mode */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>

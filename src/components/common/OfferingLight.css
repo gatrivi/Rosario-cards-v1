@@ -9,7 +9,7 @@
 .offering-light__spark {
   position: absolute;
   left: calc(38% + var(--spark-i) * 7%);
-  top: calc(52% + (var(--spark-i) % 3) * 4%);
+  top: calc(52% + var(--spark-row) * 4%);
   width: 6px;
   height: 6px;
   border-radius: 50%;

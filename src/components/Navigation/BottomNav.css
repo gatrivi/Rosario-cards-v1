@@ -4,13 +4,14 @@
   align-items: center;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  background: rgba(12, 10, 22, 0.22);
+  background: rgba(12, 10, 22, 0.88);
   border-top: 1px solid rgba(212, 175, 55, 0.18);
   box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.05);
   display: flex;
   flex-shrink: 0;
   height: 70px;
   justify-content: space-around;
+  padding-bottom: env(safe-area-inset-bottom, 0);
   position: relative;
   z-index: 50;
 }
@@ -19,7 +20,7 @@
   align-items: center;
   background: transparent;
   border: none;
-  color: #666;
+  color: #888;
   cursor: pointer;
   display: flex;
   flex: 1;

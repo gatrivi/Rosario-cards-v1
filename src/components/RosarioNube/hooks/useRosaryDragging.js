@@ -18,14 +18,13 @@ export const useRosaryDragging = (
 
   // Mouse event handlers
   const handleRosaryMouseDown = (e) => {
-    if (e.target === sceneRef.current) {
-      setIsDraggingRosary(true);
-      setDragStart({
-        x: e.clientX - rosaryPosition.x,
-        y: e.clientY - rosaryPosition.y,
-      });
-      e.preventDefault();
-    }
+    if (!sceneRef.current?.contains(e.target)) return;
+    setIsDraggingRosary(true);
+    setDragStart({
+      x: e.clientX - rosaryPosition.x,
+      y: e.clientY - rosaryPosition.y,
+    });
+    e.preventDefault();
   };
 
   const handleRosaryMouseMove = (e) => {
@@ -51,7 +50,7 @@ export const useRosaryDragging = (
 
   // Touch event handlers
   const handleRosaryTouchStart = (e) => {
-    if (e.touches.length === 1 && e.target === sceneRef.current) {
+    if (e.touches.length === 1 && sceneRef.current?.contains(e.target)) {
       const touch = e.touches[0];
       setIsDraggingRosary(true);
       setDragStart({

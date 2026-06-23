@@ -10,6 +10,16 @@ export function getMysteryDecadeNumber(prayerId) {
   return match ? parseInt(match[1], 10) : null;
 }
 
+function getConsecutiveRun(sequence, index, prayerId) {
+  let start = index;
+  while (start > 0 && sequence[start - 1]?.id === prayerId) start -= 1;
+  let end = index;
+  while (end < sequence.length - 1 && sequence[end + 1]?.id === prayerId) end += 1;
+  const position = index - start + 1;
+  const runTotal = end - start + 1;
+  return { position, total: runTotal, step: position - 1, start, end };
+}
+
 /**
  * Visual + audio progression context for one booklet step.
  */
@@ -24,6 +34,8 @@ export function getBookletStepContext(sequence, index, total) {
       kind: 'other',
       mysteryDecade: null,
       aveRun: null,
+      mercyRun: null,
+      tripletRun: null,
     };
   }
 
@@ -31,20 +43,62 @@ export function getBookletStepContext(sequence, index, total) {
   const mysteryDecade = getMysteryDecadeNumber(prayer.id);
 
   if (prayer.id === 'A') {
-    let start = index;
-    while (start > 0 && sequence[start - 1]?.id === 'A') start -= 1;
-    let end = index;
-    while (end < sequence.length - 1 && sequence[end + 1]?.id === 'A') end += 1;
-    const position = index - start + 1;
-    const runTotal = end - start + 1;
+    const run = getConsecutiveRun(sequence, index, 'A');
     return {
       prayerId: prayer.id,
       rosaryProgress,
-      localStep: position - 1,
-      localTotal: runTotal,
+      localStep: run.step,
+      localTotal: run.total,
       kind: 'ave',
       mysteryDecade: null,
-      aveRun: { position, total: runTotal, step: position - 1 },
+      aveRun: { position: run.position, total: run.total, step: run.step },
+      mercyRun: null,
+      tripletRun: null,
+    };
+  }
+
+  if (prayer.id === 'MP') {
+    const run = getConsecutiveRun(sequence, index, 'MP');
+    return {
+      prayerId: prayer.id,
+      rosaryProgress,
+      localStep: run.step,
+      localTotal: run.total,
+      kind: 'mercy',
+      mysteryDecade: null,
+      aveRun: null,
+      mercyRun: { position: run.position, total: run.total, step: run.step },
+      tripletRun: null,
+    };
+  }
+
+  if (prayer.id === 'HG') {
+    const run = getConsecutiveRun(sequence, index, 'HG');
+    return {
+      prayerId: prayer.id,
+      rosaryProgress,
+      localStep: run.step,
+      localTotal: run.total,
+      kind: 'triplet',
+      mysteryDecade: null,
+      aveRun: null,
+      mercyRun: null,
+      tripletRun: { position: run.position, total: run.total, step: run.step },
+    };
+  }
+
+  if (prayer.id === 'EF') {
+    const decadeNum = sequence.slice(0, index + 1).filter((p) => p.id === 'EF').length;
+    return {
+      prayerId: prayer.id,
+      rosaryProgress,
+      localStep: decadeNum - 1,
+      localTotal: 5,
+      kind: 'decade',
+      mysteryDecade: decadeNum,
+      aveRun: null,
+      mercyRun: null,
+      tripletRun: null,
     };
   }
 
@@ -57,6 +111,8 @@ export function getBookletStepContext(sequence, index, total) {
       kind: 'mystery',
       mysteryDecade,
       aveRun: null,
+      mercyRun: null,
+      tripletRun: null,
     };
   }
 
@@ -68,6 +124,8 @@ export function getBookletStepContext(sequence, index, total) {
     kind: 'other',
     mysteryDecade: null,
     aveRun: null,
+    mercyRun: null,
+    tripletRun: null,
   };
 }
 
@@ -76,12 +134,15 @@ export function stepContextToVitralVars(ctx) {
   let step = ctx.localStep;
   let stepScale = 0.004;
 
-  if (ctx.kind === 'ave') {
+  if (ctx.kind === 'ave' || ctx.kind === 'mercy') {
     stepScale = 0.01;
-    step = ctx.aveRun?.step ?? 0;
-  } else if (ctx.kind === 'mystery') {
+    step = ctx.aveRun?.step ?? ctx.mercyRun?.step ?? 0;
+  } else if (ctx.kind === 'mystery' || ctx.kind === 'decade') {
     stepScale = 0.012;
     step = ctx.mysteryDecade ? ctx.mysteryDecade - 1 : 0;
+  } else if (ctx.kind === 'triplet') {
+    stepScale = 0.008;
+    step = ctx.tripletRun?.step ?? 0;
   }
 
   const rosaryBoost = ctx.rosaryProgress * 0.03;

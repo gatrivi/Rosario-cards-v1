@@ -1,0 +1,38 @@
+.mercy-window-thumb {
+  align-items: center;
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.7);
+  border-radius: 10px 10px 4px 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 58px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 2px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  width: 34px;
+}
+
+.mercy-window-thumb:hover:not(:disabled) {
+  border-color: rgba(212, 175, 55, 0.9);
+  transform: scale(1.03);
+}
+
+.mercy-window-thumb:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.mercy-window-thumb__img {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.mercy-window-thumb--active {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35), 0 0 8px rgba(212, 175, 55, 0.4);
+}

@@ -7,7 +7,7 @@ export default function OfferingLight({ active, count = 4 }) {
   return (
     <div className="offering-light" aria-hidden="true">
       {Array.from({ length: n }).map((_, i) => (
-        <span key={i} className="offering-light__spark" style={{ '--spark-i': i }} />
+        <span key={i} className="offering-light__spark" style={{ '--spark-i': i, '--spark-row': i % 3 }} />
       ))}
     </div>
   );

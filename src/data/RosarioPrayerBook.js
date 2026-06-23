@@ -3,6 +3,7 @@ import {
   litanyLauretanaSections,
   litanyLauretanaVerses,
 } from './litanyLauretana';
+import { RDM_KEYS, divineMercyPrayers } from './divineMercyData';
 
 const RosarioPrayerBook = {
 
@@ -581,6 +582,8 @@ const RosarioPrayerBook = {
       },
     ],
   },
+  RDM: RDM_KEYS,
+  divinamisericordia: divineMercyPrayers,
   cierre: [
     {
       ...litanyLauretanaMeta,

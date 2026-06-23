@@ -7,8 +7,7 @@ import franciscoImg from '../../data/assets/img/francisco_de_asis_2.jpg';
 
 export default function JardinDeRosasView() {
   const {
-    totalAveMarias, dailyAveMarias, totalMacetones,
-    rosasInCurrentMaceton, ROSAS_PER_MACETON,
+    totalAveMarias, dailyAveMarias, ROSAS_PER_MACETON,
     getRoseData, nivelActual, objetivoMacetonesHoy, cambiarNivel
   } = useAveMariaStats();
 
@@ -125,10 +124,8 @@ export default function JardinDeRosasView() {
 
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(10, 1fr)',
                   gap: '8px',
-                  // Small screen fallback: 5 columns
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(38px, 1fr))'
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(38px, 1fr))',
                 }}>
                   {displayRoses.map((rose, i) => (
                     <div key={i} title={rose ? `Rosa ${i+1}` : "Espacio sagrado"} style={{

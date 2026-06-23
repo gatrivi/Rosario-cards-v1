@@ -1,8 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+jest.mock('./components/common/SacredDust', () => function MockSacredDust() {
+  return null;
+});
+
+jest.mock('./components/RosarioNube/RosaryAdapter', () => function MockRosaryAdapter() {
+  return <div data-testid="rosary-adapter" />;
+});
+
+test('renders main rosary shell', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getByTestId('rosary-adapter')).toBeInTheDocument();
 });

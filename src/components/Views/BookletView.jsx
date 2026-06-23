@@ -23,7 +23,9 @@ import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
-import { buildSequence } from '../../utils/bookletSequence';
+import { buildSequence, isDivineMercyMode } from '../../utils/bookletSequence';
+import { DIVINE_MERCY_ID } from '../../data/divineMercyData';
+import MercyWindowThumb from '../common/MercyWindowThumb';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
 import './BookletView.css';
 
@@ -55,6 +57,30 @@ const MYSTERY_OPTIONS = [
   { id: 'luminosos', label: 'Luminosos' },
 ];
 
+const MYSTERY_SUBTITLES = {
+  gozosos: 'Misterios Gozosos',
+  dolorosos: 'Misterios Dolorosos',
+  gloriosos: 'Misterios Gloriosos',
+  luminosos: 'Misterios Luminosos',
+};
+
+function getDevotionChrome(misterioActual, isMercy) {
+  if (isMercy) {
+    return { title: 'Corona de la Divina Misericordia', subtitle: null };
+  }
+  return {
+    title: 'Santo Rosario',
+    subtitle: MYSTERY_SUBTITLES[misterioActual] || 'Misterios del Rosario',
+  };
+}
+
+function getBookletDisplayTitle(prayer) {
+  if (!prayer) return '';
+  if (prayer.id === 'DMO1') return 'Expiraste, Jesús';
+  if (prayer.id === 'DMO2') return 'Sangre y Agua';
+  return prayer.title;
+}
+
 /** Position within a consecutive run of Ave Marías (opening chain or decade). */
 export function getAveMariaRunInfo(sequence, index) {
   if (!sequence[index] || sequence[index].id !== 'A') return null;
@@ -80,12 +106,14 @@ export default function BookletView({
   isLeftHanded = false,
   simpleMode = false,
   soundEnabled = true,
+  mercyOptionalOpening = true,
   onAveMariaComplete,
   onAveMariaUndo,
 }) {
+  const isMercy = isDivineMercyMode(misterioActual);
   const secuencia = useMemo(
-    () => buildSequence(misterioActual),
-    [misterioActual]
+    () => buildSequence(misterioActual, { includeMercyOpening: mercyOptionalOpening }),
+    [misterioActual, mercyOptionalOpening]
   );
 
   const total = secuencia.length;
@@ -118,6 +146,7 @@ export default function BookletView({
   const optionalIdleRef = useRef(null);
   const mountedRef = useRef(true);
   const [orbHost, setOrbHost] = useState(null);
+  const [mercyThumbHost, setMercyThumbHost] = useState(null);
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
   const [litanyVerseIndex, setLitanyVerseIndex] = useState(0);
@@ -144,6 +173,7 @@ export default function BookletView({
   useEffect(() => {
     mountedRef.current = true;
     setOrbHost(document.getElementById('booklet-top-orbs'));
+    setMercyThumbHost(document.getElementById('booklet-mercy-portal'));
     return () => {
       mountedRef.current = false;
     };
@@ -280,14 +310,14 @@ export default function BookletView({
       const enteringCtx = getBookletStepContext(secuencia, newIndex, total);
 
       if (newIndex > oldIndex) {
-        if (leaving?.id === 'A') {
+        if (leaving?.id === 'A' && !isMercy) {
           const fp = makeBookletRoseFingerprint(
             getAveMariaRunInfo(secuencia, oldIndex),
             getBookletStepContext(secuencia, oldIndex, total).mysteryDecade
           );
           onAveMariaComplete?.(fp);
         }
-      } else if (newIndex < oldIndex && secuencia[newIndex]?.id === 'A') {
+      } else if (newIndex < oldIndex && secuencia[newIndex]?.id === 'A' && !isMercy) {
         onAveMariaUndo?.();
       }
 
@@ -342,6 +372,7 @@ export default function BookletView({
       onAveMariaComplete,
       onAveMariaUndo,
       soundEnabled,
+      isMercy,
       scheduleTransition,
       setPhase,
       beginArrivingHold,
@@ -396,7 +427,15 @@ export default function BookletView({
           : '';
 
   const aveRunInfo = stepContext.aveRun;
-  const isAveMaria = activePrayer?.id === 'A' && aveRunInfo;
+  const mercyRunInfo = stepContext.mercyRun;
+  const tripletRunInfo = stepContext.tripletRun;
+  const isAveMaria = activePrayer?.id === 'A' && aveRunInfo && !isMercy;
+  const isMercyPassion = activePrayer?.id === 'MP' && mercyRunInfo;
+  const isMercyDecade = activePrayer?.id === 'EF' && stepContext.kind === 'decade';
+  const isHolyGod = activePrayer?.id === 'HG' && tripletRunInfo;
+  const isOptionalMercyStep =
+    isMercy && (activePrayer?.id === 'DMO1' || activePrayer?.id === 'DMO2');
+  const displayPrayerTitle = getBookletDisplayTitle(activePrayer);
 
   useEffect(() => {
     if (isFirstRenderRef.current) {
@@ -432,11 +471,12 @@ export default function BookletView({
 
   const activeVariantLabel = variants?.find((v) => v.id === variantId)?.label;
   const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
+  const devotionChrome = getDevotionChrome(misterioActual, isMercy);
 
   const vitralStyle = stepContextToVitralVars(stepContext);
-  const vitralKind = isAveMaria
+  const vitralKind = isAveMaria || isMercyPassion
     ? 'ave'
-    : stepContext.kind === 'mystery'
+    : stepContext.kind === 'mystery' || stepContext.kind === 'decade'
       ? 'mystery'
       : 'prayer';
 
@@ -471,20 +511,35 @@ export default function BookletView({
             </div>
           </div>
           <p className="booklet-progress">
-            <button
-              type="button"
-              className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
-              onClick={() => {
-                resetOptionalIdle();
-                setOptionalOpen(true);
-              }}
-              title="Oraciones opcionales: Ángel de la Guarda y San Benito"
-              aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
-            >
-              <span className="booklet-optional-btn__star" aria-hidden>✦</span>
-              <span className="booklet-optional-btn__label">Ángel · Benito</span>
-            </button>
-            {' '}
+            {!isMercy && (
+              <>
+                <button
+                  type="button"
+                  className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
+                  onClick={() => {
+                    resetOptionalIdle();
+                    setOptionalOpen(true);
+                  }}
+                  title="Oraciones opcionales: Ángel de la Guarda y San Benito"
+                  aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
+                >
+                  <span className="booklet-optional-btn__star" aria-hidden>✦</span>
+                  <span className="booklet-optional-btn__label">Ángel · Benito</span>
+                </button>
+                {' '}
+              </>
+            )}
+            {isOptionalMercyStep && (
+              <button
+                type="button"
+                className="booklet-mercy-info"
+                title="Oración opcional de apertura. Puedes omitirla en Ajustes."
+                aria-label="Oración opcional de apertura. Puedes omitirla en Ajustes."
+              >
+                ⓘ
+              </button>
+            )}
+            {isOptionalMercyStep && ' '}
             {displayIndex + 1} / {total}
             {isLitany && litanyVerseTotal > 0 && (
               <span className="booklet-ave-count">
@@ -498,16 +553,43 @@ export default function BookletView({
                 · {aveRunInfo.position} de {aveRunInfo.total}
               </span>
             )}
+            {isMercyPassion && (
+              <span className="booklet-ave-count">
+                {' '}
+                · {mercyRunInfo.position} de {mercyRunInfo.total}
+              </span>
+            )}
+            {isHolyGod && (
+              <span className="booklet-ave-count">
+                {' '}
+                · {tripletRunInfo.position} de {tripletRunInfo.total}
+              </span>
+            )}
             {stepContext.kind === 'mystery' && stepContext.mysteryDecade && (
               <span className="booklet-ave-count">
                 {' '}
                 · misterio {stepContext.mysteryDecade} de 5
               </span>
             )}
+            {isMercyDecade && stepContext.mysteryDecade && (
+              <span className="booklet-ave-count">
+                {' '}
+                · década {stepContext.mysteryDecade} de 5
+              </span>
+            )}
+          </p>
+          <p
+            className={`booklet-devotion${isMercy ? ' booklet-devotion--mercy' : ''}`}
+            aria-live="polite"
+          >
+            <span className="booklet-devotion__title">{devotionChrome.title}</span>
+            {devotionChrome.subtitle && (
+              <span className="booklet-devotion__subtitle">{devotionChrome.subtitle}</span>
+            )}
           </p>
           <PrayerRecorder
             prayerId={activePrayer.id}
-            prayerTitle={activePrayer.title}
+            prayerTitle={displayPrayerTitle}
             mystery={misterioActual}
             sequenceIndex={displayIndex}
             simpleMode={simpleMode}
@@ -515,10 +597,13 @@ export default function BookletView({
             isLeftHanded={isLeftHanded}
           >
             <h1
-              className={`booklet-title${isAveMaria ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' ? ' booklet-title--mystery' : ''}`}
+              className={`booklet-title${isAveMaria || isMercyPassion ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' || isMercyDecade ? ' booklet-title--mystery' : ''}`}
               style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
             >
-              {activePrayer.title}
+              {displayPrayerTitle}
+              {isOptionalMercyStep && (
+                <span className="booklet-optional-chip">opcional</span>
+              )}
             </h1>
           </PrayerRecorder>
           {variants && (
@@ -552,6 +637,16 @@ export default function BookletView({
         />
       </div>
 
+      {mercyThumbHost &&
+        createPortal(
+          <MercyWindowThumb
+            active={isMercy}
+            disabled={isTransitioning}
+            onClick={() => onMysteryChange?.(DIVINE_MERCY_ID)}
+          />,
+          mercyThumbHost
+        )}
+
       {orbHost &&
         createPortal(
           <PrayForOrbs
@@ -577,7 +672,7 @@ export default function BookletView({
         />
       )}
 
-      <footer className={`booklet-footer glass-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
+      <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
         <button
           type="button"
           className="glass-turn booklet-turn--back"

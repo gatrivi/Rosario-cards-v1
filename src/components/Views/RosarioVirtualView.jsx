@@ -248,7 +248,7 @@ export default function RosarioVirtualView({
     setCargaOracion(100);
     setIsCargando(false);
     onUpdateProgreso(index);
-  }, [onUpdateProgreso]);
+  }, [onUpdateProgreso, secuencia]);
 
   const handleNodeClick = useCallback((index) => {
     revealPrayer(index);
@@ -292,12 +292,15 @@ export default function RosarioVirtualView({
             misterioActual={misterioActual}
             stepContext={stepContext}
             variant="rosary"
+            onTapNav={(dir) => (dir === 'next' ? handleAdvance() : handleRetreat())}
+            isTransitioning={false}
           />
         </div>
       )}
 
       <div className="rosary-canvas-layer">
         <RosaryAdapter
+          sequence={secuencia}
           onNodeClick={handleNodeClick}
           onBeadHoldStart={handleBeadHoldStart}
           onBeadHoldEnd={handleBeadHoldEnd}

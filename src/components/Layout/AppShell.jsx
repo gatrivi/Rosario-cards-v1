@@ -43,8 +43,9 @@ import {
 } from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { getViewIdFromPath, getPathForView, VALID_PATHS } from '../../navigation/routes';
+import { resolveRosaryMystery } from '../../utils/bookletSequence';
 
-const APP_VERSION = '0.3.35';
+const APP_VERSION = '0.3.36';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const VALID_MYSTERIES = new Set(['gozosos', 'dolorosos', 'gloriosos', 'luminosos']);
@@ -91,7 +92,8 @@ export default function AppShell() {
       soundEnabled: localStorage.getItem('rosario_sound_enabled') !== 'false',
       meditationRitmo: 'incienso', // oro, incienso, mirra
       isLeftHanded: localStorage.getItem('rosario_left_handed') === 'true',
-      simpleMode: localStorage.getItem('rosario_simple_mode') === 'true'
+      simpleMode: localStorage.getItem('rosario_simple_mode') === 'true',
+      mercyOptionalOpening: true,
     };
   });
 
@@ -118,6 +120,17 @@ export default function AppShell() {
       return 0;
     }
   });
+
+  const prevMercyOpeningRef = useRef(settings.mercyOptionalOpening);
+  useEffect(() => {
+    if (prevMercyOpeningRef.current === settings.mercyOptionalOpening) return;
+    prevMercyOpeningRef.current = settings.mercyOptionalOpening;
+    if (misterioActual !== 'divinamisericordia') return;
+    setCurrentPrayerIndex(0);
+    try {
+      localStorage.setItem(ROSARY_INDEX_KEY, '0');
+    } catch (_) { /* ignore */ }
+  }, [settings.mercyOptionalOpening, misterioActual]);
 
   const {
     addRosas,
@@ -244,6 +257,8 @@ export default function AppShell() {
     syncToCloud({ bookletMystery: mystery, bookletIndex: 0, todayDate: new Date().toDateString() });
   }, [syncToCloud]);
 
+  const rosaryMystery = resolveRosaryMystery(misterioActual);
+
   const renderizarVista = () => {
     switch (vistaActiva) {
       case 'booklet':
@@ -256,6 +271,7 @@ export default function AppShell() {
             isLeftHanded={settings.isLeftHanded}
             simpleMode={settings.simpleMode}
             soundEnabled={settings.soundEnabled}
+            mercyOptionalOpening={settings.mercyOptionalOpening !== false}
             onAveMariaComplete={(fingerprint) => {
               addRosas(1);
               storeRoseData(fingerprint);
@@ -270,7 +286,7 @@ export default function AppShell() {
       case 'voz':
         return (
           <RecordingStudioView
-            mysteryType={misterioActual}
+            mysteryType={rosaryMystery}
             onMysteryChange={handleMysteryChange}
           />
         );
@@ -287,7 +303,7 @@ export default function AppShell() {
       case 'rosary': return (
         <RosarioVirtualView 
           currentPrayerIndex={currentPrayerIndex}
-          misterioActual={misterioActual}
+          misterioActual={rosaryMystery}
           onUpdateProgreso={handleUpdateProgreso}
           soundEnabled={settings.soundEnabled}
           isLeftHanded={settings.isLeftHanded}
@@ -304,7 +320,7 @@ export default function AppShell() {
       case 'rose': return (
         <RoseView 
           currentPrayerIndex={currentPrayerIndex}
-          misterioActual={misterioActual}
+          misterioActual={rosaryMystery}
           onUpdateProgreso={handleUpdateProgreso}
           onBack={() => navigate(getPathForView('macetones'))}
           soundEnabled={settings.soundEnabled}
@@ -348,7 +364,7 @@ export default function AppShell() {
       overflow: 'hidden',
       fontFamily: 'serif',
       position: 'relative'
-    }}>
+    }} className="app-shell">
       
       {/* FLOATING HEADER CONTROLS */}
       <div style={{
@@ -356,7 +372,14 @@ export default function AppShell() {
         display: 'flex', justifyContent: 'space-between', zIndex: 100,
         pointerEvents: 'none'
       }}>
-        <div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto' }}>
+        <div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto', alignItems: 'flex-start' }}>
+          <div
+            id="booklet-mercy-portal"
+            style={{
+              display: vistaActiva === 'booklet' ? 'flex' : 'none',
+              alignItems: 'flex-start',
+            }}
+          />
           <button 
             onClick={() => setShowFeedback(true)}
             title="Reportar problema o sugerencia"
@@ -455,7 +478,7 @@ export default function AppShell() {
         </div>
       )}
 
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', zIndex: 10 }} className="view-enter-active">
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', zIndex: 10, minHeight: 0 }} className="view-enter-active app-view-layer">
         {renderizarVista()}
       </div>
 
