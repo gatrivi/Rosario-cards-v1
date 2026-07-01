@@ -22,7 +22,6 @@ import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
-import StatsView from '../StatsView';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import {
   IconFeedback,
@@ -320,7 +319,6 @@ export default function AppShell() {
         />
       );
       case 'jardin': return <JardinDeRosasView />;
-      case 'stats': return <StatsView />;
       case 'tracker': return <DailyTracker />;
       case 'rosary': return (
         <RosarioVirtualView 
@@ -331,7 +329,6 @@ export default function AppShell() {
           isLeftHanded={settings.isLeftHanded}
           simpleMode={settings.simpleMode}
           onToggleSimpleMode={() => setSettings(s => ({ ...s, simpleMode: !s.simpleMode }))}
-          onShowStats={() => navigate(getPathForView('stats'))}
           onShowRosedal={() => navigate(getPathForView('rose'))}
           onAveMariaComplete={(fingerprint) => {
             addRosas(1);

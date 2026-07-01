@@ -1,9 +1,7 @@
 import "./App.css";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; 
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
-import { useState, useMemo } from "react";
-import StatsView from "./components/StatsView";
-import { useRosaryStats } from "./hooks/useRosaryStats";
+import { useState } from "react";
 import RosedalView from "./components/Rosedal/RosedalView";
 import DailyTracker from "./components/Rosedal/DailyTracker";
 import RosarioVirtualView from "./components/Views/RosarioVirtualView";
@@ -11,14 +9,11 @@ import RosarioVirtualView from "./components/Views/RosarioVirtualView";
 function App({ isEmbedded = false }) {
   const [currentMystery, setcurrentMystery] = useState(getDefaultMystery());
   const [activeIndex, setActiveIndex] = useState(0);
-  const [showStats, setShowStats] = useState(false);
   const [showRosedal, setShowRosedal] = useState(false);
   const [showDailyTracker, setShowDailyTracker] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isLeftHanded, setIsLeftHanded] = useState(false);
   const [simpleMode, setSimpleMode] = useState(false);
-  
-  const { logRosary } = useRosaryStats();
 
   const handleUpdateProgreso = (index) => {
     setActiveIndex(index);
@@ -45,19 +40,6 @@ function App({ isEmbedded = false }) {
     alignItems: "center",
     gap: "10px"
   };
-
-  if (!isEmbedded && showStats) {
-    return (
-      <div style={{ height: "100%", width: "100vw", overflow: "auto", position: "relative", backgroundColor: "#000" }}>
-        <div style={{ paddingTop: "20px" }}>
-          <StatsView />
-        </div>
-        <button onClick={() => setShowStats(false)} style={backButtonStyle}>
-          <span>🏠</span> Volver al Rosario
-        </button>
-      </div>
-    );
-  }
 
   if (!isEmbedded && showRosedal) {
     return (
@@ -95,7 +77,6 @@ function App({ isEmbedded = false }) {
         soundEnabled={soundEnabled}
         isLeftHanded={isLeftHanded}
         simpleMode={simpleMode}
-        onShowStats={() => setShowStats(true)}
         onShowRosedal={() => setShowRosedal(true)}
         onToggleSimpleMode={() => setSimpleMode(!simpleMode)}
       />

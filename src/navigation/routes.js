@@ -1,5 +1,4 @@
 export const VIEW_ROUTES = {
-  stats: '/stats',
   tracker: '/plan',
   camino: '/camino',
   booklet: '/libro',

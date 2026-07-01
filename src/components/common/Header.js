@@ -1,6 +1,6 @@
 import React from "react";
 
-function Header({ logo, onToggleStats, onToggleRosedal, onToggleDailyTracker }) {
+function Header({ logo, onToggleRosedal, onToggleDailyTracker }) {
   return (
     <header
       style={{
@@ -51,21 +51,6 @@ function Header({ logo, onToggleStats, onToggleRosedal, onToggleDailyTracker }) 
           }}
         >
           Rosedal
-        </button>
-        <button 
-          onClick={onToggleStats}
-          style={{
-            background: "#d4af37",
-            color: "#000",
-            border: "none",
-            padding: "5px 15px",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            pointerEvents: "auto"
-          }}
-        >
-          Estadísticas
         </button>
       </div>
     </header>

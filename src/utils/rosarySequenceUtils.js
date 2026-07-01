@@ -59,6 +59,10 @@ export function buildRosaryPhysicsIndices(ids) {
     .map((id) => ids.lastIndexOf(id))
     .filter((i) => i >= 0);
 
+  // #region agent log
+  fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'pre-fix',hypothesisId:'H4',location:'rosarySequenceUtils.js:60',message:'closingPrayers computed',data:{closingPrayers,idsLength:ids.length},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion agent log
+
   return {
     loneBeadPrayerIndices: mysteryIndices.slice(1),
     gloriaFatimaPairs,

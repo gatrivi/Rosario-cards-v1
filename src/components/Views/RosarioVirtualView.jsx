@@ -24,7 +24,6 @@ export default function RosarioVirtualView({
   soundEnabled,
   isLeftHanded,
   simpleMode = false,
-  onShowStats,
   onShowRosedal,
   onToggleSimpleMode,
   onAveMariaComplete,
@@ -187,6 +186,9 @@ export default function RosarioVirtualView({
   useEffect(() => {
     const onRepeatTouch = (event) => {
       const { prayerIndex } = event.detail || {};
+      // #region agent log
+      fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'pre-fix',hypothesisId:'H1',location:'RosarioVirtualView.jsx:190',message:'onRepeatTouch guard check',data:{eventPrayerIndex:prayerIndex,currentPrayerIndex,willDrop:prayerIndex!==currentPrayerIndex},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion agent log
       if (prayerIndex !== currentPrayerIndex) return;
       setShowHint(false);
       const prayer = secuencia[currentPrayerIndex];
@@ -347,9 +349,6 @@ export default function RosarioVirtualView({
           </button>
           <button type="button" className="glass-chrome-btn" onClick={onShowRosedal}>
             🌹
-          </button>
-          <button type="button" className="glass-chrome-btn" onClick={onShowStats}>
-            📊
           </button>
           <button
             type="button"

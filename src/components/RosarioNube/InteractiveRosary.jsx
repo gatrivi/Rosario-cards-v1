@@ -466,12 +466,20 @@ const InteractiveRosary = ({
       // Assign prayer indices to long chains between decades
       // These are G (Glory Be) and F (Fatima) prayers
       if (isLongSpring) {
-        const decadeNum = Math.floor(i / 11);
+        // Bug 2 fix (confirmed via H2 logs): the connection BEFORE a lone
+        // Mystery bead (i=9,20,31,42) and the one AFTER it (i=10,21,32,43)
+        // both represent that decade's own closing Gloria/Fatima, which is
+        // gloriaFatimaPairs[decadeNum + 1] — pairs[0] is the opening pair,
+        // already handled separately by the heart→tail chain.
+        const decadeNum = Math.floor(i / 11) + 1;
         const gPair = physicsMaps.gloriaFatimaPairs[decadeNum];
         const gIdx = gPair?.g ?? 21 + decadeNum * 14;
         const fIdx = gPair?.f ?? gIdx + 1;
         constraint.prayerIndex = gIdx;
         constraint.prayerId = pid(gIdx);
+        // #region agent log
+        fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'post-fix',hypothesisId:'H2',location:'InteractiveRosary.jsx:469',message:'gloriaFatima chain assignment',data:{i,decadeNum,gIdx,fIdx,pairsLen:physicsMaps.gloriaFatimaPairs.length},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion agent log
 
         const fatimaConstraint = Matter.Constraint.create({
           ...springOptions(adjustedLength * 0.8),
@@ -719,13 +727,16 @@ const InteractiveRosary = ({
     );
 
     const acIdx = prayerIds.indexOf('AC');
-    const cIdx = prayerIds.indexOf('C');
-    const tailChainPrayerIndices = [
-      acIdx >= 0 ? acIdx : 1,
-      cIdx >= 0 ? cIdx : 2,
-      null,
-      physicsMaps.openingGloria,
-    ];
+    // Bug 5 fix (confirmed via H3 logs): AC/C were assigned to the tail
+    // connections AFTER the Our-Father bead (tailBeads[0]-[1], [1]-[2]),
+    // duplicating AC (already correctly carried by the cross→tail invisible
+    // chain below, via crossChainIdx) and misplacing C. Neither belongs on
+    // these connections (P->A->A->A has no prayer between them); only the
+    // last chain (A->MG1) carries a real prayer (opening Gloria).
+    const tailChainPrayerIndices = [null, null, null, physicsMaps.openingGloria];
+    // #region agent log
+    fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'post-fix',hypothesisId:'H3',location:'InteractiveRosary.jsx:723',message:'tailChainPrayerIndices computed',data:{tailChainPrayerIndices},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion agent log
     // Chain 0 (Cross to Our Father): AC (index 1)
     // Chain 1 (Our Father to first A): C (index 2) - Credo
     // Chain 2 (between 3 A beads): none
@@ -1056,11 +1067,17 @@ const InteractiveRosary = ({
     let holdBody = null;
     const DRAG_THRESHOLD_PX = 10;
 
+    // Bug 6 fix (confirmed via H4 logs): closingPrayers only ever has 2
+    // entries (LL, S) in the current sequence, so the old `>= 3` gate never
+    // opened. Map however many closing prayers actually exist onto the last
+    // N tail connections (closest to the medal), instead of assuming 3.
     const tailToClosingMap = {};
-    if (physicsMaps.closingPrayers.length >= 3 && tailIndices.length >= 5) {
-      tailToClosingMap[tailIndices[2]] = physicsMaps.closingPrayers[0];
-      tailToClosingMap[tailIndices[3]] = physicsMaps.closingPrayers[1];
-      tailToClosingMap[tailIndices[4]] = physicsMaps.closingPrayers[2];
+    const closingPrayerIndices = physicsMaps.closingPrayers;
+    if (closingPrayerIndices.length > 0 && tailIndices.length >= closingPrayerIndices.length) {
+      const startIdx = tailIndices.length - closingPrayerIndices.length;
+      closingPrayerIndices.forEach((closingIdx, k) => {
+        tailToClosingMap[tailIndices[startIdx + k]] = closingIdx;
+      });
     }
 
     trackEvent(mouseConstraint, "mousedown", (event) => {
@@ -1319,6 +1336,9 @@ const InteractiveRosary = ({
             console.log(
               `📜 Dispatching beadRepeatTouch for text scrolling (touch ${newCount})`
             );
+            // #region agent log
+            fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'pre-fix',hypothesisId:'H1',location:'InteractiveRosary.jsx:1322',message:'dispatch beadRepeatTouch',data:{beadId,effectivePrayerIndex,newCount,currentPrayerIndexRef:currentPrayerIndexRef.current,progressIndexRef:progressIndexRef.current},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion agent log
             window.dispatchEvent(
               new CustomEvent("beadRepeatTouch", {
                 detail: {

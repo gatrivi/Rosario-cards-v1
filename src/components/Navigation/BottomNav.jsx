@@ -35,7 +35,6 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   const vistaActiva = getViewIdFromPath(location.pathname);
 
   const navItems = [
-    { id: 'stats', texto: 'Stats' },
     { id: 'tracker', texto: 'Plan' },
     { id: 'camino', texto: 'Camino' },
     { id: 'booklet', texto: 'Libro' },
