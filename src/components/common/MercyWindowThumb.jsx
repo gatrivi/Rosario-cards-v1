@@ -7,6 +7,7 @@ export default function MercyWindowThumb({
   disabled = false,
   onClick,
   title = 'Corona de la Divina Misericordia',
+  isNovena = false,
 }) {
   return (
     <button
@@ -16,8 +17,28 @@ export default function MercyWindowThumb({
       disabled={disabled}
       title={title}
       aria-label={title}
+      style={{ position: 'relative' }}
     >
       <img src={faustinaThumbnail} alt="" className="mercy-window-thumb__img" />
+      {isNovena && (
+        <span style={{
+          position: 'absolute',
+          bottom: '2px',
+          right: '2px',
+          backgroundColor: '#d4af37',
+          color: '#000',
+          borderRadius: '50%',
+          width: '12px',
+          height: '12px',
+          fontSize: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          border: '1px solid #000',
+          boxShadow: '0 0 4px rgba(212, 175, 55, 0.8)'
+        }}>9</span>
+      )}
     </button>
   );
 }

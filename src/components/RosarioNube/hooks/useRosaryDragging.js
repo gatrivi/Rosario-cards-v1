@@ -2,6 +2,11 @@ import { useState } from "react";
 
 /**
  * Hook to handle rosary dragging (mouse and touch)
+ *
+ * isPointerOnBead: optional (clientX, clientY) => boolean, supplied by
+ * InteractiveRosary. When it returns true, the pointer landed on a bead body,
+ * so container pan must NOT start — the bead/string physics owns the gesture
+ * instead. Pan only starts for empty-space presses.
  */
 export const useRosaryDragging = (
   sceneRef,
@@ -10,7 +15,8 @@ export const useRosaryDragging = (
   isDraggingRosary,
   setIsDraggingRosary,
   dragStart,
-  setDragStart
+  setDragStart,
+  isPointerOnBead
 ) => {
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
@@ -19,6 +25,7 @@ export const useRosaryDragging = (
   // Mouse event handlers
   const handleRosaryMouseDown = (e) => {
     if (!sceneRef.current?.contains(e.target)) return;
+    if (isPointerOnBead?.(e.clientX, e.clientY)) return;
     setIsDraggingRosary(true);
     setDragStart({
       x: e.clientX - rosaryPosition.x,
@@ -52,6 +59,7 @@ export const useRosaryDragging = (
   const handleRosaryTouchStart = (e) => {
     if (e.touches.length === 1 && sceneRef.current?.contains(e.target)) {
       const touch = e.touches[0];
+      if (isPointerOnBead?.(touch.clientX, touch.clientY)) return;
       setIsDraggingRosary(true);
       setDragStart({
         x: touch.clientX - rosaryPosition.x,

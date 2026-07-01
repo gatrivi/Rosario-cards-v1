@@ -180,3 +180,13 @@ ID meanings:
 - Interactive Glows: Added intense "interaction glows" and a pulsing "heartbeat" halo to the active bead
 - PWA Offline Support: Implemented a Service Worker and PWA manifest registration so the app works in signal-dead zones (basements, old churches)
 - Technical Integrity: Fixed legacy syntax errors in `ViewPrayers.js` to ensure a green build
+
+## SESSION NOTES (2026-06-25)
+- Bumped version to `v0.3.37 — La Novena`
+- Added "Novena de la Divina Misericordia" as a Libro-only devotion
+- Implemented dual gothic window thumbs in the booklet header portal: Corona and Novena (marked with a gold "9" badge)
+- Created `divineMercyNovenaData.js` with structured Spanish daily intentions and notes
+- Implemented compact day selector (Día 1 to 9) that resets the index to 0 upon selection
+- Displayed "Día N de 9" progress label on the intention step
+- Guarded Ave Maria stats so roses do not increment during Novena mode
+- Ensured normal rosary and chaplet behaviors remain intact

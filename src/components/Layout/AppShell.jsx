@@ -45,9 +45,10 @@ import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { getViewIdFromPath, getPathForView, VALID_PATHS } from '../../navigation/routes';
 import { resolveRosaryMystery } from '../../utils/bookletSequence';
 
-const APP_VERSION = '0.3.36';
+const APP_VERSION = '0.3.37';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
+const NOVENA_DAY_KEY = 'rosario_booklet_novena_day';
 const VALID_MYSTERIES = new Set(['gozosos', 'dolorosos', 'gloriosos', 'luminosos']);
 
 
@@ -120,12 +121,29 @@ export default function AppShell() {
       return 0;
     }
   });
+  const [novenaDay, setNovenaDay] = useState(() => {
+    try {
+      const saved = localStorage.getItem(NOVENA_DAY_KEY);
+      return saved ? parseInt(saved, 10) : 1;
+    } catch {
+      return 1;
+    }
+  });
+
+  const handleNovenaDayChange = (day) => {
+    setNovenaDay(day);
+    setCurrentPrayerIndex(0);
+    try {
+      localStorage.setItem(NOVENA_DAY_KEY, String(day));
+      localStorage.setItem(ROSARY_INDEX_KEY, '0');
+    } catch (_) { /* ignore */ }
+  };
 
   const prevMercyOpeningRef = useRef(settings.mercyOptionalOpening);
   useEffect(() => {
     if (prevMercyOpeningRef.current === settings.mercyOptionalOpening) return;
     prevMercyOpeningRef.current = settings.mercyOptionalOpening;
-    if (misterioActual !== 'divinamisericordia') return;
+    if (misterioActual !== 'divinamisericordia' && misterioActual !== 'divinamisericordia_novena') return;
     setCurrentPrayerIndex(0);
     try {
       localStorage.setItem(ROSARY_INDEX_KEY, '0');
@@ -273,13 +291,17 @@ export default function AppShell() {
             soundEnabled={settings.soundEnabled}
             mercyOptionalOpening={settings.mercyOptionalOpening !== false}
             onAveMariaComplete={(fingerprint) => {
+              if (misterioActual === 'divinamisericordia_novena') return;
               addRosas(1);
               storeRoseData(fingerprint);
             }}
             onAveMariaUndo={() => {
+              if (misterioActual === 'divinamisericordia_novena') return;
               removeRosas(1);
               popRoseData();
             }}
+            novenaDay={novenaDay}
+            onNovenaDayChange={handleNovenaDayChange}
           />
         );
       case 'monk': return <MonkView />;

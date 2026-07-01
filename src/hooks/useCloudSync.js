@@ -35,7 +35,9 @@ export function useCloudSync() {
         return newId;
       }
     } catch (e) {
-      console.error('[CloudSync] Initialization error:', e);
+      // Cloud sync is best-effort (offline/unavailable is expected). Avoid
+      // noisy "red" logs in the browser console.
+      console.warn('[CloudSync] Initialization failed, using local:', e);
       setSyncStatus('error');
     }
     return null;

@@ -197,6 +197,20 @@ const InteractiveRosary = ({
     onBeadHoldEndRef.current = onBeadHoldEnd;
   }, [onBeadHoldEnd]);
 
+  // Synchronous same-tick hit test used to gate wrapper pan (useRosaryDragging).
+  // Matter's own mouseConstraint 'mousedown' event only becomes accurate on the
+  // engine's next tick (beforeUpdate), which is too late for the wrapper's
+  // synchronous onMouseDown/onTouchStart. Query.point mirrors the same
+  // bounds+vertices hit test MouseConstraint uses internally, run immediately.
+  const isPointerOnBead = useCallback((clientX, clientY) => {
+    const instance = matterInstance.current;
+    const canvas = instance?.render?.canvas;
+    if (!canvas || !instance.allBeads?.length) return false;
+    const rect = canvas.getBoundingClientRect();
+    const point = { x: clientX - rect.left, y: clientY - rect.top };
+    return Matter.Query.point(instance.allBeads, point).length > 0;
+  }, []);
+
   // Initialize physics world with current zoom
   const initializePhysics = useCallback(() => {
     if (!sceneRef.current) return;
@@ -2348,7 +2362,8 @@ const InteractiveRosary = ({
     isDraggingRosary,
     setIsDraggingRosary,
     dragStart,
-    setDragStart
+    setDragStart,
+    isPointerOnBead
   );
 
   if (!isVisible) {

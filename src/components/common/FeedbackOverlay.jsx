@@ -38,7 +38,9 @@ export default function FeedbackOverlay({ telemetry, onClose }) {
       setStatus('success');
       setTimeout(onClose, 2000);
     } catch (e) {
-      console.error('Feedback failed:', e);
+      // Feedback is best-effort; avoid "red" console error spam on offline
+      // devices or blocked networks.
+      console.warn('Feedback failed:', e);
       setStatus('error');
     }
   };

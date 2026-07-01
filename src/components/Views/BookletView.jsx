@@ -65,6 +65,9 @@ const MYSTERY_SUBTITLES = {
 };
 
 function getDevotionChrome(misterioActual, isMercy) {
+  if (misterioActual === 'divinamisericordia_novena') {
+    return { title: 'Novena de la Divina Misericordia', subtitle: null };
+  }
   if (isMercy) {
     return { title: 'Corona de la Divina Misericordia', subtitle: null };
   }
@@ -109,11 +112,13 @@ export default function BookletView({
   mercyOptionalOpening = true,
   onAveMariaComplete,
   onAveMariaUndo,
+  novenaDay = 1,
+  onNovenaDayChange,
 }) {
   const isMercy = isDivineMercyMode(misterioActual);
   const secuencia = useMemo(
-    () => buildSequence(misterioActual, { includeMercyOpening: mercyOptionalOpening }),
-    [misterioActual, mercyOptionalOpening]
+    () => buildSequence(misterioActual, { includeMercyOpening: mercyOptionalOpening, novenaDay }),
+    [misterioActual, mercyOptionalOpening, novenaDay]
   );
 
   const total = secuencia.length;
@@ -510,6 +515,25 @@ export default function BookletView({
               ))}
             </div>
           </div>
+          {misterioActual === 'divinamisericordia_novena' && (
+            <div className="booklet-novena-selector">
+              <span className="booklet-novena-selector__label">Día</span>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => {
+                    resetOptionalIdle();
+                    onNovenaDayChange?.(d);
+                  }}
+                  disabled={isTransitioning}
+                  className={`booklet-novena-day-btn${novenaDay === d ? ' booklet-novena-day-btn--active' : ''}`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          )}
           <p className="booklet-progress">
             {!isMercy && (
               <>
@@ -541,6 +565,12 @@ export default function BookletView({
             )}
             {isOptionalMercyStep && ' '}
             {displayIndex + 1} / {total}
+            {misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION' && (
+              <span className="booklet-ave-count">
+                {' '}
+                · Día {novenaDay} de 9
+              </span>
+            )}
             {isLitany && litanyVerseTotal > 0 && (
               <span className="booklet-ave-count">
                 {' '}
@@ -639,11 +669,21 @@ export default function BookletView({
 
       {mercyThumbHost &&
         createPortal(
-          <MercyWindowThumb
-            active={isMercy}
-            disabled={isTransitioning}
-            onClick={() => onMysteryChange?.(DIVINE_MERCY_ID)}
-          />,
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <MercyWindowThumb
+              active={misterioActual === DIVINE_MERCY_ID}
+              disabled={isTransitioning}
+              onClick={() => onMysteryChange?.(DIVINE_MERCY_ID)}
+              title="Corona de la Divina Misericordia"
+            />
+            <MercyWindowThumb
+              active={misterioActual === 'divinamisericordia_novena'}
+              disabled={isTransitioning}
+              onClick={() => onMysteryChange?.('divinamisericordia_novena')}
+              title="Novena de la Divina Misericordia"
+              isNovena={true}
+            />
+          </div>,
           mercyThumbHost
         )}
 

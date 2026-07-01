@@ -45,10 +45,16 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   ];
 
   const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;
+  // UX: when viewing "Libro", keep only the 3 core actions so the prayer panel
+  // stays clean and unobstructed.
+  const visibleItems =
+    vistaActiva === 'booklet'
+      ? orderedItems.filter((i) => ['booklet', 'rose', 'voz'].includes(i.id))
+      : orderedItems;
 
   return (
     <nav className="bottom-nav glass-footer" aria-label="Navegación principal">
-      {orderedItems.map((item) => (
+      {visibleItems.map((item) => (
         <NavButton
           key={item.id}
           iconId={item.id}
