@@ -47,6 +47,7 @@ export default function SettingsOverlay({
   onCheckForUpdate,
   onStartAmbientAudio,
   onOpenAssetStudio,
+  onOpenReleaseNotes,
 }) {
   const [rosaryZoom, setRosaryZoomState] = React.useState(readRosaryZoom);
   const activeZoomPreset = ROSARY_ZOOM_PRESETS.find((p) => p.zoom === rosaryZoom)?.id
@@ -282,6 +283,24 @@ export default function SettingsOverlay({
 
         </div>
 
+        {onOpenReleaseNotes && (
+          <button
+            type="button"
+            onClick={() => onOpenReleaseNotes()}
+            style={{
+              width: '100%', marginTop: '20px', padding: '14px',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+            }}
+          >
+            ✨ Novedades
+            <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
+              Qué hay en esta versión y qué viene
+            </span>
+          </button>
+        )}
+
         {onOpenAssetStudio && (
           <button
             type="button"
@@ -290,7 +309,7 @@ export default function SettingsOverlay({
               onOpenAssetStudio();
             }}
             style={{
-              width: '100%', marginTop: '20px', padding: '14px',
+              width: '100%', marginTop: '10px', padding: '14px',
               background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: '12px', color: '#ccc', cursor: 'pointer',
               fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',

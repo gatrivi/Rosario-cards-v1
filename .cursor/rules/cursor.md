@@ -27,7 +27,7 @@
 * **Confirm Before Big Changes:** Stop and ask for confirmation before restructuring code, changing tone, or rewriting large sections. Any exception requires explicit user confirmation.
 * **Destructive Actions:** Explicitly ask for confirmation before deleting files, overwriting code, or dropping database records.
 * **Hard Stops:** Deploying, pushing, running migrations, or executing external API calls requires explicit, in-session confirmation (`yes`) in the current message.
-* **Git Operations:** Upon completing a feature/fix and confirming the build is stable, automatically stage the changes. Generate a descriptive commit message, commit, and push directly to the configured GitHub remote.
+* **Git Operations:** Prefer committing finished work to the worktree so it is not lost. Push only when the user asks. See also `.cursor/rules/release-and-org.mdc` (release notes, update banner, GitHub Wiki/Projects reminders).
 
 ## 5. Version Tracking Protocol (Strict)
 * **CLI Output:** Every single response or message generated in the terminal **MUST** conclude with the current working version number (e.g., `- v1.2.4`).

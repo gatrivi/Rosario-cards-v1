@@ -21,7 +21,9 @@ import AssetStudio from '../Views/AssetStudio';
 import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
+import ReleaseNotesOverlay from '../common/ReleaseNotesOverlay';
 import ViewErrorBoundary from '../common/ViewErrorBoundary';
+import { getUpdateSummaryLine } from '../../data/releaseNotes';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
 import FeedbackOverlay from '../common/FeedbackOverlay';
@@ -51,7 +53,7 @@ import {
   isValidRosaryMystery,
 } from '../../utils/bookletSequence';
 
-const APP_VERSION = '0.3.44';
+const APP_VERSION = '0.3.45';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -70,6 +72,7 @@ export default function AppShell() {
   const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -549,16 +552,25 @@ export default function AppShell() {
             {syncStatus === 'loading' ? <IconSyncLoading size={18} /> : <IconSync size={18} />}
           </button>
           <button 
+            type="button"
             onClick={() => setShowSettings(true)}
+            title="Ajustes"
+            aria-label="Ajustes"
             style={{ 
               background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
-              color: '#fff', width: '32px', height: '32px',
-              borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
+              color: '#ccc',
+              minWidth: settings.simpleMode ? 'auto' : '32px',
+              height: '32px',
+              padding: settings.simpleMode ? '0 10px' : '0',
+              borderRadius: settings.simpleMode ? '16px' : '50%',
+              cursor: 'pointer', backdropFilter: 'blur(5px)',
               boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
-              display: 'flex', justifyContent: 'center', alignItems: 'center'
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              gap: '4px', fontSize: '0.7rem',
             }}
           >
             <IconSettings size={18} />
+            {settings.simpleMode && <span>Ajustes</span>}
           </button>
         </div>
       </div>
@@ -569,22 +581,40 @@ export default function AppShell() {
           position: 'absolute', top: 60, left: 12, right: 12, zIndex: 200,
           background: 'rgba(20,20,20,0.95)', border: '1px solid #D4AF37',
           borderRadius: '12px', padding: '12px 14px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
+          display: 'flex', flexDirection: 'column', gap: '10px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
         }}>
-          <span style={{ color: '#ccc', fontSize: '0.85rem' }}>
-            Nueva versión disponible (v{APP_VERSION})
-          </span>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ color: '#D4AF37', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                Nueva versión (v{APP_VERSION})
+              </div>
+              <div style={{ color: '#aaa', fontSize: '0.75rem', marginTop: '4px', lineHeight: 1.35 }}>
+                {getUpdateSummaryLine()}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={applyPendingUpdate}
+              style={{
+                background: '#D4AF37', color: '#000', border: 'none',
+                borderRadius: '8px', padding: '8px 14px', fontWeight: 'bold',
+                cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0
+              }}
+            >
+              Actualizar
+            </button>
+          </div>
           <button
             type="button"
-            onClick={applyPendingUpdate}
+            onClick={() => setShowReleaseNotes(true)}
             style={{
-              background: '#D4AF37', color: '#000', border: 'none',
-              borderRadius: '8px', padding: '8px 14px', fontWeight: 'bold',
-              cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0
+              background: 'transparent', border: 'none', color: '#888',
+              fontSize: '0.7rem', cursor: 'pointer', textAlign: 'left', padding: 0,
+              textDecoration: 'underline',
             }}
           >
-            Actualizar
+            Ver todas las novedades
           </button>
         </div>
       )}
@@ -606,21 +636,29 @@ export default function AppShell() {
         simpleMode={settings.simpleMode}
       />
 
-      {/* Version badge */}
-      <div style={{
-        position: 'absolute',
-        bottom: '78px',
-        left: '10px',
-        zIndex: 100,
-        color: 'rgba(212, 175, 55, 0.35)',
-        fontSize: '0.6rem',
-        fontFamily: 'monospace',
-        letterSpacing: '1px',
-        pointerEvents: 'none',
-        userSelect: 'none'
-      }}>
+      {/* Version badge — tap for Novedades */}
+      <button
+        type="button"
+        onClick={() => setShowReleaseNotes(true)}
+        title="Novedades de esta versión"
+        aria-label={`Versión ${APP_VERSION}. Ver novedades`}
+        style={{
+          position: 'absolute',
+          bottom: '78px',
+          left: '10px',
+          zIndex: 100,
+          color: 'rgba(212, 175, 55, 0.55)',
+          fontSize: '0.6rem',
+          fontFamily: 'monospace',
+          letterSpacing: '1px',
+          background: 'transparent',
+          border: 'none',
+          padding: '4px 2px',
+          cursor: 'pointer',
+        }}
+      >
         v{APP_VERSION}
-      </div>
+      </button>
 
       {/* OVERLAYS */}
       {showSync && <SyncManager onClose={() => setShowSync(false)} />}
@@ -633,6 +671,17 @@ export default function AppShell() {
           appVersion={APP_VERSION}
           onCheckForUpdate={applyPendingUpdate}
           onStartAmbientAudio={handleStartAmbientAudio}
+          onOpenAssetStudio={() => navigate(getPathForView('assets'))}
+          onOpenReleaseNotes={() => {
+            setShowSettings(false);
+            setShowReleaseNotes(true);
+          }}
+        />
+      )}
+
+      {showReleaseNotes && (
+        <ReleaseNotesOverlay
+          onClose={() => setShowReleaseNotes(false)}
           onOpenAssetStudio={() => navigate(getPathForView('assets'))}
         />
       )}

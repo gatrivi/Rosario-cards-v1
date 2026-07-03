@@ -1,0 +1,49 @@
+---
+description: Release checklist, update UX, git saves, GitHub org reminders
+alwaysApply: true
+---
+
+# Release, updates & project org (Rosario Cards)
+
+## After shipping a feature (small checklist)
+
+When a feature is **committed/pushed** or a version is bumped:
+
+1. **Update toast/banner** — Confirm the app can show “new version available” (PWA service worker + `appUpdateAvailable`). Banner must include a **short feature summary**, not only the version number.
+2. **Release notes** — Add bullets to `src/data/releaseNotes.js` (`CURRENT` = shipped, `UPCOMING` = next). Keep it short (token budget).
+3. **Easy “check later”** — Users must reach notes without hunting:
+   - Top-right **Ajustes** button (label/title, **not** a classic gear — do not call it “gear” in docs/UI copy).
+   - Tap the **version badge** (`vX.Y.Z`) → Novedades.
+   - Settings → **Novedades** / **Estudio de imágenes**.
+4. **Git** — Prefer **commit** (and push only if user asked) so work lives in the worktree/remote. Do not leave large feature work uncommitted across sessions unless user said so.
+
+## What we have vs what we will implement
+
+- Source of truth for **shipped this version**: `src/data/releaseNotes.js` → `CURRENT`.
+- Source of truth for **next**: `UPCOMING` in the same file (manual; not auto-hooked to git worktrees yet — too expensive for tokens).
+- Optional later: GitHub Projects / Wiki for roadmap; do **not** build a full in-app git worktree browser unless requested.
+
+## GitHub features to remind the user (when relevant)
+
+Obscure but useful for this solo/small project — mention occasionally, don’t nag every turn:
+
+| Feature | Use for |
+|--------|---------|
+| **Wiki** | Long-form handbook, liturgy notes, image inventory |
+| **Projects** | Kanban: shipped / next / blocked |
+| **Discussions** | Design notes without polluting issues |
+| **Releases** | Tag `v0.3.x` + paste `releaseNotes` bullets |
+| **Milestones** | Group issues by version |
+| **Codespaces / worktrees** | Parallel experiments (agent may use local worktrees) |
+| **Actions** | CI build/test on push (if/when added) |
+
+## UI access facts (do not invent icons)
+
+- **Ajustes** = top-right circular control (sunburst/asterisk icon historically; must have `title`/`aria-label` “Ajustes”). There is **no** settings gear icon users recognize.
+- **Sync** = adjacent circular control (cloud/sync).
+- **Estudio de imágenes** = Ajustes → “Estudio de imágenes”, or route `/assets`.
+- **Update banner** = top of shell when SW has a waiting worker; “Actualizar” applies update.
+
+## Token budget
+
+Only implement **small steps** for roadmap/update UX. Prefer editing `releaseNotes.js` + banner text over new subsystems.
