@@ -55,16 +55,21 @@
 ### BROKEN / NEEDS FIX
 | Component | Issue |
 |-----------|-------|
-| `ViewPrayers.js` | Only handles `dark` theme. For non-dark themes, returns `undefined` (blank screen) |
-| `ViewPrayers.js` | Hardcodes exact Ave Maria string for count display — fragile |
+| *(none critical as of 2026-07-03)* | Prefer `.docs/litany/known-issues.md` + **verify source** before fixing |
 
-### UNINTEGRATED (exist but not wired into App.js)
-| Component | What it does | How to integrate |
-|-----------|--------------|------------------|
-| `RosarioVirtualView.jsx` | Full physics+prayer experience | Replace main App view or add as route |
-| `RosaEnFocoView.jsx` | Hold-to-charge mode | Add toggle in main view or route |
-| `RoseView.jsx` | Jardin de Rosas with drawing | Already accessible via `showRosedal` state |
-| `PeregrinacionView.jsx` | Pilgrimage map | Add button in Header to toggle |
+### LEGACY NOTES (not production bugs)
+| Component | Issue |
+|-----------|-------|
+| `ViewPrayers.js` | Unused by `AppShell`. Theme forced dark (`isDark = … \|\| true`). Moot unless re-wired. |
+| `App.js` | Legacy entry; live app is `index.js` → `AppShell` |
+
+### UNINTEGRATED / PARTIAL
+| Component | What it does | Notes |
+|-----------|--------------|-------|
+| `RosarioVirtualView.jsx` | Physics+prayer | Wired in AppShell `/rosario` |
+| `RoseView.jsx` | Rosa meditation | Wired `/rosa` — extract before extending (928 lines) |
+| `PeregrinacionView.jsx` | Camino | Wired `/camino` |
+| `pickRecordingForSlot` | Auto voice playback | Exported, **not called** — open Tier-2 task |
 
 ### LEGACY / UNUSED
 | File | Notes |
@@ -94,12 +99,14 @@
 
 ---
 
-## KNOWN BUGS
+## KNOWN BUGS / DEBT (verify source — docs go stale)
 
-1. **ViewPrayers.js line 7-29** — Returns `undefined` for non-dark themes. Fix: add `else` branch for light/sepia themes
-2. **RosarioPrayerBook.js line 395** — Sparse array `[,]` (empty slot at index 1 in mysteries.gozosos). ESLint warning but harmless
-3. **App.js** — `prayerImg` initial state reads `RosarioPrayerBook.mysteries[currentMystery]?.[0]` but mysteries array has a string at index 0 (image path), then objects at 1-5. Works but type is inconsistent
-4. **RoseView.jsx** — Imports `getSequenceData` from itself (circular-ish). Works because it's a named export, but fragile
+1. **Closing prayers unlock / Papa OOB** — **Fixed** (RosaryAdapter + dynamic `closingPrayers` map). Do not re-fix.
+2. **ViewPrayers theme** — **Moot** (unused; dark forced). Do not re-fix.
+3. **RosarioPrayerBook.js** — Sparse array `[,]` in mysteries.gozosos — ESLint warning, harmless
+4. **RoseView.jsx** — Named export self-import is fragile; extract before extending
+5. **LitanyDisplay** — `onNextVerse` / `onPrevVerse` unused (minor)
+6. **Voice auto-play** — `pickRecordingForSlot` has no call sites yet
 
 ---
 
