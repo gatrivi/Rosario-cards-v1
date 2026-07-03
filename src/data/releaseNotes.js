@@ -4,18 +4,18 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.46',
-  name: 'Firebase arte en la nube',
+  version: '0.3.47',
+  name: 'Clasificar y subir imágenes',
   CURRENT: [
-    'Firebase conectado: renombres y asignaciones en shared/artConfig',
-    'Estudio de imágenes: Subir / Bajar de nube (sin sync ID)',
-    'Ajustes (engranaje arriba derecha) → Estudio de imágenes',
-    'Novedades: tocá v0.3.x abajo a la izquierda',
+    'Estudio → pestaña Clasificar: categorías litúrgicas',
+    'Arrastrar carpeta/archivos → Firebase Storage + biblioteca',
+    'Imágenes subidas disponibles para asignar a versos',
+    'Firebase renombres en shared/artConfig',
   ],
   UPCOMING: [
-    'Publicar reglas Firestore si hay permiso denegado',
+    'Publicar reglas Firestore + Storage (si permiso denegado)',
     'Textos e imágenes dedicadas por estación',
-    'Voz automática durante el rezo (grabaciones)',
+    'Voz automática durante el rezo',
   ],
 };
 

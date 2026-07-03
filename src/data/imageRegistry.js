@@ -47,6 +47,7 @@ import miscUgQlLjwl from './assets/img/uGQlLjwl.jpg';
 import faustinaDivinoCorazon from './assets/img/santafaustinadivinocorazon.jpg';
 import faustinaStainedGlass from './assets/img/santafaustinastainedglass.jpg';
 import { touchLocalArtConfig } from '../utils/artConfigSync';
+import { loadImageLibrary } from '../utils/imageLibraryStore';
 
 // Public gallery images (referenced by URL, not imported).
 const PUBLIC = (path) => ({ path, source: 'public' });
@@ -111,12 +112,26 @@ function loadOverrides() {
   }
 }
 
-/** Merge runtime overrides over the base registry. */
+/** Merge runtime overrides + uploaded library over the base registry. */
 function withOverrides() {
   const overrides = loadOverrides();
+  const library = loadImageLibrary();
   const merged = {};
   for (const id of Object.keys(REGISTRY)) {
     merged[id] = { ...REGISTRY[id], ...(overrides[id] || {}), id };
+  }
+  for (const id of Object.keys(library)) {
+    const base = library[id];
+    if (!base?.path) continue;
+    merged[id] = {
+      ...base,
+      ...(overrides[id] || {}),
+      id,
+      path: (overrides[id] && overrides[id].path) || base.path,
+      source: base.source || 'upload',
+      tags: (overrides[id] && overrides[id].tags) || base.tags || [],
+      name: (overrides[id] && overrides[id].name) || base.name || id,
+    };
   }
   return merged;
 }

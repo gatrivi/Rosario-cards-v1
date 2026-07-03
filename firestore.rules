@@ -1,8 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TEMP open rules for art curation (renames + verse assignments).
-    // Tighten with Auth when ready.
+    // TEMP open rules for art curation. Tighten with Auth later.
     match /shared/{docId} {
       allow read, write: if true;
     }

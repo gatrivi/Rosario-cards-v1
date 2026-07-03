@@ -8,6 +8,11 @@ import {
   pullArtConfigFromFirestore,
   pushArtConfigToFirestore,
 } from '../services/firebaseArtConfig';
+import {
+  pullImageLibraryFromFirestore,
+  pushImageLibraryToFirestore,
+} from '../services/firebaseImageLibrary';
+import { IMAGE_LIBRARY_CHANGED_EVENT } from '../utils/imageLibraryStore';
 import { isFirebaseConfigured } from '../config/firebase';
 
 /**
@@ -61,5 +66,26 @@ export function useArtConfigCloudSync({ syncId, cloudState, syncToCloud }) {
       .catch((err) => {
         console.warn('[ArtConfig] Firestore pull failed:', err?.message || err);
       });
+    pullImageLibraryFromFirestore().catch((err) => {
+      console.warn('[ArtConfig] image library pull failed:', err?.message || err);
+    });
   }, [syncId]);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured()) return undefined;
+    let t;
+    const onLib = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        pushImageLibraryToFirestore().catch((err) => {
+          console.warn('[ArtConfig] image library push failed:', err?.message || err);
+        });
+      }, 2500);
+    };
+    window.addEventListener(IMAGE_LIBRARY_CHANGED_EVENT, onLib);
+    return () => {
+      window.removeEventListener(IMAGE_LIBRARY_CHANGED_EVENT, onLib);
+      clearTimeout(t);
+    };
+  }, []);
 }

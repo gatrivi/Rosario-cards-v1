@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // TEMP open for art uploads from Estudio de imágenes.
+    match /art/{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,6 +1,12 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { listImages, saveOverride, clearOverride } from '../../data/imageRegistry';
 import AssignmentMapper from './AssignmentMapper';
+import ClassifyImagesPanel from './ClassifyImagesPanel';
+import {
+  pullImageLibraryFromFirestore,
+  pushImageLibraryToFirestore,
+} from '../../services/firebaseImageLibrary';
+import { IMAGE_LIBRARY_CHANGED_EVENT } from '../../utils/imageLibraryStore';
 import {
   downloadArtConfigJson,
   exportArtConfig,
@@ -37,6 +43,24 @@ export default function AssetStudio() {
     getFirebaseArtStatus().then(setFbStatus).catch(() => {
       setFbStatus({ configured: false, ok: false, message: 'Error al consultar Firebase' });
     });
+    pullImageLibraryFromFirestore()
+      .then(() => setVersion((v) => v + 1))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    let t;
+    const onLib = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        pushImageLibraryToFirestore().catch(() => {});
+      }, 2500);
+    };
+    window.addEventListener(IMAGE_LIBRARY_CHANGED_EVENT, onLib);
+    return () => {
+      window.removeEventListener(IMAGE_LIBRARY_CHANGED_EVENT, onLib);
+      clearTimeout(t);
+    };
   }, []);
 
   // Recomputed each render; setVersion() forces a refresh after edits.
@@ -223,6 +247,7 @@ export default function AssetStudio() {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
           {[
             { id: 'registry', label: 'Registro' },
+            { id: 'classify', label: 'Clasificar' },
             { id: 'assign', label: 'Asignar versos' },
           ].map((t) => (
             <button
@@ -242,6 +267,8 @@ export default function AssetStudio() {
 
         {tab === 'assign' ? (
           <AssignmentMapper />
+        ) : tab === 'classify' ? (
+          <ClassifyImagesPanel onChanged={() => setVersion((v) => v + 1)} />
         ) : (
         <>
 
