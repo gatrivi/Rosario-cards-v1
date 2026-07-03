@@ -5,7 +5,7 @@
 * **No Unrequested Fixes:** Never make code changes unless the user explicitly requests the change or accepts a plan. If a bug report suggests you are on the wrong version/branch, verify with the repo state and ask—do not fix.
 * **Simplest Solution First:** Always implement the simplest thing that could work. Do not add unrequested abstractions or flexibility.
 * **Don't Touch Unrelated Code:** If a file or function is not directly part of the current task, do not modify or "improve" it.
-* **Documentation-First:** Always verify current project documentation (`README.md`, `docs/`, or internal wikis) before proposing architectural changes, altering state management, or adding new dependencies.
+* **Documentation-First:** Prefer `.docs/` (canonical), `AGENTS.md`, `MEMORY.md`, `ERRORS.md`. **Do not trust bug lists without checking source** — docs go stale. Verify in code before "fixing" anything listed as open.
 
 ## 2. Token Budgeting & Financial Responsibility
 * **Budget Actions:** Budget all proposed actions with an estimated token cost (eyeball estimates are fine; state the estimate and degree of certainty).
@@ -35,22 +35,23 @@
 
 ## 6. Technical Stack & Deployment Standards
 * **Lock Tech Stack:** 
-    * **Language:** TypeScript / JavaScript
-    * **Framework:** Vite + React (MERN Stack architecture)
+    * **Language:** JavaScript (React 19)
+    * **Framework:** Create React App (`react-scripts` 5) — **not Vite**
+    * **Routing:** `react-router-dom` 7 (AppShell entry via `index.js`)
     * **Physics Engine:** Matter.js
     * *Do not suggest alternatives unless explicitly asked.*
 * **Vercel-Ready Code:** All code modifications must maintain compatibility with Vercel deployment pipelines.
-* **Pre-Push Checks:** Before finalizing a task, ensure standard build commands (`npm run build`) execute successfully without TypeScript errors, unresolved imports, or broken CSS grids.
+* **Pre-Push Checks:** Before finalizing a task, ensure `npm run build` succeeds. Prefer `npm test -- --watchAll=false --maxWorkers=2` on Windows (full suite can OOM).
 
 ## 7. State, Memory, & Domain-Specific Context
 
 ### Memory & Session Management
-* **Maintain MEMORY.md:** Log major decisions (What/Why/Rejected). Read this at the start of every session.
-* **Maintain ERRORS.md:** Log approaches that took >2 attempts to work. Check this before suggesting solutions.
+* **Maintain `MEMORY.md` (repo root):** Log major decisions (What/Why/Rejected). Read at session start if present.
+* **Maintain `ERRORS.md` (repo root):** Log approaches that took >2 attempts. Check before retrying similar fixes.
 * **Session Summaries:** When the user says "session end," summarize: Work done, decisions made, and next priorities.
 
 ### Application Domain Features
-* **Visual Art Modes (see `docs/VISUAL_MODES.md`):**
+* **Visual Art Modes (see `.docs/visual/visual-modes.md`):**
     * **Chiaroscuro:** Mostly `modooscuro` paintings (e.g., Via Dolorosa). Dolorosos mysteries fall back to `modooscuro` assets when primary images are missing.
     * **Stained Glass:** Vitral / Latin manuscript style for Libro mode.
 * **Latin Prayer Text (`src/data/prayerVariants.js`):**
@@ -58,6 +59,6 @@
     * In Libro mode, the user can tap the `◇` variant control under the prayer title to switch variants.
 
 ### Project Context
-* **Role/Background:** React frontend developer focused on the MERN stack.
-* **Project Goals:** An interactive application for praying and learning the Rosary. The primary view right now is the booklet view (`bookletview`) because it is simple, stable, and working. The central component is a virtual physics-based rosary built with Matter.js.
-* **Current Execution Strategy:** We will eventually work on the virtual Matter.js rosary, but we can **hardly spare the tokens right now**. Prioritize token preservation and baseline stability above complex features.
+* **Role/Background:** React frontend for Rosario Cards (CRA, not MERN/Vite).
+* **Project Goals:** Interactive rosary prayer app. Primary stable surface: Libro (`BookletView`). Physics rosary: Matter.js (`InteractiveRosary` / `RosarioVirtualView`).
+* **Current Execution Strategy:** Token preservation and baseline stability first. Prefer small bounded tasks; defer RoseView extraction and large routing refactors.
