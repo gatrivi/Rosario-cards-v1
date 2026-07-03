@@ -55,13 +55,9 @@ export function buildRosaryPhysicsIndices(ids) {
   const lastPair = gloriaFatimaPairs[gloriaFatimaPairs.length - 1] || null;
   const openingPair = gloriaFatimaPairs[0] || null;
 
-  const closingPrayers = ['LL', 'S', 'Papa']
+  const closingPrayers = ['LL', 'S']
     .map((id) => ids.lastIndexOf(id))
     .filter((i) => i >= 0);
-
-  // #region agent log
-  fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'pre-fix',hypothesisId:'H4',location:'rosarySequenceUtils.js:60',message:'closingPrayers computed',data:{closingPrayers,idsLength:ids.length},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion agent log
 
   return {
     loneBeadPrayerIndices: mysteryIndices.slice(1),
@@ -72,9 +68,25 @@ export function buildRosaryPhysicsIndices(ids) {
     loopEntryP: loopEntryP >= 0 ? loopEntryP : 10,
     lastGloria: lastPair?.g ?? 77,
     lastFatima: lastPair?.f ?? 78,
-    closingPrayers: closingPrayers.length ? closingPrayers : [79, 80, 81],
+    closingPrayers: closingPrayers.length
+      ? closingPrayers
+      : [ids.length - 2, ids.length - 1].filter((i) => i >= 0),
     decadeAveStarts,
   };
+}
+
+/** Heart medal / tail beads: litany unlocked after 5 mysteries or near closing. */
+export function isClosingPrayersUnlocked(sequence, activePrayerIndex) {
+  if (!sequence?.length || activePrayerIndex == null) return false;
+  let llIdx = -1;
+  let mysteryCount = 0;
+  for (let i = 0; i < sequence.length; i += 1) {
+    const id = getPrayerIdAt(sequence, i);
+    if (id === 'LL' && llIdx < 0) llIdx = i;
+    if (i <= activePrayerIndex && isMysteryId(id)) mysteryCount += 1;
+  }
+  if (llIdx < 0) return false;
+  return mysteryCount >= 5 || activePrayerIndex >= llIdx - 10;
 }
 
 export function getDecadeAveIndex(ids, physicsIdx) {

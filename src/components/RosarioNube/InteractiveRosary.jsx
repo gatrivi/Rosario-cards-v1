@@ -16,6 +16,8 @@ import {
   getDecadeAveIndex,
 } from "../../utils/rosarySequenceUtils";
 
+const debug = () => {};
+
 const BEAD_OPACITY = 0.62;
 const BEAD_DRAG_OPACITY = 0.28;
 
@@ -219,7 +221,7 @@ const InteractiveRosary = ({
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    console.log("🎯 InteractiveRosary: Initializing...", {
+    debug("🎯 InteractiveRosary: Initializing...", {
       width,
       height,
       currentMystery,
@@ -230,7 +232,7 @@ const InteractiveRosary = ({
     if (matterInstance.current) {
       destroyMatterInstance(matterInstance.current);
       matterInstance.current = null;
-      console.log("🧹 InteractiveRosary: Cleaned up previous instance");
+      debug("🧹 InteractiveRosary: Cleaned up previous instance");
     }
 
     const eventHandlers = [];
@@ -262,7 +264,7 @@ const InteractiveRosary = ({
     const prayerIds = toPrayerIds(getRosarySequence());
     const physicsMaps = buildRosaryPhysicsIndices(prayerIds);
     const pid = (index) => prayerIds[index] || "unknown";
-    console.log("📿 Rosary sequence length:", prayerIds.length);
+    debug("📿 Rosary sequence length:", prayerIds.length);
 
     // --- Parameters ---
     const baseBeadSize = 8; // Base bead size
@@ -277,7 +279,7 @@ const InteractiveRosary = ({
 
     // --- VITALITY SYSTEM: Calculate rosary vitality based on prayer history ---
     const vitality = prayerHistory.getTotalVitality(); // 0.0 to 1.0
-    console.log(
+    debug(
       `✨ Rosary Vitality: ${vitality.toFixed(2)} (${
         vitality < 0.3
           ? "sad/heavy"
@@ -339,7 +341,7 @@ const InteractiveRosary = ({
           // COLLISION FILTERING: Make invisible beads non-collidable
           collisionFilter: {
             category: 0x0002, // Invisible bead category
-            mask: 0x0000, // Don't collide with anything
+            mask: 0x0004, // Only interacts with the mouse-pick category (0x0004), never with real beads (0x0001)
           },
           render: {
             fillStyle: "rgba(0,0,0,0)", // Fully transparent
@@ -477,9 +479,6 @@ const InteractiveRosary = ({
         const fIdx = gPair?.f ?? gIdx + 1;
         constraint.prayerIndex = gIdx;
         constraint.prayerId = pid(gIdx);
-        // #region agent log
-        fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'post-fix',hypothesisId:'H2',location:'InteractiveRosary.jsx:469',message:'gloriaFatima chain assignment',data:{i,decadeNum,gIdx,fIdx,pairsLen:physicsMaps.gloriaFatimaPairs.length},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion agent log
 
         const fatimaConstraint = Matter.Constraint.create({
           ...springOptions(adjustedLength * 0.8),
@@ -734,9 +733,6 @@ const InteractiveRosary = ({
     // these connections (P->A->A->A has no prayer between them); only the
     // last chain (A->MG1) carries a real prayer (opening Gloria).
     const tailChainPrayerIndices = [null, null, null, physicsMaps.openingGloria];
-    // #region agent log
-    fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'post-fix',hypothesisId:'H3',location:'InteractiveRosary.jsx:723',message:'tailChainPrayerIndices computed',data:{tailChainPrayerIndices},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion agent log
     // Chain 0 (Cross to Our Father): AC (index 1)
     // Chain 1 (Our Father to first A): C (index 2) - Credo
     // Chain 2 (between 3 A beads): none
@@ -871,7 +867,7 @@ const InteractiveRosary = ({
       })
     );
 
-    console.log(
+    debug(
       `✅ Created ${allBeads.length} beads and ${constraints.length} constraints`
     );
 
@@ -886,6 +882,9 @@ const InteractiveRosary = ({
         stiffness: guidedRef.current ? 0.6 : 0.9,
         render: { visible: false },
       },
+      // Dedicated pick category so invisible beads (category 0x0002, mask 0x0004)
+      // are mouse-pickable while still never colliding physically with real beads.
+      collisionFilter: { category: 0x0004, mask: 0xffffffff, group: 0 },
     });
 
     Matter.Composite.add(world, mouseConstraint);
@@ -1026,7 +1025,7 @@ const InteractiveRosary = ({
 
       // Debug logging
       if (developerModeRef.current) {
-        console.log(`🔊 Collision Sound:`, {
+        debug(`🔊 Collision Sound:`, {
           momentum: momentum.toFixed(2),
           angle: normalizedAngle.toFixed(1),
           dampening: dampeningFactor.toFixed(2),
@@ -1097,7 +1096,7 @@ const InteractiveRosary = ({
 
       // HEART BEAD LITANY NAVIGATION (check before prayerIndex check)
       if (clickedBead.isHeartMedal) {
-        console.log(`❤️ Heart bead touched`);
+        debug(`❤️ Heart bead touched`);
 
         // Check if closing prayers are unlocked (5 mysteries visited)
         if (areClosingPrayersUnlocked) {
@@ -1111,7 +1110,7 @@ const InteractiveRosary = ({
           // Play soft chime for litany progression
           soundEffects.playChainPrayerChime();
         } else {
-          console.log(`❤️ Litany not yet unlocked - need 5 mysteries`);
+          debug(`❤️ Litany not yet unlocked - need 5 mysteries`);
           // Play gentle "not available" sound
           soundEffects.playBeadCollision(400, 0.1, 0.05); // Low, soft sound
         }
@@ -1132,7 +1131,7 @@ const InteractiveRosary = ({
           const seq = getRosarySequence();
           effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
           effectivePrayerId = getPrayerIdAt(seq, effectivePrayerIndex);
-          console.log(
+          debug(
             `🎯 Closing prayers unlocked - redirecting tail bead ${clickedBead.prayerIndex} → ${effectivePrayerIndex} (${effectivePrayerId})`
           );
         }
@@ -1163,7 +1162,7 @@ const InteractiveRosary = ({
         setLastTouchedBeadId(beadId);
         setTouchTimestamp(now);
 
-        console.log(
+        debug(
           `🎯 Bead touched: #${clickedBead.beadNumber}, Touch ${newCount}, Index ${clickedBead.prayerIndex}, Prayer ${clickedBead.prayerId}`
         );
 
@@ -1173,7 +1172,7 @@ const InteractiveRosary = ({
           if (prayerIndex >= seq.length - 1) return false;
 
           const chainPrayers = [];
-          const beadPrayers = ["SC", "P", "A", "LL", "S", "Papa"];
+          const beadPrayers = ["SC", "P", "A", "LL", "S"];
 
           for (let i = prayerIndex + 1; i < seq.length; i++) {
             const nextPrayer = getPrayerIdAt(seq, i);
@@ -1194,13 +1193,13 @@ const InteractiveRosary = ({
 
         if (newCount === 1) {
           // FIRST TOUCH: reveal handled by onBeadHoldStart (mousedown hold)
-          console.log(`🎯 First touch - hold reveal`);
+          debug(`🎯 First touch - hold reveal`);
 
           // Clear scroll-triggered chain entry indicators
           // This handles both tapping the original bead again OR tapping the invisible bead
           setPressSameBeadId(null);
           if (clickedBead.isInvisible) {
-            console.log(
+            debug(
               `✨ Invisible bead tapped - clearing chain entry indicators`
             );
             setEnhancedBeadId(null);
@@ -1209,7 +1208,7 @@ const InteractiveRosary = ({
           // Check for chain prayers (but don't set chainBeadHighlight yet)
           // Chain mode will be entered via scroll-triggered enterChainPrayers event
           const chainPrayers = hasChainPrayers(effectivePrayerIndex);
-          console.log(
+          debug(
             `🔍 Chain prayer check for index ${effectivePrayerIndex} (${effectivePrayerId}):`,
             chainPrayers
               ? `Found ${chainPrayers.length} chain prayers at indices ${chainPrayers}`
@@ -1219,14 +1218,14 @@ const InteractiveRosary = ({
           if (chainPrayers) {
             // This bead has chain prayers - keep touch count active
             // Next taps will scroll text, and when scroll ends, enterChainPrayers will trigger
-            console.log(
+            debug(
               `⛓️ Bead has chain prayers at indices: [${chainPrayers.join(
                 ", "
               )}] - waiting for scroll to end`
             );
           } else {
             // No chain prayers - reset touch count
-            console.log(`✅ No chain prayers, resetting touch count`);
+            debug(`✅ No chain prayers, resetting touch count`);
             touchCountRef.current.set(beadId, 0);
           }
 
@@ -1248,10 +1247,10 @@ const InteractiveRosary = ({
           // - The highlighted invisible bead (new, more intuitive for touch)
           const chainPrayers = hasChainPrayers(effectivePrayerIndex);
 
-          console.log(
+          debug(
             `🔄 Touch ${newCount} on bead #${clickedBead.beadNumber} (index ${effectivePrayerIndex}, ${effectivePrayerId})`
           );
-          console.log(`   Chain prayers available:`, chainPrayers || "None");
+          debug(`   Chain prayers available:`, chainPrayers || "None");
 
           // Check if this bead was highlighted for chain navigation (from scroll-triggered entry)
           // This can be triggered by:
@@ -1270,10 +1269,10 @@ const InteractiveRosary = ({
           ) {
             // IN CHAIN MODE: Navigate through chain prayers
             const chainIndex = newCount - 2; // 2nd touch = first chain prayer (index 0)
-            console.log(
+            debug(
               `   Chain mode active - Calculating: newCount ${newCount} - 2 = chainIndex ${chainIndex}`
             );
-            console.log(
+            debug(
               `   Chain prayers array length: ${chainPrayers.length}`
             );
 
@@ -1281,7 +1280,7 @@ const InteractiveRosary = ({
               const chainPrayerIndex = chainPrayers[chainIndex];
               const prayerId = getPrayerIdAt(seq, chainPrayerIndex);
 
-              console.log(
+              debug(
                 `⛓️ Navigating to chain prayer ${chainIndex + 1}/${
                   chainPrayers.length
                 }: ${prayerId} (index ${chainPrayerIndex})`
@@ -1301,7 +1300,7 @@ const InteractiveRosary = ({
 
               // If this is the last chain prayer, signal to move to next bead
               if (chainIndex === chainPrayers.length - 1) {
-                console.log(
+                debug(
                   `✅ Last chain prayer - ready to move to next bead`
                 );
 
@@ -1333,12 +1332,9 @@ const InteractiveRosary = ({
           } else {
             // NOT IN CHAIN MODE: Dispatch beadRepeatTouch for text scrolling
             // ViewPrayers will handle scroll detection and dispatch enterChainPrayers when scroll ends
-            console.log(
+            debug(
               `📜 Dispatching beadRepeatTouch for text scrolling (touch ${newCount})`
             );
-            // #region agent log
-            fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'pre-fix',hypothesisId:'H1',location:'InteractiveRosary.jsx:1322',message:'dispatch beadRepeatTouch',data:{beadId,effectivePrayerIndex,newCount,currentPrayerIndexRef:currentPrayerIndexRef.current,progressIndexRef:progressIndexRef.current},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion agent log
             window.dispatchEvent(
               new CustomEvent("beadRepeatTouch", {
                 detail: {
@@ -1508,37 +1504,9 @@ const InteractiveRosary = ({
         context.fillRect(0, 0, width, height); // Subtle golden overlay
       }
 
-      // SCROLL ZONE INDICATORS: Show subtle indicators for scroll trigger areas
-      // Only show when a bead is being dragged
-      if (mouseConstraint.body) {
-        const bottomScrollHeight = 44;
-        const topScrollY = height * 0.5;
-        const bottomScrollY = height - bottomScrollHeight;
-        
-        // Top scroll zone indicator (scroll up)
-        context.fillStyle = "rgba(100, 150, 255, 0.08)";
-        context.fillRect(0, 0, width, topScrollY);
-        
-        // Top zone icon/hint
-        context.save();
-        context.fillStyle = "rgba(100, 150, 255, 0.3)";
-        context.font = "20px sans-serif";
-        context.textAlign = "center";
-        context.fillText("↑", width / 2, topScrollY / 2);
-        context.restore();
-        
-        // Bottom scroll zone indicator (scroll down)
-        context.fillStyle = "rgba(100, 255, 150, 0.08)";
-        context.fillRect(0, bottomScrollY, width, bottomScrollHeight);
-        
-        // Bottom zone icon/hint
-        context.save();
-        context.fillStyle = "rgba(100, 255, 150, 0.3)";
-        context.font = "20px sans-serif";
-        context.textAlign = "center";
-        context.fillText("↓", width / 2, bottomScrollY + bottomScrollHeight / 2);
-        context.restore();
-      }
+      // SCROLL ZONE INDICATORS removed — they drew a blue rectangle over the
+      // top half of the canvas on drag and read as a selection artifact.
+      // The bidirectional drag-scroll still works (beadDragPosition event);
 
       context.fillStyle = "white";
       context.textAlign = "center";
@@ -2346,7 +2314,7 @@ const InteractiveRosary = ({
       eventHandlers,
     };
 
-    console.log("✅ InteractiveRosary: Initialization complete!");
+    debug("✅ InteractiveRosary: Initialization complete!");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentMystery,

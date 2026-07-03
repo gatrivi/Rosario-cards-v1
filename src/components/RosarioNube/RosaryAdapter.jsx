@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import InteractiveRosary from './InteractiveRosary';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
+import { isClosingPrayersUnlocked } from '../../utils/rosarySequenceUtils';
 
 /**
  * Bridges RosarioVirtualView callbacks to origin/master InteractiveRosary.
@@ -47,11 +48,17 @@ export default function RosaryAdapter({
     [onBeadHoldStart]
   );
 
+  const closingUnlocked = useMemo(
+    () => isClosingPrayersUnlocked(sequence, activePrayerIndex),
+    [sequence, activePrayerIndex]
+  );
+
   return (
     <InteractiveRosary
       sequence={sequence}
       currentMystery={misterioActual}
       currentPrayerIndex={activePrayerIndex}
+      areClosingPrayersUnlocked={closingUnlocked}
       onBeadClick={handleBeadClick}
       onBeadHoldStart={handleBeadHoldStart}
       onBeadHoldEnd={onBeadHoldEnd}

@@ -71,7 +71,7 @@ export const litanyLauretanaVerses = [
     "response": "Cristo, escúchanos",
     "responseLatin": "Christe exaudi nos",
     "section": 1,
-    "img": "/gallery-images/litany/01-1-0.xcf",
+    "img": "/gallery-images/litany/01-1-0.JPG",
     "imgmo": "/gallery-images/litany/modooscuro/cristo-escuchanos.jpg"
   },
   {
@@ -107,7 +107,7 @@ export const litanyLauretanaVerses = [
     "response": "Ten piedad de nosotros",
     "responseLatin": "Miserere nobis",
     "section": 1,
-    "img": "/gallery-images/litany/01-2-0.xcf",
+    "img": "/gallery-images/litany/01-2-0.JPG",
     "imgmo": "/gallery-images/litany/modooscuro/santisima-trinidad.jpg"
   },
   {
@@ -491,7 +491,7 @@ export const litanyLauretanaVerses = [
     "response": "Ruega por nosotros",
     "section": 2,
     "img": "/gallery-images/litany/lll_1-1-7.png",
-    "imgmo": "/gallery-images/litany/modooscuro/Reina concebida sin pecado original.jng"
+    "imgmo": "/gallery-images/litany/modooscuro/reina-concebida.jpg"
   },
   {
     "invocation": "Reina asunta a los cielos",
@@ -507,7 +507,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/lll_1-3-7.png",
-    "imgmo": "/gallery-images/litany/modooscuro/reina-rosario.jng"
+    "imgmo": "/gallery-images/litany/modooscuro/reina-rosario.jpg"
   },
   {
     "invocation": "Reina de la familia",

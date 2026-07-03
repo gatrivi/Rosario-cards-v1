@@ -49,6 +49,11 @@ export default function MacetonView({ onSelectMaceton, onViewGarden }) {
         <p style={{ color: '#888', fontSize: '0.85rem' }}>
           Hoy: <span style={{ color: '#D4AF37', fontWeight: 'bold' }}>{Math.floor(dailyAveMarias / 50)} / {objetivoMacetonesHoy}</span> Rosarios cultivados
         </p>
+        {objetivoMacetonesHoy === 0 && (
+          <p style={{ color: '#666', fontSize: '0.8rem', marginTop: '8px' }}>
+            Tu nivel no pide rosarios hoy — descansa o elige otro ritmo en Plan.
+          </p>
+        )}
         {onViewGarden && (
           <button
             type="button"

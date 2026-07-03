@@ -1,5 +1,8 @@
+import { getAssignedPath } from './imageAssignments';
+
 const FALLBACK = '/gallery-images/cathedral-painting.jpg';
 const MODO = '/gallery-images/misterios/modooscuro/';
+const BROKEN_EXT = /\.(xcf|jng|psd|ai)$/i;
 
 /** Prefer modooscuro (imgmo) over light/mododia paths for devotional backgrounds. */
 const PREFER_MODOOSCURO = true;
@@ -51,13 +54,19 @@ export function pickPrayerImage(candidates, seed = 0) {
 }
 
 function pushImage(candidates, url, push) {
-  if (url && !candidates.includes(url)) push(url);
+  if (url && !BROKEN_EXT.test(url) && !candidates.includes(url)) push(url);
+}
+
+function pushAssignment(candidates, prayerId, verseIndex, push) {
+  const assigned = getAssignedPath(prayerId, verseIndex);
+  if (assigned) push(assigned);
 }
 
 /** Build ordered candidate URLs for a litany verse background. */
-export function getLitanyVerseImageCandidates(verse, prayerFallback = null) {
+export function getLitanyVerseImageCandidates(verse, prayerFallback = null, verseIndex = 0) {
   const candidates = [];
   const push = (url) => pushImage(candidates, url, (u) => candidates.push(u));
+  const prayerId = prayerFallback?.id || 'LL';
 
   if (!verse) {
     if (prayerFallback?.imgmo) push(prayerFallback.imgmo);
@@ -65,6 +74,8 @@ export function getLitanyVerseImageCandidates(verse, prayerFallback = null) {
     push(FALLBACK);
     return candidates;
   }
+
+  pushAssignment(candidates, prayerId, verseIndex, push);
 
   if (PREFER_MODOOSCURO) {
     if (verse.imgmo) push(verse.imgmo);
@@ -81,7 +92,7 @@ export function getLitanyVerseImageCandidates(verse, prayerFallback = null) {
 }
 
 export function resolveLitanyVerseImage(verse, prayerFallback = null, seed = 0) {
-  return pickPrayerImage(getLitanyVerseImageCandidates(verse, prayerFallback), seed);
+  return pickPrayerImage(getLitanyVerseImageCandidates(verse, prayerFallback, seed), 0);
 }
 
 /** Build ordered candidate URLs for a prayer vitral image. */

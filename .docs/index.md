@@ -35,6 +35,7 @@
     audio-integration.md
     known-issues.md
   dev-notes/
+    session-report-2026-07-03-night.md  ← art sync, Firebase scaffold, Vía Crucis/Lucis
     beads-dom-prototype.md
     rosary-dom-physics-prototype.md
     legacy-agent-prompts/             ← historical root agent files

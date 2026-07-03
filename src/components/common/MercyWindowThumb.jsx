@@ -1,5 +1,5 @@
 import React from 'react';
-import { faustinaThumbnail } from '../../data/divineMercyData';
+import { faustinaThumb } from '../../data/divineMercyData';
 import './MercyWindowThumb.css';
 
 export default function MercyWindowThumb({
@@ -8,6 +8,8 @@ export default function MercyWindowThumb({
   onClick,
   title = 'Corona de la Divina Misericordia',
   isNovena = false,
+  img,
+  badge,
 }) {
   return (
     <button
@@ -19,8 +21,8 @@ export default function MercyWindowThumb({
       aria-label={title}
       style={{ position: 'relative' }}
     >
-      <img src={faustinaThumbnail} alt="" className="mercy-window-thumb__img" />
-      {isNovena && (
+      <img src={img || faustinaThumb} alt="" className="mercy-window-thumb__img" />
+      {(isNovena || badge) && (
         <span style={{
           position: 'absolute',
           bottom: '2px',
@@ -37,7 +39,7 @@ export default function MercyWindowThumb({
           fontWeight: 'bold',
           border: '1px solid #000',
           boxShadow: '0 0 4px rgba(212, 175, 55, 0.8)'
-        }}>9</span>
+        }}>{badge || '9'}</span>
       )}
     </button>
   );

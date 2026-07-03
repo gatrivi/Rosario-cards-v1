@@ -1,6 +1,7 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import BookletView, { BOOKLET_TIMING, getAveMariaRunInfo } from '../components/Views/BookletView';
+import BookletView, { BOOKLET_TIMING } from '../components/Views/BookletView';
+import { getAveMariaRunInfo } from '../utils/aveMariaRunInfo';
 import { playBookletTransitionSound } from '../utils/bookletSounds';
 
 jest.mock('../utils/bookletSounds', () => ({
@@ -42,14 +43,16 @@ describe('BookletView', () => {
   });
 
   const advanceBookletTransition = () => {
-    jest.advanceTimersByTime(
-      BOOKLET_TIMING.textOut +
-        BOOKLET_TIMING.linger +
-        48 +
-        BOOKLET_TIMING.imageBeforeText +
-        BOOKLET_TIMING.textIn +
-        80
-    );
+    act(() => {
+      jest.advanceTimersByTime(
+        BOOKLET_TIMING.textOut +
+          BOOKLET_TIMING.linger +
+          48 +
+          BOOKLET_TIMING.imageBeforeText +
+          BOOKLET_TIMING.textIn +
+          80
+      );
+    });
   };
 
   test('renders act of contrition in burst lines', () => {

@@ -8,8 +8,8 @@ export function getLitanyPrayer() {
   return RosarioPrayerBook.cierre.find((p) => p.id === 'LL') || null;
 }
 
-export function getLitanyVerse(index) {
-  const verses = litanyLauretanaVerses;
+export function getLitanyVerse(index, prayer = null) {
+  const verses = prayer?.verses?.length ? prayer.verses : litanyLauretanaVerses;
   if (!verses?.length) return null;
   const i = Math.min(Math.max(index, 0), verses.length - 1);
   return verses[i];
@@ -32,5 +32,5 @@ export function formatLitanyLine(verse) {
 }
 
 export function isLitanyPrayer(prayer) {
-  return prayer?.id === 'LL';
+  return prayer?.id === 'LL' && (prayer?.verses?.length > 0 || litanyLauretanaVerses.length > 0);
 }

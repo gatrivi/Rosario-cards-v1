@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { buildSequence, isDivineMercyMode } from '../utils/bookletSequence';
 import BookletView, { BOOKLET_TIMING } from '../components/Views/BookletView';
@@ -24,14 +24,16 @@ describe('divineMercyNovena tests', () => {
   });
 
   const advanceBookletTransition = () => {
-    jest.advanceTimersByTime(
-      BOOKLET_TIMING.textOut +
-        BOOKLET_TIMING.linger +
-        48 +
-        BOOKLET_TIMING.imageBeforeText +
-        BOOKLET_TIMING.textIn +
-        80
-    );
+    act(() => {
+      jest.advanceTimersByTime(
+        BOOKLET_TIMING.textOut +
+          BOOKLET_TIMING.linger +
+          48 +
+          BOOKLET_TIMING.imageBeforeText +
+          BOOKLET_TIMING.textIn +
+          80
+      );
+    });
   };
 
   test('day 1 builds correctly', () => {

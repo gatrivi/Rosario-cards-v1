@@ -17,9 +17,11 @@ import JardinDeRosasView from '../Views/JardinDeRosasView';
 import PeregrinacionView from '../Views/PeregrinacionView';
 import MonkView from '../Views/MonkView';
 import RecordingStudioView from '../Views/RecordingStudioView';
+import AssetStudio from '../Views/AssetStudio';
 import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
+import ViewErrorBoundary from '../common/ViewErrorBoundary';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
 import FeedbackOverlay from '../common/FeedbackOverlay';
@@ -41,14 +43,20 @@ import {
   clearUpdateReminder,
 } from '../../utils/appUpdate';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
+import { useArtConfigCloudSync } from '../../hooks/useArtConfigCloudSync';
 import { getViewIdFromPath, getPathForView, VALID_PATHS } from '../../navigation/routes';
-import { resolveRosaryMystery } from '../../utils/bookletSequence';
+import {
+  resolveRosaryMystery,
+  isValidBookletMystery,
+  isValidRosaryMystery,
+} from '../../utils/bookletSequence';
 
-const APP_VERSION = '0.3.37';
+const APP_VERSION = '0.3.44';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
+const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
+const ROSARY_ONLY_MYSTERY_KEY = 'rosario_rosary_mystery';
 const NOVENA_DAY_KEY = 'rosario_booklet_novena_day';
-const VALID_MYSTERIES = new Set(['gozosos', 'dolorosos', 'gloriosos', 'luminosos']);
 
 
 export default function AppShell() {
@@ -59,7 +67,6 @@ export default function AppShell() {
   const initializedFromUrl = useRef(false);
 
   const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
-  const [, setSelectedLevel] = useState(null);
   const [showIntro, setShowIntro] = useState(false);
   const [showSync, setShowSync] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -94,6 +101,8 @@ export default function AppShell() {
       isLeftHanded: localStorage.getItem('rosario_left_handed') === 'true',
       simpleMode: localStorage.getItem('rosario_simple_mode') === 'true',
       mercyOptionalOpening: true,
+      litanyEntranceEnabled: true,
+      perVersePrayerImages: false,
     };
   });
 
@@ -118,6 +127,24 @@ export default function AppShell() {
       return saved ? parseInt(saved, 10) : 0;
     } catch {
       return 0;
+    }
+  });
+  const [rosaryPrayerIndex, setRosaryPrayerIndex] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ROSARY_ONLY_INDEX_KEY);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [rosaryMystery, setRosaryMystery] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ROSARY_ONLY_MYSTERY_KEY);
+      if (saved && isValidRosaryMystery(saved)) return saved;
+      const booklet = localStorage.getItem(ROSARY_MYSTERY_KEY);
+      return resolveRosaryMystery(booklet || getDefaultMystery());
+    } catch {
+      return getDefaultMystery();
     }
   });
   const [novenaDay, setNovenaDay] = useState(() => {
@@ -158,6 +185,8 @@ export default function AppShell() {
 
   const { forceSetSyncId, syncId, syncStatus, cloudState, syncToCloud } = useCloudSync();
 
+  useArtConfigCloudSync({ syncId, cloudState, syncToCloud });
+
   const [loadedBookletFromCloud, setLoadedBookletFromCloud] = useState(false);
   useEffect(() => {
     if (!cloudState || loadedBookletFromCloud) return;
@@ -165,6 +194,18 @@ export default function AppShell() {
       setCurrentPrayerIndex(cloudState.bookletIndex);
       try {
         localStorage.setItem(ROSARY_INDEX_KEY, String(cloudState.bookletIndex));
+      } catch (_) { /* ignore */ }
+    }
+    if (cloudState.rosaryIndex !== undefined) {
+      setRosaryPrayerIndex(cloudState.rosaryIndex);
+      try {
+        localStorage.setItem(ROSARY_ONLY_INDEX_KEY, String(cloudState.rosaryIndex));
+      } catch (_) { /* ignore */ }
+    }
+    if (cloudState.rosaryMystery && isValidRosaryMystery(cloudState.rosaryMystery)) {
+      setRosaryMystery(cloudState.rosaryMystery);
+      try {
+        localStorage.setItem(ROSARY_ONLY_MYSTERY_KEY, cloudState.rosaryMystery);
       } catch (_) { /* ignore */ }
     }
     if (cloudState.bookletMystery) {
@@ -190,11 +231,21 @@ export default function AppShell() {
 
     const misterio = searchParams.get('misterio');
     const paso = searchParams.get('paso');
-    if (misterio && VALID_MYSTERIES.has(misterio)) {
+    const dia = searchParams.get('dia');
+    if (misterio && isValidBookletMystery(misterio)) {
       setMisterioActual(misterio);
       try {
         localStorage.setItem(ROSARY_MYSTERY_KEY, misterio);
       } catch (_) { /* ignore */ }
+    }
+    if (misterio === 'divinamisericordia_novena' && dia !== null) {
+      const dayNum = parseInt(dia, 10);
+      if (!Number.isNaN(dayNum) && dayNum >= 1 && dayNum <= 9) {
+        setNovenaDay(dayNum);
+        try {
+          localStorage.setItem(NOVENA_DAY_KEY, String(dayNum));
+        } catch (_) { /* ignore */ }
+      }
     }
     if (paso !== null) {
       const idx = parseInt(paso, 10);
@@ -211,11 +262,19 @@ export default function AppShell() {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.set('misterio', misterioActual);
-      next.set('paso', String(currentPrayerIndex));
+      const paso = ['rosary', 'rose'].includes(vistaActiva)
+        ? rosaryPrayerIndex
+        : currentPrayerIndex;
+      next.set('paso', String(paso));
+      if (misterioActual === 'divinamisericordia_novena') {
+        next.set('dia', String(novenaDay));
+      } else {
+        next.delete('dia');
+      }
       if (prev.toString() === next.toString()) return prev;
       return next;
     }, { replace: true });
-  }, [misterioActual, currentPrayerIndex, setSearchParams]);
+  }, [misterioActual, currentPrayerIndex, rosaryPrayerIndex, vistaActiva, novenaDay, setSearchParams]);
 
   useEffect(() => {
     if (!VALID_PATHS.has(location.pathname)) {
@@ -264,17 +323,29 @@ export default function AppShell() {
     syncToCloud({ bookletIndex: newIndex, todayDate: new Date().toDateString() });
   }, [syncToCloud]);
 
+  const handleRosaryProgreso = React.useCallback((newIndex) => {
+    setRosaryPrayerIndex(newIndex);
+    try {
+      localStorage.setItem(ROSARY_ONLY_INDEX_KEY, String(newIndex));
+    } catch (_) { /* ignore */ }
+    syncToCloud({ rosaryIndex: newIndex, todayDate: new Date().toDateString() });
+  }, [syncToCloud]);
+
   const handleMysteryChange = React.useCallback((mystery) => {
     setMisterioActual(mystery);
     setCurrentPrayerIndex(0);
+    if (isValidRosaryMystery(mystery)) {
+      setRosaryMystery(mystery);
+      try {
+        localStorage.setItem(ROSARY_ONLY_MYSTERY_KEY, mystery);
+      } catch (_) { /* ignore */ }
+    }
     try {
       localStorage.setItem(ROSARY_MYSTERY_KEY, mystery);
       localStorage.setItem(ROSARY_INDEX_KEY, '0');
     } catch (_) { /* ignore */ }
     syncToCloud({ bookletMystery: mystery, bookletIndex: 0, todayDate: new Date().toDateString() });
   }, [syncToCloud]);
-
-  const rosaryMystery = resolveRosaryMystery(misterioActual);
 
   const renderizarVista = () => {
     switch (vistaActiva) {
@@ -289,6 +360,8 @@ export default function AppShell() {
             simpleMode={settings.simpleMode}
             soundEnabled={settings.soundEnabled}
             mercyOptionalOpening={settings.mercyOptionalOpening !== false}
+            litanyEntranceEnabled={settings.litanyEntranceEnabled !== false}
+            perVersePrayerImages={settings.perVersePrayerImages === true}
             onAveMariaComplete={(fingerprint) => {
               if (misterioActual === 'divinamisericordia_novena') return;
               addRosas(1);
@@ -304,6 +377,7 @@ export default function AppShell() {
           />
         );
       case 'monk': return <MonkView />;
+      case 'assets': return <AssetStudio />;
       case 'voz':
         return (
           <RecordingStudioView
@@ -311,7 +385,13 @@ export default function AppShell() {
             onMysteryChange={handleMysteryChange}
           />
         );
-      case 'camino': return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); navigate(getPathForView('macetones')); }} />;
+      case 'camino': return (
+        <PeregrinacionView
+          onSelectLevel={() => navigate(getPathForView('tracker'))}
+          onPray={() => navigate(getPathForView('rosary'))}
+          onRosedal={() => navigate(getPathForView('macetones'))}
+        />
+      );
       case 'macetones': return (
         <MacetonView
           onSelectMaceton={() => navigate(getPathForView('rose'))}
@@ -322,25 +402,31 @@ export default function AppShell() {
       case 'tracker': return <DailyTracker />;
       case 'rosary': return (
         <RosarioVirtualView 
-          currentPrayerIndex={currentPrayerIndex}
+          currentPrayerIndex={rosaryPrayerIndex}
           misterioActual={rosaryMystery}
-          onUpdateProgreso={handleUpdateProgreso}
+          onUpdateProgreso={handleRosaryProgreso}
           soundEnabled={settings.soundEnabled}
           isLeftHanded={settings.isLeftHanded}
           simpleMode={settings.simpleMode}
+          litanyEntranceEnabled={settings.litanyEntranceEnabled !== false}
+          perVersePrayerImages={settings.perVersePrayerImages === true}
           onToggleSimpleMode={() => setSettings(s => ({ ...s, simpleMode: !s.simpleMode }))}
-          onShowRosedal={() => navigate(getPathForView('rose'))}
+          onShowRosedal={() => navigate(getPathForView('macetones'))}
           onAveMariaComplete={(fingerprint) => {
             addRosas(1);
             storeRoseData(fingerprint);
+          }}
+          onAveMariaUndo={() => {
+            removeRosas(1);
+            popRoseData();
           }}
         />
       );
       case 'rose': return (
         <RoseView 
-          currentPrayerIndex={currentPrayerIndex}
+          currentPrayerIndex={rosaryPrayerIndex}
           misterioActual={rosaryMystery}
-          onUpdateProgreso={handleUpdateProgreso}
+          onUpdateProgreso={handleRosaryProgreso}
           onBack={() => navigate(getPathForView('macetones'))}
           soundEnabled={settings.soundEnabled}
           onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
@@ -348,7 +434,13 @@ export default function AppShell() {
           simpleMode={settings.simpleMode}
         />
       );
-      default: return <PeregrinacionView onSelectLevel={(lvl) => { setSelectedLevel(lvl); navigate(getPathForView('macetones')); }} />;
+      default: return (
+        <PeregrinacionView
+          onSelectLevel={() => navigate(getPathForView('tracker'))}
+          onPray={() => navigate(getPathForView('rosary'))}
+          onRosedal={() => navigate(getPathForView('macetones'))}
+        />
+      );
     }
   };
 
@@ -498,7 +590,9 @@ export default function AppShell() {
       )}
 
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', zIndex: 10, minHeight: 0 }} className="view-enter-active app-view-layer">
-        {renderizarVista()}
+        <ViewErrorBoundary viewId={vistaActiva}>
+          {renderizarVista()}
+        </ViewErrorBoundary>
       </div>
 
       {/* Handedness Toggle (Floating above nav) */}
@@ -539,6 +633,7 @@ export default function AppShell() {
           appVersion={APP_VERSION}
           onCheckForUpdate={applyPendingUpdate}
           onStartAmbientAudio={handleStartAmbientAudio}
+          onOpenAssetStudio={() => navigate(getPathForView('assets'))}
         />
       )}
 

@@ -1,0 +1,142 @@
+.nun-plan {
+  min-height: 100%;
+  overflow-y: auto;
+  padding: 20px 16px 100px;
+  background: #0a0a0a;
+  color: #eee;
+  font-family: serif;
+}
+
+.nun-plan__header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.nun-plan__title {
+  margin: 0 0 6px;
+  color: #d4af37;
+  font-size: 1.45rem;
+  font-weight: normal;
+}
+
+.nun-plan__subtitle {
+  margin: 0;
+  color: #777;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.nun-plan__today {
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+
+.nun-plan__today-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.nun-plan__today-row strong {
+  color: #d4af37;
+}
+
+.nun-plan__track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.nun-plan__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b8860b, #d4af37);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.nun-plan__meta {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  color: #666;
+  text-align: center;
+}
+
+.nun-plan__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.nun-plan__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px 12px;
+  border-radius: 14px;
+  border: 1px solid #222;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  color: inherit;
+}
+
+.nun-plan__card:hover {
+  border-color: rgba(212, 175, 55, 0.35);
+}
+
+.nun-plan__card--active {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.08);
+  transform: scale(1.02);
+}
+
+.nun-plan__level-name {
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #ddd;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.nun-plan__level-goal {
+  font-size: 0.62rem;
+  color: #888;
+  text-align: center;
+}
+
+.nun-plan__card--active .nun-plan__level-name {
+  color: #d4af37;
+}
+
+.nun-plan__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nun-plan__btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ccc;
+  font-family: serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.nun-plan__btn--gold {
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+  font-weight: bold;
+}

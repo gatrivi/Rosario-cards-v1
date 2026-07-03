@@ -105,7 +105,7 @@ const LitanyEntrance = ({ onComplete, currentMystery, duration = 3000 }) => {
             textShadow: `0 0 10px ${colors.accent}`,
           }}
         >
-          The Final Prayer
+          Letanía Lauretana
         </p>
       </div>
 

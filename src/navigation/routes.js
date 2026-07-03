@@ -8,6 +8,7 @@ export const VIEW_ROUTES = {
   monk: '/monk',
   macetones: '/macetones',
   jardin: '/jardin',
+  assets: '/assets',
 };
 
 export const VALID_PATHS = new Set(['/', ...Object.values(VIEW_ROUTES)]);

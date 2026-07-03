@@ -1,4 +1,4 @@
-import { buildSequence } from '../utils/bookletSequence';
+import { buildSequence, isValidBookletMystery, isValidRosaryMystery } from '../utils/bookletSequence';
 import { getBookletStepContext } from '../utils/bookletProgress';
 
 describe('divineMercySequence', () => {
@@ -40,10 +40,48 @@ describe('divineMercySequence', () => {
     expect(ctx.tripletRun).toEqual({ position: 2, total: 3, step: 1 });
   });
 
+  test('each mercy prayer type has a distinct vitral', () => {
+    const seq = buildSequence('divinamisericordia', { includeMercyOpening: true });
+    const sc = seq.find((p) => p.id === 'SC');
+    const dmo1 = seq.find((p) => p.id === 'DMO1');
+    const p = seq.find((p) => p.id === 'P');
+    const mpFirst = seq.find((p) => p.id === 'MP');
+    const mpDecade2 = seq.filter((p) => p.id === 'MP')[10];
+    const hgFirst = seq.find((p) => p.id === 'HG');
+    const hgSecond = seq.filter((p) => p.id === 'HG')[1];
+
+    expect(sc?.img).toBeTruthy();
+    expect(dmo1?.img).toBeTruthy();
+    expect(p?.img).toBeTruthy();
+    expect(sc.img).not.toBe(dmo1.img);
+    expect(mpFirst?.img).toBeTruthy();
+    expect(mpDecade2?.img).toBeTruthy();
+    expect(mpFirst.img).not.toBe(mpDecade2.img);
+    expect(hgFirst?.img).not.toBe(hgSecond?.img);
+  });
+
   test('rosary mysteries unchanged', () => {
     const goz = buildSequence('gozosos');
     expect(goz.length).toBeGreaterThan(60);
     expect(goz.some((p) => p.id === 'MG1')).toBe(true);
     expect(goz.some((p) => p.id === 'MP')).toBe(false);
+  });
+
+  test('booklet mystery validation', () => {
+    expect(isValidRosaryMystery('gozosos')).toBe(true);
+    expect(isValidRosaryMystery('divinamisericordia')).toBe(false);
+    expect(isValidBookletMystery('divinamisericordia')).toBe(true);
+    expect(isValidBookletMystery('divinamisericordia_novena')).toBe(true);
+    expect(isValidBookletMystery('sangrepreciosa_litany')).toBe(true);
+    expect(isValidBookletMystery('viacrucis')).toBe(true);
+    expect(isValidBookletMystery('vialucis')).toBe(true);
+    expect(isValidBookletMystery('bogus')).toBe(false);
+  });
+
+  test('via crucis has 15 steps', () => {
+    const seq = buildSequence('viacrucis');
+    expect(seq).toHaveLength(15);
+    expect(seq[0].id).toBe('VC_OPEN');
+    expect(seq[14].id).toBe('VC_14');
   });
 });

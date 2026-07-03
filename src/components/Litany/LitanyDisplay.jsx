@@ -50,7 +50,7 @@ const LitanyDisplay = ({
     <div className="litany-display">
       {/* Verse counter */}
       <div className="litany-counter">
-        Verse {verseIndex + 1} of {totalVerses}
+        Verso {verseIndex + 1} de {totalVerses}
       </div>
 
       {/* Invocation */}
@@ -65,7 +65,7 @@ const LitanyDisplay = ({
 
       {/* Navigation hints */}
       <div className="litany-navigation">
-        <div className="nav-hint">Swipe or tap to continue</div>
+        <div className="nav-hint">Desliza o toca para continuar</div>
       </div>
     </div>
   );

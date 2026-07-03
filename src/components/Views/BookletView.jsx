@@ -18,15 +18,26 @@ import {
   pickPrayerImage,
   getLitanyVerseImageCandidates,
   resolveLitanyVerseImage,
+  getPrayerImageCandidates,
 } from '../../utils/prayerImages';
 import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
+import {
+  getPrayerVerseCount,
+  getPrayerVerseText,
+  getPrayerVerseImageCandidates,
+  resolvePrayerVerseImage,
+} from '../../utils/prayerVerseImages';
+import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
-import { buildSequence, isDivineMercyMode } from '../../utils/bookletSequence';
-import { DIVINE_MERCY_ID } from '../../data/divineMercyData';
+import { buildSequence, isDivineMercyMode, isStationsDevotion } from '../../utils/bookletSequence';
+import { imagePath as registryImage } from '../../data/imageRegistry';
+import FaustinaMercyThumb from '../common/FaustinaMercyThumb';
+import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
+import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import './BookletView.css';
 
 const TRANSITION_PHASE = {
@@ -71,6 +82,21 @@ function getDevotionChrome(misterioActual, isMercy) {
   if (isMercy) {
     return { title: 'Corona de la Divina Misericordia', subtitle: null };
   }
+  if (misterioActual === 'sangrepreciosa_litany') {
+    return { title: 'Letanía de la Preciosísima Sangre', subtitle: 'Julio — Mes de la Sangre de Cristo' };
+  }
+  if (misterioActual === 'sangrepreciosa_chaplet') {
+    return { title: 'Corona de la Preciosísima Sangre', subtitle: 'Siete Derramamientos' };
+  }
+  if (misterioActual === 'sangrepreciosa_ofrendas') {
+    return { title: 'Siete Ofrendas de la Sangre de Cristo', subtitle: 'Julio — Mes de la Sangre' };
+  }
+  if (misterioActual === 'viacrucis') {
+    return { title: 'Vía Crucis', subtitle: '14 estaciones' };
+  }
+  if (misterioActual === 'vialucis') {
+    return { title: 'Vía Lucis', subtitle: '14 estaciones' };
+  }
   return {
     title: 'Santo Rosario',
     subtitle: MYSTERY_SUBTITLES[misterioActual] || 'Misterios del Rosario',
@@ -84,22 +110,6 @@ function getBookletDisplayTitle(prayer) {
   return prayer.title;
 }
 
-/** Position within a consecutive run of Ave Marías (opening chain or decade). */
-export function getAveMariaRunInfo(sequence, index) {
-  if (!sequence[index] || sequence[index].id !== 'A') return null;
-
-  let start = index;
-  while (start > 0 && sequence[start - 1]?.id === 'A') start -= 1;
-
-  let end = index;
-  while (end < sequence.length - 1 && sequence[end + 1]?.id === 'A') end += 1;
-
-  return {
-    position: index - start + 1,
-    total: end - start + 1,
-    step: index - start,
-  };
-}
 
 export default function BookletView({
   currentPrayerIndex,
@@ -110,12 +120,16 @@ export default function BookletView({
   simpleMode = false,
   soundEnabled = true,
   mercyOptionalOpening = true,
+  litanyEntranceEnabled = true,
+  perVersePrayerImages = false,
   onAveMariaComplete,
   onAveMariaUndo,
   novenaDay = 1,
   onNovenaDayChange,
 }) {
   const isMercy = isDivineMercyMode(misterioActual);
+  const isStations = isStationsDevotion(misterioActual);
+  const showRosaryPills = !isMercy && !isStations;
   const secuencia = useMemo(
     () => buildSequence(misterioActual, { includeMercyOpening: mercyOptionalOpening, novenaDay }),
     [misterioActual, mercyOptionalOpening, novenaDay]
@@ -155,17 +169,23 @@ export default function BookletView({
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
   const [litanyVerseIndex, setLitanyVerseIndex] = useState(0);
+  const [prayerVerseIndex, setPrayerVerseIndex] = useState(0);
   const [showLitanyEntrance, setShowLitanyEntrance] = useState(false);
   const litanyEntranceShownRef = useRef(false);
 
   const isLitany = isLitanyPrayer(activePrayer);
-  const litanyVerse = isLitany ? getLitanyVerse(litanyVerseIndex) : null;
+  const isPerVersePrayer = perVersePrayerImages && supportsPerVerseImages(activePrayer?.id);
+  const prayerVerseTotal = isPerVersePrayer ? getPrayerVerseCount(activePrayer.id) : 0;
+  const litanyVerse = isLitany ? getLitanyVerse(litanyVerseIndex, activePrayer) : null;
   const litanyVerseTotal = activePrayer?.verses?.length || 0;
+  const innerVerseIndex = isLitany ? litanyVerseIndex : prayerVerseIndex;
+  const innerVerseTotal = isLitany ? litanyVerseTotal : prayerVerseTotal;
+  const hasInnerVerses = isLitany || isPerVersePrayer;
 
   useEffect(() => {
     if (activePrayer?.id === 'LL') {
       setLitanyVerseIndex(0);
-      if (!litanyEntranceShownRef.current) {
+      if (litanyEntranceEnabled && !litanyEntranceShownRef.current) {
         setShowLitanyEntrance(true);
         litanyEntranceShownRef.current = true;
       }
@@ -173,7 +193,8 @@ export default function BookletView({
       setLitanyVerseIndex(0);
       setShowLitanyEntrance(false);
     }
-  }, [displayIndex, activePrayer?.id]);
+    setPrayerVerseIndex(0);
+  }, [displayIndex, activePrayer?.id, litanyEntranceEnabled]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -275,10 +296,34 @@ export default function BookletView({
     setVariantId(activePrayer.variants[0].id);
   }, [activePrayer?.id, activePrayer?.variants]);
 
-  const displayText = useMemo(
-    () => resolveDisplayText(activePrayer, variantId),
-    [activePrayer, variantId]
-  );
+  const displayText = useMemo(() => {
+    if (isPerVersePrayer) {
+      return getPrayerVerseText(activePrayer.id, prayerVerseIndex) || '';
+    }
+    return resolveDisplayText(activePrayer, variantId);
+  }, [activePrayer, variantId, isPerVersePrayer, prayerVerseIndex]);
+
+  const bumpInnerVerse = useCallback((delta) => {
+    if (isLitany) {
+      setLitanyVerseIndex((prev) => {
+        const max = litanyVerseTotal - 1;
+        if (max < 0) return 0;
+        return Math.min(Math.max(prev + delta, 0), max);
+      });
+    } else if (isPerVersePrayer) {
+      setPrayerVerseIndex((prev) => {
+        const max = prayerVerseTotal - 1;
+        if (max < 0) return 0;
+        return Math.min(Math.max(prev + delta, 0), max);
+      });
+    }
+    setStepGlow(true);
+    scheduleTransition(() => setStepGlow(false), BOOKLET_TIMING.stepGlow);
+  }, [isLitany, isPerVersePrayer, litanyVerseTotal, prayerVerseTotal, scheduleTransition]);
+
+  const canGoBack = displayIndex > 0 || (hasInnerVerses && innerVerseIndex > 0);
+  const canGoForward =
+    displayIndex < total - 1 || (hasInnerVerses && innerVerseIndex < innerVerseTotal - 1);
 
   const cycleVariant = useCallback(() => {
     if (!variants?.length) return;
@@ -289,20 +334,6 @@ export default function BookletView({
       localStorage.setItem(getVariantStorageKey(activePrayer.id), next.id);
     } catch (_) { /* ignore */ }
   }, [variants, variantId, activePrayer?.id]);
-
-  const bumpLitanyVerse = useCallback((delta) => {
-    setLitanyVerseIndex((prev) => {
-      const max = litanyVerseTotal - 1;
-      if (max < 0) return 0;
-      return Math.min(Math.max(prev + delta, 0), max);
-    });
-    setStepGlow(true);
-    scheduleTransition(() => setStepGlow(false), BOOKLET_TIMING.stepGlow);
-  }, [litanyVerseTotal, scheduleTransition]);
-
-  const canGoBack = displayIndex > 0 || (isLitany && litanyVerseIndex > 0);
-  const canGoForward =
-    displayIndex < total - 1 || (isLitany && litanyVerseIndex < litanyVerseTotal - 1);
 
   const navigateTo = useCallback(
     (newIndex) => {
@@ -386,20 +417,20 @@ export default function BookletView({
   );
 
   const goPrev = useCallback(() => {
-    if (isLitany && litanyVerseIndex > 0) {
-      bumpLitanyVerse(-1);
+    if (hasInnerVerses && innerVerseIndex > 0) {
+      bumpInnerVerse(-1);
       return;
     }
     if (displayIndex > 0) navigateTo(displayIndex - 1);
-  }, [isLitany, litanyVerseIndex, bumpLitanyVerse, navigateTo, displayIndex]);
+  }, [hasInnerVerses, innerVerseIndex, bumpInnerVerse, navigateTo, displayIndex]);
 
   const goNext = useCallback(() => {
-    if (isLitany && litanyVerseIndex < litanyVerseTotal - 1) {
-      bumpLitanyVerse(1);
+    if (hasInnerVerses && innerVerseIndex < innerVerseTotal - 1) {
+      bumpInnerVerse(1);
       return;
     }
     if (displayIndex < total - 1) navigateTo(displayIndex + 1);
-  }, [isLitany, litanyVerseIndex, litanyVerseTotal, bumpLitanyVerse, navigateTo, displayIndex, total]);
+  }, [hasInnerVerses, innerVerseIndex, innerVerseTotal, bumpInnerVerse, navigateTo, displayIndex, total]);
 
   useEffect(() => {
     const handleKey = (event) => {
@@ -455,16 +486,40 @@ export default function BookletView({
   const vitralCandidates = useMemo(() => {
     if (!activePrayer) return [];
     if (isLitany && litanyVerse) {
-      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer);
+      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer, litanyVerseIndex);
       const picked = resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex);
+      return [picked, ...all.filter((u) => u !== picked)];
+    }
+    if (isPerVersePrayer) {
+      const all = getPrayerVerseImageCandidates(
+        activePrayer.id,
+        prayerVerseIndex,
+        activePrayer,
+        misterioActual
+      );
+      const picked = resolvePrayerVerseImage(
+        activePrayer.id,
+        prayerVerseIndex,
+        activePrayer,
+        misterioActual
+      );
       return [picked, ...all.filter((u) => u !== picked)];
     }
     const all = activePrayer.imgCandidates?.length
       ? activePrayer.imgCandidates
-      : [activePrayer.img];
+      : getPrayerImageCandidates(activePrayer, misterioActual);
     const picked = pickPrayerImage(all, safeIndex);
     return [picked, ...all.filter((u) => u !== picked)];
-  }, [activePrayer, safeIndex, isLitany, litanyVerse, litanyVerseIndex]);
+  }, [
+    activePrayer,
+    safeIndex,
+    isLitany,
+    litanyVerse,
+    litanyVerseIndex,
+    isPerVersePrayer,
+    prayerVerseIndex,
+    misterioActual,
+  ]);
 
   if (!activePrayer) {
     return (
@@ -488,7 +543,7 @@ export default function BookletView({
   return (
     <div className="booklet-view" style={vitralStyle} onPointerDown={resetOptionalIdle}>
       <VitralBackground
-        key={`${activePrayer.id}-${isLitany ? litanyVerseIndex : ''}-${vitralCandidates[0]}`}
+        key={`${activePrayer.id}-${hasInnerVerses ? innerVerseIndex : ''}-${vitralCandidates[0]}`}
         candidates={vitralCandidates}
         kind={vitralKind}
         stepGlow={stepGlow}
@@ -498,6 +553,7 @@ export default function BookletView({
 
       <div className={`booklet-prayer-chrome${chromePhaseClass}`}>
         <header className="booklet-header">
+          {showRosaryPills && (
           <div className="booklet-mystery-bar">
             <div className="booklet-mystery-row">
               {MYSTERY_OPTIONS.map((opt) => (
@@ -515,6 +571,7 @@ export default function BookletView({
               ))}
             </div>
           </div>
+          )}
           {misterioActual === 'divinamisericordia_novena' && (
             <div className="booklet-novena-selector">
               <span className="booklet-novena-selector__label">Día</span>
@@ -535,7 +592,7 @@ export default function BookletView({
             </div>
           )}
           <p className="booklet-progress">
-            {!isMercy && (
+            {showRosaryPills && (
               <>
                 <button
                   type="button"
@@ -575,6 +632,12 @@ export default function BookletView({
               <span className="booklet-ave-count">
                 {' '}
                 · letanía {litanyVerseIndex + 1} / {litanyVerseTotal}
+              </span>
+            )}
+            {isPerVersePrayer && prayerVerseTotal > 0 && (
+              <span className="booklet-ave-count">
+                {' '}
+                · verso {prayerVerseIndex + 1} / {prayerVerseTotal}
               </span>
             )}
             {isAveMaria && (
@@ -670,18 +733,38 @@ export default function BookletView({
       {mercyThumbHost &&
         createPortal(
           <div style={{ display: 'flex', gap: '8px' }}>
-            <MercyWindowThumb
-              active={misterioActual === DIVINE_MERCY_ID}
+            <FaustinaMercyThumb
+              misterioActual={misterioActual}
               disabled={isTransitioning}
-              onClick={() => onMysteryChange?.(DIVINE_MERCY_ID)}
-              title="Corona de la Divina Misericordia"
+              onMysteryChange={onMysteryChange}
+            />
+            <StationsDevotionThumb
+              misterioActual={misterioActual}
+              disabled={isTransitioning}
+              onMysteryChange={onMysteryChange}
             />
             <MercyWindowThumb
-              active={misterioActual === 'divinamisericordia_novena'}
               disabled={isTransitioning}
-              onClick={() => onMysteryChange?.('divinamisericordia_novena')}
-              title="Novena de la Divina Misericordia"
-              isNovena={true}
+              onClick={() => onMysteryChange?.('sangrepreciosa_litany')}
+              title="Letanía de la Preciosísima Sangre (Julio)"
+              img={registryImage('vitreauxCruz')}
+              badge="L"
+            />
+            <MercyWindowThumb
+              active={misterioActual === 'sangrepreciosa_chaplet'}
+              disabled={isTransitioning}
+              onClick={() => onMysteryChange?.('sangrepreciosa_chaplet')}
+              title="Corona de la Preciosísima Sangre"
+              img={registryImage('crux')}
+              badge="C"
+            />
+            <MercyWindowThumb
+              active={misterioActual === 'sangrepreciosa_ofrendas'}
+              disabled={isTransitioning}
+              onClick={() => onMysteryChange?.('sangrepreciosa_ofrendas')}
+              title="Siete Ofrendas de la Sangre de Cristo"
+              img={registryImage('lamb')}
+              badge="7"
             />
           </div>,
           mercyThumbHost
@@ -705,7 +788,7 @@ export default function BookletView({
 
       {optionalOpen && <OptionalPrayerSheet onClose={() => setOptionalOpen(false)} />}
 
-      {showLitanyEntrance && (
+      {showLitanyEntrance && litanyEntranceEnabled && (
         <LitanyEntrance
           currentMystery={misterioActual}
           onComplete={() => setShowLitanyEntrance(false)}

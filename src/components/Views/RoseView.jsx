@@ -19,6 +19,7 @@ import { SYMBOL_MAP } from '../../data/SacredSymbols';
 import { formatLitanyLine } from '../../utils/litanyHelpers';
 import { resolveLitanyVerseImage } from '../../utils/prayerImages';
 
+const debug = () => {};
 
 // ─── Prayer data helpers ───
 
@@ -95,7 +96,7 @@ export default function RoseView({
   onBack, 
   soundEnabled, 
   onToggleSound,
-  meditationRitmo = 'incienso', // eslint-disable-line no-unused-vars
+  meditationRitmo = 'incienso',
   simpleMode = false
 }) {
   const { addRosas, storeRoseData, totalAveMarias } = useAveMariaStats();
@@ -122,8 +123,9 @@ export default function RoseView({
 
   useEffect(() => {
     if (cloudState && !loadedPrayerIndex) {
-      if (cloudState.bookletIndex !== undefined && cloudState.todayDate === new Date().toDateString()) {
-         onUpdateProgreso(Math.min(cloudState.bookletIndex, secuencia.length - 1));
+      const idx = cloudState.rosaryIndex ?? cloudState.bookletIndex;
+      if (idx !== undefined && cloudState.todayDate === new Date().toDateString()) {
+        onUpdateProgreso(Math.min(idx, secuencia.length - 1));
       }
       setLoadedPrayerIndex(true);
     }
@@ -131,7 +133,10 @@ export default function RoseView({
 
   useEffect(() => {
     if (loadedPrayerIndex) {
-      syncToCloud({ currentPrayerIndex, todayDate: new Date().toDateString() });
+      syncToCloud({
+        rosaryIndex: currentPrayerIndex,
+        todayDate: new Date().toDateString(),
+      });
     }
   }, [currentPrayerIndex, loadedPrayerIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -531,28 +536,28 @@ export default function RoseView({
   };
 
   const advanceVerse = (direction) => {
-    console.log(`[RoseView] advanceVerse: dir=${direction}, currentVersoIndex=${versoIndexRef.current}, totalVersos=${totalVersos}`);
+    debug(`[RoseView] advanceVerse: dir=${direction}, currentVersoIndex=${versoIndexRef.current}, totalVersos=${totalVersos}`);
     if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
     // Throttle rapid advances (e.g. trackpad wheel, event duplication)
     const now = Date.now();
     if (now - lastAdvanceTimeRef.current < 400) {
-      console.log(`[RoseView] advanceVerse throttled: elapsed=${now - lastAdvanceTimeRef.current}`);
+      debug(`[RoseView] advanceVerse throttled: elapsed=${now - lastAdvanceTimeRef.current}`);
       return;
     }
     lastAdvanceTimeRef.current = now;
     const currentIdx = versoIndexRef.current;
     const newIndex = currentIdx + direction;
     if (newIndex >= totalVersos) { 
-      console.log(`[RoseView] reached end of versos, setting isPrayerComplete=true`);
+      debug(`[RoseView] reached end of versos, setting isPrayerComplete=true`);
       setIsVersoComplete(false); 
       setIsPrayerComplete(true); 
       return; 
     }
     if (newIndex < 0) {
-       console.log(`[RoseView] cannot retreat beyond index 0`);
+       debug(`[RoseView] cannot retreat beyond index 0`);
        return;
     }
-    console.log(`[RoseView] setting versoIndex to ${newIndex}`);
+    debug(`[RoseView] setting versoIndex to ${newIndex}`);
     setVersoIndex(newIndex);
     setCharProgressIndex(-1);
     charProgressIndexRef.current = -1;
@@ -664,10 +669,10 @@ export default function RoseView({
   // Unified WORD-level advancement — people read in staccatos (words), not characters.
   const advanceWordCore = () => {
     const current = wordProgressIndexRef.current;
-    console.log(`[RoseView] advanceWordCore: currentWordIdx=${current}, totalWords=${currentWords.length}`);
+    debug(`[RoseView] advanceWordCore: currentWordIdx=${current}, totalWords=${currentWords.length}`);
     if (current >= currentWords.length - 1) {
       if (!isVersoCompleteRef.current) {
-        console.log(`[RoseView] Verse Complete!`);
+        debug(`[RoseView] Verse Complete!`);
         setIsVersoComplete(true);
         modulateAudio(false);
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
@@ -677,7 +682,7 @@ export default function RoseView({
     const next = current + 1;
     wordProgressIndexRef.current = next;
     lastWordAdvanceTimeRef.current = Date.now();
-    console.log(`[RoseView] Advancing to word ${next}: '${currentWords[next]}'`);
+    debug(`[RoseView] Advancing to word ${next}: '${currentWords[next]}'`);
 
     // Reveal all characters up to the end of this word
     const prevEndChar = charProgressIndexRef.current;
@@ -691,7 +696,7 @@ export default function RoseView({
     }
 
     if (next >= currentWords.length - 1) {
-      console.log(`[RoseView] Verse reached end word`);
+      debug(`[RoseView] Verse reached end word`);
       setIsVersoComplete(true);
       modulateAudio(false);
       if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
@@ -708,10 +713,10 @@ export default function RoseView({
     );
     const elapsed = now - lastWordAdvanceTimeRef.current;
     if (elapsed < minInterval) {
-      if (Math.random() < 0.1) console.log(`[RoseView] tryAdvanceWord throttled: elapsed=${elapsed}, min=${minInterval}`);
+      if (Math.random() < 0.1) debug(`[RoseView] tryAdvanceWord throttled: elapsed=${elapsed}, min=${minInterval}`);
       return false;
     }
-    console.log(`[RoseView] tryAdvanceWord allowed: elapsed=${elapsed}`);
+    debug(`[RoseView] tryAdvanceWord allowed: elapsed=${elapsed}`);
     advanceWordCore();
     return true;
   };
@@ -719,10 +724,10 @@ export default function RoseView({
   // Hold mode — reveals one word per tick at reading pace.
   useEffect(() => {
     if (isCargando && !isVersoComplete && !isPrayerComplete) {
-      console.log(`[RoseView] Starting Hold Timer...`);
+      debug(`[RoseView] Starting Hold Timer...`);
       holdDelayTimerRef.current = setTimeout(() => {
         if (!isVerseActivated) {
-          console.log(`[RoseView] Activating via Hold Delay`);
+          debug(`[RoseView] Activating via Hold Delay`);
           setIsVerseActivated(true);
           initAudio();
           playActivationChime();
@@ -741,9 +746,9 @@ export default function RoseView({
           currentRhythm.minWordMs,
           Math.ceil(currentRhythm.minVerseMs / Math.max(1, currentWords.length))
         );
-        console.log(`[RoseView] Hold Interval set to ${wordInterval}ms`);
+        debug(`[RoseView] Hold Interval set to ${wordInterval}ms`);
         holdTimerRef.current = setInterval(() => {
-          console.log(`[RoseView] Hold Timer Tick`);
+          debug(`[RoseView] Hold Timer Tick`);
           advanceWordCore();
         }, wordInterval);
       }, 150);
@@ -840,7 +845,7 @@ export default function RoseView({
 
     // Log movement and proximity (sampled)
     if (Math.random() < 0.05) {
-      console.log(`[RoseView] PointerMove: ${pointerType} at (${clientX}, ${clientY}), isNear: ${isNearText}, active: ${isVerseActivated}, charging: ${isCargando}`);
+      debug(`[RoseView] PointerMove: ${pointerType} at (${clientX}, ${clientY}), isNear: ${isNearText}, active: ${isVerseActivated}, charging: ${isCargando}`);
     }
 
     // Vertical swipe on text zone; thumb zone is hold-only unless gesture started on text
@@ -853,7 +858,7 @@ export default function RoseView({
       const dY = clientY - pointerStartY.current;
       const dX = clientX - (pointerStartX.current || 0);
       if (Math.abs(dY) > 50 && Math.abs(dY) > Math.abs(dX) * 1.5) {
-        console.log(`[RoseView] Vertical Gesture detected: dY=${dY}`);
+        debug(`[RoseView] Vertical Gesture detected: dY=${dY}`);
         isVerticalGesture.current = true;
         advanceVerse(dY < 0 ? 1 : -1);
         modulateAudio(false);
@@ -867,13 +872,13 @@ export default function RoseView({
     // ─── ACTIVATION ───
     // Activate when holding anywhere, or near text — thumb zone always activates
     if (!isVerseActivated && (isNearText || isCargando || isInThumbZone(clientY))) {
-      console.log(`[RoseView] Activating Verse! Proximity: ${isNearText}, Charging: ${isCargando}`);
+      debug(`[RoseView] Activating Verse! Proximity: ${isNearText}, Charging: ${isCargando}`);
       setIsVerseActivated(true);
       initAudio();
       playActivationChime();
       const wordIdx = findWordAtPointer(clientX, clientY);
       const startWord = Math.max(0, wordIdx);
-      console.log(`[RoseView] Initial word: idx=${wordIdx}, startAt=${startWord}`);
+      debug(`[RoseView] Initial word: idx=${wordIdx}, startAt=${startWord}`);
       wordProgressIndexRef.current = startWord;
       lastWordAdvanceTimeRef.current = Date.now();
       const endChar = wordCharOffsets[startWord] + currentWords[startWord].length - 1;
@@ -890,12 +895,12 @@ export default function RoseView({
     if (isVerseActivated) {
       const wordIdx = findWordAtPointer(clientX, clientY);
       if (wordIdx < 0) {
-        if (Math.random() < 0.02) console.log(`[RoseView] Hover: No word at pointer`);
+        if (Math.random() < 0.02) debug(`[RoseView] Hover: No word at pointer`);
         return;
       }
       if (wordIdx <= wordProgressIndexRef.current) return;
       
-      console.log(`[RoseView] Hover: Over new word ${wordIdx} ('${currentWords[wordIdx]}')`);
+      debug(`[RoseView] Hover: Over new word ${wordIdx} ('${currentWords[wordIdx]}')`);
       tryAdvanceWord();
     }
   };
@@ -903,7 +908,7 @@ export default function RoseView({
   const handlePointerMove = (e) => { handleTrackPointer(e.clientX, e.clientY, e.pointerType); };
 
   const handlePointerDown = (e) => {
-    console.log(`[RoseView] PointerDown: ${e.pointerType}`);
+    debug(`[RoseView] PointerDown: ${e.pointerType}`);
     initAudio();
     pointerStartX.current = e.clientX;
     pointerStartY.current = e.clientY;
@@ -926,19 +931,19 @@ export default function RoseView({
 
     // ADVANCE WORD ON TAP: if already activated, clicking advances to next word
     if (isVerseActivated && !isVersoComplete && !isPrayerComplete) {
-       console.log(`[RoseView] Tap-to-Advance word attempt`);
+       debug(`[RoseView] Tap-to-Advance word attempt`);
        tryAdvanceWord();
     }
     
     // Simple Mode: Allow advance on simple tap (if not already completed)
     if (simpleMode && !isVersoComplete && !isPrayerComplete) {
-      console.log(`[RoseView] Simple Mode Tap`);
+      debug(`[RoseView] Simple Mode Tap`);
       advanceVerse(1);
     }
   };
 
   const handlePointerUp = (e) => {
-    console.log(`[RoseView] PointerUp: PrayerComp=${isPrayerCompleteRef.current}, VersoComp=${isVersoCompleteRef.current}`);
+    debug(`[RoseView] PointerUp: PrayerComp=${isPrayerCompleteRef.current}, VersoComp=${isVersoCompleteRef.current}`);
     setIsCargando(false);
     if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
       e.target.releasePointerCapture(e.pointerId);
@@ -951,7 +956,7 @@ export default function RoseView({
     // Advance on release if the verse/prayer is complete.
     // This gives the user control: hold to read, release to move on.
     if (isPrayerCompleteRef.current) {
-      console.log(`[RoseView] Advance Prayer on Release`);
+      debug(`[RoseView] Advance Prayer on Release`);
       if (currentPrayerIndex < secuencia.length - 1) {
         setShowBloom(true);
         setTimeout(() => setShowBloom(false), 1200);
@@ -959,7 +964,7 @@ export default function RoseView({
       }
       resetVerseState();
     } else if (!simpleMode && isVersoCompleteRef.current) {
-      console.log(`[RoseView] Advance Verse on Release`);
+      debug(`[RoseView] Advance Verse on Release`);
       advanceVerse(1);
     }
   };
@@ -989,7 +994,41 @@ export default function RoseView({
     onPointerUp={handlePointerUp}
     onPointerLeave={handlePointerUp}
     >
-      
+      {/* Top chrome */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '10px 14px', pointerEvents: 'none',
+      }}>
+        {onBack && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onBack(); }}
+            style={{
+              pointerEvents: 'auto', background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(212,175,55,0.35)',
+              color: '#D4AF37', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem',
+            }}
+          >
+            ← Rosedal
+          </button>
+        )}
+        {onToggleSound && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onToggleSound(); }}
+            style={{
+              pointerEvents: 'auto', marginLeft: 'auto',
+              background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)',
+              color: soundEnabled ? '#D4AF37' : '#666', borderRadius: '8px', padding: '6px 10px',
+              cursor: 'pointer', fontSize: '0.85rem',
+            }}
+            aria-label={soundEnabled ? 'Silenciar' : 'Activar sonido'}
+          >
+            {soundEnabled ? '🔔' : '🔕'}
+          </button>
+        )}
+      </div>
+
       {/* ── Layer 1: Ambient Depth ── */}
       <SacredDust isCargando={isCargando || (isVerseActivated && !isVersoComplete)} />
 

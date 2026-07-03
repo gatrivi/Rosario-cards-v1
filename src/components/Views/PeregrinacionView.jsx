@@ -7,14 +7,7 @@ import './PeregrinacionView.css';
 
 function CaminoChurchIcon({ className = '' }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      role="img"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {/* Simple church / shrine glyph (no emoji UI) */}
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path
         fill="currentColor"
         d="M12 3L2 10h2v11h7v-7h0.5c0.28 0 0.5 0.22 0.5 0.5V21h7V10h2L12 3zm0 4.1a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"
@@ -23,18 +16,10 @@ function CaminoChurchIcon({ className = '' }) {
   );
 }
 
-export default function PeregrinacionView({ onSelectLevel }) {
+export default function PeregrinacionView({ onSelectLevel, onPray, onRosedal }) {
   const { totalAveMarias } = useAveMariaStats();
   const { actual, next } = getPeregrinacionActual(totalAveMarias);
   const [selectedPin, setSelectedPin] = useState(null);
-
-  // Determine global progress across all peregrinaciones
-  const currentStepIndex = useMemo(() => {
-    const totalSteps = PEREGRINACIONES.length;
-    if (!next) return totalSteps;
-    const idx = PEREGRINACIONES.findIndex((p) => p.id === next.id);
-    return Math.max(0, idx);
-  }, [next]);
 
   const journeyProgressPct = useMemo(() => {
     if (!next) return 100;
@@ -43,33 +28,6 @@ export default function PeregrinacionView({ onSelectLevel }) {
     const raw = ((totalAveMarias - actual.reqAveMarias) / denom) * 100;
     return Math.min(100, Math.max(0, raw));
   }, [actual.reqAveMarias, next, totalAveMarias]);
-
-  const getPinGridPlacement = (i) => {
-    const row = Math.floor(i / 3);
-    const colInRow = i % 3;
-    const col = row % 2 === 0 ? colInRow : 2 - colInRow;
-    return { gridRow: 4 - row, gridColumn: col + 1 };
-  };
-
-  const serpentinePointForIndex = (i) => {
-    const row = Math.floor(i / 3);
-    const colInRow = i % 3;
-    const col = row % 2 === 0 ? colInRow : 2 - colInRow;
-    const px = (col * 33.33) + 16.66;
-    const py = ((3 - row) * 25) + 12.5;
-    return `${px},${py}`;
-  };
-
-  const snakePathAll = useMemo(() => {
-    const points = PEREGRINACIONES.map((_, i) => serpentinePointForIndex(i));
-    return `M ${points.join(' L ')}`;
-  }, []);
-
-  const snakePathProgress = useMemo(() => {
-    const end = Math.min(PEREGRINACIONES.length, currentStepIndex + 1);
-    const points = PEREGRINACIONES.slice(0, end).map((_, i) => serpentinePointForIndex(i));
-    return `M ${points.join(' L ')}`;
-  }, [currentStepIndex]);
 
   const remainingForNext = next ? Math.max(0, next.reqAveMarias - totalAveMarias) : 0;
 
@@ -85,162 +43,93 @@ export default function PeregrinacionView({ onSelectLevel }) {
   }, [next, selectedPin, totalAveMarias]);
 
   return (
-    <div className="camino-view">
+    <div className="camino-view camino-view--v2">
       <div className="camino-heading">
         <div className="camino-tutorial">
           <TutorialOverlay
             title="El Camino"
             imageSrc={santaMariaImg}
-            text="«Quien reza se salva, quien no reza se condena.» — San Alfonso María de Ligorio&#10;&#10;Sigue tu progreso histórico. Cada nodo representa una meta de oración. Toca las iglesias para ver los detalles de tu destino."
+            text="Cada Ave María es un paso. Las metas son peregrinaciones reales — de tu parroquia al Camino de Santiago y más allá. Elige tu ritmo diario en Plan, reza, y mira avanzar el camino."
           />
         </div>
 
         <h2 className="camino-title">El Camino</h2>
-        <div className="camino-rosas-count">{totalAveMarias} rosas cultivadas</div>
+        <p className="camino-tagline">{totalAveMarias.toLocaleString()} rosas · destino: {next?.name || actual.name}</p>
 
-        {/* CURRENT / NEXT journey */}
         <div className="camino-journey-card">
-          {next ? (
-            <>
-              <div className="camino-journey-row">
-                <div style={{ textAlign: 'left' }}>
-                  <div className="camino-journey-label">Próxima peregrinación</div>
-                  <div className="camino-journey-destination">{next.name}</div>
-                </div>
-                <div className="camino-journey-req">
-                  {next.reqAveMarias} rosas
-                  <div style={{ fontSize: '0.75rem', marginTop: 3, color: 'rgba(212,175,55,0.7)' }}>
-                    {remainingForNext} rosas restantes
-                  </div>
-                </div>
-              </div>
-              <div className="camino-progress-track" aria-label="Progreso de peregrinación">
-                <div className="camino-progress-fill" style={{ width: `${journeyProgressPct}%` }} />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="camino-journey-row">
-                <div style={{ textAlign: 'left' }}>
-                  <div className="camino-journey-label">Peregrinación completada</div>
-                  <div className="camino-journey-destination">{actual.name}</div>
-                </div>
-                <div className="camino-journey-req">{actual.reqAveMarias} rosas</div>
-              </div>
-              <div className="camino-progress-track">
-                <div className="camino-progress-fill" style={{ width: '100%' }} />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* SNAKE MAP */}
-      <div className="camino-map-panel">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="camino-snake-svg">
-          <path
-            d={snakePathAll}
-            fill="none"
-            stroke="rgba(248,244,230,0.18)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d={snakePathProgress}
-            fill="none"
-            stroke="#D4AF37"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray="3,2"
-          />
-        </svg>
-
-        <div className="camino-pin-grid">
-          {PEREGRINACIONES.map((p, i) => {
-            const isCompleted = totalAveMarias >= p.reqAveMarias;
-            const isCurrent = Boolean(next && next.id === p.id);
-            const isLocked = !isCompleted && !isCurrent;
-
-            const placement = getPinGridPlacement(i);
-            const pinStateClass = isLocked
-              ? 'camino-pin--locked'
-              : isCurrent
-                ? 'camino-pin--current'
-                : 'camino-pin--completed';
-
-            const badgeLabel = isLocked ? 'Bloqueada' : isCurrent ? 'Actual' : 'Completada';
-
-            return (
-              <button
-                key={p.id}
-                type="button"
-                className={`camino-pin ${pinStateClass}`}
-                style={{ ...placement, zIndex: isCurrent ? 10 : 1 }}
-                onClick={() => setSelectedPin(p)}
-                aria-label={`${p.name} (${badgeLabel})`}
-              >
-                <div className="camino-medallion" aria-hidden="true">
-                  <CaminoChurchIcon className="camino-icon" />
-                </div>
-                <div className="camino-pin-name">{p.name}</div>
-                <div className="camino-pin-badge">{badgeLabel}</div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="camino-bottom-spacer" aria-hidden="true" />
-
-      {/* DETAIL MODAL */}
-      {selectedPin && (
-        <div
-          className="modal-overlay camino-modal-overlay"
-          onClick={() => setSelectedPin(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="modal-content camino-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="camino-modal-head">
-              <div className="camino-modal-icon">
-                <CaminoChurchIcon className="camino-icon" />
-              </div>
+          <div className="camino-journey-row">
+            <div>
+              <div className="camino-journey-label">{next ? 'Próximo destino' : 'Meta alcanzada'}</div>
+              <div className="camino-journey-destination">{next?.name || actual.name}</div>
             </div>
+            <div className="camino-journey-req">
+              {next ? `${remainingForNext} rosas restantes` : '✓'}
+            </div>
+          </div>
+          <div className="camino-progress-track" aria-label="Progreso de peregrinación">
+            <div className="camino-progress-fill" style={{ width: `${journeyProgressPct}%` }} />
+          </div>
+        </div>
 
+        <div className="camino-quick-actions">
+          <button type="button" className="camino-btn camino-btn--primary" onClick={onPray}>
+            Rezar ahora
+          </button>
+          <button type="button" className="camino-btn" onClick={onSelectLevel}>
+            Plan · elegir nivel
+          </button>
+          <button type="button" className="camino-btn" onClick={onRosedal}>
+            Rosedal
+          </button>
+        </div>
+      </div>
+
+      <ol className="camino-trail">
+        {PEREGRINACIONES.map((p) => {
+          const isCompleted = totalAveMarias >= p.reqAveMarias;
+          const isCurrent = Boolean(next && next.id === p.id);
+          const isLocked = !isCompleted && !isCurrent;
+          const state = isLocked ? 'locked' : isCurrent ? 'current' : 'done';
+
+          return (
+            <li key={p.id} className={`camino-trail__item camino-trail__item--${state}`}>
+              <button
+                type="button"
+                className="camino-trail__btn"
+                onClick={() => setSelectedPin(p)}
+              >
+                <span className="camino-trail__icon" aria-hidden="true">
+                  <CaminoChurchIcon className="camino-icon" />
+                </span>
+                <span className="camino-trail__body">
+                  <span className="camino-trail__name">{p.name}</span>
+                  <span className="camino-trail__meta">{p.reqAveMarias.toLocaleString()} rosas · ~{p.hrs}h</span>
+                </span>
+                <span className="camino-trail__badge">
+                  {isLocked ? '🔒' : isCurrent ? '→' : '✓'}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      {selectedPin && (
+        <div className="modal-overlay camino-modal-overlay" onClick={() => setSelectedPin(null)} role="dialog" aria-modal="true">
+          <div className="modal-content camino-modal-content" onClick={(e) => e.stopPropagation()}>
             <h3 className="camino-modal-title">{selectedPin.name}</h3>
             <p className="camino-modal-description">{selectedPin.description}</p>
-
             <div className="camino-modal-meta">
-              <div>
-                <div style={{ color: 'rgba(200,200,200,1)', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                  Meta: {selectedPin.reqAveMarias} rosas
-                </div>
-              </div>
-              <div className="camino-status-chip">{selectedStatus?.statusLabel ?? '—'}</div>
+              <span>Meta: {selectedPin.reqAveMarias.toLocaleString()} rosas</span>
+              <span className="camino-status-chip">{selectedStatus?.statusLabel}</span>
             </div>
-
             <div className="camino-modal-actions">
-              {!selectedStatus?.isLocked && (
-                <button
-                  type="button"
-                  className="camino-btn camino-btn--primary"
-                  onClick={() => {
-                    setSelectedPin(null);
-                    if (onSelectLevel) onSelectLevel(selectedPin);
-                  }}
-                >
-                  Ir al jardín
+              {!selectedStatus?.isLocked && onPray && (
+                <button type="button" className="camino-btn camino-btn--primary" onClick={() => { setSelectedPin(null); onPray(); }}>
+                  Rezar
                 </button>
               )}
-              <button
-                type="button"
-                className="camino-btn"
-                onClick={() => setSelectedPin(null)}
-              >
-                Cerrar
-              </button>
+              <button type="button" className="camino-btn" onClick={() => setSelectedPin(null)}>Cerrar</button>
             </div>
           </div>
         </div>

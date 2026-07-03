@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import LitanyDisplay from '../Litany/LitanyDisplay';
 import LitanyProgressBars from '../Litany/LitanyProgressBars';
 import { stepContextToVitralVars } from '../../utils/bookletProgress';
@@ -32,18 +32,6 @@ export default function BookletPrayerPanel({
     if (x > rect.width * 0.62) onTapNav('next');
     else if (x < rect.width * 0.38) onTapNav('prev');
   };
-
-  useEffect(() => {
-    const preview = displayText ? `${displayText.slice(0, 40)}…` : '(empty)';
-    console.log(`📜 BookletPrayerPanel [${variant}]`, {
-      prayerId: stepContext?.prayerId,
-      displayTextLen: displayText?.length ?? 0,
-      preview,
-      isLitany,
-      isAveMaria,
-      litanyVerseIndex,
-    });
-  }, [variant, displayText, stepContext?.prayerId, isLitany, isAveMaria, litanyVerseIndex]);
 
   return (
     <article

@@ -9,10 +9,19 @@ import {
   pickPrayerImage,
   getLitanyVerseImageCandidates,
   resolveLitanyVerseImage,
+  getPrayerImageCandidates,
 } from '../../utils/prayerImages';
 import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
+import {
+  getPrayerVerseCount,
+  getPrayerVerseText,
+  getPrayerVerseImageCandidates,
+  resolvePrayerVerseImage,
+} from '../../utils/prayerVerseImages';
+import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
+import LitanyEntrance from '../Litany/LitanyEntrance';
 import { getBookletStepContext, stepContextToVitralVars, makeBookletRoseFingerprint } from '../../utils/bookletProgress';
-import { getAveMariaRunInfo } from './BookletView';
+import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { getMysteryColors } from '../RosarioNube/utils/mysteryColors';
 import './BookletView.css';
 import './RosarioVirtualView.css';
@@ -24,12 +33,18 @@ export default function RosarioVirtualView({
   soundEnabled,
   isLeftHanded,
   simpleMode = false,
+  litanyEntranceEnabled = true,
+  perVersePrayerImages = false,
   onShowRosedal,
   onToggleSimpleMode,
   onAveMariaComplete,
+  onAveMariaUndo,
 }) {
   const [litanyVerseIndex, setLitanyVerseIndex] = useState(0);
-  const [guided, setGuided] = useState(false);
+  const [prayerVerseIndex, setPrayerVerseIndex] = useState(0);
+  const [showLitanyEntrance, setShowLitanyEntrance] = useState(false);
+  const litanyEntranceShownRef = useRef(false);
+  const [guided, setGuided] = useState(true);
   const [showHint, setShowHint] = useState(true);
   const [isCargando, setIsCargando] = useState(false);
   const [cargaOracion, setCargaOracion] = useState(0);
@@ -47,8 +62,12 @@ export default function RosarioVirtualView({
 
   const activePrayer = secuencia[safeIndex];
   const isLitany = isLitanyPrayer(activePrayer);
-  const litanyVerse = isLitany ? getLitanyVerse(litanyVerseIndex) : null;
+  const isPerVersePrayer = perVersePrayerImages && supportsPerVerseImages(activePrayer?.id);
+  const prayerVerseTotal = isPerVersePrayer ? getPrayerVerseCount(activePrayer.id) : 0;
+  const litanyVerse = isLitany ? getLitanyVerse(litanyVerseIndex, activePrayer) : null;
   const litanyVerseTotal = activePrayer?.verses?.length || 0;
+  const hasInnerVerses = isLitany || isPerVersePrayer;
+  const innerVerseIndex = isLitany ? litanyVerseIndex : prayerVerseIndex;
 
   const stepContext = useMemo(
     () => getBookletStepContext(secuencia, safeIndex, total),
@@ -67,64 +86,61 @@ export default function RosarioVirtualView({
     () => (activePrayer ? loadSavedVariantId(activePrayer) : null),
     [activePrayer]
   );
-  const displayText = useMemo(
-    () => resolveDisplayText(activePrayer, variantId),
-    [activePrayer, variantId]
-  );
+  const displayText = useMemo(() => {
+    if (isPerVersePrayer) {
+      return getPrayerVerseText(activePrayer.id, prayerVerseIndex) || '';
+    }
+    return resolveDisplayText(activePrayer, variantId);
+  }, [activePrayer, variantId, isPerVersePrayer, prayerVerseIndex]);
 
   const vitralCandidates = useMemo(() => {
     if (!activePrayer) return ['/gallery-images/cathedral.jpg'];
     if (isLitany && litanyVerse) {
-      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer);
+      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer, litanyVerseIndex);
       const picked = resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex);
+      return [picked, ...all.filter((u) => u !== picked)];
+    }
+    if (isPerVersePrayer) {
+      const all = getPrayerVerseImageCandidates(
+        activePrayer.id,
+        prayerVerseIndex,
+        activePrayer,
+        misterioActual
+      );
+      const picked = resolvePrayerVerseImage(
+        activePrayer.id,
+        prayerVerseIndex,
+        activePrayer,
+        misterioActual
+      );
       return [picked, ...all.filter((u) => u !== picked)];
     }
     const all = activePrayer.imgCandidates?.length
       ? activePrayer.imgCandidates
-      : [activePrayer.img];
+      : getPrayerImageCandidates(activePrayer, misterioActual);
     const picked = pickPrayerImage(all, safeIndex);
     return [picked, ...all.filter((u) => u !== picked)];
-  }, [activePrayer, safeIndex, isLitany, litanyVerse, litanyVerseIndex]);
-
-  useEffect(() => {
-    console.log('📿 RosarioVirtualView mount/update', {
-      misterioActual,
-      currentPrayerIndex,
-      safeIndex,
-      total,
-      prayerId: activePrayer?.id,
-      title: activePrayer?.title,
-    });
-  }, [misterioActual, currentPrayerIndex, safeIndex, total, activePrayer?.id, activePrayer?.title]);
-
-  useEffect(() => {
-    const preview = displayText ? `${displayText.slice(0, 48)}…` : '(empty)';
-    console.log('📖 Rosario prayer panel', {
-      variant: 'rosary',
-      prayerId: activePrayer?.id,
-      displayTextLen: displayText?.length ?? 0,
-      preview,
-      variantId,
-      isLitany,
-      litanyVerseIndex,
-      willRenderPanel: Boolean(activePrayer),
-    });
-    if (!displayText?.length && activePrayer) {
-      console.warn('⚠️ Rosario displayText empty for', activePrayer.id, activePrayer.title);
-    }
-  }, [activePrayer, displayText, variantId, isLitany, litanyVerseIndex]);
-
-  useEffect(() => {
-    console.log('🖼️ Rosario vitral', {
-      kind: vitralKind,
-      candidate: vitralCandidates[0],
-      candidateCount: vitralCandidates.length,
-    });
-  }, [vitralKind, vitralCandidates]);
+  }, [
+    activePrayer,
+    safeIndex,
+    isLitany,
+    litanyVerse,
+    litanyVerseIndex,
+    isPerVersePrayer,
+    prayerVerseIndex,
+    misterioActual,
+  ]);
 
   useEffect(() => {
     setLitanyVerseIndex(0);
-  }, [currentPrayerIndex]);
+    setPrayerVerseIndex(0);
+    if (activePrayer?.id === 'LL' && litanyEntranceEnabled && !litanyEntranceShownRef.current) {
+      setShowLitanyEntrance(true);
+      litanyEntranceShownRef.current = true;
+    } else {
+      setShowLitanyEntrance(false);
+    }
+  }, [currentPrayerIndex, activePrayer?.id, litanyEntranceEnabled]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowHint(false), 8000);
@@ -136,6 +152,11 @@ export default function RosarioVirtualView({
     const prayer = secuencia[currentPrayerIndex];
     if (isLitanyPrayer(prayer) && litanyVerseIndex < litanyVerseTotal - 1) {
       setLitanyVerseIndex((v) => v + 1);
+      setCargaOracion(100);
+      return;
+    }
+    if (perVersePrayerImages && supportsPerVerseImages(prayer?.id) && prayerVerseIndex < getPrayerVerseCount(prayer.id) - 1) {
+      setPrayerVerseIndex((v) => v + 1);
       setCargaOracion(100);
       return;
     }
@@ -152,7 +173,7 @@ export default function RosarioVirtualView({
       onUpdateProgreso(currentPrayerIndex + 1);
       setCargaOracion(100);
     }
-  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, secuencia, total, onUpdateProgreso, onAveMariaComplete]);
+  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, prayerVerseIndex, perVersePrayerImages, secuencia, total, onUpdateProgreso, onAveMariaComplete]);
 
   useEffect(() => {
     if (isCargando && cargaOracion < 100) {
@@ -186,14 +207,16 @@ export default function RosarioVirtualView({
   useEffect(() => {
     const onRepeatTouch = (event) => {
       const { prayerIndex } = event.detail || {};
-      // #region agent log
-      fetch('http://127.0.0.1:7517/ingest/735df86d-223e-4c73-9756-2f8451968a97',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'df8378'},body:JSON.stringify({sessionId:'df8378',runId:'pre-fix',hypothesisId:'H1',location:'RosarioVirtualView.jsx:190',message:'onRepeatTouch guard check',data:{eventPrayerIndex:prayerIndex,currentPrayerIndex,willDrop:prayerIndex!==currentPrayerIndex},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion agent log
       if (prayerIndex !== currentPrayerIndex) return;
       setShowHint(false);
       const prayer = secuencia[currentPrayerIndex];
       if (isLitanyPrayer(prayer) && litanyVerseIndex < litanyVerseTotal - 1) {
         setLitanyVerseIndex((v) => v + 1);
+        setCargaOracion(100);
+        return;
+      }
+      if (perVersePrayerImages && supportsPerVerseImages(prayer?.id) && prayerVerseIndex < getPrayerVerseCount(prayer.id) - 1) {
+        setPrayerVerseIndex((v) => v + 1);
         setCargaOracion(100);
         return;
       }
@@ -224,7 +247,7 @@ export default function RosarioVirtualView({
       window.removeEventListener('contentExhausted', onContentExhausted);
       window.removeEventListener('heartBeadPressed', onHeartBead);
     };
-  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, secuencia, handleAdvance, onUpdateProgreso]);
+  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, prayerVerseIndex, perVersePrayerImages, secuencia, handleAdvance, onUpdateProgreso]);
 
   const handleRetreat = useCallback(() => {
     setShowHint(false);
@@ -232,10 +255,18 @@ export default function RosarioVirtualView({
       setLitanyVerseIndex((v) => v - 1);
       return;
     }
-    if (currentPrayerIndex > 0) {
-      onUpdateProgreso(currentPrayerIndex - 1);
+    if (isPerVersePrayer && prayerVerseIndex > 0) {
+      setPrayerVerseIndex((v) => v - 1);
+      return;
     }
-  }, [currentPrayerIndex, litanyVerseIndex, isLitany, onUpdateProgreso]);
+    if (currentPrayerIndex > 0) {
+      const prevIdx = currentPrayerIndex - 1;
+      if (secuencia[currentPrayerIndex]?.id === 'A' && secuencia[prevIdx]?.id !== 'A') {
+        onAveMariaUndo?.();
+      }
+      onUpdateProgreso(prevIdx);
+    }
+  }, [currentPrayerIndex, litanyVerseIndex, prayerVerseIndex, isLitany, isPerVersePrayer, secuencia, onUpdateProgreso, onAveMariaUndo]);
 
   const handleEmptyPointerMove = useCallback(() => {
     if (!guided) return;
@@ -244,22 +275,21 @@ export default function RosarioVirtualView({
   }, [guided]);
 
   const revealPrayer = useCallback((index) => {
-    console.log('✨ Rosario revealPrayer', { index, prayerId: secuencia[index]?.id });
     setShowHint(false);
     setLitanyVerseIndex(0);
+    setPrayerVerseIndex(0);
     setCargaOracion(100);
     setIsCargando(false);
     onUpdateProgreso(index);
-  }, [onUpdateProgreso, secuencia]);
+  }, [onUpdateProgreso]);
 
   const handleNodeClick = useCallback((index) => {
     revealPrayer(index);
   }, [revealPrayer]);
 
   const handleBeadHoldStart = useCallback((index) => {
-    console.log('🙏 Rosario bead hold start', { index, prayerId: secuencia[index]?.id });
     revealPrayer(index);
-  }, [revealPrayer, secuencia]);
+  }, [revealPrayer]);
 
   const handleBeadHoldEnd = useCallback(() => {}, []);
 
@@ -269,7 +299,7 @@ export default function RosarioVirtualView({
       style={{ ...vitralStyle, '--rosary-accent': accentColor }}
     >
       <VitralBackground
-        key={`${activePrayer?.id}-${litanyVerseIndex}-${vitralCandidates[0]}`}
+        key={`${activePrayer?.id}-${hasInnerVerses ? innerVerseIndex : ''}-${vitralCandidates[0]}`}
         candidates={vitralCandidates}
         kind={vitralKind}
         variant="rosary"
@@ -335,7 +365,19 @@ export default function RosarioVirtualView({
             {litanyVerseIndex + 1}/{litanyVerseTotal}
           </span>
         )}
+        {isPerVersePrayer && prayerVerseTotal > 0 && (
+          <span className="rosary-title-bar__step" style={{ color: 'rgba(212,175,55,0.3)' }}>
+            v{prayerVerseIndex + 1}/{prayerVerseTotal}
+          </span>
+        )}
       </div>
+
+      {showLitanyEntrance && litanyEntranceEnabled && (
+        <LitanyEntrance
+          currentMystery={misterioActual}
+          onComplete={() => setShowLitanyEntrance(false)}
+        />
+      )}
 
       <div className={`rosary-chrome ${isLeftHanded ? 'rosary-chrome--left' : 'rosary-chrome--right'}`}>
         <div className="rosary-chrome__row">
@@ -358,7 +400,7 @@ export default function RosarioVirtualView({
             {guided ? 'Guiado' : 'Libre'}
           </button>
         </div>
-        <span className="rosary-chrome__version">v0.3.35 — El Cosmos Resonante</span>
+        <span className="rosary-chrome__version">v0.3.40</span>
       </div>
 
       {showHint && guided && (

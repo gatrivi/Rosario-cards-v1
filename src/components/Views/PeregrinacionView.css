@@ -380,3 +380,115 @@
   font-weight: bold;
 }
 
+/* ── Camino v2: vertical trail ── */
+.camino-view--v2 {
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+.camino-tagline {
+  margin: 0 0 14px;
+  font-size: 0.82rem;
+  color: rgba(212, 175, 55, 0.75);
+}
+
+.camino-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.camino-trail {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.camino-trail__item {
+  position: relative;
+  padding-left: 18px;
+}
+
+.camino-trail__item::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 0;
+  bottom: -8px;
+  width: 2px;
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.camino-trail__item:last-child::before {
+  display: none;
+}
+
+.camino-trail__btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.camino-trail__item--current .camino-trail__btn {
+  border-color: rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.1);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.12);
+}
+
+.camino-trail__item--done .camino-trail__btn {
+  opacity: 0.72;
+}
+
+.camino-trail__item--locked .camino-trail__btn {
+  opacity: 0.45;
+}
+
+.camino-trail__icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+}
+
+.camino-trail__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.camino-trail__name {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: #eee;
+}
+
+.camino-trail__meta {
+  font-size: 0.72rem;
+  color: #888;
+}
+
+.camino-trail__badge {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+

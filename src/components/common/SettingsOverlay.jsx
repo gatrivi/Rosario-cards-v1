@@ -39,7 +39,15 @@ async function shareApp() {
   }
 }
 
-export default function SettingsOverlay({ settings, onUpdateSettings, onClose, appVersion = '', onCheckForUpdate, onStartAmbientAudio }) {
+export default function SettingsOverlay({
+  settings,
+  onUpdateSettings,
+  onClose,
+  appVersion = '',
+  onCheckForUpdate,
+  onStartAmbientAudio,
+  onOpenAssetStudio,
+}) {
   const [rosaryZoom, setRosaryZoomState] = React.useState(readRosaryZoom);
   const activeZoomPreset = ROSARY_ZOOM_PRESETS.find((p) => p.zoom === rosaryZoom)?.id
     ?? ROSARY_ZOOM_PRESETS.reduce((best, p) =>
@@ -113,6 +121,42 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose, a
                 type="checkbox"
                 checked={settings.mercyOptionalOpening !== false}
                 onChange={(e) => onUpdateSettings({ ...settings, mercyOptionalOpening: e.target.checked })}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
+          {/* Litany of Loreto entrance */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: '1rem' }}>Entrada Letanía de Loreto</div>
+              <div style={{ color: '#666', fontSize: '0.75rem' }}>
+                Animación al llegar a la letanía (Libro)
+              </div>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={settings.litanyEntranceEnabled !== false}
+                onChange={(e) => onUpdateSettings({ ...settings, litanyEntranceEnabled: e.target.checked })}
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
+          {/* Per-verse images for Padre Nuestro / Ave María */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: '1rem' }}>Imagen por verso</div>
+              <div style={{ color: '#666', fontSize: '0.75rem' }}>
+                Padre Nuestro y Ave María — un vitral por verso
+              </div>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={settings.perVersePrayerImages === true}
+                onChange={(e) => onUpdateSettings({ ...settings, perVersePrayerImages: e.target.checked })}
               />
               <span className="slider round"></span>
             </label>
@@ -237,6 +281,27 @@ export default function SettingsOverlay({ settings, onUpdateSettings, onClose, a
           </div>
 
         </div>
+
+        {onOpenAssetStudio && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose?.();
+              onOpenAssetStudio();
+            }}
+            style={{
+              width: '100%', marginTop: '20px', padding: '14px',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+            }}
+          >
+            🖼️ Estudio de imágenes
+            <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
+              Renombrar, etiquetar y asignar versos
+            </span>
+          </button>
+        )}
 
         <button
           type="button"

@@ -8,11 +8,124 @@ import {
 import {
   DIVINE_MERCY_ID,
   RDM_KEYS,
-  faustinaVitral,
+  resolveMercyStepImage,
 } from '../data/divineMercyData';
 import { divineMercyNovenaDays } from '../data/divineMercyNovenaData';
+import {
+  preciousBloodLitanyMeta,
+  preciousBloodLitanyVerses,
+  preciousBloodLitanySections,
+  preciousBloodLitanyClosingPrayer,
+  PRECIOUS_BLOOD_CHAPLET_KEYS,
+  preciousBloodChapletPrayers,
+  preciousBloodSevenSheddings,
+  preciousBloodSevenOfferings,
+} from '../data/preciousBloodData';
+import { buildViaCrucisSequence, buildViaLucisSequence } from '../data/viaCrucisData';
+
+export const PRECIOUS_BLOOD_MODES = new Set([
+  'sangrepreciosa_litany',
+  'sangrepreciosa_chaplet',
+  'sangrepreciosa_ofrendas',
+]);
+
+export function isPreciousBloodMode(mysteryType) {
+  return PRECIOUS_BLOOD_MODES.has(mysteryType);
+}
+
+const SC_TEXT_PB =
+  'Por la señal de la Santa Cruz, de nuestros enemigos líbranos, Señor, Dios nuestro. En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.';
+
+function buildPreciousBloodSequence(mysteryType) {
+  const sc = {
+    id: 'SC',
+    title: 'Señal de la Cruz',
+    text: SC_TEXT_PB,
+    img: preciousBloodLitanyMeta.img,
+    imgCandidates: [preciousBloodLitanyMeta.img],
+  };
+
+  if (mysteryType === 'sangrepreciosa_litany') {
+    const verseSteps = preciousBloodLitanyVerses.map((v, i) => ({
+      id: `LPB_${i + 1}`,
+      title: `Letanía — ${v.invocation.slice(0, 40)}`,
+      text:
+        v.invocation === v.response
+          ? v.invocation
+          : `${v.invocation}\n— ${v.response}`,
+      img: v.img,
+      imgCandidates: [v.img],
+    }));
+    const closing = {
+      id: 'LPB_Close',
+      title: 'Oración final',
+      text: preciousBloodLitanyClosingPrayer,
+      img: preciousBloodLitanyMeta.imgmo,
+      imgCandidates: [preciousBloodLitanyMeta.imgmo],
+    };
+    if (verseSteps[0]) {
+      verseSteps[0].verses = preciousBloodLitanyVerses;
+      verseSteps[0].sections = preciousBloodLitanySections;
+    }
+    return [sc, ...verseSteps, closing];
+  }
+
+  if (mysteryType === 'sangrepreciosa_chaplet') {
+    const byId = Object.fromEntries(preciousBloodChapletPrayers.map((p) => [p.id, p]));
+    return PRECIOUS_BLOOD_CHAPLET_KEYS.map((id, idx) => {
+      const data = byId[id];
+      if (!data) return null;
+      let title = data.title;
+      if (id === 'PB_P') {
+        const group = Math.floor(idx / 7);
+        const shedding = preciousBloodSevenSheddings[group] || preciousBloodSevenSheddings[0];
+        title = `${data.title} — ${shedding.title}`;
+      }
+      return {
+        id: `${id}_${idx}`,
+        title,
+        text: data.text,
+        img: data.img,
+        imgCandidates: [data.img],
+      };
+    }).filter(Boolean);
+  }
+
+  if (mysteryType === 'sangrepreciosa_ofrendas') {
+    const offerings = preciousBloodSevenOfferings.map((o) => ({
+      id: `PBO_${o.num}`,
+      title: o.title,
+      text: o.text,
+      img: o.img,
+      imgCandidates: [o.img],
+    }));
+    return [sc, ...offerings];
+  }
+
+  return [];
+}
 
 export const ROSARY_MYSTERY_IDS = ['gozosos', 'dolorosos', 'gloriosos', 'luminosos'];
+export const ROSARY_MYSTERIES = new Set(ROSARY_MYSTERY_IDS);
+
+/** Libro devotions — standard mysteries plus chaplets / novenas in BookletView. */
+export const BOOKLET_MYSTERY_IDS = [
+  ...ROSARY_MYSTERY_IDS,
+  DIVINE_MERCY_ID,
+  'divinamisericordia_novena',
+  ...PRECIOUS_BLOOD_MODES,
+  'viacrucis',
+  'vialucis',
+];
+export const BOOKLET_MYSTERIES = new Set(BOOKLET_MYSTERY_IDS);
+
+export function isValidBookletMystery(id) {
+  return BOOKLET_MYSTERIES.has(id);
+}
+
+export function isValidRosaryMystery(id) {
+  return ROSARY_MYSTERIES.has(id);
+}
 
 const SEQ_MAP = {
   gozosos: 'RGo',
@@ -29,6 +142,10 @@ export function isDivineMercyMode(misterioActual) {
   return misterioActual === DIVINE_MERCY_ID || misterioActual === 'divinamisericordia_novena';
 }
 
+export function isStationsDevotion(misterioActual) {
+  return misterioActual === 'viacrucis' || misterioActual === 'vialucis';
+}
+
 /** Libro-only lookup — keeps chaplet data out of RoseView.getPrayerData. */
 function getBookletPrayerData(id, mysteryType, novenaDay = 1) {
   if (mysteryType === DIVINE_MERCY_ID || mysteryType === 'divinamisericordia_novena') {
@@ -38,7 +155,7 @@ function getBookletPrayerData(id, mysteryType, novenaDay = 1) {
         id: 'NOVENA_DAY_INTENTION',
         title: dayData.intentionTitle,
         text: `${dayData.intentionText}\n\n${dayData.closingInstruction}`,
-        img: dayData.img || faustinaVitral,
+        img: dayData.img,
       };
     }
     return (
@@ -70,29 +187,41 @@ function getSequenceKeys(mysteryType, includeMercyOpening = true) {
 
 export function buildSequence(mysteryType, options = {}) {
   const { includeMercyOpening = true, novenaDay = 1 } = options;
+
+  if (isPreciousBloodMode(mysteryType)) {
+    return buildPreciousBloodSequence(mysteryType);
+  }
+  if (mysteryType === 'viacrucis') return buildViaCrucisSequence();
+  if (mysteryType === 'vialucis') return buildViaLucisSequence();
+
   const keys = getSequenceKeys(mysteryType, includeMercyOpening);
   const isMercy = mysteryType === DIVINE_MERCY_ID || mysteryType === 'divinamisericordia_novena';
 
-  return keys
-    .map((id, idx) => {
-      const data = getBookletPrayerData(id, mysteryType, novenaDay);
-      if (!data) return null;
+  const partial = keys
+    .map((id) => getBookletPrayerData(id, mysteryType, novenaDay))
+    .filter(Boolean);
+
+  return partial
+    .map((data, idx) => {
       const img = isMercy
-        ? (data.img || faustinaVitral)
+        ? resolveMercyStepImage(data.id, {
+          sequenceIndex: idx,
+          sequence: partial,
+          novenaDay,
+        })
         : resolvePrayerImage(data, mysteryType, idx);
       const imgCandidates = isMercy
-        ? [data.img || faustinaVitral]
+        ? [img]
         : getPrayerImageCandidates(data, mysteryType);
       return {
-        id,
+        id: data.id,
         title: data.title,
         text: data.text,
         img,
         imgCandidates,
-        variants: getPrayerVariants(id),
+        variants: getPrayerVariants(data.id),
         verses: data.verses,
         sections: data.sections,
       };
-    })
-    .filter(Boolean);
+    });
 }

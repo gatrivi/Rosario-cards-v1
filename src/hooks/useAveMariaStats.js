@@ -8,7 +8,7 @@ const ROSAS_PER_MACETON = 50;
 export function useAveMariaStats() {
   const [totalAveMarias, setTotalAveMarias] = useState(0);
   const [dailyAveMarias, setDailyAveMarias] = useState(0);
-  const [nivelActualId, setNivelActualId] = useState(7);
+  const [nivelActualId, setNivelActualId] = useState(1);
   
   const { cloudState, syncToCloud } = useCloudSync();
   const [loadedFromCloud, setLoadedFromCloud] = useState(false);
@@ -203,7 +203,7 @@ export function useAveMariaStats() {
 
   // Cálculos de Disciplina Diaria
   const hoy = new Date().getDay();
-  const nivelActual = NIVELES.find(n => n.id === nivelActualId) || NIVELES[6]; // Asume nivel 7 por defecto
+  const nivelActual = NIVELES.find(n => n.id === nivelActualId) || NIVELES[0];
   const objetivoMacetonesHoy = nivelActual.rutinaDiaria[hoy] || 0;
 
   return { 
