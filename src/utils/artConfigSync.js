@@ -37,10 +37,10 @@ export function packArtConfigForCloud() {
 }
 
 /**
- * Apply remote art config if newer than local.
+ * Apply remote art config if newer than local (or force).
  * @returns {'applied'|'skipped'|'empty'}
  */
-export function applyArtConfigFromCloud(artConfig) {
+export function applyArtConfigFromCloud(artConfig, { force = false } = {}) {
   if (!artConfig || typeof artConfig !== 'object') return 'empty';
   const remoteAt = artConfig.updatedAt || 0;
   const localAt = getLocalArtConfigUpdatedAt();
@@ -48,7 +48,7 @@ export function applyArtConfigFromCloud(artConfig) {
     Object.keys(artConfig.registryOverrides || {}).length > 0
     || Object.keys(artConfig.verseAssignments || {}).length > 0;
   if (!hasData) return 'empty';
-  if (remoteAt <= localAt && localAt > 0) return 'skipped';
+  if (!force && remoteAt <= localAt && localAt > 0) return 'skipped';
 
   importArtConfig(
     {

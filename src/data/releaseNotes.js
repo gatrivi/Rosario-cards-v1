@@ -4,19 +4,18 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.45',
-  name: 'Novedades fáciles de encontrar',
+  version: '0.3.46',
+  name: 'Firebase arte en la nube',
   CURRENT: [
-    'Novedades: tocá v0.3.x abajo a la izquierda, o Ajustes → Novedades',
-    'Aviso de actualización con resumen de cambios (PWA)',
-    'Estudio de imágenes: Ajustes (botón circular arriba derecha) → Estudio',
-    'Vía Crucis / Vía Lucis, sync de arte, Firebase preparado',
+    'Firebase conectado: renombres y asignaciones en shared/artConfig',
+    'Estudio de imágenes: Subir / Bajar de nube (sin sync ID)',
+    'Ajustes (engranaje arriba derecha) → Estudio de imágenes',
+    'Novedades: tocá v0.3.x abajo a la izquierda',
   ],
   UPCOMING: [
+    'Publicar reglas Firestore si hay permiso denegado',
     'Textos e imágenes dedicadas por estación',
-    'Firebase activo cuando haya boilerplate',
     'Voz automática durante el rezo (grabaciones)',
-    'Menú “Más devociones” si crecen los vitrales',
   ],
 };
 

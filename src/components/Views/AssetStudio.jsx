@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { listImages, saveOverride, clearOverride } from '../../data/imageRegistry';
 import AssignmentMapper from './AssignmentMapper';
 import {
@@ -6,6 +6,13 @@ import {
   exportArtConfig,
   importArtConfig,
 } from '../../utils/artConfigPortable';
+import { packArtConfigForCloud, applyArtConfigFromCloud } from '../../utils/artConfigSync';
+import {
+  getFirebaseArtStatus,
+  pullArtConfigFromFirestore,
+  pushArtConfigToFirestore,
+} from '../../services/firebaseArtConfig';
+import { isFirebaseConfigured } from '../../config/firebase';
 
 /**
  * AssetStudio — browse the image registry at /assets (also from Ajustes on mobile).
@@ -22,7 +29,15 @@ export default function AssetStudio() {
   const [tagFilter, setTagFilter] = useState('all');
   const [copiedId, setCopiedId] = useState(null);
   const [portableMsg, setPortableMsg] = useState('');
+  const [fbStatus, setFbStatus] = useState(null);
+  const [fbBusy, setFbBusy] = useState(false);
   const importRef = useRef(null);
+
+  useEffect(() => {
+    getFirebaseArtStatus().then(setFbStatus).catch(() => {
+      setFbStatus({ configured: false, ok: false, message: 'Error al consultar Firebase' });
+    });
+  }, []);
 
   // Recomputed each render; setVersion() forces a refresh after edits.
   const images = listImages();
@@ -98,6 +113,47 @@ export default function AssetStudio() {
     if (importRef.current) importRef.current.value = '';
   };
 
+  const handlePushFirebase = async () => {
+    if (!isFirebaseConfigured()) {
+      showPortableMsg('Falta .env.local con Firebase');
+      return;
+    }
+    setFbBusy(true);
+    try {
+      const artConfig = packArtConfigForCloud();
+      await pushArtConfigToFirestore(null, artConfig);
+      const status = await getFirebaseArtStatus();
+      setFbStatus(status);
+      showPortableMsg('Subido a Firestore (shared/artConfig)');
+    } catch (e) {
+      showPortableMsg(e?.message || 'Error al subir');
+    } finally {
+      setFbBusy(false);
+    }
+  };
+
+  const handlePullFirebase = async () => {
+    if (!isFirebaseConfigured()) {
+      showPortableMsg('Falta .env.local con Firebase');
+      return;
+    }
+    setFbBusy(true);
+    try {
+      const remote = await pullArtConfigFromFirestore(null);
+      if (!remote) {
+        showPortableMsg('Nube vacía — subí primero desde este u otro dispositivo');
+        return;
+      }
+      const result = applyArtConfigFromCloud(remote, { force: true });
+      setVersion((v) => v + 1);
+      showPortableMsg(result === 'applied' ? 'Bajado desde Firestore' : 'Sin cambios nuevos');
+    } catch (e) {
+      showPortableMsg(e?.message || 'Error al bajar');
+    } finally {
+      setFbBusy(false);
+    }
+  };
+
   return (
     <div style={{
       height: '100%', overflow: 'auto', backgroundColor: '#0A0A0A',
@@ -108,13 +164,36 @@ export default function AssetStudio() {
           🛠 Asset Studio
         </h1>
         <p style={{ color: '#888', fontSize: '0.8rem', margin: '0 0 12px' }}>
-          Renombra, etiqueta y asigna imágenes a versos de oraciones.
-          Los cambios se guardan en este dispositivo (localStorage).
+          Renombra, etiqueta y asigna imágenes a versos. Local + Firebase (shared/artConfig).
+        </p>
+
+        <p style={{
+          color: fbStatus?.ok ? '#6fcf97' : '#c9a227',
+          fontSize: '0.75rem',
+          margin: '0 0 10px',
+        }}>
+          {fbStatus ? `Firebase: ${fbStatus.message}` : 'Firebase: comprobando…'}
         </p>
 
         <div style={{
           display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px', alignItems: 'center',
         }}>
+          <button
+            type="button"
+            onClick={handlePushFirebase}
+            disabled={fbBusy}
+            style={portableBtnStyle}
+          >
+            Subir a nube
+          </button>
+          <button
+            type="button"
+            onClick={handlePullFirebase}
+            disabled={fbBusy}
+            style={portableBtnStyle}
+          >
+            Bajar de nube
+          </button>
           <button type="button" onClick={handleExportPortable} style={portableBtnStyle}>
             Exportar JSON
           </button>
@@ -137,8 +216,8 @@ export default function AssetStudio() {
           )}
         </div>
         <p style={{ color: '#555', fontSize: '0.7rem', margin: '0 0 14px', lineHeight: 1.4 }}>
-          En móvil: exportá el JSON y enviálo al entorno de desarrollo (archivo o pegar en el chat).
-          Aquí en dev: Importar JSON para aplicar los mismos nombres y asignaciones.
+          Renombres se suben solos ~2.5s después de guardar. También podés Subir/Bajar a mano.
+          Si ves “permiso denegado”, publicá las reglas en <code>firestore.rules</code>.
         </p>
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>

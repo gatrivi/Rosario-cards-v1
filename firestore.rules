@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // TEMP open rules for art curation (renames + verse assignments).
+    // Tighten with Auth when ready.
+    match /shared/{docId} {
+      allow read, write: if true;
+    }
+    match /users/{syncId}/meta/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

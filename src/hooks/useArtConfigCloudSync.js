@@ -4,10 +4,17 @@ import {
   applyArtConfigFromCloud,
   packArtConfigForCloud,
 } from '../utils/artConfigSync';
-import { pullArtConfigFromFirestore, pushArtConfigToFirestore } from '../services/firebaseArtConfig';
+import {
+  pullArtConfigFromFirestore,
+  pushArtConfigToFirestore,
+} from '../services/firebaseArtConfig';
+import { isFirebaseConfigured } from '../config/firebase';
 
 /**
- * Sync image renames + verse assignments via jsonblob (always) and Firestore (when configured).
+ * Sync image renames + verse assignments:
+ * - jsonblob when syncId exists
+ * - Firestore shared/artConfig when Firebase env is set (no sync ID required)
+ * - also users/{syncId}/meta/artConfig when syncId exists
  */
 export function useArtConfigCloudSync({ syncId, cloudState, syncToCloud }) {
   const debounceRef = useRef(null);
@@ -20,14 +27,19 @@ export function useArtConfigCloudSync({ syncId, cloudState, syncToCloud }) {
   }, [cloudState]);
 
   useEffect(() => {
-    if (!syncId) return undefined;
+    const firebaseOn = isFirebaseConfigured();
+    if (!syncId && !firebaseOn) return undefined;
 
     const push = () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         const artConfig = packArtConfigForCloud();
-        syncToCloud({ artConfig });
-        pushArtConfigToFirestore(syncId, artConfig).catch(() => {});
+        if (syncId) syncToCloud({ artConfig });
+        if (firebaseOn) {
+          pushArtConfigToFirestore(syncId || null, artConfig).catch((err) => {
+            console.warn('[ArtConfig] Firestore push failed:', err?.message || err);
+          });
+        }
       }, 2500);
     };
 
@@ -39,11 +51,15 @@ export function useArtConfigCloudSync({ syncId, cloudState, syncToCloud }) {
   }, [syncId, syncToCloud]);
 
   useEffect(() => {
-    if (!syncId) return;
-    pullArtConfigFromFirestore(syncId).then((remote) => {
-      if (!remote) return;
-      const result = applyArtConfigFromCloud(remote);
-      if (result === 'applied') appliedRemoteRef.current = true;
-    }).catch(() => {});
+    if (!isFirebaseConfigured()) return;
+    pullArtConfigFromFirestore(syncId || null)
+      .then((remote) => {
+        if (!remote) return;
+        const result = applyArtConfigFromCloud(remote);
+        if (result === 'applied') appliedRemoteRef.current = true;
+      })
+      .catch((err) => {
+        console.warn('[ArtConfig] Firestore pull failed:', err?.message || err);
+      });
   }, [syncId]);
 }
