@@ -4,18 +4,17 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.47',
-  name: 'Clasificar y subir imágenes',
+  version: '0.3.48',
+  name: 'Estaciones y voz propia',
   CURRENT: [
-    'Estudio → pestaña Clasificar: categorías litúrgicas',
-    'Arrastrar carpeta/archivos → Firebase Storage + biblioteca',
-    'Imágenes subidas disponibles para asignar a versos',
-    'Firebase renombres en shared/artConfig',
+    'Vía Crucis / Lucis: meditación propia por estación',
+    'Voz automática: si grabaste una oración, suena al llegar a ese paso',
+    'Estudio → Clasificar + subir imágenes a la nube',
   ],
   UPCOMING: [
     'Publicar reglas Firestore + Storage (si permiso denegado)',
-    'Textos e imágenes dedicadas por estación',
-    'Voz automática durante el rezo',
+    'Imágenes dedicadas por estación',
+    'Confirmación al borrar una toma de voz',
   ],
 };
 

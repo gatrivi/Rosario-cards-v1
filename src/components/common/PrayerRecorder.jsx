@@ -178,7 +178,7 @@ export default function PrayerRecorder({
   const panel = expanded && (
     <div className="prayer-recorder__panel">
       <p className="prayer-recorder__title">
-        {simpleMode ? 'Graba tu voz' : 'Voz propia · modo automático'}
+        {simpleMode ? 'Graba tu voz' : 'Voz propia · suena al llegar a esta oración'}
       </p>
       {prayerId === 'A' && (
         <p className="prayer-recorder__hint">

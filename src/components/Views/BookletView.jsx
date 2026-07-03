@@ -38,6 +38,7 @@ import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
+import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
 import './BookletView.css';
 
 const TRANSITION_PHASE = {
@@ -172,6 +173,13 @@ export default function BookletView({
   const [prayerVerseIndex, setPrayerVerseIndex] = useState(0);
   const [showLitanyEntrance, setShowLitanyEntrance] = useState(false);
   const litanyEntranceShownRef = useRef(false);
+
+  usePrayerVoiceAutoplay({
+    enabled: soundEnabled && !isTransitioning,
+    mystery: misterioActual,
+    sequenceIndex: displayIndex,
+    prayerId: activePrayer?.id,
+  });
 
   const isLitany = isLitanyPrayer(activePrayer);
   const isPerVersePrayer = perVersePrayerImages && supportsPerVerseImages(activePrayer?.id);

@@ -23,9 +23,13 @@
 
 - No structured two-voice litany UI — flat teleprompter only
 
+## Fixed (2026-07-03 night)
+
+- **Per-station Vía Crucis / Lucis meditations** — unique text per station in `viaCrucisData.js`
+- **Voice auto-play** — `usePrayerVoiceAutoplay` + `pickRecordingForSlot` in Libro and Rosario virtual
+
 ## Deferred
 
 - Per-verse audio (external sound engine)
-- Wire `pickRecordingForSlot` into Libro/Rosario advance (auto voice playback)
 - Dedicated station images for Vía Crucis / Vía Lucis
-- Per-station meditation texts (titles exist; refrain is shared placeholder)
+- Confirm before deleting a voice take

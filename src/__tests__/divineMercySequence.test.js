@@ -84,4 +84,15 @@ describe('divineMercySequence', () => {
     expect(seq[0].id).toBe('VC_OPEN');
     expect(seq[14].id).toBe('VC_14');
   });
+
+  test('via stations have distinct meditations', () => {
+    const crucis = buildSequence('viacrucis');
+    const lucis = buildSequence('vialucis');
+    const cTexts = crucis.slice(1).map((s) => s.text);
+    const lTexts = lucis.slice(1).map((s) => s.text);
+    expect(new Set(cTexts).size).toBe(14);
+    expect(new Set(lTexts).size).toBe(14);
+    expect(cTexts[0]).toMatch(/Pilato|inocente/i);
+    expect(lTexts[0]).toMatch(/resucit|sepulcro/i);
+  });
 });

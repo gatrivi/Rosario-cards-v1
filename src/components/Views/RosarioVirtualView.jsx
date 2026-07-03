@@ -23,6 +23,7 @@ import LitanyEntrance from '../Litany/LitanyEntrance';
 import { getBookletStepContext, stepContextToVitralVars, makeBookletRoseFingerprint } from '../../utils/bookletProgress';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { getMysteryColors } from '../RosarioNube/utils/mysteryColors';
+import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
 import './BookletView.css';
 import './RosarioVirtualView.css';
 
@@ -61,6 +62,14 @@ export default function RosarioVirtualView({
   );
 
   const activePrayer = secuencia[safeIndex];
+
+  usePrayerVoiceAutoplay({
+    enabled: soundEnabled !== false,
+    mystery: misterioActual,
+    sequenceIndex: safeIndex,
+    prayerId: activePrayer?.id,
+  });
+
   const isLitany = isLitanyPrayer(activePrayer);
   const isPerVersePrayer = perVersePrayerImages && supportsPerVerseImages(activePrayer?.id);
   const prayerVerseTotal = isPerVersePrayer ? getPrayerVerseCount(activePrayer.id) : 0;
