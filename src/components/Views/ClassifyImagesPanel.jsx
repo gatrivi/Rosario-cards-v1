@@ -24,7 +24,11 @@ export default function ClassifyImagesPanel({ onChanged }) {
   const fileRef = useRef(null);
   const folderRef = useRef(null);
 
-  const images = useMemo(() => listImages(), [tick]);
+  // tick forces re-read of localStorage-backed registry after edits/uploads
+  const images = useMemo(() => {
+    void tick;
+    return listImages();
+  }, [tick]);
 
   const rows = useMemo(() => {
     let list = images;
@@ -36,10 +40,10 @@ export default function ClassifyImagesPanel({ onChanged }) {
     return list.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
   }, [images, filter]);
 
-  const bump = () => {
+  const bump = useCallback(() => {
     setTick((t) => t + 1);
     onChanged?.();
-  };
+  }, [onChanged]);
 
   const showMsg = (text) => {
     setMsg(text);
@@ -91,7 +95,7 @@ export default function ClassifyImagesPanel({ onChanged }) {
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [bump]);
 
   const onDrop = (e) => {
     e.preventDefault();

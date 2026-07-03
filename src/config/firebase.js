@@ -1,23 +1,31 @@
 /**
- * Firebase config — fill via .env (see .env.example).
- * App works without Firebase; jsonblob remains the fallback for stats + art.
+ * Firebase config — prefers REACT_APP_* env, falls back to project defaults.
+ * Web API keys are public; protect data with Firestore/Storage rules.
  */
 
-export function isFirebaseConfigured() {
-  return Boolean(
-    process.env.REACT_APP_FIREBASE_API_KEY
-    && process.env.REACT_APP_FIREBASE_PROJECT_ID
-  );
-}
+const FALLBACK_CONFIG = {
+  apiKey: 'AIzaSyArLB5GETzRlRya_sMyxcCGQZznlqZa5Go',
+  authDomain: 'rosario-cards.firebaseapp.com',
+  projectId: 'rosario-cards',
+  storageBucket: 'rosario-cards.firebasestorage.app',
+  messagingSenderId: '443688115227',
+  appId: '1:443688115227:web:9d2d8a1069c328827bacbe',
+};
 
 export function getFirebaseConfig() {
-  if (!isFirebaseConfigured()) return null;
   return {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID,
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY || FALLBACK_CONFIG.apiKey,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || FALLBACK_CONFIG.authDomain,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || FALLBACK_CONFIG.projectId,
+    storageBucket:
+      process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || FALLBACK_CONFIG.storageBucket,
+    messagingSenderId:
+      process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || FALLBACK_CONFIG.messagingSenderId,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID || FALLBACK_CONFIG.appId,
   };
+}
+
+export function isFirebaseConfigured() {
+  const c = getFirebaseConfig();
+  return Boolean(c.apiKey && c.projectId);
 }
