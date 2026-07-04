@@ -4,12 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.48',
-  name: 'Estaciones y voz propia',
+  version: '0.3.49',
+  name: 'Ajustes desplazables',
   CURRENT: [
-    'Vía Crucis / Lucis: meditación propia por estación',
-    'Voz automática: si grabaste una oración, suena al llegar a ese paso',
-    'Estudio → Clasificar + subir imágenes a la nube',
+    'Ajustes se puede desplazar; Actualizar y Estudio arriba',
+    'Voz automática y meditación por estación (Vía Crucis/Lucis)',
+    'Estudio → Clasificar + asignar versos',
   ],
   UPCOMING: [
     'Publicar reglas Firestore + Storage (si permiso denegado)',

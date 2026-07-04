@@ -59,20 +59,27 @@ export default function SettingsOverlay({
     <div style={{
       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
       background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 10000,
-      display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+      display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+      padding: '16px', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }} onClick={onClose}>
       
       <div 
         style={{
           background: '#111', border: '1px solid #333', borderRadius: '20px',
-          padding: '30px', width: '100%', maxWidth: '350px',
-          boxShadow: '0 20px 60px black', animation: 'settings-entry 0.3s ease-out'
+          padding: '24px', width: '100%', maxWidth: '350px',
+          margin: '12px 0 32px',
+          maxHeight: 'none',
+          boxShadow: '0 20px 60px black', animation: 'settings-entry 0.3s ease-out',
         }} 
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          marginBottom: '16px', position: 'sticky', top: 0, background: '#111',
+          zIndex: 1, paddingBottom: '8px',
+        }}>
           <h2 style={{ color: '#D4AF37', margin: 0, fontSize: '1.4rem' }}>Ajustes</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#666', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+          <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', color: '#666', fontSize: '1.5rem', cursor: 'pointer' }} aria-label="Cerrar">×</button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -283,21 +290,19 @@ export default function SettingsOverlay({
 
         </div>
 
-        {onOpenReleaseNotes && (
+        {/* Actions first so update / studio stay reachable on short screens */}
+        {onCheckForUpdate && (
           <button
             type="button"
-            onClick={() => onOpenReleaseNotes()}
+            onClick={onCheckForUpdate}
             style={{
-              width: '100%', marginTop: '20px', padding: '14px',
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: '12px', color: '#ccc', cursor: 'pointer',
-              fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+              width: '100%', marginTop: '16px', padding: '14px',
+              background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)',
+              borderRadius: '12px', color: '#D4AF37', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold'
             }}
           >
-            ✨ Novedades
-            <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
-              Qué hay en esta versión y qué viene
-            </span>
+            🔄 Buscar actualización
           </button>
         )}
 
@@ -322,11 +327,29 @@ export default function SettingsOverlay({
           </button>
         )}
 
+        {onOpenReleaseNotes && (
+          <button
+            type="button"
+            onClick={() => onOpenReleaseNotes()}
+            style={{
+              width: '100%', marginTop: '10px', padding: '14px',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+            }}
+          >
+            ✨ Novedades
+            <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
+              Qué hay en esta versión y qué viene
+            </span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={shareApp}
           style={{
-            width: '100%', marginTop: '20px', padding: '14px',
+            width: '100%', marginTop: '10px', padding: '14px',
             background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: '12px', color: '#ccc', cursor: 'pointer',
             fontSize: '0.95rem', fontWeight: 'bold'
@@ -334,21 +357,6 @@ export default function SettingsOverlay({
         >
           📤 Compartir la app
         </button>
-
-        {onCheckForUpdate && (
-          <button
-            type="button"
-            onClick={onCheckForUpdate}
-            style={{
-              width: '100%', marginTop: '10px', padding: '14px',
-              background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)',
-              borderRadius: '12px', color: '#D4AF37', cursor: 'pointer',
-              fontSize: '0.95rem', fontWeight: 'bold'
-            }}
-          >
-            🔄 Buscar actualización
-          </button>
-        )}
 
         <div style={{ marginTop: '24px', borderTop: '1px solid #222', paddingTop: '16px', textAlign: 'center' }}>
           <div style={{ color: '#444', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>

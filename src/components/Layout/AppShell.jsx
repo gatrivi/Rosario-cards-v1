@@ -53,7 +53,7 @@ import {
   isValidRosaryMystery,
 } from '../../utils/bookletSequence';
 
-const APP_VERSION = '0.3.48';
+const APP_VERSION = '0.3.49';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
