@@ -6,6 +6,9 @@ import AppShell from './components/Layout/AppShell';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
+import { installNovenaAutoProgress } from './utils/novenaAutoProgress';
+
+installNovenaAutoProgress();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
