@@ -1,4 +1,5 @@
 import "./App.css";
+import "./styles/reachablePrayerControls.css";
 import { getDefaultMystery } from "./components/utils/getDefaultMystery"; 
 import RosarioPrayerBook from "./data/RosarioPrayerBook";
 import { useState } from "react";
