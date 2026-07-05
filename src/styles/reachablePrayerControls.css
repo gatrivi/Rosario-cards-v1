@@ -1,4 +1,43 @@
 /* Reachability fixes for optional prayers on tall touch phones. */
+#booklet-mercy-portal:not(:empty) {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: calc(4.7rem + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%);
+  z-index: 180;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+  max-width: calc(100vw - 1rem);
+  overflow-x: auto;
+  padding: 0.35rem 0.45rem;
+  background: linear-gradient(180deg, rgba(12, 10, 22, 0.48), rgba(12, 10, 22, 0.86));
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: auto;
+  scrollbar-width: none;
+}
+
+#booklet-mercy-portal:not(:empty)::-webkit-scrollbar {
+  display: none;
+}
+
+#booklet-mercy-portal:not(:empty) .mercy-window-thumb {
+  height: 50px;
+  min-width: 34px;
+  touch-action: manipulation;
+}
+
+#booklet-mercy-portal:not(:empty) .faustina-mercy-menu {
+  bottom: calc(100% + 6px);
+  top: auto;
+}
+
 @media (pointer: coarse) and (min-height: 760px) {
   .booklet-progress .booklet-optional-btn {
     position: fixed;
