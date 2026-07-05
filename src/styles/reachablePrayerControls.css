@@ -1,0 +1,61 @@
+/* Reachability fixes for optional prayers on tall touch phones. */
+@media (pointer: coarse) and (min-height: 760px) {
+  .booklet-progress .booklet-optional-btn {
+    position: fixed;
+    right: max(0.85rem, env(safe-area-inset-right));
+    bottom: calc(var(--booklet-footer-h, 3.25rem) + 0.9rem + env(safe-area-inset-bottom));
+    z-index: 80;
+    min-height: 44px;
+    max-width: min(12rem, 52vw);
+    padding: 0.55rem 0.85rem;
+    margin-right: 0;
+    background: rgba(12, 10, 22, 0.72);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    border-color: rgba(212, 175, 55, 0.42);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36);
+    color: rgba(255, 230, 170, 0.96);
+    font-size: 0.72rem;
+    line-height: 1.1;
+    text-align: center;
+    touch-action: manipulation;
+  }
+
+  .booklet-progress .booklet-optional-btn__label {
+    display: inline-block;
+    white-space: normal;
+  }
+
+  .optional-prayer-backdrop {
+    align-items: flex-end;
+    padding: 1rem 1rem calc(var(--booklet-footer-h, 3.25rem) + 1rem + env(safe-area-inset-bottom));
+  }
+
+  .optional-prayer-sheet {
+    max-height: min(68vh, 34rem);
+    max-width: min(24rem, 94vw);
+    overflow: hidden;
+  }
+
+  .optional-prayer-sheet__tabs,
+  .optional-prayer-sheet__langs {
+    flex-wrap: wrap;
+  }
+
+  .optional-prayer-sheet__tab,
+  .optional-prayer-sheet__lang,
+  .optional-prayer-sheet__close {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .optional-prayer-sheet__text {
+    max-height: min(42vh, 19rem);
+  }
+}
+
+@media (pointer: coarse) and (min-height: 860px) {
+  .booklet-progress .booklet-optional-btn {
+    bottom: calc(var(--booklet-footer-h, 3.25rem) + 1.25rem + env(safe-area-inset-bottom));
+  }
+}
