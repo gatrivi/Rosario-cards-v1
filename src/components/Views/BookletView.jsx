@@ -73,6 +73,8 @@ const TRANSITION_PHASE = {
 };
 
 export const BOOKLET_TIMING = {
+  /** Minimum gap before vitral swaps after prayer chrome leaves */
+  minGap: 72,
   textOut: 220,
   linger: 280,
   imageBeforeText: 480,
@@ -266,7 +268,7 @@ export default function BookletView({
     clearTransitionTimers();
     setPhase(TRANSITION_PHASE.READY);
     setDisplayIndex(safeIndex);
-  }, [misterioActual, clearTransitionTimers, setPhase, safeIndex]);
+  }, [misterioActual, clearTransitionTimers, setPhase]);
 
   useEffect(() => {
     if (transitionPhaseRef.current === TRANSITION_PHASE.READY && displayIndex !== safeIndex) {
@@ -709,10 +711,10 @@ export default function BookletView({
   return (
     <div className="booklet-view" style={vitralStyle} onPointerDown={resetOptionalIdle}>
       <VitralBackground
-        key={`${activePrayer.id}-${hasInnerVerses ? innerVerseIndex : ''}-${vitralCandidates[0]}`}
         candidates={vitralCandidates}
         kind={vitralKind}
         stepGlow={stepGlow}
+        crossfade
         onReady={handleImageReady}
         useBookletClasses
       />

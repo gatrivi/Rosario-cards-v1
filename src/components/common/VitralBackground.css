@@ -22,10 +22,21 @@
 .vitral-bg__img {
   filter: brightness(0.82) contrast(1.05) saturate(1.12);
   height: 100%;
+  inset: 0;
   object-fit: cover;
   object-position: center;
+  position: absolute;
   transition: opacity 0.65s ease-out, transform 0.7s ease-out, filter 0.7s ease-out;
   width: 100%;
+}
+
+.vitral-bg__img--overlay {
+  opacity: 0;
+  z-index: 1;
+}
+
+.vitral-bg__img--overlay-visible {
+  opacity: 1;
 }
 
 .booklet-vitral--ave .booklet-vitral__img,

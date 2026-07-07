@@ -205,6 +205,43 @@ describe('BookletView', () => {
     expect(onMysteryChange).toHaveBeenCalledWith('dolorosos');
   });
 
+  test('completes staged transition when parent index updates mid-sequence', () => {
+    const { rerender } = render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+
+    act(() => {
+      jest.advanceTimersByTime(BOOKLET_TIMING.textOut + BOOKLET_TIMING.linger);
+    });
+
+    rerender(
+      <BookletView
+        currentPrayerIndex={1}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(
+        48 + BOOKLET_TIMING.imageBeforeText + BOOKLET_TIMING.textIn
+      );
+    });
+
+    expect(screen.getByText('Acto de Contrición')).toBeInTheDocument();
+    expect(document.querySelector('.booklet-prayer-chrome--hidden')).not.toBeInTheDocument();
+    expect(BOOKLET_TIMING.textOut).toBeGreaterThanOrEqual(BOOKLET_TIMING.minGap);
+    expect(BOOKLET_TIMING.imageBeforeText).toBeGreaterThanOrEqual(BOOKLET_TIMING.minGap);
+  });
+
   test('shows ave maria run position within a decade', () => {
     render(
       <BookletView
