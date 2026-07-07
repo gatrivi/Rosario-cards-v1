@@ -52,6 +52,9 @@ import {
   isValidBookletMystery,
   isValidRosaryMystery,
 } from '../../utils/bookletSequence';
+import { SAGRADO_CORAZON_ADORACION_ID } from '../../data/sagradoCorazonAdoracionData';
+import MobileElementStepper from './MobileElementStepper';
+import './AppShell.css';
 
 const APP_VERSION = '0.3.49';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
@@ -96,17 +99,21 @@ export default function AppShell() {
   }, []);
 
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('rosario_settings');
-    return saved ? JSON.parse(saved) : {
+    const defaults = {
       virtualRosaryEnabled: true,
       soundEnabled: localStorage.getItem('rosario_sound_enabled') !== 'false',
       meditationRitmo: 'incienso', // oro, incienso, mirra
       isLeftHanded: localStorage.getItem('rosario_left_handed') === 'true',
       simpleMode: localStorage.getItem('rosario_simple_mode') === 'true',
+      oneHandMode: localStorage.getItem('rosario_one_hand_mode') === 'true',
+      oneHandQuickToggleEnabled: localStorage.getItem('rosario_one_hand_quick_toggle_enabled') !== 'false',
+      mobileElementArrowsEnabled: localStorage.getItem('rosario_mobile_element_arrows_enabled') !== 'false',
       mercyOptionalOpening: true,
       litanyEntranceEnabled: true,
       perVersePrayerImages: false,
     };
+    const saved = localStorage.getItem('rosario_settings');
+    return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
   });
 
   useEffect(() => {
@@ -114,6 +121,9 @@ export default function AppShell() {
     localStorage.setItem('rosario_sound_enabled', String(settings.soundEnabled));
     localStorage.setItem('rosario_left_handed', String(settings.isLeftHanded));
     localStorage.setItem('rosario_simple_mode', String(settings.simpleMode));
+    localStorage.setItem('rosario_one_hand_mode', String(settings.oneHandMode === true));
+    localStorage.setItem('rosario_one_hand_quick_toggle_enabled', String(settings.oneHandQuickToggleEnabled !== false));
+    localStorage.setItem('rosario_mobile_element_arrows_enabled', String(settings.mobileElementArrowsEnabled !== false));
   }, [settings]);
 
   // --- Lifting Prayer State ---
@@ -367,11 +377,13 @@ export default function AppShell() {
             perVersePrayerImages={settings.perVersePrayerImages === true}
             onAveMariaComplete={(fingerprint) => {
               if (misterioActual === 'divinamisericordia_novena') return;
+              if (misterioActual === SAGRADO_CORAZON_ADORACION_ID) return;
               addRosas(1);
               storeRoseData(fingerprint);
             }}
             onAveMariaUndo={() => {
               if (misterioActual === 'divinamisericordia_novena') return;
+              if (misterioActual === SAGRADO_CORAZON_ADORACION_ID) return;
               removeRosas(1);
               popRoseData();
             }}
@@ -478,102 +490,18 @@ export default function AppShell() {
       overflow: 'hidden',
       fontFamily: 'serif',
       position: 'relative'
-    }} className="app-shell">
+    }} className={`app-shell${vistaActiva === 'booklet' ? ' app-shell--booklet' : ''}${settings.oneHandMode ? ' app-shell--one-hand' : ''}`}>
       
-      {/* FLOATING HEADER CONTROLS */}
-      <div style={{
-        position: 'absolute', top: 15, left: 15, right: 15,
-        display: 'flex', justifyContent: 'space-between', zIndex: 100,
-        pointerEvents: 'none'
-      }}>
-        <div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto', alignItems: 'flex-start' }}>
-          <div
-            id="booklet-mercy-portal"
-            style={{
-              display: vistaActiva === 'booklet' ? 'flex' : 'none',
-              alignItems: 'flex-start',
-            }}
-          />
-          <button 
-            onClick={() => setShowFeedback(true)}
-            title="Reportar problema o sugerencia"
-            style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#666', borderRadius: '8px', padding: settings.simpleMode ? '6px 10px' : '6px',
-              cursor: 'pointer', backdropFilter: 'blur(5px)',
-              width: settings.simpleMode ? 'auto' : '32px', height: '32px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-              fontSize: '0.75rem',
-            }}
-          >
-            {settings.simpleMode ? (
-              <>
-                <IconHelp size={18} />
-                Ayuda
-              </>
-            ) : (
-              <IconFeedback size={18} />
-            )}
-          </button>
-        </div>
-        <div style={{
-          display: 'flex',
-          gap: '6px',
-          alignItems: 'center',
-          pointerEvents: 'auto',
-          flex: '1 1 auto',
-          justifyContent: 'flex-end',
-          minWidth: 0,
-          marginLeft: '8px',
-        }}>
-          <div
-            id="booklet-top-orbs"
-            style={{
-              display: vistaActiva === 'booklet' ? 'flex' : 'none',
-              alignItems: 'center',
-              flex: '1 1 auto',
-              justifyContent: 'flex-end',
-              minWidth: 0,
-              maxWidth: 'calc(100vw - 9.5rem)',
-              overflow: 'hidden',
-            }}
-          />
-          <button 
-            onClick={() => setShowSync(true)}
-            style={{ 
-              background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
-              color: getSyncColor(), width: '32px', height: '32px',
-              borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)',
-              fontSize: '0.96rem', boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
-              display: 'flex', justifyContent: 'center', alignItems: 'center'
-            }}
-            title={`Sincronización: ${syncStatus}`}
-          >
-            {syncStatus === 'loading' ? <IconSyncLoading size={18} /> : <IconSync size={18} />}
-          </button>
-          <button 
-            type="button"
-            onClick={() => setShowSettings(true)}
-            title="Ajustes"
-            aria-label="Ajustes"
-            style={{ 
-              background: 'rgba(20,20,20,0.6)', border: '1px solid #333', 
-              color: '#ccc',
-              minWidth: settings.simpleMode ? 'auto' : '32px',
-              height: '32px',
-              padding: settings.simpleMode ? '0 10px' : '0',
-              borderRadius: settings.simpleMode ? '16px' : '50%',
-              cursor: 'pointer', backdropFilter: 'blur(5px)',
-              boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
-              display: 'flex', justifyContent: 'center', alignItems: 'center',
-              gap: '4px', fontSize: '0.7rem',
-            }}
-          >
-            <IconSettings size={18} />
-            {settings.simpleMode && <span>Ajustes</span>}
-          </button>
-        </div>
-      </div>
+      <AppActionDock
+        oneHandMode={settings.oneHandMode === true}
+        simpleMode={settings.simpleMode}
+        vistaActiva={vistaActiva}
+        syncStatus={syncStatus}
+        getSyncColor={getSyncColor}
+        onFeedback={() => setShowFeedback(true)}
+        onSync={() => setShowSync(true)}
+        onSettings={() => setShowSettings(true)}
+      />
 
       {/* Update banner — visible when a new service worker is waiting */}
       {updateAvailable && (
@@ -625,10 +553,45 @@ export default function AppShell() {
         </ViewErrorBoundary>
       </div>
 
+      {/* Booklet thumb strip (Divina Misericordia / Ángelus / Magnificat) */}
+      <div
+        id="booklet-mercy-portal"
+        style={{
+          display: vistaActiva === 'booklet' ? 'flex' : 'none',
+          position: 'absolute',
+          bottom: settings.oneHandMode
+            ? 'calc(70px + env(safe-area-inset-bottom, 0px) + 56px)'
+            : '78px',
+          left: '10px',
+          right: '10px',
+          zIndex: 90,
+          pointerEvents: 'auto',
+          alignItems: 'flex-end',
+          justifyContent: 'flex-start',
+          overflowX: 'auto',
+          gap: '8px',
+          paddingBottom: '2px',
+        }}
+      />
+
+      {settings.oneHandQuickToggleEnabled !== false && (
+        <OneHandQuickToggle
+          oneHandMode={settings.oneHandMode === true}
+          isLeftHanded={settings.isLeftHanded}
+          onToggle={() => setSettings((s) => ({ ...s, oneHandMode: !s.oneHandMode }))}
+        />
+      )}
+
+      <MobileElementStepper
+        enabled={settings.mobileElementArrowsEnabled}
+        isLeftHanded={settings.isLeftHanded}
+      />
+
       {/* Handedness Toggle (Floating above nav) */}
-      <HandToggle 
-        isLeftHanded={settings.isLeftHanded} 
-        onToggle={() => setSettings(s => ({ ...s, isLeftHanded: !s.isLeftHanded }))} 
+      <HandToggle
+        isLeftHanded={settings.isLeftHanded}
+        bookletActive={vistaActiva === 'booklet'}
+        onToggle={() => setSettings(s => ({ ...s, isLeftHanded: !s.isLeftHanded }))}
       />
 
       <BottomNav 
@@ -642,20 +605,7 @@ export default function AppShell() {
         onClick={() => setShowReleaseNotes(true)}
         title="Novedades de esta versión"
         aria-label={`Versión ${APP_VERSION}. Ver novedades`}
-        style={{
-          position: 'absolute',
-          bottom: '78px',
-          left: '10px',
-          zIndex: 100,
-          color: 'rgba(212, 175, 55, 0.55)',
-          fontSize: '0.6rem',
-          fontFamily: 'monospace',
-          letterSpacing: '1px',
-          background: 'transparent',
-          border: 'none',
-          padding: '4px 2px',
-          cursor: 'pointer',
-        }}
+        className={`app-version-badge ${settings.oneHandMode ? 'app-version-badge--one-hand' : 'app-version-badge--default'}`}
       >
         v{APP_VERSION}
       </button>
@@ -792,7 +742,90 @@ export default function AppShell() {
 
 // --- Sub-components ---
 
-function HandToggle({ isLeftHanded, onToggle }) {
+function AppActionDock({
+  oneHandMode,
+  simpleMode,
+  vistaActiva,
+  syncStatus,
+  getSyncColor,
+  onFeedback,
+  onSync,
+  onSettings,
+}) {
+  const dockClass = oneHandMode
+    ? 'app-action-dock app-action-dock--bottom'
+    : 'app-action-dock app-action-dock--top';
+
+  return (
+    <div className={dockClass}>
+      <div className="app-action-cluster app-action-cluster--left">
+        <button
+          type="button"
+          onClick={onFeedback}
+          title="Reportar problema o sugerencia"
+          aria-label={simpleMode ? 'Ayuda' : 'Reportar problema o sugerencia'}
+          className={`app-action-btn app-action-btn--feedback${simpleMode ? ' simple-mode' : ''}`}
+        >
+          {simpleMode ? (
+            <>
+              <IconHelp size={18} />
+              Ayuda
+            </>
+          ) : (
+            <IconFeedback size={18} />
+          )}
+        </button>
+      </div>
+      <div className="app-action-cluster app-action-cluster--right">
+        <div
+          id="booklet-top-orbs"
+          style={{ display: vistaActiva === 'booklet' ? 'flex' : 'none' }}
+        />
+        <button
+          type="button"
+          onClick={onSync}
+          className="app-action-btn app-action-btn--round"
+          style={{ color: getSyncColor() }}
+          title={`Sincronización: ${syncStatus}`}
+          aria-label={`Sincronización: ${syncStatus}`}
+        >
+          {syncStatus === 'loading' ? <IconSyncLoading size={18} /> : <IconSync size={18} />}
+        </button>
+        <button
+          type="button"
+          onClick={onSettings}
+          title="Ajustes"
+          aria-label="Ajustes"
+          className={`app-action-btn app-action-btn--round app-action-btn--settings${simpleMode ? ' simple-mode' : ''}`}
+        >
+          <IconSettings size={18} />
+          {simpleMode && <span>Ajustes</span>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function OneHandQuickToggle({ oneHandMode, isLeftHanded, onToggle }) {
+  const sideClass = isLeftHanded
+    ? 'app-one-hand-toggle--right'
+    : 'app-one-hand-toggle--left';
+
+  return (
+    <div className={`app-one-hand-toggle ${sideClass}`}>
+      <button
+        type="button"
+        className="app-one-hand-toggle__btn"
+        onClick={onToggle}
+        aria-label={oneHandMode ? 'Mover controles arriba' : 'Mover controles abajo'}
+      >
+        {oneHandMode ? '↑' : '↓'}
+      </button>
+    </div>
+  );
+}
+
+function HandToggle({ isLeftHanded, bookletActive = false, onToggle }) {
   const [msg, setMsg] = React.useState('');
   const timerRef = React.useRef(null);
 
@@ -811,17 +844,19 @@ function HandToggle({ isLeftHanded, onToggle }) {
     setTimeout(() => setMsg(''), 2000);
   };
 
+  const sideClass = isLeftHanded ? 'hand-toggle-anchor--right' : 'hand-toggle-anchor--left';
+  const bookletClass = bookletActive ? ' hand-toggle-anchor--booklet' : '';
+
   return (
-    <div style={{
-      position: 'absolute',
-      bottom: '90px', // Just above BottomNav
-      [isLeftHanded ? 'right' : 'left']: '15px', // Opposite of dominant hand
-      zIndex: 1000,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: isLeftHanded ? 'flex-end' : 'flex-start',
-      pointerEvents: 'none'
-    }}>
+    <div
+      className={`hand-toggle-anchor ${sideClass}${bookletClass}`}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: isLeftHanded ? 'flex-end' : 'flex-start',
+        pointerEvents: 'none',
+      }}
+    >
       {msg && (
         <div style={{
           background: 'rgba(0,0,0,0.8)',

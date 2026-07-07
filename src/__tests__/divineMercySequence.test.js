@@ -1,5 +1,6 @@
 import { buildSequence, isValidBookletMystery, isValidRosaryMystery } from '../utils/bookletSequence';
 import { getBookletStepContext } from '../utils/bookletProgress';
+import { angelusThumbnail, magnificatThumbnail } from '../data/marianDevotionsData';
 
 describe('divineMercySequence', () => {
   test('64 steps with optional opening', () => {
@@ -75,7 +76,32 @@ describe('divineMercySequence', () => {
     expect(isValidBookletMystery('sangrepreciosa_litany')).toBe(true);
     expect(isValidBookletMystery('viacrucis')).toBe(true);
     expect(isValidBookletMystery('vialucis')).toBe(true);
+    expect(isValidBookletMystery('angelus')).toBe(true);
+    expect(isValidBookletMystery('magnificat')).toBe(true);
+    expect(isValidRosaryMystery('angelus')).toBe(false);
     expect(isValidBookletMystery('bogus')).toBe(false);
+  });
+
+  test('marian devotions are booklet-only and visually distinct', () => {
+    const angelus = buildSequence('angelus');
+    const magnificat = buildSequence('magnificat');
+    expect(angelus.map((p) => p.id)).toEqual([
+      'ANG_SC',
+      'ANG_ANNUNCIATION',
+      'ANG_AVE_1',
+      'ANG_FIAT',
+      'ANG_AVE_2',
+      'ANG_INCARNATION',
+      'ANG_AVE_3',
+      'ANG_FINAL',
+    ]);
+    expect(magnificat).toHaveLength(9);
+    expect(angelus.map((p) => p.id)).not.toContain('A');
+    expect(angelus[0].img).toBeTruthy();
+    expect(magnificat[0].img).toBeTruthy();
+    expect(angelusThumbnail).toBeTruthy();
+    expect(magnificatThumbnail).toBeTruthy();
+    expect(angelusThumbnail).not.toBe(magnificatThumbnail);
   });
 
   test('via crucis has 15 steps', () => {

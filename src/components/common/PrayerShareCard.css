@@ -1,0 +1,123 @@
+.prayer-share-card {
+  position: relative;
+  width: 540px;
+  height: 720px;
+  overflow: hidden;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f8f4e6;
+  background: #0d0a1a;
+}
+
+.prayer-share-card__bg {
+  position: absolute;
+  inset: 0;
+}
+
+.prayer-share-card__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.prayer-share-card__bg-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 6, 18, 0.55) 0%,
+    rgba(8, 6, 18, 0.72) 45%,
+    rgba(8, 6, 18, 0.88) 100%
+  );
+}
+
+.prayer-share-card__frame {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 2.4rem 2rem 1.75rem;
+  box-sizing: border-box;
+}
+
+.prayer-share-card__ornament {
+  color: rgba(212, 175, 55, 0.75);
+  font-size: 1.1rem;
+  margin-bottom: 0.65rem;
+  text-align: center;
+}
+
+.prayer-share-card__devotion {
+  color: rgba(212, 175, 55, 0.92);
+  font-size: 0.95rem;
+  font-variant: small-caps;
+  letter-spacing: 0.14em;
+  margin: 0;
+  text-align: center;
+}
+
+.prayer-share-card__devotion-sub {
+  color: rgba(248, 244, 230, 0.62);
+  font-size: 0.78rem;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  margin: 0.35rem 0 0;
+  text-align: center;
+}
+
+.prayer-share-card__title {
+  color: #fff8e8;
+  font-size: 1.55rem;
+  font-weight: normal;
+  line-height: 1.25;
+  margin: 1.1rem 0 0.85rem;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.prayer-share-card__text-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0.5rem 0;
+}
+
+.prayer-share-card__text {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(12, 10, 22, 0.42);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 14px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.28),
+    inset 0 0 24px rgba(212, 175, 55, 0.05);
+  font-size: 1.02rem;
+  line-height: 1.55;
+  margin: 0;
+  max-height: 100%;
+  overflow: hidden;
+  padding: 1.1rem 1.15rem;
+  text-align: center;
+  white-space: pre-wrap;
+}
+
+.prayer-share-card__progress {
+  color: rgba(212, 175, 55, 0.78);
+  font-size: 0.78rem;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  margin: 0.85rem 0 0;
+  text-align: center;
+}
+
+.prayer-share-card__brand {
+  color: rgba(212, 175, 55, 0.45);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  margin: 0.55rem 0 0;
+  text-align: center;
+  text-transform: uppercase;
+}

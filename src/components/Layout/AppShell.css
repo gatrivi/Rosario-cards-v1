@@ -1,0 +1,274 @@
+/* AppShell — one-hand accessibility layout */
+
+.app-shell {
+  --app-bottom-nav-height: 70px;
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-above-nav: calc(var(--app-bottom-nav-height) + var(--app-safe-bottom));
+}
+
+/* --- Action dock --- */
+.app-action-dock {
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.app-action-dock--top {
+  top: 15px;
+}
+
+.app-action-dock--bottom {
+  bottom: calc(var(--app-above-nav) + 6px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.app-action-cluster {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  pointer-events: auto;
+}
+
+.app-action-cluster--left {
+  gap: 10px;
+}
+
+.app-action-cluster--right {
+  gap: 6px;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
+  margin-left: 8px;
+  align-items: center;
+}
+
+.app-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  transition: opacity 0.2s ease;
+}
+
+.app-action-btn:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+.app-action-btn--feedback {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #666;
+  border-radius: 8px;
+  padding: 6px;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.app-action-btn--feedback.simple-mode {
+  padding: 6px 10px;
+  width: auto;
+}
+
+.app-action-btn--round {
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid #333;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 0.96rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.app-action-btn--settings {
+  color: #ccc;
+}
+
+.app-action-btn--settings.simple-mode {
+  border-radius: 16px;
+  width: auto;
+  padding: 0 10px;
+  gap: 4px;
+  font-size: 0.7rem;
+}
+
+#booklet-top-orbs {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
+  max-width: calc(100vw - 9.5rem);
+  overflow: hidden;
+}
+
+/* --- One-hand quick toggle --- */
+.app-one-hand-toggle {
+  position: absolute;
+  bottom: calc(var(--app-above-nav) + 4px);
+  z-index: 110;
+  pointer-events: none;
+}
+
+.app-one-hand-toggle--right {
+  right: 12px;
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.app-one-hand-toggle--left {
+  left: 12px;
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.app-one-hand-toggle__btn {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background: rgba(20, 20, 20, 0.45);
+  color: #aaa;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.35;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease;
+}
+
+.app-one-hand-toggle__btn:hover,
+.app-one-hand-toggle__btn:focus-visible {
+  opacity: 0.75;
+}
+
+.app-one-hand-toggle__btn:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+/* --- Mobile element stepper --- */
+.app-access-stepper {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 105;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.app-access-stepper--right {
+  right: 8px;
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.app-access-stepper--left {
+  left: 8px;
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.app-access-stepper__btn {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(20, 20, 20, 0.4);
+  color: #bbb;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.35;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease;
+}
+
+.app-access-stepper__btn:hover,
+.app-access-stepper__btn:focus-visible {
+  opacity: 0.75;
+}
+
+.app-access-stepper__btn:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+/* Version badge — shift up when bottom dock is active */
+.app-version-badge {
+  position: absolute;
+  left: 10px;
+  z-index: 100;
+  color: rgba(212, 175, 55, 0.55);
+  font-size: 0.6rem;
+  font-family: monospace;
+  letter-spacing: 1px;
+  background: transparent;
+  border: none;
+  padding: 4px 2px;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.app-version-badge--default {
+  bottom: calc(var(--app-above-nav) + 8px);
+}
+
+.app-version-badge--one-hand {
+  bottom: calc(var(--app-above-nav) + 56px);
+}
+
+.app-version-badge:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+/* Handedness toggle — clear of devotion thumb strip in Libro */
+.hand-toggle-anchor {
+  position: absolute;
+  bottom: calc(var(--app-above-nav) + 20px);
+  z-index: 1000;
+}
+
+.hand-toggle-anchor--left {
+  left: 15px;
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.hand-toggle-anchor--right {
+  right: 15px;
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.app-shell--booklet .hand-toggle-anchor {
+  bottom: calc(var(--app-above-nav) + 74px);
+}
+
+.app-shell--booklet.app-shell--one-hand .hand-toggle-anchor {
+  bottom: calc(var(--app-above-nav) + 128px);
+}

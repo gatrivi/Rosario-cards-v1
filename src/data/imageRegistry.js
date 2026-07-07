@@ -62,6 +62,7 @@ const REGISTRY = {
   theotokos: { path: theotokos, name: 'Theotokos — Madre de Dios', tags: ['mary', 'theotokos', 'byzantine'], source: 'asset' },
   allMary17th: { path: allMary17th, name: 'Virgen — litografía s. XVII', tags: ['mary', 'lithograph'], source: 'asset' },
   reginaCaeli: { path: reginaCaeli, name: 'Regina Caeli', tags: ['mary', 'regina-caeli', 'prayer'], source: 'asset' },
+  magnificatVisitation: { ...PUBLIC('/gallery-images/misterios/modooscuro/misteriogozo2.webp'), name: 'La Visitación — Magnificat', tags: ['mary', 'visitation', 'magnificat', 'prayer'] },
 
   // ── Latin prayer texts ──
   latinPaterNoster: { path: latinPaterNoster, name: 'Pater Noster (latín)', tags: ['latin', 'pater-noster', 'prayer'], source: 'asset' },

@@ -1,0 +1,95 @@
+.prayer-share-preview-backdrop {
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  position: fixed;
+  z-index: 1200;
+}
+
+.prayer-share-preview-sheet {
+  background: linear-gradient(180deg, rgba(18, 14, 30, 0.98), rgba(10, 8, 18, 0.99));
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 16px 16px 12px 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  max-height: min(92vh, 44rem);
+  max-width: min(24rem, 96vw);
+  overflow: hidden;
+  width: 100%;
+}
+
+.prayer-share-preview-sheet__header {
+  align-items: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+}
+
+.prayer-share-preview-sheet__title {
+  color: rgba(212, 175, 55, 0.9);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  font-weight: normal;
+  margin: 0;
+}
+
+.prayer-share-preview-sheet__close {
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 999px;
+  color: rgba(248, 244, 230, 0.8);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.prayer-share-preview-sheet__hint {
+  color: rgba(248, 244, 230, 0.62);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0.75rem 1rem 0;
+}
+
+.prayer-share-preview-sheet__image-wrap {
+  display: flex;
+  justify-content: center;
+  max-height: min(58vh, 28rem);
+  overflow: auto;
+  padding: 0.85rem 1rem;
+}
+
+.prayer-share-preview-sheet__image {
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 12px;
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+}
+
+.prayer-share-preview-sheet__actions {
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.85rem 1rem 1rem;
+}
+
+.prayer-share-preview-sheet__btn {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 999px;
+  color: rgba(255, 230, 170, 0.95);
+  cursor: pointer;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.85rem;
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+}

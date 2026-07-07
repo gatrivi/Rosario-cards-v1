@@ -25,12 +25,19 @@ export function getLitanySections() {
 
 export function formatLitanyLine(verse) {
   if (!verse) return '';
-  if (verse.response && verse.invocation !== verse.response) {
-    return `${verse.invocation}: ${verse.response}`;
+  const invocation = verse.invocation;
+  const response = verse.response;
+
+  // When both voices exist and differ, show "invocation: response".
+  // If invocation is missing, fall back cleanly to response only.
+  if (invocation && response && invocation !== response) {
+    return `${invocation}: ${response}`;
   }
-  return verse.invocation || verse.response || '';
+
+  return invocation || response || '';
 }
 
 export function isLitanyPrayer(prayer) {
+  if (prayer?.type === 'litany' && prayer?.verses?.length > 0) return true;
   return prayer?.id === 'LL' && (prayer?.verses?.length > 0 || litanyLauretanaVerses.length > 0);
 }

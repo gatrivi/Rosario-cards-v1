@@ -170,36 +170,94 @@ export default function SettingsOverlay({
             </label>
           </div>
 
-          {/* Left Handed Mode */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ color: '#fff', fontSize: '1rem' }}>Modo Zurdo</div>
-              <div style={{ color: '#666', fontSize: '0.75rem' }}>Invierte el orden de la navegación</div>
+          {/* Accesibilidad */}
+          <div style={{
+            background: 'rgba(212, 175, 55, 0.04)',
+            padding: '14px',
+            borderRadius: '14px',
+            border: '1px solid rgba(212, 175, 55, 0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}>
+            <div style={{ color: '#D4AF37', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Accesibilidad
             </div>
-            <label className="switch">
-              <input 
-                type="checkbox" 
-                checked={settings.isLeftHanded}
-                onChange={(e) => onUpdateSettings({ ...settings, isLeftHanded: e.target.checked })}
-              />
-              <span className="slider round"></span>
-            </label>
-          </div>
 
-          {/* Simple Mode (Accessibility) */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(212, 175, 55, 0.05)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-            <div>
-              <div style={{ color: '#D4AF37', fontSize: '1rem', fontWeight: 'bold' }}>👵 Lectura Fácil</div>
-              <div style={{ color: '#aaa', fontSize: '0.75rem' }}>Letras grandes y toques simples</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ color: '#fff', fontSize: '1rem' }}>Modo Zurdo</div>
+                <div style={{ color: '#666', fontSize: '0.75rem' }}>Invierte el orden de la navegación</div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={settings.isLeftHanded}
+                  onChange={(e) => onUpdateSettings({ ...settings, isLeftHanded: e.target.checked })}
+                />
+                <span className="slider round"></span>
+              </label>
             </div>
-            <label className="switch">
-              <input 
-                type="checkbox" 
-                checked={settings.simpleMode}
-                onChange={(e) => onUpdateSettings({ ...settings, simpleMode: e.target.checked })}
-              />
-              <span className="slider round"></span>
-            </label>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ color: '#fff', fontSize: '1rem' }}>Modo una mano</div>
+                <div style={{ color: '#666', fontSize: '0.75rem' }}>Mueve los controles superiores hacia abajo</div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={settings.oneHandMode === true}
+                  onChange={(e) => onUpdateSettings({ ...settings, oneHandMode: e.target.checked })}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ color: '#fff', fontSize: '1rem' }}>Botón rápido una mano</div>
+                <div style={{ color: '#666', fontSize: '0.75rem' }}>Muestra un botón discreto para subir/bajar controles</div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={settings.oneHandQuickToggleEnabled !== false}
+                  onChange={(e) => onUpdateSettings({ ...settings, oneHandQuickToggleEnabled: e.target.checked })}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ color: '#fff', fontSize: '1rem' }}>Flechas móviles</div>
+                <div style={{ color: '#666', fontSize: '0.75rem' }}>Permite saltar entre elementos tocables en pantallas chicas</div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={settings.mobileElementArrowsEnabled !== false}
+                  onChange={(e) => onUpdateSettings({ ...settings, mobileElementArrowsEnabled: e.target.checked })}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(212, 175, 55, 0.08)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+              <div>
+                <div style={{ color: '#D4AF37', fontSize: '1rem', fontWeight: 'bold' }}>👵 Lectura Fácil</div>
+                <div style={{ color: '#aaa', fontSize: '0.75rem' }}>Letras grandes y toques simples</div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={settings.simpleMode}
+                  onChange={(e) => onUpdateSettings({ ...settings, simpleMode: e.target.checked })}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
           </div>
 
           {settings.soundEnabled && onStartAmbientAudio && (

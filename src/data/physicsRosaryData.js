@@ -95,14 +95,34 @@ export const getRosaryBeads = (mysteryKey = 'gozosos') => {
     }
   });
 
-  // Ensure exactly 61 nodes. If we missed any (rare), we fill them.
-  // Then re-assign topology: Crucifix (0), P (1), A,A,A (2,3,4), MG1 (5), Medal (6)
+  // Re-assign topology deterministically:
+  // - Tail contains the "opening chain" physical beads up to the first mystery announcement,
+  //   plus the Salve Regina bead (liturgicId === 'S') which acts as the medal centerpiece.
+  //
+  // This must NOT rely on the physical array position (i), because liturgic steps like 'S'
+  // can occur late in the sequence while still needing to render as the centerpiece medal.
+  const firstMysteryLiturgicIndex = sequence.findIndex((id) => {
+    if (!id) return false;
+    return id.startsWith('MG') || id.startsWith('MD') || id.startsWith('ML');
+  });
+
+  const medalPhysicalIndex = physicsNodes.findIndex(
+    (n) => n.liturgicId === 'S' || n.physicsType === 'medal' || n.role === 'medal'
+  );
+
   return physicsNodes.map((node, i) => {
-    if (i <= 5) node.topology = 'tail';
-    else if (i === 6) {
+    const isMedal =
+      i === medalPhysicalIndex || node.liturgicId === 'S' || node.physicsType === 'medal';
+
+    if (isMedal) {
       node.topology = 'tail';
       node.role = 'medal';
       node.physicsType = 'medal';
+      return node;
+    }
+
+    if (firstMysteryLiturgicIndex >= 0 && node.index <= firstMysteryLiturgicIndex) {
+      node.topology = 'tail';
     } else {
       node.topology = 'loop';
     }

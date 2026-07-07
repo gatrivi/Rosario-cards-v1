@@ -31,14 +31,37 @@ import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
-import { buildSequence, isDivineMercyMode, isStationsDevotion } from '../../utils/bookletSequence';
+import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode } from '../../utils/bookletSequence';
 import { imagePath as registryImage } from '../../data/imageRegistry';
+import {
+  ANGELUS_ID,
+  MAGNIFICAT_ID,
+  angelusThumbnail,
+  magnificatThumbnail,
+} from '../../data/marianDevotionsData';
+import {
+  SAGRADO_CORAZON_ADORACION_ID,
+  sagradoCorazonAdoracionThumbnail,
+} from '../../data/sagradoCorazonAdoracionData';
 import FaustinaMercyThumb from '../common/FaustinaMercyThumb';
 import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
+import PrayerShareCard from '../common/PrayerShareCard';
+import PrayerSharePreviewModal from '../common/PrayerSharePreviewModal';
+import BookletOutlineView from './BookletOutlineView';
+import {
+  buildShareCardPayload,
+  buildSharePrayerText,
+  captureShareCardPng,
+  deliverSharePng,
+  formatBookletShareProgress,
+  getBookletDevotionLabel,
+  makeShareFilename,
+  preloadShareImage,
+} from '../../utils/bookletShare';
 import './BookletView.css';
 
 const TRANSITION_PHASE = {
@@ -63,45 +86,30 @@ function prefersReducedMotion() {
 }
 
 const MYSTERY_OPTIONS = [
-  { id: 'gozosos', label: 'Gozosos' },
-  { id: 'dolorosos', label: 'Dolorosos' },
-  { id: 'gloriosos', label: 'Gloriosos' },
-  { id: 'luminosos', label: 'Luminosos' },
+  {
+    id: 'gozosos',
+    label: 'Gozosos',
+    img: '/gallery-images/misterios/modooscuro/misteriogozo0.webp',
+  },
+  {
+    id: 'dolorosos',
+    label: 'Dolorosos',
+    img: '/gallery-images/misterios/modooscuro/misteriodolor0.jpg',
+  },
+  {
+    id: 'gloriosos',
+    label: 'Gloriosos',
+    img: '/gallery-images/misterios/modooscuro/misteriogloria0.jpg',
+  },
+  {
+    id: 'luminosos',
+    label: 'Luminosos',
+    img: '/gallery-images/misterios/modooscuro/misterioLUZ0.webp',
+  },
 ];
 
-const MYSTERY_SUBTITLES = {
-  gozosos: 'Misterios Gozosos',
-  dolorosos: 'Misterios Dolorosos',
-  gloriosos: 'Misterios Gloriosos',
-  luminosos: 'Misterios Luminosos',
-};
-
-function getDevotionChrome(misterioActual, isMercy) {
-  if (misterioActual === 'divinamisericordia_novena') {
-    return { title: 'Novena de la Divina Misericordia', subtitle: null };
-  }
-  if (isMercy) {
-    return { title: 'Corona de la Divina Misericordia', subtitle: null };
-  }
-  if (misterioActual === 'sangrepreciosa_litany') {
-    return { title: 'Letanía de la Preciosísima Sangre', subtitle: 'Julio — Mes de la Sangre de Cristo' };
-  }
-  if (misterioActual === 'sangrepreciosa_chaplet') {
-    return { title: 'Corona de la Preciosísima Sangre', subtitle: 'Siete Derramamientos' };
-  }
-  if (misterioActual === 'sangrepreciosa_ofrendas') {
-    return { title: 'Siete Ofrendas de la Sangre de Cristo', subtitle: 'Julio — Mes de la Sangre' };
-  }
-  if (misterioActual === 'viacrucis') {
-    return { title: 'Vía Crucis', subtitle: '14 estaciones' };
-  }
-  if (misterioActual === 'vialucis') {
-    return { title: 'Vía Lucis', subtitle: '14 estaciones' };
-  }
-  return {
-    title: 'Santo Rosario',
-    subtitle: MYSTERY_SUBTITLES[misterioActual] || 'Misterios del Rosario',
-  };
+function getDevotionChrome(misterioActual) {
+  return getBookletDevotionLabel(misterioActual);
 }
 
 function getBookletDisplayTitle(prayer) {
@@ -130,7 +138,9 @@ export default function BookletView({
 }) {
   const isMercy = isDivineMercyMode(misterioActual);
   const isStations = isStationsDevotion(misterioActual);
-  const showRosaryPills = !isMercy && !isStations;
+  const isMarianDevotion = isMarianDevotionMode(misterioActual);
+  const isSagradoCorazon = isSagradoCorazonAdoracionMode(misterioActual);
+  const showRosaryPills = !isMercy && !isStations && !isMarianDevotion && !isSagradoCorazon;
   const secuencia = useMemo(
     () => buildSequence(misterioActual, { includeMercyOpening: mercyOptionalOpening, novenaDay }),
     [misterioActual, mercyOptionalOpening, novenaDay]
@@ -173,6 +183,12 @@ export default function BookletView({
   const [prayerVerseIndex, setPrayerVerseIndex] = useState(0);
   const [showLitanyEntrance, setShowLitanyEntrance] = useState(false);
   const litanyEntranceShownRef = useRef(false);
+  const shareCardRef = useRef(null);
+  const shareBlobRef = useRef(null);
+  const [outlineOpen, setOutlineOpen] = useState(false);
+  const [sharePreviewOpen, setSharePreviewOpen] = useState(false);
+  const [sharePreviewUrl, setSharePreviewUrl] = useState(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   usePrayerVoiceAutoplay({
     enabled: soundEnabled && !isTransitioning,
@@ -529,6 +545,149 @@ export default function BookletView({
     misterioActual,
   ]);
 
+  const devotionChrome = getDevotionChrome(misterioActual);
+
+  const shareProgressLabel = useMemo(
+    () =>
+      formatBookletShareProgress({
+        displayIndex,
+        total,
+        isSagradoCorazon,
+        misterioActual,
+        novenaDay,
+        activePrayerId: activePrayer?.id,
+        isLitany,
+        litanyVerseIndex,
+        litanyVerseTotal,
+        isPerVersePrayer,
+        prayerVerseIndex,
+        prayerVerseTotal,
+        stepContext,
+        isMercy,
+        isAveMaria,
+        aveRunInfo,
+        mercyRunInfo,
+        tripletRunInfo,
+        isMercyDecade,
+        isMercyPassion,
+        isHolyGod,
+      }),
+    [
+      displayIndex,
+      total,
+      isSagradoCorazon,
+      misterioActual,
+      novenaDay,
+      activePrayer?.id,
+      isLitany,
+      litanyVerseIndex,
+      litanyVerseTotal,
+      isPerVersePrayer,
+      prayerVerseIndex,
+      prayerVerseTotal,
+      stepContext,
+      isMercy,
+      isAveMaria,
+      aveRunInfo,
+      mercyRunInfo,
+      tripletRunInfo,
+      isMercyDecade,
+      isMercyPassion,
+      isHolyGod,
+    ]
+  );
+
+  const shareCardPayload = useMemo(
+    () =>
+      buildShareCardPayload({
+        misterioActual,
+        prayerTitle: displayPrayerTitle,
+        prayerText: buildSharePrayerText({ displayText, isLitany, litanyVerse }),
+        backgroundUrl: vitralCandidates[0],
+        progressLabel: shareProgressLabel,
+      }),
+    [
+      misterioActual,
+      displayPrayerTitle,
+      displayText,
+      isLitany,
+      litanyVerse,
+      vitralCandidates,
+      shareProgressLabel,
+    ]
+  );
+
+  const closeSharePreview = useCallback(() => {
+    if (sharePreviewUrl) URL.revokeObjectURL(sharePreviewUrl);
+    setSharePreviewUrl(null);
+    setSharePreviewOpen(false);
+    shareBlobRef.current = null;
+  }, [sharePreviewUrl]);
+
+  const handleSharePrayer = useCallback(async () => {
+    if (isSharing || isTransitioning || !activePrayer) return;
+    setIsSharing(true);
+    try {
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      await preloadShareImage(shareCardPayload.backgroundUrl);
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      const blob = await captureShareCardPng(shareCardRef.current);
+      shareBlobRef.current = blob;
+      const filename = makeShareFilename(displayPrayerTitle);
+      const outcome = await deliverSharePng(blob, {
+        filename,
+        title: displayPrayerTitle,
+        text: shareCardPayload.devotionTitle,
+      });
+      if (outcome === 'preview') {
+        setSharePreviewUrl(URL.createObjectURL(blob));
+        setSharePreviewOpen(true);
+      }
+    } catch (_) {
+      if (shareBlobRef.current) {
+        setSharePreviewUrl(URL.createObjectURL(shareBlobRef.current));
+        setSharePreviewOpen(true);
+      }
+    } finally {
+      setIsSharing(false);
+    }
+  }, [
+    isSharing,
+    isTransitioning,
+    activePrayer,
+    shareCardPayload,
+    displayPrayerTitle,
+  ]);
+
+  const handleSharePreviewDownload = useCallback(() => {
+    const blob = shareBlobRef.current;
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = makeShareFilename(displayPrayerTitle);
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }, [displayPrayerTitle]);
+
+  const handleOutlineSelect = useCallback(
+    (index) => {
+      setOutlineOpen(false);
+      navigateTo(index);
+    },
+    [navigateTo]
+  );
+
+  useEffect(() => () => {
+    if (sharePreviewUrl) URL.revokeObjectURL(sharePreviewUrl);
+  }, [sharePreviewUrl]);
+
   if (!activePrayer) {
     return (
       <div className="booklet-view booklet-view--empty">
@@ -539,7 +698,6 @@ export default function BookletView({
 
   const activeVariantLabel = variants?.find((v) => v.id === variantId)?.label;
   const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
-  const devotionChrome = getDevotionChrome(misterioActual, isMercy);
 
   const vitralStyle = stepContextToVitralVars(stepContext);
   const vitralKind = isAveMaria || isMercyPassion
@@ -573,8 +731,15 @@ export default function BookletView({
                   }`}
                   onClick={() => onMysteryChange?.(opt.id)}
                   disabled={isTransitioning}
+                  aria-label={opt.label}
                 >
-                  {opt.label}
+                  <img
+                    src={opt.img}
+                    alt={opt.label}
+                    className="booklet-mystery-pill__thumb-img"
+                    draggable={false}
+                  />
+                  <span className="booklet-mystery-pill__thumb-label">{opt.label}</span>
                 </button>
               ))}
             </div>
@@ -599,6 +764,28 @@ export default function BookletView({
               ))}
             </div>
           )}
+          <div className="booklet-share-actions">
+            <button
+              type="button"
+              className="booklet-share-btn"
+              onClick={() => setOutlineOpen(true)}
+              disabled={isTransitioning || total < 2}
+              title="Ver recorrido de la devoción"
+              aria-label="Ver recorrido de la devoción"
+            >
+              Recorrido
+            </button>
+            <button
+              type="button"
+              className="booklet-share-btn booklet-share-btn--primary"
+              onClick={handleSharePrayer}
+              disabled={isTransitioning || isSharing}
+              title="Compartir esta oración"
+              aria-label="Compartir esta oración"
+            >
+              {isSharing ? '…' : 'Compartir'}
+            </button>
+          </div>
           <p className="booklet-progress">
             {showRosaryPills && (
               <>
@@ -629,7 +816,9 @@ export default function BookletView({
               </button>
             )}
             {isOptionalMercyStep && ' '}
-            {displayIndex + 1} / {total}
+            {isSagradoCorazon
+              ? `Paso ${displayIndex + 1} de ${total}`
+              : `${displayIndex + 1} / ${total}`}
             {misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION' && (
               <span className="booklet-ave-count">
                 {' '}
@@ -741,17 +930,13 @@ export default function BookletView({
       {mercyThumbHost &&
         createPortal(
           <div style={{ display: 'flex', gap: '8px' }}>
-            <FaustinaMercyThumb
-              misterioActual={misterioActual}
-              disabled={isTransitioning}
-              onMysteryChange={onMysteryChange}
-            />
             <StationsDevotionThumb
               misterioActual={misterioActual}
               disabled={isTransitioning}
               onMysteryChange={onMysteryChange}
             />
             <MercyWindowThumb
+              active={misterioActual === 'sangrepreciosa_litany'}
               disabled={isTransitioning}
               onClick={() => onMysteryChange?.('sangrepreciosa_litany')}
               title="Letanía de la Preciosísima Sangre (Julio)"
@@ -773,6 +958,35 @@ export default function BookletView({
               title="Siete Ofrendas de la Sangre de Cristo"
               img={registryImage('lamb')}
               badge="7"
+            />
+            <MercyWindowThumb
+              active={misterioActual === ANGELUS_ID}
+              disabled={isTransitioning}
+              onClick={() => onMysteryChange?.(ANGELUS_ID)}
+              title="Ángelus"
+              img={angelusThumbnail}
+              badge="A"
+            />
+            <MercyWindowThumb
+              active={misterioActual === MAGNIFICAT_ID}
+              disabled={isTransitioning}
+              onClick={() => onMysteryChange?.(MAGNIFICAT_ID)}
+              title="Magnificat"
+              img={magnificatThumbnail}
+              badge="M"
+            />
+            <MercyWindowThumb
+              active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
+              disabled={isTransitioning}
+              onClick={() => onMysteryChange?.(SAGRADO_CORAZON_ADORACION_ID)}
+              title="Adoración Eucarística — Sagrado Corazón de Jesús"
+              img={sagradoCorazonAdoracionThumbnail}
+              badge="SC"
+            />
+            <FaustinaMercyThumb
+              misterioActual={misterioActual}
+              disabled={isTransitioning}
+              onMysteryChange={onMysteryChange}
             />
           </div>,
           mercyThumbHost
@@ -800,6 +1014,34 @@ export default function BookletView({
         <LitanyEntrance
           currentMystery={misterioActual}
           onComplete={() => setShowLitanyEntrance(false)}
+        />
+      )}
+
+      {isSharing &&
+        createPortal(
+          <div className="booklet-share-capture-host" aria-hidden="true">
+            <PrayerShareCard ref={shareCardRef} {...shareCardPayload} />
+          </div>,
+          document.body
+        )}
+
+      {outlineOpen && (
+        <BookletOutlineView
+          steps={secuencia}
+          currentIndex={displayIndex}
+          devotionTitle={devotionChrome.title}
+          devotionSubtitle={devotionChrome.subtitle}
+          mysteryType={misterioActual}
+          onSelectStep={handleOutlineSelect}
+          onClose={() => setOutlineOpen(false)}
+        />
+      )}
+
+      {sharePreviewOpen && (
+        <PrayerSharePreviewModal
+          imageUrl={sharePreviewUrl}
+          onClose={closeSharePreview}
+          onDownload={handleSharePreviewDownload}
         />
       )}
 

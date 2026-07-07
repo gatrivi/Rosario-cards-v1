@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MercyWindowThumb from './MercyWindowThumb';
-import { imagePath as registryImage } from '../../data/imageRegistry';
 import './FaustinaMercyThumb.css';
+
+/** Distinct from Precious Blood litany (vitreauxCruz) — dolor mystery vitral. */
+const STATIONS_THUMB = '/gallery-images/misterios/modooscuro/misteriodolor0.jpg';
+const STATIONS_THUMB_LUCIS = '/gallery-images/misterios/modooscuro/misterioLUZ0.webp';
 
 /** Vía Crucis / Vía Lucis — one thumb, small menu (like Faustina). */
 export default function StationsDevotionThumb({
@@ -14,7 +17,9 @@ export default function StationsDevotionThumb({
   const isCrucis = misterioActual === 'viacrucis';
   const isLucis = misterioActual === 'vialucis';
   const active = isCrucis || isLucis;
-  const img = registryImage('vitreauxCruz') || registryImage('crux');
+  const img = isLucis
+    ? STATIONS_THUMB_LUCIS
+    : STATIONS_THUMB;
 
   useEffect(() => {
     if (!open) return undefined;

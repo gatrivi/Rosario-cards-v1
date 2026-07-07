@@ -12,6 +12,11 @@ import {
 } from '../data/divineMercyData';
 import { divineMercyNovenaDays } from '../data/divineMercyNovenaData';
 import {
+  MARIAN_DEVOTION_IDS,
+  buildMarianDevotionSequence,
+  isMarianDevotionMode as isMarianDevotionDataMode,
+} from '../data/marianDevotionsData';
+import {
   preciousBloodLitanyMeta,
   preciousBloodLitanyVerses,
   preciousBloodLitanySections,
@@ -22,6 +27,13 @@ import {
   preciousBloodSevenOfferings,
 } from '../data/preciousBloodData';
 import { buildViaCrucisSequence, buildViaLucisSequence } from '../data/viaCrucisData';
+import {
+  SAGRADO_CORAZON_ADORACION_ID,
+  getSagradoCorazonAdoracionSequence,
+  isSagradoCorazonAdoracionMode as isSagradoCorazonAdoracionDataMode,
+} from '../data/sagradoCorazonAdoracionData';
+
+export { isSagradoCorazonAdoracionMode } from '../data/sagradoCorazonAdoracionData';
 
 export const PRECIOUS_BLOOD_MODES = new Set([
   'sangrepreciosa_litany',
@@ -113,9 +125,11 @@ export const BOOKLET_MYSTERY_IDS = [
   ...ROSARY_MYSTERY_IDS,
   DIVINE_MERCY_ID,
   'divinamisericordia_novena',
+  ...MARIAN_DEVOTION_IDS,
   ...PRECIOUS_BLOOD_MODES,
   'viacrucis',
   'vialucis',
+  SAGRADO_CORAZON_ADORACION_ID,
 ];
 export const BOOKLET_MYSTERIES = new Set(BOOKLET_MYSTERY_IDS);
 
@@ -144,6 +158,10 @@ export function isDivineMercyMode(misterioActual) {
 
 export function isStationsDevotion(misterioActual) {
   return misterioActual === 'viacrucis' || misterioActual === 'vialucis';
+}
+
+export function isMarianDevotionMode(misterioActual) {
+  return isMarianDevotionDataMode(misterioActual);
 }
 
 /** Libro-only lookup — keeps chaplet data out of RoseView.getPrayerData. */
@@ -191,8 +209,14 @@ export function buildSequence(mysteryType, options = {}) {
   if (isPreciousBloodMode(mysteryType)) {
     return buildPreciousBloodSequence(mysteryType);
   }
+  if (isMarianDevotionMode(mysteryType)) {
+    return buildMarianDevotionSequence(mysteryType);
+  }
   if (mysteryType === 'viacrucis') return buildViaCrucisSequence();
   if (mysteryType === 'vialucis') return buildViaLucisSequence();
+  if (isSagradoCorazonAdoracionDataMode(mysteryType)) {
+    return getSagradoCorazonAdoracionSequence();
+  }
 
   const keys = getSequenceKeys(mysteryType, includeMercyOpening);
   const isMercy = mysteryType === DIVINE_MERCY_ID || mysteryType === 'divinamisericordia_novena';
