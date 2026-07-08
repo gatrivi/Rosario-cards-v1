@@ -7,6 +7,78 @@ export const sagradoCorazonAdoracionThumbnail = imagePath('faustinaDivinoCorazon
 
 const LITANY_RESPONSE = 'Te rogamos, óyenos.';
 
+const IMAGE_POOLS = {
+  custodia: [
+    imagePath('misc96PsRGiE'),
+    imagePath('lamb'),
+    imagePath('encountersCathedral'),
+    imagePath('stainedGlass'),
+    imagePath('galleryAdoracion6051780745909814'),
+    imagePath('galleryAdoracionAnteTuPresencia'),
+    imagePath('galleryAdoracionCandlelightSilence'),
+  ],
+  eucaristia: [
+    imagePath('lamb'),
+    imagePath('faustinaStainedGlass'),
+    imagePath('gallerySagradoCorazon'),
+    imagePath('earlyChristian'),
+    imagePath('galleryAdoracion6051780745909814'),
+    imagePath('galleryAdoracionAnteTuPresencia'),
+    imagePath('galleryAdoracionCandlelightSilence'),
+  ],
+  iglesia: [
+    imagePath('misc96PsRGiE'),
+    imagePath('encountersCathedral'),
+    imagePath('galleryCathedralPraying'),
+    imagePath('stainedGlass'),
+  ],
+  sagradoCorazon: [
+    imagePath('faustinaDivinoCorazon'),
+    imagePath('gallerySagradoCorazon'),
+    imagePath('gallerySagradoCorazon2'),
+    imagePath('gallerySagradoCorazonEm'),
+    imagePath('galleryMargaritaSacredHeart'),
+    imagePath('galleryAdoracion6051780745909814'),
+    imagePath('galleryAdoracionAnteTuPresencia'),
+    imagePath('galleryAdoracionCandlelightSilence'),
+  ],
+  corazonTraspasado: [
+    imagePath('faustinaDivinoCorazon'),
+    imagePath('gallerySagradoCorazon'),
+    imagePath('crux'),
+    imagePath('vitreauxCruz'),
+  ],
+  buenPastor: [
+    imagePath('galleryPastor'),
+    imagePath('franciscoDeAsis'),
+    imagePath('gallerySagradoCorazonEm'),
+  ],
+};
+
+const IMAGE_HINT_POOL = {
+  'Custodia / Santísimo Sacramento': 'custodia',
+  'Jesús Eucaristía': 'eucaristia',
+  'Iglesia / adoración eucarística': 'iglesia',
+  'Sagrado Corazón de Jesús': 'sagradoCorazon',
+  'Corazón traspasado': 'corazonTraspasado',
+  'Cristo Buen Pastor': 'buenPastor',
+};
+
+function uniqueUrls(urls) {
+  return [...new Set(urls.filter(Boolean))];
+}
+
+function resolveStepImages(imageHint, stepIndex = 0) {
+  const poolKey = IMAGE_HINT_POOL[imageHint] || 'sagradoCorazon';
+  const imgCandidates = uniqueUrls(IMAGE_POOLS[poolKey]);
+  const img = imgCandidates[stepIndex % imgCandidates.length] || imgCandidates[0];
+  return { img, imgCandidates };
+}
+
+function withStepImages(step, stepIndex) {
+  const { img, imgCandidates } = resolveStepImages(step.imageHint, stepIndex);
+  return { ...step, img, imgCandidates };
+}
 /** 33 invocations — folleto OCR + verificación aciprensa.com/Oracion/letaniassc.htm */
 const LITANY_INVOCATIONS = [
   'Corazón de Jesús, Hijo del Padre Eterno',
@@ -383,14 +455,17 @@ export function isSagradoCorazonAdoracionMode(mysteryType) {
   return mysteryType === SAGRADO_CORAZON_ADORACION_ID;
 }
 
-/** Libro sequence — no img/imgCandidates (imageHint preserved on step metadata only). */
+/** Libro sequence — every step carries img + imgCandidates (see IMAGE_HINT_POOL). */
 export function getSagradoCorazonAdoracionSequence() {
-  return SAGRADO_CORAZON_ADORACION_STEPS.map((step) => {
+  return SAGRADO_CORAZON_ADORACION_STEPS.map((step, stepIndex) => {
+    const withImages = withStepImages(step, stepIndex);
     const out = {
-      id: step.id,
-      title: step.title,
-      text: step.text,
-      type: step.type,
+      id: withImages.id,
+      title: withImages.title,
+      text: withImages.text,
+      type: withImages.type,
+      img: withImages.img,
+      imgCandidates: withImages.imgCandidates,
     };
     if (step.subtitle) out.subtitle = step.subtitle;
     if (step.response) out.response = step.response;

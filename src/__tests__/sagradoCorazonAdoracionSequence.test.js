@@ -61,12 +61,19 @@ describe('sagradoCorazonAdoracionSequence', () => {
     expect(resolveRosaryMystery(SAGRADO_CORAZON_ADORACION_ID)).toBe('dolorosos');
   });
 
-  test('steps have no img imports (imageHint only in source data)', () => {
+  test('every step has vitral images', () => {
     const seq = buildSequence(SAGRADO_CORAZON_ADORACION_ID);
     seq.forEach((step) => {
-      expect(step.img).toBeUndefined();
-      expect(step.imgCandidates).toBeUndefined();
+      expect(step.img).toBeTruthy();
+      expect(step.imgCandidates?.length).toBeGreaterThan(0);
     });
+  });
+
+  test('Exposición step uses altar / eucharistic art', () => {
+    const seq = buildSequence(SAGRADO_CORAZON_ADORACION_ID);
+    const expo = seq.find((s) => s.id === 'SCA_EXPO');
+    expect(expo?.img).toBeTruthy();
+    expect(expo?.imgCandidates?.length).toBeGreaterThan(1);
   });
 
   test('normal rosary sequences unchanged', () => {

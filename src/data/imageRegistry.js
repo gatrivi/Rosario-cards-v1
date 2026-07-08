@@ -94,9 +94,17 @@ const REGISTRY = {
   galleryCathedralPraying: { ...PUBLIC('/gallery-images/cathedral praing.jpg'), name: 'Catedral — orando', tags: ['cathedral', 'prayer'] },
   galleryLatinCredo: { ...PUBLIC('/gallery-images/latin-credo.jpeg'), name: 'Credo (latín)', tags: ['latin', 'creed', 'prayer'] },
   galleryLicensedImage: { ...PUBLIC('/gallery-images/licensed-image.jpg'), name: 'Imagen con licencia', tags: ['generic', 'unknown'] },
+  gallerySagradoCorazon: { ...PUBLIC('/gallery-images/misterios/modooscuro/sagrado-corazon.jpg'), name: 'Sagrado Corazón de Jesús', tags: ['sacred-heart', 'eucharist', 'adoracion'] },
+  gallerySagradoCorazon2: { ...PUBLIC('/gallery-images/misterios/modooscuro/sagrado-corazon-2.jpg'), name: 'Sagrado Corazón (alt.)', tags: ['sacred-heart', 'adoracion'] },
+  gallerySagradoCorazonEm: { ...PUBLIC('/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg'), name: 'Sagrado Corazón — Jesús y María', tags: ['sacred-heart', 'mary'] },
+  galleryAdoracion6051780745909814: { ...PUBLIC('/gallery-images/adoracion/6051780745909814.jpg'), name: 'Adoración — 6051780745909814', tags: ['adoracion', 'eucharist'] },
+  galleryAdoracionAnteTuPresencia: { ...PUBLIC('/gallery-images/adoracion/Ante tu presencia.jpg'), name: 'Adoración — Ante tu presencia', tags: ['adoracion', 'eucharist'] },
+  galleryAdoracionCandlelightSilence: { ...PUBLIC('/gallery-images/adoracion/Candlelight and Silence_ A Story from Adoration.jpg'), name: 'Adoración — Candlelight and Silence', tags: ['adoracion', 'eucharist'] },
+  galleryPastor: { ...PUBLIC('/gallery-images/misterios/modooscuro/pastor.jpg'), name: 'Cristo Buen Pastor', tags: ['good-shepherd', 'christ'] },
+  galleryMargaritaSacredHeart: { ...PUBLIC('/gallery-images/litany/modooscuro/SANTA MARGARITA MARIA DE ALACOQUE FRENTE AL SAGRADO CORAZON DE JESUS !!!.jpg'), name: 'Santa Margarita María — Sagrado Corazón', tags: ['sacred-heart', 'margarita-maria'] },
 
   // ── Unidentified / to be named via Asset Studio ──
-  misc96PsRGiE: { path: misc96PsRGiE, name: 'Por nombrar (96PsRGiE)', tags: ['unidentified'], source: 'asset' },
+  misc96PsRGiE: { path: misc96PsRGiE, name: 'Altar — tabernáculo y adoración', tags: ['eucharist', 'adoration', 'altar', 'tabernacle', 'custodia', 'exposition'], source: 'asset' },
   miscUgQlLjwl: { path: miscUgQlLjwl, name: 'Por nombrar (uGQlLjwl)', tags: ['unidentified'], source: 'asset' },
   miscJpg: { path: jpgMisc, name: 'Por nombrar (jpg.jpg)', tags: ['unidentified'], source: 'asset' },
 };

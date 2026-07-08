@@ -20,6 +20,13 @@
 - `src/data/physicsRosaryData.js` — Maps liturgical sequence → 61 physical beads for Matter.js
 - `src/utils/prayerMapper.js` — Returns prayer text for node/link clicks (used by old D3 rosary, not physics one)
 
+### Prayer images (mandatory)
+- **Every prayer step must have images** — `img` + non-empty `imgCandidates` on every Libro/devotion/rosary sequence entry.
+- Source of truth for bundled art: `src/data/imageRegistry.js` (`imagePath('id')`).
+- Devotion modules (`marianDevotionsData.js`, `sagradoCorazonAdoracionData.js`, etc.) map `imageHint` → asset pools; `imageHint` alone is not sufficient.
+- If no suitable asset exists, flag it to the user before shipping — do not merge image-less prayers.
+- Cursor rule: `.cursor/rules/prayer-images.mdc`
+
 ### State / Sync
 - `useRosaryStats.js` — Simple localStorage history (dates). Stats: today/thisWeek/thisMonth/total
 - `useAveMariaStats.js` — Tracks total Ave Marías ("rosas"), daily progress, level system. Syncs to cloud via `useCloudSync`

@@ -268,7 +268,7 @@ export default function BookletView({
     clearTransitionTimers();
     setPhase(TRANSITION_PHASE.READY);
     setDisplayIndex(safeIndex);
-  }, [misterioActual, clearTransitionTimers, setPhase]);
+  }, [misterioActual, clearTransitionTimers, setPhase, safeIndex]);
 
   useEffect(() => {
     if (transitionPhaseRef.current === TRANSITION_PHASE.READY && displayIndex !== safeIndex) {

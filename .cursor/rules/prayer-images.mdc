@@ -1,0 +1,26 @@
+---
+description: Every prayer step must ship with background vitral images
+alwaysApply: true
+---
+
+# Prayer images (mandatory)
+
+**All prayers MUST contain images** — no Libro step, rosary prayer, litany verse, or devotion sequence entry may ship without a resolved vitral background.
+
+## Requirements
+
+1. Every step in a booklet/devotion sequence must expose **`img`** and **`imgCandidates`** (non-empty array).
+2. Prefer `imageRegistry` ids via `imagePath('id')` for bundled art; register new files in `src/data/imageRegistry.js`.
+3. Public gallery paths are OK when already in `public/gallery-images/` — still add a registry entry when reused.
+4. `imageHint` alone is **not** enough; wire hints to pools in the data module (see `sagradoCorazonAdoracionData.js`, `marianDevotionsData.js`).
+5. Litany verses inherit the parent prayer image when no per-verse art exists — parent step must still have `img`.
+6. Add/adjust tests: `expect(step.img).toBeTruthy()` for new sequences.
+
+## If art is missing
+
+- Search `src/data/assets/img/` and `public/gallery-images/` first.
+- Tell the user explicitly which steps lack suitable art; do not merge image-less prayers.
+
+## Resolution path
+
+`buildSequence` → step `img` / `imgCandidates` → `BookletView` / `RosarioVirtualView` → `VitralBackground`.
