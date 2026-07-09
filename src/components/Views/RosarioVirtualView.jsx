@@ -230,6 +230,24 @@ export default function RosarioVirtualView({
         setCargaOracion(100);
         return;
       }
+      const beadPrayers = ['SC', 'P', 'A', 'LL', 'S'];
+      const hasChainPrayersAhead = () => {
+        for (let i = currentPrayerIndex + 1; i < secuencia.length; i += 1) {
+          const nextId = secuencia[i]?.id;
+          if (nextId?.startsWith('M')) return false;
+          if (beadPrayers.includes(nextId)) return false;
+          return true; // first non-main prayer before next bead/mystery => chain prayers exist
+        }
+        return false;
+      };
+      const shouldEnterChainPrayers = hasChainPrayersAhead();
+      if (shouldEnterChainPrayers) {
+        window.dispatchEvent(
+          new CustomEvent('enterChainPrayers', {
+            detail: { prayerIndex: currentPrayerIndex },
+          })
+        );
+      }
       window.dispatchEvent(
         new CustomEvent('contentExhausted', { detail: { prayerIndex: currentPrayerIndex } })
       );

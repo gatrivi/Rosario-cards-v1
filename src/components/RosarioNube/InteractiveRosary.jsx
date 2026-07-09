@@ -480,6 +480,43 @@ const InteractiveRosary = ({
         constraint.prayerIndex = gIdx;
         constraint.prayerId = pid(gIdx);
 
+        // Decade-chain TAP: add one tappable invisible bead per internal decade
+        // Gloria/Fatima boundary so enter-chain-prayers highlighting has something
+        // clickable (the first/last boundaries are already handled by medal/loop
+        // and main→heart invisibles).
+        if ((i + 1) % 11 === 10 && decadeNum >= 1 && decadeNum <= 4) {
+          const midX = (beadA.position.x + beadB.position.x) / 2;
+          const midY = (beadA.position.y + beadB.position.y) / 2;
+          const decadeInvisible = createInvisibleBead(midX, midY, gIdx, pid(gIdx));
+          allBeads.push(decadeInvisible);
+
+          const halfLen = adjustedLength * 0.5;
+          const softStiffness = 0.03; // ponytail: gentle anchor, avoid stiffening the chain
+
+          constraints.push(
+            Matter.Constraint.create({
+              ...springOptions(halfLen, softStiffness),
+              bodyA: beadA,
+              bodyB: decadeInvisible,
+              pointA: getPoleOffset(beadA, decadeInvisible, beadSize),
+              pointB: { x: 0, y: 0 },
+              prayerIndex: gIdx,
+              prayerId: pid(gIdx),
+            })
+          );
+          constraints.push(
+            Matter.Constraint.create({
+              ...springOptions(halfLen, softStiffness),
+              bodyA: decadeInvisible,
+              bodyB: beadB,
+              pointA: { x: 0, y: 0 },
+              pointB: getPoleOffset(beadB, decadeInvisible, beadSize),
+              prayerIndex: gIdx,
+              prayerId: pid(gIdx),
+            })
+          );
+        }
+
         const fatimaConstraint = Matter.Constraint.create({
           ...springOptions(adjustedLength * 0.8),
           bodyA: beadA,
