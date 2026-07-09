@@ -24,6 +24,7 @@ import { getBookletStepContext, stepContextToVitralVars, makeBookletRoseFingerpr
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { getMysteryColors } from '../RosarioNube/utils/mysteryColors';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
+import { RELEASE_NOTES } from '../../data/releaseNotes';
 import './BookletView.css';
 import './RosarioVirtualView.css';
 
@@ -409,7 +410,7 @@ export default function RosarioVirtualView({
             {guided ? 'Guiado' : 'Libre'}
           </button>
         </div>
-        <span className="rosary-chrome__version">v0.3.40</span>
+        <span className="rosary-chrome__version">v{RELEASE_NOTES.version}</span>
       </div>
 
       {showHint && guided && (

@@ -46,6 +46,7 @@ import {
 import FaustinaMercyThumb from '../common/FaustinaMercyThumb';
 import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
+import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
@@ -931,66 +932,92 @@ export default function BookletView({
 
       {mercyThumbHost &&
         createPortal(
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <StationsDevotionThumb
-              misterioActual={misterioActual}
-              disabled={isTransitioning}
-              onMysteryChange={onMysteryChange}
-            />
-            <MercyWindowThumb
-              active={misterioActual === 'sangrepreciosa_litany'}
-              disabled={isTransitioning}
-              onClick={() => onMysteryChange?.('sangrepreciosa_litany')}
-              title="Letanía de la Preciosísima Sangre (Julio)"
-              img={registryImage('vitreauxCruz')}
-              badge="L"
-            />
-            <MercyWindowThumb
-              active={misterioActual === 'sangrepreciosa_chaplet'}
-              disabled={isTransitioning}
-              onClick={() => onMysteryChange?.('sangrepreciosa_chaplet')}
-              title="Corona de la Preciosísima Sangre"
-              img={registryImage('crux')}
-              badge="C"
-            />
-            <MercyWindowThumb
-              active={misterioActual === 'sangrepreciosa_ofrendas'}
-              disabled={isTransitioning}
-              onClick={() => onMysteryChange?.('sangrepreciosa_ofrendas')}
-              title="Siete Ofrendas de la Sangre de Cristo"
-              img={registryImage('lamb')}
-              badge="7"
-            />
-            <MercyWindowThumb
-              active={misterioActual === ANGELUS_ID}
-              disabled={isTransitioning}
-              onClick={() => onMysteryChange?.(ANGELUS_ID)}
-              title="Ángelus"
-              img={angelusThumbnail}
-              badge="A"
-            />
-            <MercyWindowThumb
-              active={misterioActual === MAGNIFICAT_ID}
-              disabled={isTransitioning}
-              onClick={() => onMysteryChange?.(MAGNIFICAT_ID)}
-              title="Magnificat"
-              img={magnificatThumbnail}
-              badge="M"
-            />
-            <MercyWindowThumb
-              active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
-              disabled={isTransitioning}
-              onClick={() => onMysteryChange?.(SAGRADO_CORAZON_ADORACION_ID)}
-              title="Adoración Eucarística — Sagrado Corazón de Jesús"
-              img={sagradoCorazonAdoracionThumbnail}
-              badge="SC"
-            />
-            <FaustinaMercyThumb
-              misterioActual={misterioActual}
-              disabled={isTransitioning}
-              onMysteryChange={onMysteryChange}
-            />
-          </div>,
+          <DevotionsShelf
+            misterioActual={misterioActual}
+            active={!showRosaryPills}
+            recorridos={
+              <>
+                <ShelfItem label="Estaciones">
+                  <StationsDevotionThumb
+                    misterioActual={misterioActual}
+                    disabled={isTransitioning}
+                    onMysteryChange={onMysteryChange}
+                  />
+                </ShelfItem>
+                <ShelfItem label="Letanía Sangre">
+                  <MercyWindowThumb
+                    active={misterioActual === 'sangrepreciosa_litany'}
+                    disabled={isTransitioning}
+                    onClick={() => onMysteryChange?.('sangrepreciosa_litany')}
+                    title="Letanía de la Preciosísima Sangre (Julio)"
+                    img={registryImage('vitreauxCruz')}
+                    badge="L"
+                  />
+                </ShelfItem>
+                <ShelfItem label="Corona Sangre">
+                  <MercyWindowThumb
+                    active={misterioActual === 'sangrepreciosa_chaplet'}
+                    disabled={isTransitioning}
+                    onClick={() => onMysteryChange?.('sangrepreciosa_chaplet')}
+                    title="Corona de la Preciosísima Sangre"
+                    img={registryImage('crux')}
+                    badge="C"
+                  />
+                </ShelfItem>
+                <ShelfItem label="7 Ofrendas">
+                  <MercyWindowThumb
+                    active={misterioActual === 'sangrepreciosa_ofrendas'}
+                    disabled={isTransitioning}
+                    onClick={() => onMysteryChange?.('sangrepreciosa_ofrendas')}
+                    title="Siete Ofrendas de la Sangre de Cristo"
+                    img={registryImage('lamb')}
+                    badge="7"
+                  />
+                </ShelfItem>
+                <ShelfItem label="Sagrado Corazón">
+                  <MercyWindowThumb
+                    active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
+                    disabled={isTransitioning}
+                    onClick={() => onMysteryChange?.(SAGRADO_CORAZON_ADORACION_ID)}
+                    title="Adoración Eucarística — Sagrado Corazón de Jesús"
+                    img={sagradoCorazonAdoracionThumbnail}
+                    badge="SC"
+                  />
+                </ShelfItem>
+                <ShelfItem label="Sta. Faustina">
+                  <FaustinaMercyThumb
+                    misterioActual={misterioActual}
+                    disabled={isTransitioning}
+                    onMysteryChange={onMysteryChange}
+                  />
+                </ShelfItem>
+              </>
+            }
+            breves={
+              <>
+                <ShelfItem label="Ángelus">
+                  <MercyWindowThumb
+                    active={misterioActual === ANGELUS_ID}
+                    disabled={isTransitioning}
+                    onClick={() => onMysteryChange?.(ANGELUS_ID)}
+                    title="Ángelus"
+                    img={angelusThumbnail}
+                    badge="A"
+                  />
+                </ShelfItem>
+                <ShelfItem label="Magnificat">
+                  <MercyWindowThumb
+                    active={misterioActual === MAGNIFICAT_ID}
+                    disabled={isTransitioning}
+                    onClick={() => onMysteryChange?.(MAGNIFICAT_ID)}
+                    title="Magnificat"
+                    img={magnificatThumbnail}
+                    badge="M"
+                  />
+                </ShelfItem>
+              </>
+            }
+          />,
           mercyThumbHost
         )}
 

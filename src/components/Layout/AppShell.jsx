@@ -56,7 +56,7 @@ import { SAGRADO_CORAZON_ADORACION_ID } from '../../data/sagradoCorazonAdoracion
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.49';
+const APP_VERSION = '0.3.50';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';

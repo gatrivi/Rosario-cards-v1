@@ -4,12 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.49',
-  name: 'Ajustes desplazables',
+  version: '0.3.50',
+  name: 'Estante de Devociones',
   CURRENT: [
-    'Ajustes se puede desplazar; Actualizar y Estudio arriba',
-    'Voz automática y meditación por estación (Vía Crucis/Lucis)',
-    'Estudio → Clasificar + asignar versos',
+    'Libro: devociones agrupadas en un panel "Devociones" (ya no tapan la oración)',
+    'Devociones largas y oraciones breves separadas, con nombre bajo cada vitral',
+    'Insignia de versión corregida en Rosario Virtual',
   ],
   UPCOMING: [
     'Publicar reglas Firestore + Storage (si permiso denegado)',

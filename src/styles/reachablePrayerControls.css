@@ -1,4 +1,6 @@
 /* Reachability fixes for optional prayers on tall touch phones. */
+/* Hosts the collapsed Devociones shelf; chrome lives in DevotionsShelf.css.
+   overflow must stay visible so the expanded panel can pop above the pill. */
 #booklet-mercy-portal:not(:empty) {
   position: fixed !important;
   left: 50% !important;
@@ -9,33 +11,13 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.35rem !important;
   max-width: calc(100vw - 5.5rem);
-  overflow-x: auto;
-  padding: 0.35rem 0.45rem;
-  background: linear-gradient(180deg, rgba(12, 10, 22, 0.48), rgba(12, 10, 22, 0.86));
-  border: 1px solid rgba(212, 175, 55, 0.22);
-  border-radius: 999px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  overflow: visible !important;
   pointer-events: auto;
-  scrollbar-width: none;
-}
-
-#booklet-mercy-portal:not(:empty)::-webkit-scrollbar {
-  display: none;
 }
 
 #booklet-mercy-portal:not(:empty) .mercy-window-thumb {
-  height: 50px;
-  min-width: 34px;
   touch-action: manipulation;
-}
-
-#booklet-mercy-portal:not(:empty) .faustina-mercy-menu {
-  bottom: calc(100% + 6px);
-  top: auto;
 }
 
 @media (pointer: coarse) and (min-height: 760px) {
