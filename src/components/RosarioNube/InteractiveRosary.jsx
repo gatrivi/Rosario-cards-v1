@@ -634,7 +634,6 @@ const InteractiveRosary = ({
     // Prayer indices: 9, 6, 5, 4, 2 (going DOWN from heart to cross)
     const numTailBeads = 5; // 1 lone (1st Mystery) + 3 beads (A,A,A) + 1 lone (C)
     const tailBeads = [];
-    let lastY = centerBead.position.y;
 
     // Create 5 tail beads going UP from cross to heart
     const tailIndices = physicsMaps.tailIndices;
@@ -642,11 +641,16 @@ const InteractiveRosary = ({
 
     for (let i = 0; i < numTailBeads; i++) {
       const x = centerBead.position.x;
-      lastY += chainSegmentLength * 1.2;
+      // Constraint graph: heart ↔ tailBeads[4] (MG1), cross ↔ tailBeads[0] (P).
+      // Positions must match, so tailBeads[4] sits nearest the medal (smallest
+      // y offset) and tailBeads[0] nearest the cross — otherwise the end links
+      // start crossed and the 1st Mystery flips to the ring side of the medal.
+      const y =
+        centerBead.position.y + (numTailBeads - i) * chainSegmentLength * 1.2;
 
       const bead = Matter.Bodies.circle(
         x,
-        lastY,
+        y,
         beadSize,
         beadOptions(colors.beads, {
           beadNumber: tailBeadNumbers[i],
@@ -775,9 +779,9 @@ const InteractiveRosary = ({
 
     // Create Cross Body (as a single composite object)
     const crossParts = [];
-    const crossCenterX = tailBeads[numTailBeads - 1].position.x;
-    const crossCenterY =
-      tailBeads[numTailBeads - 1].position.y + chainSegmentLength * 2;
+    // Cross hangs below tailBeads[0] (the P bead it is chained to)
+    const crossCenterX = tailBeads[0].position.x;
+    const crossCenterY = tailBeads[0].position.y + chainSegmentLength * 2;
     const cbs = crossBeadSize;
 
     // Cross layout matching MD diagram:
@@ -871,8 +875,20 @@ const InteractiveRosary = ({
       `✅ Created ${allBeads.length} beads and ${constraints.length} constraints`
     );
 
+    // --- Screen-edge walls: rosary stays "on the table", can't be flung offscreen ---
+    // ponytail: static walls instead of a velocity clamp; a real table has no
+    // walls but losing the rosary offscreen is worse than a soft edge bounce.
+    const wallT = 80;
+    const wallOpts = { isStatic: true, render: { visible: false } };
+    const walls = [
+      Matter.Bodies.rectangle(width / 2, -wallT / 2, width + wallT * 2, wallT, wallOpts),
+      Matter.Bodies.rectangle(width / 2, height + wallT / 2, width + wallT * 2, wallT, wallOpts),
+      Matter.Bodies.rectangle(-wallT / 2, height / 2, wallT, height + wallT * 2, wallOpts),
+      Matter.Bodies.rectangle(width + wallT / 2, height / 2, wallT, height + wallT * 2, wallOpts),
+    ];
+
     // --- Add Everything to World ---
-    Matter.Composite.add(world, [...allBeads, ...constraints]);
+    Matter.Composite.add(world, [...allBeads, ...constraints, ...walls]);
 
     // --- Mouse Control ---
     const mouse = Matter.Mouse.create(render.canvas);
