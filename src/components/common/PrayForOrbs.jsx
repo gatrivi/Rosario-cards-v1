@@ -104,7 +104,15 @@ export default function PrayForOrbs({
   const [photoPreviews, setPhotoPreviews] = useState([]);
   const [photoNames, setPhotoNames] = useState('');
   const [cropEdit, setCropEdit] = useState(null);
+  const [joyCount, setJoyCount] = useState(0);
   const photoFileRef = useRef(null);
+
+  // Progressive joy: each offering pulse (prayer step) warms the orbs a bit.
+  // ponytail: session-only counter, saturates at 30 steps — enough for one rosary.
+  useEffect(() => {
+    if (offeringPulse) setJoyCount((c) => Math.min(c + 1, 30));
+  }, [offeringPulse]);
+  const joy = joyCount / 30;
 
   const sync = useCallback(() => {
     setDrawer(loadPrayForDrawer());
@@ -253,7 +261,10 @@ export default function PrayForOrbs({
   });
 
   return (
-    <div className={`pray-for-bar${variant === 'header' ? ' pray-for-bar--header' : ''}`}>
+    <div
+      className={`pray-for-bar${variant === 'header' ? ' pray-for-bar--header' : ''}`}
+      style={{ '--pray-joy': joy }}
+    >
       <div className="pray-for-bar__orbs">
         <div className="pray-for-bar__scroll">
           {intentions.map((item, index) => (
