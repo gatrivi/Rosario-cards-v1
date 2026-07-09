@@ -1,20 +1,32 @@
-# Current stack — Jun 2026
+# Current stack — Jun 2026 (updated Jul 2026)
 
-**Version:** v0.3.35 — El Cosmos Resonante  
-**Branch:** `cloud-rosary-v2`  
-**Entry:** `src/index.js` → `App.js` → `AppShell.jsx`
+**Version:** v0.3.49 — Ajustes desplazables (`AppShell.jsx` `APP_VERSION`, `releaseNotes.js`)  
+**Entry:** `src/index.js` → `App.js` → `AppShell.jsx` (react-router v7)
 
-## View routing (`AppShell`)
+## View routing (`src/navigation/routes.js` → `AppShell`)
 
-| View key | Component | Purpose |
-|----------|-----------|---------|
-| `booklet` | `BookletView` | Libro — vitral prayer booklet, litany per-verse |
-| `rosario` | `RosarioVirtualView` | Physics rosary + prayer layer |
-| `roosedal` | `RoseView` / garden | Planted roses |
-| `stats` | `StatsView` | Progression grid |
-| `plan` | `RosedalView` / `DailyTracker` | Daily commitment |
+| View key | Path | Component | Nav |
+|----------|------|-----------|-----|
+| `booklet` | `/libro`, `/` | `BookletView` | BottomNav |
+| `rosary` | `/rosario` | `RosarioVirtualView` | BottomNav |
+| `rose` | `/rosa` | `RoseView` | BottomNav |
+| `voz` | `/voz` | `RecordingStudioView` | BottomNav |
+| `tracker` | `/plan` | `DailyTracker` | BottomNav |
+| `camino` | `/camino` | `PeregrinacionView` | BottomNav |
+| `macetones` | `/macetones` | `MacetonView` | via Camino / settings |
+| `jardin` | `/jardin` | `JardinDeRosasView` | via Macetones |
+| `monk` | `/monk` | `MonkView` | hidden / dev |
+| `assets` | `/assets` | `AssetStudio` | Ajustes → Estudio de imágenes |
 
-Default main experience: **Booklet** and **Rosario** (BottomNav).
+**BottomNav on Libro:** only Libro · Rosa · Voz (clean prayer panel).  
+**Ajustes** (top-right, not a gear): settings, Novedades, Estudio. **Sync** adjacent.
+
+## Libro devotions (header vitrales + URL)
+
+Classic mysteries: `?misterio=gozosos|dolorosos|gloriosos|luminosos`  
+Faustina: Corona / Novena (`?dia=` for novena day)  
+Estaciones: Vía Crucis / Vía Lucis (`?misterio=viacrucis|vialucis`)  
+Sangre Preciosa, Ofrendas, Ángel/Benito — see `BookletView` + `session-report-2026-07-03-night.md`
 
 ## Rosary path (production)
 
@@ -25,7 +37,7 @@ RosarioVirtualView
   → soundEffects.js (event chimes, lazy init)
 ```
 
-Archived: `physics-stable/`, `VirtualRosaryPhysics.stable.jsx`
+Archived reference: `physics-stable/`, `VirtualRosaryPhysics.stable.jsx`
 
 ## Litany (LL)
 
@@ -33,7 +45,7 @@ Archived: `physics-stable/`, `VirtualRosaryPhysics.stable.jsx`
 |-------|------|
 | Verse data | `src/data/litanyLauretana.js` → `RosarioPrayerBook.cierre` |
 | Helpers | `src/utils/litanyHelpers.js` |
-| Images | `src/utils/prayerImages.js` (`imgmo` first) |
+| Images | `src/utils/prayerImages.js`, `imageRegistry.js`, Estudio assignments |
 | UI | `src/components/Litany/*` |
 | Booklet | `BookletView` — `litanyVerseIndex`, per-verse vitral |
 | Rosario | `getSequenceData()` — `verseImages[]` on LL |
@@ -46,23 +58,38 @@ Archived: `physics-stable/`, `VirtualRosaryPhysics.stable.jsx`
 | `physicsRosaryData.js` | 61 physical beads, `getPhysicalMapping()` |
 | `rosaryTopology.js` | `buildRosaryEdges()` — v4 constraint graph |
 | `litanyLauretana.js` | Structured LL verses + sections |
+| `viaCrucisData.js` | Vía Crucis / Vía Lucis stations |
+| `imageRegistry.js` | Bundled art ids; overrides via Estudio |
 
 ## State / sync
 
-| Hook | Storage |
-|------|---------|
+| Hook / module | Storage |
+|---------------|---------|
 | `useRosaryStats.js` | localStorage dates |
 | `useAveMariaStats.js` | Rosas, macetones, levels |
 | `useCloudSync.js` | jsonblob.com, 2s debounce |
+| `useArtConfigCloudSync.js` | `artConfig` in same jsonblob payload |
+| `artConfigSync.js` | Registry overrides + verse assignments merge |
 
-## Audio
+## Firebase (optional, lazy)
+
+| Module | Role |
+|--------|------|
+| `src/config/firebase.js` | Active only if `REACT_APP_FIREBASE_*` in `.env.local` |
+| `firebaseArtConfig.js` | `shared/artConfig` read/write |
+| `firebaseImageLibrary.js` | `shared/imageLibrary` + Storage uploads |
+
+**Blocked until console:** Firestore + Storage rules (permission denied in Estudio). See `releaseNotes.js` UPCOMING.
+
+## Audio / voice
 
 | Module | Status |
 |--------|--------|
 | `audioManager.js` | Singleton Web AudioContext, resume on tap |
-| `soundEffects.js` | Rosary chimes, collision, chain prayers — **wired** |
-| `CosmicResonator.js` | Gothic organ — **orphaned**, future opt-in |
+| `soundEffects.js` | Rosary chimes — **wired** |
 | `bookletSounds.js` | Booklet transition chimes |
+| `usePrayerVoiceAutoplay` + `pickRecordingForSlot` | Libro + Rosario virtual — **wired** |
+| `CosmicResonator.js` | Gothic organ — **orphaned**, future opt-in |
 
 Settings: `localStorage.rosario_sound_enabled` via `AppShell` / `SettingsOverlay`.
 
@@ -72,27 +99,22 @@ Settings: `localStorage.rosario_sound_enabled` via `AppShell` / `SettingsOverlay
 
 | Component | Notes |
 |-----------|-------|
-| `AppShell.jsx` | View router, settings, version badge |
-| `BookletView.jsx` | Libro + litany integration |
-| `RosarioVirtualView.jsx` | Layered prayer + rosary |
+| `AppShell.jsx` | Router, PWA update banner, version badge, Ajustes |
+| `BookletView.jsx` | Libro + litany + devotions |
+| `RosarioVirtualView.jsx` | Layered prayer + rosary (⚠ stale hardcoded `v0.3.40` chrome badge — use AppShell badge) |
 | `RosaryAdapter` + `InteractiveRosary` | Production physics rosary |
+| `AssetStudio.jsx` | Registro / Clasificar / Asignar versos |
 | `RoseView.jsx` | Jardín — large, extract before extending |
-| `VirtualRosaryPhysics.stable.jsx` + `physics-stable/` | Archive reference |
-| `useAveMariaStats`, `useCloudSync` | Stats + cloud |
+| `useAveMariaStats`, `useCloudSync`, `useArtConfigCloudSync` | Stats + cloud + art |
 
-### Broken / needs fix
-
-| Component | Issue |
-|-----------|-------|
-| `ViewPrayers.js` | Non-dark themes return undefined |
-
-### Legacy / unused
+### Legacy / unused (not production bugs)
 
 | File | Notes |
 |------|-------|
+| `ViewPrayers.js` | Not mounted by `AppShell`; dark forced — moot |
 | `old_App.js`, `old_App_matter.js` | Reference only |
 | `useD3Rosary.js` | Pre-Matter D3 rosary |
-| Empty `RosarioNube.jsx` | Safe to delete when confirmed |
+| `VirtualRosaryPhysics.stable.jsx` | Archive reference |
 
 ## Layering (Rosario view)
 
@@ -100,9 +122,16 @@ Settings: `localStorage.rosario_sound_enabled` via `AppShell` / `SettingsOverlay
 |---------|-------|
 | 5 | Prayer text / RosaEnFoco / litany UI |
 | 20 | Matter canvas (transparent bg) |
-| 25+ | Floating chrome (mode toggle, version) |
+| 25+ | Floating chrome |
+
+## Shipped vs next
+
+Source of truth: `src/data/releaseNotes.js` (`CURRENT` / `UPCOMING`).  
+Ranked backlog: [future-features.md](../roadmap/future-features.md).  
+Open bugs (verified): [known-issues.md](../litany/known-issues.md).
 
 ## Related
 
 - [rosary-ux-recovery-jun-2026.md](../virtual-rosary/rosary-ux-recovery-jun-2026.md)
-- [live-system-snapshot.md](./live-system-snapshot.md) — pre-recovery monolith detail (partially stale)
+- [session-report-2026-07-03-night.md](../dev-notes/session-report-2026-07-03-night.md)
+- [live-system-snapshot.md](./live-system-snapshot.md) — **historical** pre-recovery detail

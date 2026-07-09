@@ -2,7 +2,8 @@
 
 **Start here.** Canonical context for agents and humans. Model-efficient: tables, paths, invariants.
 
-**Live stack (Jun 2026):** [architecture/current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md)
+**Live stack:** [architecture/current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) · **v0.3.49** (`src/data/releaseNotes.js`)  
+**Shipped / next bullets:** `releaseNotes.js` → Ajustes → Novedades · version badge tap
 
 ## Tree
 
@@ -59,10 +60,12 @@
 | **Visual assets policy** | [visual-modes.md](./visual/visual-modes.md) |
 | **Cosmic / Sacred Edition** | [sacred-cosmic/](./sacred-cosmic/) |
 | **Future work** | [future-features.md](./roadmap/future-features.md) |
+| **Open issues (verify source)** | [known-issues.md](./litany/known-issues.md) |
+| **Jul 2026 session (art/Firebase/Vía)** | [session-report-2026-07-03-night.md](./dev-notes/session-report-2026-07-03-night.md) |
 
 ## Stack (one line)
 
-React 19 · CRA · Matter.js · D3 · Web Audio · localStorage + jsonblob sync
+React 19 · CRA · Matter.js · D3 · Web Audio · localStorage + jsonblob (+ optional Firebase art library)
 
 **Root markdown:** only `README.md` + `agents.md`. All other context lives here in `.docs/`.
 

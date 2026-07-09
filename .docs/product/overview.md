@@ -11,10 +11,15 @@ Rosario Cards is an interactive devotional app that guides the Rosary through:
 - Instructional text appears in popovers/modals; the main “dominant text” is the actual sacred verses.
 
 ## Core user-facing features (condensed)
-- Rezo en Foco (hold-to-charge): “reading attention” advances the current verse; completion advances to the next unit.
-- El Jardín de Rosas: prayer progress instantiates procedural roses; each Ave María contributes a unique visual fingerprint.
-- Macetones: daily devotion goal selection and daily progress visualization (rosaries committed/“planted”).
-- Camino de Peregrinación: accumulated progress mapped along a pilgrimage route.
+- **Libro** (`/libro`): vitral booklet — classic rosary mysteries, Faustina, Vía Crucis/Lucis, letanías, per-verse art.
+- **Rosario** (`/rosario`): Matter.js physics rosary + prayer layer; voice autoplay when recordings exist.
+- **Rosa** (`/rosa`): hold-to-charge / Jardín — procedural roses; each Ave María contributes a visual fingerprint.
+- **Plan** (`/plan`): daily commitment (macetones objective).
+- **Camino** (`/camino`): pilgrimage map from accumulated progress.
+- **Voz** (`/voz`): record and replay prayer takes.
+- **Estudio de imágenes** (`/assets`, via Ajustes): rename, classify, assign verses; sync via jsonblob ± Firebase.
+
+Details: [current-stack-jun-2026.md](../architecture/current-stack-jun-2026.md)
 
 ## Development direction called out in repo docs
 - Review/iterate multiyear variability and physical “parchment” verse mechanics (drag/scroll interaction).
