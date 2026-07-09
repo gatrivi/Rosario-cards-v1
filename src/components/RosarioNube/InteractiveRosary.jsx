@@ -94,6 +94,28 @@ const InteractiveRosary = ({
 
   // Use custom hooks for state management
   const { isVisible, developerMode, rosaryZoom } = useRosaryState();
+
+  // ponytail: pinch-to-zoom by updating the existing `rosaryZoom` localStorage
+  // + emitting the `rosaryZoomChange` event. Matter physics re-inits on change.
+  const pinchZoomRef = useRef({
+    active: false,
+    startDist: 1,
+    startZoom: 1,
+    lastEmitAt: 0,
+  });
+  const setRosaryZoomValue = useCallback((zoom) => {
+    try {
+      localStorage.setItem("rosaryZoom", String(zoom));
+      window.dispatchEvent(
+        new CustomEvent("rosaryZoomChange", { detail: { zoom } })
+      );
+    } catch (_) {
+      // ignore (e.g. storage disabled)
+    }
+  }, []);
+  const clampZoom = (z) => Math.max(0.75, Math.min(1.5, z));
+  const quantizeZoom = (z) => Math.round(z / 0.05) * 0.05;
+
   const {
     rosaryPosition,
     setRosaryPosition,
@@ -276,6 +298,22 @@ const InteractiveRosary = ({
 
     const allBeads = [];
     const constraints = [];
+
+    const setBeadsOpacity = (opacity) => {
+      allBeads.forEach((body) => {
+        if (body?.crossParts?.length) {
+          body.crossParts.forEach((p) => {
+            if (p?.render) p.render.opacity = opacity;
+          });
+        }
+        if (body?.parts?.length) {
+          body.parts.forEach((p) => {
+            if (p?.render) p.render.opacity = opacity;
+          });
+        }
+        if (body?.render) body.render.opacity = opacity;
+      });
+    };
 
     // --- VITALITY SYSTEM: Calculate rosary vitality based on prayer history ---
     const vitality = prayerHistory.getTotalVitality(); // 0.0 to 1.0
@@ -1191,6 +1229,8 @@ const InteractiveRosary = ({
       }
 
       isHoldActive = true;
+      // ponytail: when held, make rosary 30% more translucent so prayers stay readable.
+      setBeadsOpacity(BEAD_OPACITY * 0.7);
       holdStart = { x: mouse.position.x, y: mouse.position.y };
       holdBody = clickedBody;
       draggedBead = clickedBead;
@@ -1514,6 +1554,7 @@ const InteractiveRosary = ({
         holdStart = null;
         holdBody = null;
         if (!isDragging) draggedBead = null;
+        if (!isDragging) setBeadsOpacity(BEAD_OPACITY);
       }
 
       if (isDragging) {
@@ -1529,6 +1570,7 @@ const InteractiveRosary = ({
         );
 
         // Restore rosary opacity when dragging ends
+        setBeadsOpacity(BEAD_OPACITY);
         if (draggedBeadBodyRef.current?.render) {
           draggedBeadBodyRef.current.render.opacity = BEAD_OPACITY;
           draggedBeadBodyRef.current = null;
@@ -2429,10 +2471,52 @@ const InteractiveRosary = ({
       onMouseMove={handleRosaryMouseMove}
       onMouseUp={handleRosaryMouseUp}
       onMouseLeave={handleRosaryMouseUp}
-      onTouchStart={handleRosaryTouchStart}
-      onTouchMove={handleRosaryTouchMove}
-      onTouchEnd={handleRosaryTouchEnd}
-      onTouchCancel={handleRosaryTouchEnd}
+      onTouchStart={(e) => {
+        if (e.touches?.length === 2) {
+          const t0 = e.touches[0];
+          const t1 = e.touches[1];
+          pinchZoomRef.current.active = true;
+          pinchZoomRef.current.startDist = Math.hypot(
+            t0.clientX - t1.clientX,
+            t0.clientY - t1.clientY
+          );
+          pinchZoomRef.current.startDist = pinchZoomRef.current.startDist || 1;
+          pinchZoomRef.current.startZoom = rosaryZoom;
+          e.preventDefault();
+          return;
+        }
+        handleRosaryTouchStart(e);
+      }}
+      onTouchMove={(e) => {
+        if (pinchZoomRef.current.active && e.touches?.length === 2) {
+          const t0 = e.touches[0];
+          const t1 = e.touches[1];
+          e.preventDefault();
+
+          const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+          const scale = dist / (pinchZoomRef.current.startDist || 1);
+          const nextZoom = quantizeZoom(clampZoom(pinchZoomRef.current.startZoom * scale));
+
+          const now = Date.now();
+          if (Math.abs(nextZoom - rosaryZoom) > 0.01 && now - pinchZoomRef.current.lastEmitAt > 120) {
+            pinchZoomRef.current.lastEmitAt = now;
+            // Keep the pinch stable by updating the reference point.
+            pinchZoomRef.current.startZoom = nextZoom;
+            pinchZoomRef.current.startDist = dist || pinchZoomRef.current.startDist;
+            setRosaryZoomValue(nextZoom);
+          }
+          return;
+        }
+        handleRosaryTouchMove(e);
+      }}
+      onTouchEnd={(e) => {
+        pinchZoomRef.current.active = false;
+        handleRosaryTouchEnd(e);
+      }}
+      onTouchCancel={(e) => {
+        pinchZoomRef.current.active = false;
+        handleRosaryTouchEnd(e);
+      }}
     />
   );
 };
