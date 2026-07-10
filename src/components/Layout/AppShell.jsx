@@ -53,6 +53,7 @@ import {
   isValidRosaryMystery,
 } from '../../utils/bookletSequence';
 import { SAGRADO_CORAZON_ADORACION_ID } from '../../data/sagradoCorazonAdoracionData';
+import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
@@ -345,6 +346,7 @@ export default function AppShell() {
   }, [syncToCloud]);
 
   const handleMysteryChange = React.useCallback((mystery) => {
+    devLog('mystery-change', { mystery, from: misterioActual, view: vistaActiva });
     setMisterioActual(mystery);
     setCurrentPrayerIndex(0);
     if (isValidRosaryMystery(mystery)) {
@@ -358,7 +360,7 @@ export default function AppShell() {
       localStorage.setItem(ROSARY_INDEX_KEY, '0');
     } catch (_) { /* ignore */ }
     syncToCloud({ bookletMystery: mystery, bookletIndex: 0, todayDate: new Date().toDateString() });
-  }, [syncToCloud]);
+  }, [syncToCloud, misterioActual, vistaActiva]);
 
   const renderizarVista = () => {
     switch (vistaActiva) {
@@ -552,27 +554,6 @@ export default function AppShell() {
           {renderizarVista()}
         </ViewErrorBoundary>
       </div>
-
-      {/* Booklet thumb strip (Divina Misericordia / Ángelus / Magnificat) */}
-      <div
-        id="booklet-mercy-portal"
-        style={{
-          display: vistaActiva === 'booklet' ? 'flex' : 'none',
-          position: 'absolute',
-          bottom: settings.oneHandMode
-            ? 'calc(70px + env(safe-area-inset-bottom, 0px) + 56px)'
-            : '78px',
-          left: '10px',
-          right: '10px',
-          zIndex: 90,
-          pointerEvents: 'auto',
-          alignItems: 'flex-end',
-          justifyContent: 'flex-start',
-          overflowX: 'auto',
-          gap: '8px',
-          paddingBottom: '2px',
-        }}
-      />
 
       {settings.oneHandQuickToggleEnabled !== false && (
         <OneHandQuickToggle
@@ -777,10 +758,6 @@ function AppActionDock({
         </button>
       </div>
       <div className="app-action-cluster app-action-cluster--right">
-        <div
-          id="booklet-top-orbs"
-          style={{ display: vistaActiva === 'booklet' ? 'flex' : 'none' }}
-        />
         <button
           type="button"
           onClick={onSync}

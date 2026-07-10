@@ -1,31 +1,9 @@
 /* Reachability fixes for optional prayers on tall touch phones. */
-/* Hosts the collapsed Devociones shelf; chrome lives in DevotionsShelf.css.
-   overflow must stay visible so the expanded panel can pop above the pill. */
-#booklet-mercy-portal:not(:empty) {
-  position: fixed !important;
-  left: 50% !important;
-  right: auto !important;
-  bottom: calc(4.7rem + env(safe-area-inset-bottom)) !important;
-  transform: translateX(-50%);
-  z-index: 180;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  max-width: calc(100vw - 5.5rem);
-  overflow: visible !important;
-  pointer-events: auto;
-}
-
-#booklet-mercy-portal:not(:empty) .mercy-window-thumb {
-  touch-action: manipulation;
-}
-
 @media (pointer: coarse) and (min-height: 760px) {
   .booklet-progress .booklet-optional-btn {
     position: fixed;
     right: max(0.85rem, env(safe-area-inset-right));
-    bottom: calc(var(--booklet-footer-h, 3.25rem) + 0.9rem + env(safe-area-inset-bottom));
-    z-index: 80;
+    bottom: calc(var(--booklet-footer-h, 3.25rem) + var(--app-above-nav, 70px) + 0.9rem);
     min-height: 44px;
     max-width: min(12rem, 52vw);
     padding: 0.55rem 0.85rem;
@@ -49,7 +27,7 @@
 
   .optional-prayer-backdrop {
     align-items: flex-end;
-    padding: 1rem 1rem calc(var(--booklet-footer-h, 3.25rem) + 1rem + env(safe-area-inset-bottom));
+    padding: 1rem 1rem calc(var(--booklet-footer-h, 3.25rem) + var(--app-above-nav, 70px) + 1rem);
   }
 
   .optional-prayer-sheet {
@@ -77,6 +55,6 @@
 
 @media (pointer: coarse) and (min-height: 860px) {
   .booklet-progress .booklet-optional-btn {
-    bottom: calc(var(--booklet-footer-h, 3.25rem) + 1.25rem + env(safe-area-inset-bottom));
+    bottom: calc(var(--booklet-footer-h, 3.25rem) + var(--app-above-nav, 70px) + 1.25rem);
   }
 }

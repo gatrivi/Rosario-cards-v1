@@ -75,18 +75,23 @@ export function buildRosaryPhysicsIndices(ids) {
   };
 }
 
-/** Heart medal / tail beads: litany unlocked after 5 mysteries or near closing. */
+/** Heart medal / tail beads: litany only in the closing segment (last Fatima onward). */
 export function isClosingPrayersUnlocked(sequence, activePrayerIndex) {
   if (!sequence?.length || activePrayerIndex == null) return false;
-  let llIdx = -1;
-  let mysteryCount = 0;
-  for (let i = 0; i < sequence.length; i += 1) {
-    const id = getPrayerIdAt(sequence, i);
-    if (id === 'LL' && llIdx < 0) llIdx = i;
-    if (i <= activePrayerIndex && isMysteryId(id)) mysteryCount += 1;
-  }
+  const ids = toPrayerIds(sequence);
+  const llIdx = ids.lastIndexOf('LL');
   if (llIdx < 0) return false;
-  return mysteryCount >= 5 || activePrayerIndex >= llIdx - 10;
+  // ponytail: do not unlock after 5th mystery — only when user reaches closing Gloria/Fatima
+  return activePrayerIndex >= llIdx - 1;
+}
+
+/** Heart medal may jump into the litany (not from Salve or mid-rosary). */
+export function canStartLitany(sequence, activePrayerIndex) {
+  if (!isClosingPrayersUnlocked(sequence, activePrayerIndex)) return false;
+  const ids = toPrayerIds(sequence);
+  const llIdx = ids.lastIndexOf('LL');
+  if (llIdx < 0) return false;
+  return activePrayerIndex <= llIdx;
 }
 
 export function getDecadeAveIndex(ids, physicsIdx) {

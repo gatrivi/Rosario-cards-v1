@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { devLog } from '../../utils/devotionsDebug';
 import './DevotionsShelf.css';
 
 /** Captioned slot for a devotion thumb inside the shelf panel. */
@@ -22,30 +23,44 @@ export default function DevotionsShelf({
   active = false,
   recorridos,
   breves,
+  variant = 'pill',
+  onOpenChange,
 }) {
   const [open, setOpen] = useState(false);
+
+  const setShelfOpen = (next) => {
+    devLog('shelf-toggle', { open: next, misterio: misterioActual });
+    setOpen(next);
+    onOpenChange?.(next);
+  };
   const rootRef = useRef(null);
   const lastMysteryRef = useRef(misterioActual);
 
   // Close when a devotion is actually picked (mystery changed).
   useEffect(() => {
     if (lastMysteryRef.current !== misterioActual) {
+      devLog('shelf-close-mystery-change', {
+        from: lastMysteryRef.current,
+        to: misterioActual,
+      });
       lastMysteryRef.current = misterioActual;
-      setOpen(false);
+      setShelfOpen(false);
     }
   }, [misterioActual]);
 
   useEffect(() => {
     if (!open) return undefined;
     const close = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+      if (rootRef.current && !rootRef.current.contains(e.target)) setShelfOpen(false);
     };
     document.addEventListener('pointerdown', close);
     return () => document.removeEventListener('pointerdown', close);
   }, [open]);
 
+  const rootClass = `devotions-shelf${variant === 'footer' ? ' devotions-shelf--footer' : ''}`;
+
   return (
-    <div className="devotions-shelf" ref={rootRef}>
+    <div className={rootClass} ref={rootRef}>
       {open && (
         <div
           className="devotions-shelf__panel"
@@ -63,9 +78,10 @@ export default function DevotionsShelf({
         className={`devotions-shelf__toggle${active ? ' devotions-shelf__toggle--active' : ''}`}
         aria-expanded={open}
         aria-label="Devociones y oraciones breves"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setShelfOpen(!open)}
       >
-        <span aria-hidden="true">✦</span> Devociones
+        <span aria-hidden="true">✦</span>
+        {variant === 'footer' ? 'Devoc.' : 'Devociones'}
       </button>
     </div>
   );

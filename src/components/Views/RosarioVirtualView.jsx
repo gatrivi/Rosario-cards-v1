@@ -22,6 +22,7 @@ import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import { getBookletStepContext, stepContextToVitralVars, makeBookletRoseFingerprint } from '../../utils/bookletProgress';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
+import { canStartLitany, isClosingPrayersUnlocked } from '../../utils/rosarySequenceUtils';
 import { getMysteryColors } from '../RosarioNube/utils/mysteryColors';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
 import { RELEASE_NOTES } from '../../data/releaseNotes';
@@ -142,6 +143,10 @@ export default function RosarioVirtualView({
   ]);
 
   useEffect(() => {
+    litanyEntranceShownRef.current = false;
+  }, [misterioActual]);
+
+  useEffect(() => {
     setLitanyVerseIndex(0);
     setPrayerVerseIndex(0);
     if (activePrayer?.id === 'LL' && litanyEntranceEnabled && !litanyEntranceShownRef.current) {
@@ -259,6 +264,7 @@ export default function RosarioVirtualView({
     };
 
     const onHeartBead = () => {
+      if (!canStartLitany(secuencia, currentPrayerIndex)) return;
       const litanyIdx = secuencia.findIndex((p) => p?.id === 'LL');
       if (litanyIdx >= 0) {
         onUpdateProgreso(litanyIdx);
@@ -303,13 +309,21 @@ export default function RosarioVirtualView({
   }, [guided]);
 
   const revealPrayer = useCallback((index) => {
+    if (index < 0 || index >= secuencia.length) return;
+    const targetId = secuencia[index]?.id;
+    if ((targetId === 'LL' || targetId === 'S') && !isClosingPrayersUnlocked(secuencia, currentPrayerIndex)) {
+      return;
+    }
+    if (targetId === 'LL' && index > currentPrayerIndex && !canStartLitany(secuencia, currentPrayerIndex)) {
+      return;
+    }
     setShowHint(false);
     setLitanyVerseIndex(0);
     setPrayerVerseIndex(0);
     setCargaOracion(100);
     setIsCargando(false);
     onUpdateProgreso(index);
-  }, [onUpdateProgreso]);
+  }, [secuencia, currentPrayerIndex, onUpdateProgreso]);
 
   const handleNodeClick = useCallback((index) => {
     revealPrayer(index);
@@ -378,6 +392,7 @@ export default function RosarioVirtualView({
           misterioActual={misterioActual}
           soundEnabled={soundEnabled}
           guided={guided}
+          isInLitany={isLitany}
         />
       </div>
 

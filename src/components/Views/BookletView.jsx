@@ -64,6 +64,7 @@ import {
   preloadShareImage,
 } from '../../utils/bookletShare';
 import './BookletView.css';
+import { devLog } from '../../utils/devotionsDebug';
 
 const TRANSITION_PHASE = {
   READY: 'ready',
@@ -144,10 +145,26 @@ export default function BookletView({
   const isMarianDevotion = isMarianDevotionMode(misterioActual);
   const isSagradoCorazon = isSagradoCorazonAdoracionMode(misterioActual);
   const showRosaryPills = !isMercy && !isStations && !isMarianDevotion && !isSagradoCorazon;
+  const pickDevotion = useCallback(
+    (id, label) => {
+      devLog('shelf-pick', { id, label, from: misterioActual });
+      onMysteryChange?.(id);
+    },
+    [misterioActual, onMysteryChange]
+  );
   const secuencia = useMemo(
     () => buildSequence(misterioActual, { includeMercyOpening: mercyOptionalOpening, novenaDay }),
     [misterioActual, mercyOptionalOpening, novenaDay]
   );
+
+  useEffect(() => {
+    if (showRosaryPills) return;
+    devLog('sequence-ready', {
+      misterio: misterioActual,
+      steps: secuencia.length,
+      first: secuencia[0]?.title,
+    });
+  }, [misterioActual, secuencia, showRosaryPills]);
 
   const total = secuencia.length;
   const safeIndex = Math.min(
@@ -178,8 +195,7 @@ export default function BookletView({
   const [optionalGlow, setOptionalGlow] = useState(false);
   const optionalIdleRef = useRef(null);
   const mountedRef = useRef(true);
-  const [orbHost, setOrbHost] = useState(null);
-  const [mercyThumbHost, setMercyThumbHost] = useState(null);
+  const [shelfOpen, setShelfOpen] = useState(false);
   const prevIndexRef = useRef(safeIndex);
   const isFirstRenderRef = useRef(true);
   const [litanyVerseIndex, setLitanyVerseIndex] = useState(0);
@@ -225,8 +241,6 @@ export default function BookletView({
 
   useEffect(() => {
     mountedRef.current = true;
-    setOrbHost(document.getElementById('booklet-top-orbs'));
-    setMercyThumbHost(document.getElementById('booklet-mercy-portal'));
     return () => {
       mountedRef.current = false;
     };
@@ -722,7 +736,15 @@ export default function BookletView({
 
       <div className={`booklet-prayer-chrome${chromePhaseClass}`}>
         <header className="booklet-header">
-          {showRosaryPills && (
+          <div className="booklet-header__tools">
+            <PrayForOrbs
+              simpleMode={simpleMode}
+              offeringPulse={stepGlow}
+              variant="header"
+              soundEnabled={soundEnabled}
+            />
+          </div>
+          {showRosaryPills && !shelfOpen && (
           <div className="booklet-mystery-bar">
             <div className="booklet-mystery-row">
               {MYSTERY_OPTIONS.map((opt) => (
@@ -789,7 +811,7 @@ export default function BookletView({
               {isSharing ? '…' : 'Compartir'}
             </button>
           </div>
-          <p className="booklet-progress">
+          <p className="booklet-progress" data-testid="booklet-progress">
             {showRosaryPills && (
               <>
                 <button
@@ -871,6 +893,7 @@ export default function BookletView({
               </span>
             )}
           </p>
+          {!shelfOpen && (
           <p
             className={`booklet-devotion${isMercy ? ' booklet-devotion--mercy' : ''}`}
             aria-live="polite"
@@ -880,6 +903,7 @@ export default function BookletView({
               <span className="booklet-devotion__subtitle">{devotionChrome.subtitle}</span>
             )}
           </p>
+          )}
           <PrayerRecorder
             prayerId={activePrayer.id}
             prayerTitle={displayPrayerTitle}
@@ -930,108 +954,6 @@ export default function BookletView({
         />
       </div>
 
-      {mercyThumbHost &&
-        createPortal(
-          <DevotionsShelf
-            misterioActual={misterioActual}
-            active={!showRosaryPills}
-            recorridos={
-              <>
-                <ShelfItem label="Estaciones">
-                  <StationsDevotionThumb
-                    misterioActual={misterioActual}
-                    disabled={isTransitioning}
-                    onMysteryChange={onMysteryChange}
-                  />
-                </ShelfItem>
-                <ShelfItem label="Letanía Sangre">
-                  <MercyWindowThumb
-                    active={misterioActual === 'sangrepreciosa_litany'}
-                    disabled={isTransitioning}
-                    onClick={() => onMysteryChange?.('sangrepreciosa_litany')}
-                    title="Letanía de la Preciosísima Sangre (Julio)"
-                    img={registryImage('vitreauxCruz')}
-                    badge="L"
-                  />
-                </ShelfItem>
-                <ShelfItem label="Corona Sangre">
-                  <MercyWindowThumb
-                    active={misterioActual === 'sangrepreciosa_chaplet'}
-                    disabled={isTransitioning}
-                    onClick={() => onMysteryChange?.('sangrepreciosa_chaplet')}
-                    title="Corona de la Preciosísima Sangre"
-                    img={registryImage('crux')}
-                    badge="C"
-                  />
-                </ShelfItem>
-                <ShelfItem label="7 Ofrendas">
-                  <MercyWindowThumb
-                    active={misterioActual === 'sangrepreciosa_ofrendas'}
-                    disabled={isTransitioning}
-                    onClick={() => onMysteryChange?.('sangrepreciosa_ofrendas')}
-                    title="Siete Ofrendas de la Sangre de Cristo"
-                    img={registryImage('lamb')}
-                    badge="7"
-                  />
-                </ShelfItem>
-                <ShelfItem label="Sagrado Corazón">
-                  <MercyWindowThumb
-                    active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
-                    disabled={isTransitioning}
-                    onClick={() => onMysteryChange?.(SAGRADO_CORAZON_ADORACION_ID)}
-                    title="Adoración Eucarística — Sagrado Corazón de Jesús"
-                    img={sagradoCorazonAdoracionThumbnail}
-                    badge="SC"
-                  />
-                </ShelfItem>
-                <ShelfItem label="Sta. Faustina">
-                  <FaustinaMercyThumb
-                    misterioActual={misterioActual}
-                    disabled={isTransitioning}
-                    onMysteryChange={onMysteryChange}
-                  />
-                </ShelfItem>
-              </>
-            }
-            breves={
-              <>
-                <ShelfItem label="Ángelus">
-                  <MercyWindowThumb
-                    active={misterioActual === ANGELUS_ID}
-                    disabled={isTransitioning}
-                    onClick={() => onMysteryChange?.(ANGELUS_ID)}
-                    title="Ángelus"
-                    img={angelusThumbnail}
-                    badge="A"
-                  />
-                </ShelfItem>
-                <ShelfItem label="Magnificat">
-                  <MercyWindowThumb
-                    active={misterioActual === MAGNIFICAT_ID}
-                    disabled={isTransitioning}
-                    onClick={() => onMysteryChange?.(MAGNIFICAT_ID)}
-                    title="Magnificat"
-                    img={magnificatThumbnail}
-                    badge="M"
-                  />
-                </ShelfItem>
-              </>
-            }
-          />,
-          mercyThumbHost
-        )}
-
-      {orbHost &&
-        createPortal(
-          <PrayForOrbs
-            simpleMode={simpleMode}
-            offeringPulse={stepGlow}
-            variant="header"
-            soundEnabled={soundEnabled}
-          />,
-          orbHost
-        )}
-
       <OfferingLight
         active={offeringLight}
         count={Math.max(loadPrayForIntentions().length, 1)}
@@ -1074,7 +996,10 @@ export default function BookletView({
         />
       )}
 
-      <footer className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}>
+      <footer
+        className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}
+        data-testid="booklet-nav-footer"
+      >
         <button
           type="button"
           className="glass-turn booklet-turn--back"
@@ -1084,7 +1009,94 @@ export default function BookletView({
         >
           ‹ anterior
         </button>
-        <span className="booklet-turn-ornament" aria-hidden="true">✦</span>
+        <DevotionsShelf
+          variant="footer"
+          misterioActual={misterioActual}
+          active={!showRosaryPills}
+          onOpenChange={setShelfOpen}
+          recorridos={
+            <>
+              <ShelfItem label="Estaciones">
+                <StationsDevotionThumb
+                  misterioActual={misterioActual}
+                  disabled={isTransitioning}
+                  onMysteryChange={onMysteryChange}
+                />
+              </ShelfItem>
+              <ShelfItem label="Letanía Sangre">
+                <MercyWindowThumb
+                  active={misterioActual === 'sangrepreciosa_litany'}
+                  disabled={isTransitioning}
+                  onClick={() => pickDevotion('sangrepreciosa_litany', 'Letanía Sangre')}
+                  title="Letanía de la Preciosísima Sangre (Julio)"
+                  img={registryImage('vitreauxCruz')}
+                  badge="L"
+                />
+              </ShelfItem>
+              <ShelfItem label="Corona Sangre">
+                <MercyWindowThumb
+                  active={misterioActual === 'sangrepreciosa_chaplet'}
+                  disabled={isTransitioning}
+                  onClick={() => pickDevotion('sangrepreciosa_chaplet', 'Corona Sangre')}
+                  title="Corona de la Preciosísima Sangre"
+                  img={registryImage('crux')}
+                  badge="C"
+                />
+              </ShelfItem>
+              <ShelfItem label="7 Ofrendas">
+                <MercyWindowThumb
+                  active={misterioActual === 'sangrepreciosa_ofrendas'}
+                  disabled={isTransitioning}
+                  onClick={() => pickDevotion('sangrepreciosa_ofrendas', '7 Ofrendas')}
+                  title="Siete Ofrendas de la Sangre de Cristo"
+                  img={registryImage('lamb')}
+                  badge="7"
+                />
+              </ShelfItem>
+              <ShelfItem label="Sagrado Corazón">
+                <MercyWindowThumb
+                  active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
+                  disabled={isTransitioning}
+                  onClick={() => pickDevotion(SAGRADO_CORAZON_ADORACION_ID, 'Sagrado Corazón')}
+                  title="Adoración Eucarística — Sagrado Corazón de Jesús"
+                  img={sagradoCorazonAdoracionThumbnail}
+                  badge="SC"
+                />
+              </ShelfItem>
+              <ShelfItem label="Sta. Faustina">
+                <FaustinaMercyThumb
+                  misterioActual={misterioActual}
+                  disabled={isTransitioning}
+                  onMysteryChange={onMysteryChange}
+                />
+              </ShelfItem>
+            </>
+          }
+          breves={
+            <>
+              <ShelfItem label="Ángelus">
+                <MercyWindowThumb
+                  active={misterioActual === ANGELUS_ID}
+                  disabled={isTransitioning}
+                  onClick={() => pickDevotion(ANGELUS_ID, 'Ángelus')}
+                  title="Ángelus"
+                  img={angelusThumbnail}
+                  badge="A"
+                />
+              </ShelfItem>
+              <ShelfItem label="Magnificat">
+                <MercyWindowThumb
+                  active={misterioActual === MAGNIFICAT_ID}
+                  disabled={isTransitioning}
+                  onClick={() => pickDevotion(MAGNIFICAT_ID, 'Magnificat')}
+                  title="Magnificat"
+                  img={magnificatThumbnail}
+                  badge="M"
+                />
+              </ShelfItem>
+            </>
+          }
+        />
         <button
           type="button"
           className="glass-turn glass-turn--forward booklet-turn--forward"

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import InteractiveRosary from './InteractiveRosary';
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
-import { isClosingPrayersUnlocked } from '../../utils/rosarySequenceUtils';
+import { canStartLitany, isClosingPrayersUnlocked } from '../../utils/rosarySequenceUtils';
 
 /**
  * Bridges RosarioVirtualView callbacks to origin/master InteractiveRosary.
@@ -12,6 +12,7 @@ export default function RosaryAdapter({
   misterioActual = 'gozosos',
   soundEnabled = true,
   guided = true,
+  isInLitany = false,
   onNodeClick,
   onBeadHoldStart,
   onBeadHoldEnd,
@@ -53,12 +54,19 @@ export default function RosaryAdapter({
     [sequence, activePrayerIndex]
   );
 
+  const heartLitanyEnabled = useMemo(
+    () => canStartLitany(sequence, activePrayerIndex),
+    [sequence, activePrayerIndex]
+  );
+
   return (
     <InteractiveRosary
       sequence={sequence}
       currentMystery={misterioActual}
       currentPrayerIndex={activePrayerIndex}
       areClosingPrayersUnlocked={closingUnlocked}
+      canStartLitany={heartLitanyEnabled}
+      isInLitany={isInLitany}
       onBeadClick={handleBeadClick}
       onBeadHoldStart={handleBeadHoldStart}
       onBeadHoldEnd={onBeadHoldEnd}

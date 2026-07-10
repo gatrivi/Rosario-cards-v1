@@ -27,7 +27,7 @@ describe('DevotionsShelf', () => {
       screen.getByRole('button', { name: /devociones y oraciones breves/i })
     );
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByText('Devociones')).toBeInTheDocument();
+    expect(screen.getByRole('menu').querySelector('.devotions-shelf__heading')).toHaveTextContent('Devociones');
     expect(screen.getByText('Oraciones breves')).toBeInTheDocument();
   });
 
@@ -39,5 +39,21 @@ describe('DevotionsShelf', () => {
     expect(screen.getByRole('menu')).toBeInTheDocument();
     rerender(shelf('divinamisericordia'));
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  test('calls onOpenChange when toggled', () => {
+    const onOpenChange = jest.fn();
+    render(
+      <DevotionsShelf
+        misterioActual="gozosos"
+        onOpenChange={onOpenChange}
+        recorridos={<ShelfItem label="Test"><button type="button">x</button></ShelfItem>}
+        breves={<ShelfItem label="Breve"><button type="button">y</button></ShelfItem>}
+      />
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /devociones y oraciones breves/i })
+    );
+    expect(onOpenChange).toHaveBeenCalledWith(true);
   });
 });

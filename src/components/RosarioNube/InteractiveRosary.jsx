@@ -60,6 +60,7 @@ const InteractiveRosary = ({
   isInLitany = false,
   pressedBeads = new Set(),
   areClosingPrayersUnlocked = false,
+  canStartLitany: canStartLitanyProp = false,
   soundEnabled = true,
   guided = true,
   onAdvance,
@@ -1190,8 +1191,8 @@ const InteractiveRosary = ({
         debug(`❤️ Heart bead touched`);
 
         // Check if closing prayers are unlocked (5 mysteries visited)
-        if (areClosingPrayersUnlocked) {
-          // Litany acchowess is unlocked - dispatch event
+        if (canStartLitanyProp) {
+          // Litany access is unlocked - dispatch event
           window.dispatchEvent(
             new CustomEvent("heartBeadPressed", {
               detail: { beadId: clickedBead.id },

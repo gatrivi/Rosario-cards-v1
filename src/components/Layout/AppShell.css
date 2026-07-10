@@ -102,17 +102,7 @@
   font-size: 0.7rem;
 }
 
-#booklet-top-orbs {
-  display: flex;
-  align-items: center;
-  flex: 1 1 auto;
-  justify-content: flex-end;
-  min-width: 0;
-  max-width: calc(100vw - 9.5rem);
-  overflow: hidden;
-}
-
-/* --- One-hand quick toggle --- */
+/* --- Action dock --- */
 .app-one-hand-toggle {
   position: absolute;
   bottom: calc(var(--app-above-nav) + 4px);
@@ -265,10 +255,15 @@
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+.app-shell--booklet .booklet-view {
+  box-sizing: border-box;
+  padding-bottom: var(--app-above-nav);
+}
+
 .app-shell--booklet .hand-toggle-anchor {
-  bottom: calc(var(--app-above-nav) + 74px);
+  bottom: calc(var(--app-above-nav) + 20px);
 }
 
 .app-shell--booklet.app-shell--one-hand .hand-toggle-anchor {
-  bottom: calc(var(--app-above-nav) + 128px);
+  bottom: calc(var(--app-above-nav) + 56px);
 }

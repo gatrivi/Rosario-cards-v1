@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MercyWindowThumb from './MercyWindowThumb';
 import { faustinaThumb, DIVINE_MERCY_ID, DIVINE_MERCY_NOVENA_ID } from '../../data/divineMercyData';
+import { devLog } from '../../utils/devotionsDebug';
 import './FaustinaMercyThumb.css';
 
 /**
@@ -27,6 +28,7 @@ export default function FaustinaMercyThumb({
   }, [open]);
 
   const pick = (mode) => {
+    devLog('faustina-pick', { mode, from: misterioActual });
     onMysteryChange?.(mode);
     setOpen(false);
   };

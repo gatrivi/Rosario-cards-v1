@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MercyWindowThumb from './MercyWindowThumb';
+import { devLog } from '../../utils/devotionsDebug';
 import './FaustinaMercyThumb.css';
 
 /** Distinct from Precious Blood litany (vitreauxCruz) — dolor mystery vitral. */
@@ -31,6 +32,7 @@ export default function StationsDevotionThumb({
   }, [open]);
 
   const pick = (mode) => {
+    devLog('stations-pick', { mode, from: misterioActual });
     onMysteryChange?.(mode);
     setOpen(false);
   };

@@ -36,6 +36,7 @@ export default function BookletPrayerPanel({
   return (
     <article
       className={panelClass}
+      data-testid="booklet-prayer-scroll"
       style={{ fontSize: simpleMode ? '1.35rem' : '1.08rem' }}
       onClick={onTapNav ? handleClick : undefined}
     >

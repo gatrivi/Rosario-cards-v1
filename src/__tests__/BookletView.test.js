@@ -255,6 +255,54 @@ describe('BookletView', () => {
     expect(screen.getByText(/2 de 10/)).toBeInTheDocument();
     expect(document.querySelector('.booklet-vitral--ave')).toBeInTheDocument();
   });
+
+  test('keeps prayer scroll panel before footer in document flow', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="sangrepreciosa_chaplet"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    const scroll = screen.getByTestId('booklet-prayer-scroll');
+    const footer = screen.getByTestId('booklet-nav-footer');
+    expect(scroll.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(footer.querySelector('.devotions-shelf')).toBeInTheDocument();
+    expect(scroll.className).toContain('booklet-glass-panel');
+  });
+
+  test('hides rosary mystery pills while devociones shelf is open', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    expect(document.querySelector('.booklet-mystery-bar')).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: /devociones y oraciones breves/i })
+    );
+    expect(document.querySelector('.booklet-mystery-bar')).not.toBeInTheDocument();
+  });
+
+  test('renders pray-for orbs in header tools row', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="sangrepreciosa_chaplet"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    const tools = document.querySelector('.booklet-header__tools');
+    expect(tools?.querySelector('.pray-for-bar--header')).toBeInTheDocument();
+  });
 });
 
 describe('getAveMariaRunInfo', () => {
