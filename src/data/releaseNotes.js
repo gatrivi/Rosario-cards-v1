@@ -4,16 +4,16 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.50',
-  name: 'Estante de Devociones',
+  version: '0.3.51',
+  name: 'Voz guía · Preciosísima Sangre',
   CURRENT: [
-    'Libro: devociones agrupadas en un panel "Devociones" (ya no tapan la oración)',
-    'Devociones largas y oraciones breves separadas, con nombre bajo cada vitral',
-    'Insignia de versión corregida en Rosario Virtual',
+    'Julio: voz guía Piper en 7 Ofrendas, Corona (contrición/invocación/cierre) y oración final de la Letanía',
+    'Libro: botón ▶ junto al título reproduce la voz guía (o tu grabación si hay)',
+    'Al avanzar de oración suena la voz si el sonido está activo',
   ],
   UPCOMING: [
+    'Más versos de la Letanía de la Sangre + Padre/Gloria de la Corona',
     'Publicar reglas Firestore + Storage (si permiso denegado)',
-    'Imágenes dedicadas por estación',
     'Confirmación al borrar una toma de voz',
   ],
 };

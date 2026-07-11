@@ -6,6 +6,7 @@ import {
   deleteRecording,
   blobToObjectUrl,
 } from '../../utils/prayerRecordingStore';
+import { resolveBundledVoiceUrl } from '../../data/bundledVoiceMap';
 import './PrayerRecorder.css';
 
 export default function PrayerRecorder({
@@ -28,6 +29,7 @@ export default function PrayerRecorder({
   const chunksRef = useRef([]);
   const streamRef = useRef(null);
   const audioRef = useRef(null);
+  const bundledUrl = resolveBundledVoiceUrl(prayerId);
 
   const refreshClips = useCallback(async () => {
     try {
@@ -141,19 +143,29 @@ export default function PrayerRecorder({
     setPlaying(false);
   };
 
-  const playClip = (clip) => {
+  const playUrl = (url, revoke = false) => {
     if (audioRef.current) {
       audioRef.current.pause();
-      URL.revokeObjectURL(audioRef.current.src);
+      if (audioRef.current.src?.startsWith('blob:')) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
     }
-    const url = blobToObjectUrl(clip);
     if (!url) return;
     const audio = new Audio(url);
     audioRef.current = audio;
-    audio.onended = () => setPlaying(false);
+    audio.onended = () => {
+      setPlaying(false);
+      if (revoke) URL.revokeObjectURL(url);
+    };
     audio.onpause = () => setPlaying(false);
     audio.play();
     setPlaying(true);
+  };
+
+  const playClip = (clip) => {
+    const url = blobToObjectUrl(clip);
+    if (!url) return;
+    playUrl(url, true);
   };
 
   const togglePlayback = () => {
@@ -161,7 +173,11 @@ export default function PrayerRecorder({
       stopPlayback();
       return;
     }
-    if (clips.length > 0) playClip(clips[clips.length - 1]);
+    if (clips.length > 0) {
+      playClip(clips[clips.length - 1]);
+      return;
+    }
+    if (bundledUrl) playUrl(bundledUrl);
   };
 
   const handleDelete = async (id) => {
@@ -173,6 +189,7 @@ export default function PrayerRecorder({
 
   const disabled = micAvailable === false;
   const hasClips = clips.length > 0;
+  const canPlay = hasClips || Boolean(bundledUrl);
   const isTitle = placement === 'title';
 
   const panel = expanded && (
@@ -180,6 +197,9 @@ export default function PrayerRecorder({
       <p className="prayer-recorder__title">
         {simpleMode ? 'Graba tu voz' : 'Voz propia · suena al llegar a esta oración'}
       </p>
+      {bundledUrl && !hasClips && (
+        <p className="prayer-recorder__hint">Hay voz guía (Piper). ▶ para oírla; 🎙️ para grabar la tuya.</p>
+      )}
       {prayerId === 'A' && (
         <p className="prayer-recorder__hint">
           Puedes grabar muchas tomas del Ave María ({hmVariants} guardadas).
@@ -234,14 +254,13 @@ export default function PrayerRecorder({
         className={`prayer-recorder prayer-recorder--title${expanded ? ' prayer-recorder--open' : ''}${disabled ? ' prayer-recorder--disabled' : ''}`}
       >
         <div className={`prayer-recorder__title-row${isLeftHanded ? ' prayer-recorder__title-row--left' : ''}`}>
-          {hasClips ? (
+          {canPlay ? (
             <button
               type="button"
               className="prayer-recorder__side-btn"
               onClick={togglePlayback}
-              disabled={disabled}
-              aria-label={playing ? 'Pausar grabación' : 'Reproducir grabación'}
-              title={playing ? 'Pausar' : 'Reproducir'}
+              aria-label={playing ? 'Pausar' : 'Reproducir voz'}
+              title={playing ? 'Pausar' : hasClips ? 'Reproducir tu grabación' : 'Reproducir voz guía'}
             >
               {playing ? '⏸' : '▶'}
             </button>
@@ -249,21 +268,17 @@ export default function PrayerRecorder({
             <span className="prayer-recorder__side-spacer" aria-hidden="true" />
           )}
           <div className="prayer-recorder__title-slot">{children}</div>
-          {!hasClips ? (
-            <button
-              type="button"
-              className="prayer-recorder__side-btn"
-              onClick={() => !disabled && setExpanded((v) => !v)}
-              disabled={disabled}
-              aria-expanded={expanded}
-              aria-label="Grabar tu voz"
-              title="Grabar tu voz"
-            >
-              🎙️
-            </button>
-          ) : (
-            <span className="prayer-recorder__side-spacer" aria-hidden="true" />
-          )}
+          <button
+            type="button"
+            className="prayer-recorder__side-btn"
+            onClick={() => !disabled && setExpanded((v) => !v)}
+            disabled={disabled}
+            aria-expanded={expanded}
+            aria-label="Grabar tu voz"
+            title="Grabar tu voz"
+          >
+            🎙️
+          </button>
         </div>
         {panel}
       </div>
@@ -271,8 +286,8 @@ export default function PrayerRecorder({
   }
 
   const handleToggle = () => {
-    if (disabled) return;
-    if (hasClips && placement === 'footer-inline') {
+    if (disabled && !canPlay) return;
+    if (canPlay && placement === 'footer-inline') {
       togglePlayback();
       return;
     }
@@ -288,18 +303,18 @@ export default function PrayerRecorder({
         className="prayer-recorder__toggle"
         onClick={handleToggle}
         aria-expanded={expanded}
-        disabled={disabled}
+        disabled={disabled && !canPlay}
         title={
-          disabled
+          disabled && !canPlay
             ? 'Micrófono no disponible en este dispositivo'
-            : hasClips && placement === 'footer-inline'
+            : canPlay && placement === 'footer-inline'
               ? playing
                 ? 'Pausar'
-                : 'Reproducir tu grabación'
+                : 'Reproducir'
               : 'Grabar tu voz para modo automático'
         }
       >
-        {hasClips && placement === 'footer-inline'
+        {canPlay && placement === 'footer-inline'
           ? playing
             ? '⏸'
             : '▶'
