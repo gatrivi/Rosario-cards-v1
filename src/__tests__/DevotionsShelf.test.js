@@ -41,6 +41,16 @@ describe('DevotionsShelf', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  test('panel is portaled to document.body above app chrome', () => {
+    render(shelf());
+    fireEvent.click(
+      screen.getByRole('button', { name: /devociones y oraciones breves/i })
+    );
+    const menu = screen.getByRole('menu');
+    expect(menu).toHaveClass('devotions-shelf__panel--portal');
+    expect(menu.parentElement).toBe(document.body);
+  });
+
   test('calls onOpenChange when toggled', () => {
     const onOpenChange = jest.fn();
     render(

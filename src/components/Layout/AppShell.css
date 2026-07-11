@@ -31,6 +31,11 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  /* Cluster stretches (esp. --right flex:1); only buttons catch clicks */
+  pointer-events: none;
+}
+
+.app-action-cluster > * {
   pointer-events: auto;
 }
 

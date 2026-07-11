@@ -1031,14 +1031,12 @@ export default function BookletView({
               <ShelfItem label="Estaciones">
                 <StationsDevotionThumb
                   misterioActual={misterioActual}
-                  disabled={isTransitioning}
                   onMysteryChange={onMysteryChange}
                 />
               </ShelfItem>
               <ShelfItem label="Letanía Sangre">
                 <MercyWindowThumb
                   active={misterioActual === 'sangrepreciosa_litany'}
-                  disabled={isTransitioning}
                   onClick={() => pickDevotion('sangrepreciosa_litany', 'Letanía Sangre')}
                   title="Letanía de la Preciosísima Sangre (Julio)"
                   img={registryImage('vitreauxCruz')}
@@ -1048,7 +1046,6 @@ export default function BookletView({
               <ShelfItem label="Corona Sangre">
                 <MercyWindowThumb
                   active={misterioActual === 'sangrepreciosa_chaplet'}
-                  disabled={isTransitioning}
                   onClick={() => pickDevotion('sangrepreciosa_chaplet', 'Corona Sangre')}
                   title="Corona de la Preciosísima Sangre"
                   img={registryImage('crux')}
@@ -1058,7 +1055,6 @@ export default function BookletView({
               <ShelfItem label="7 Ofrendas">
                 <MercyWindowThumb
                   active={misterioActual === 'sangrepreciosa_ofrendas'}
-                  disabled={isTransitioning}
                   onClick={() => pickDevotion('sangrepreciosa_ofrendas', '7 Ofrendas')}
                   title="Siete Ofrendas de la Sangre de Cristo"
                   img={registryImage('lamb')}
@@ -1068,7 +1064,6 @@ export default function BookletView({
               <ShelfItem label="Sagrado Corazón">
                 <MercyWindowThumb
                   active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
-                  disabled={isTransitioning}
                   onClick={() => pickDevotion(SAGRADO_CORAZON_ADORACION_ID, 'Sagrado Corazón')}
                   title="Adoración Eucarística — Sagrado Corazón de Jesús"
                   img={sagradoCorazonAdoracionThumbnail}
@@ -1078,7 +1073,6 @@ export default function BookletView({
               <ShelfItem label="Sta. Faustina">
                 <FaustinaMercyThumb
                   misterioActual={misterioActual}
-                  disabled={isTransitioning}
                   onMysteryChange={onMysteryChange}
                 />
               </ShelfItem>
@@ -1089,7 +1083,6 @@ export default function BookletView({
               <ShelfItem label="Ángelus">
                 <MercyWindowThumb
                   active={misterioActual === ANGELUS_ID}
-                  disabled={isTransitioning}
                   onClick={() => pickDevotion(ANGELUS_ID, 'Ángelus')}
                   title="Ángelus"
                   img={angelusThumbnail}
@@ -1099,7 +1092,6 @@ export default function BookletView({
               <ShelfItem label="Magnificat">
                 <MercyWindowThumb
                   active={misterioActual === MAGNIFICAT_ID}
-                  disabled={isTransitioning}
                   onClick={() => pickDevotion(MAGNIFICAT_ID, 'Magnificat')}
                   title="Magnificat"
                   img={magnificatThumbnail}
@@ -1109,7 +1101,6 @@ export default function BookletView({
               <ShelfItem label="Ángel Guarda">
                 <MercyWindowThumb
                   active={optionalOpen && optionalPrayerId === 'guardian'}
-                  disabled={isTransitioning}
                   onClick={() => openOptionalPrayer('guardian')}
                   title="Ángel de la Guarda"
                   img={optionalPrayerThumbnail('guardian')}
@@ -1119,7 +1110,6 @@ export default function BookletView({
               <ShelfItem label="San Benito">
                 <MercyWindowThumb
                   active={optionalOpen && optionalPrayerId === 'benedict'}
-                  disabled={isTransitioning}
                   onClick={() => openOptionalPrayer('benedict')}
                   title="San Benito"
                   img={optionalPrayerThumbnail('benedict')}

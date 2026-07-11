@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.53',
-  name: 'San Benito en breves',
+  version: '0.3.54',
+  name: 'Devociones clickeable',
   CURRENT: [
-    'Oraciones breves: San Benito y Ángel de la Guarda en el estante Devociones',
-    'Móvil: Devociones ya no queda tapado por el chip Ángel·Benito',
+    'Fix: panel Devociones portaleado — ya no lo tapa Ajustes/Sync (clicks funcionan)',
+    'Oraciones breves: San Benito y Ángel de la Guarda en el estante',
   ],
   UPCOMING: [
     'Versos de la Letanía de la Sangre (líder + respuestas)',

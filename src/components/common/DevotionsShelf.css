@@ -2,7 +2,6 @@
   position: relative;
   display: flex;
   justify-content: center;
-  /* Above glass scroll content; below BottomNav (50) */
   z-index: 40;
 }
 
@@ -35,10 +34,6 @@
 }
 
 .devotions-shelf__panel {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
   width: min(94vw, 22rem);
   max-height: min(56vh, 26rem);
   overflow-y: auto;
@@ -49,7 +44,12 @@
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  z-index: 200;
+}
+
+/* Escapes booklet view-layer (z-index 10) so Ajustes/Sync dock cannot eat clicks */
+.devotions-shelf__panel--portal {
+  z-index: 1200;
+  pointer-events: auto;
 }
 
 .devotions-shelf__heading {
@@ -75,6 +75,7 @@
   align-items: center;
   gap: 0.2rem;
   min-width: 52px;
+  cursor: pointer;
 }
 
 .devotions-shelf__item-label {
@@ -85,30 +86,23 @@
   line-height: 1.15;
   max-width: 60px;
   text-align: center;
+  pointer-events: none;
 }
 
-/* Comfortable tap targets inside the panel (strip rule elsewhere keeps 34px). */
 .devotions-shelf__panel .mercy-window-thumb {
   height: 64px !important;
   min-width: 44px !important;
   width: 44px;
 }
 
-/* Faustina/Estaciones submenus open upward inside the bottom-anchored panel. */
 .devotions-shelf__panel .faustina-mercy-menu {
   bottom: calc(100% + 6px);
   top: auto;
 }
 
-/* Compact toggle when nested in booklet footer row */
 .devotions-shelf--footer .devotions-shelf__toggle {
   font-size: 0.62rem;
   letter-spacing: 0.05em;
   min-height: 38px;
   padding: 0.3rem 0.65rem;
-}
-
-.devotions-shelf--footer .devotions-shelf__panel {
-  bottom: calc(100% + 6px);
-  z-index: 41;
 }
