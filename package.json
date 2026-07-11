@@ -1,6 +1,6 @@
 {
   "name": "rosario-cards-v0",
-  "version": "0.3.52",
+  "version": "0.3.53",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.1",

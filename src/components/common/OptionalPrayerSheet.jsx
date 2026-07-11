@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { OPTIONAL_PRAYERS } from '../../data/optionalPrayers';
 import './OptionalPrayerSheet.css';
 
-export default function OptionalPrayerSheet({ onClose }) {
-  const [prayerId, setPrayerId] = useState(OPTIONAL_PRAYERS[0].id);
-  const [variantId, setVariantId] = useState('es');
+export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
+  const start =
+    OPTIONAL_PRAYERS.find((p) => p.id === initialPrayerId) || OPTIONAL_PRAYERS[0];
+  const [prayerId, setPrayerId] = useState(start.id);
+  const [variantId, setVariantId] = useState(start.variants[0].id);
 
   const prayer = OPTIONAL_PRAYERS.find((p) => p.id === prayerId) || OPTIONAL_PRAYERS[0];
   const variant =
@@ -18,6 +20,8 @@ export default function OptionalPrayerSheet({ onClose }) {
     }
   };
 
+  const bg = prayer.img || prayer.imgCandidates?.[0];
+
   return (
     <div className="optional-prayer-backdrop" onClick={onClose} role="presentation">
       <div
@@ -25,6 +29,15 @@ export default function OptionalPrayerSheet({ onClose }) {
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Oración opcional"
+        style={
+          bg
+            ? {
+                backgroundImage: `linear-gradient(160deg, rgba(12,10,16,0.82), rgba(20,16,28,0.88)), url("${bg.replace(/"/g, '\\"')}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
       >
         <p className="optional-prayer-sheet__hint">
           No cambia tu lugar en el rosario. Cierra para seguir.

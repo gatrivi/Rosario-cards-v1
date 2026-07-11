@@ -47,6 +47,7 @@ import FaustinaMercyThumb from '../common/FaustinaMercyThumb';
 import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
+import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
@@ -192,6 +193,7 @@ export default function BookletView({
   const [stepGlow, setStepGlow] = useState(false);
   const [offeringLight, setOfferingLight] = useState(false);
   const [optionalOpen, setOptionalOpen] = useState(false);
+  const [optionalPrayerId, setOptionalPrayerId] = useState('guardian');
   const [optionalGlow, setOptionalGlow] = useState(false);
   const optionalIdleRef = useRef(null);
   const mountedRef = useRef(true);
@@ -253,6 +255,13 @@ export default function BookletView({
       if (mountedRef.current) setOptionalGlow(true);
     }, 30000);
   }, []);
+
+  const openOptionalPrayer = useCallback((id = 'guardian') => {
+    setOptionalPrayerId(id);
+    setShelfOpen(false);
+    setOptionalOpen(true);
+    resetOptionalIdle();
+  }, [resetOptionalIdle]);
 
   useEffect(() => {
     resetOptionalIdle();
@@ -817,10 +826,7 @@ export default function BookletView({
                 <button
                   type="button"
                   className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
-                  onClick={() => {
-                    resetOptionalIdle();
-                    setOptionalOpen(true);
-                  }}
+                  onClick={() => openOptionalPrayer('guardian')}
                   title="Oraciones opcionales: Ángel de la Guarda y San Benito"
                   aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
                 >
@@ -959,7 +965,12 @@ export default function BookletView({
         count={Math.max(loadPrayForIntentions().length, 1)}
       />
 
-      {optionalOpen && <OptionalPrayerSheet onClose={() => setOptionalOpen(false)} />}
+      {optionalOpen && (
+        <OptionalPrayerSheet
+          initialPrayerId={optionalPrayerId}
+          onClose={() => setOptionalOpen(false)}
+        />
+      )}
 
       {showLitanyEntrance && litanyEntranceEnabled && (
         <LitanyEntrance
@@ -1013,6 +1024,7 @@ export default function BookletView({
           variant="footer"
           misterioActual={misterioActual}
           active={!showRosaryPills}
+          open={shelfOpen}
           onOpenChange={setShelfOpen}
           recorridos={
             <>
@@ -1092,6 +1104,26 @@ export default function BookletView({
                   title="Magnificat"
                   img={magnificatThumbnail}
                   badge="M"
+                />
+              </ShelfItem>
+              <ShelfItem label="Ángel Guarda">
+                <MercyWindowThumb
+                  active={optionalOpen && optionalPrayerId === 'guardian'}
+                  disabled={isTransitioning}
+                  onClick={() => openOptionalPrayer('guardian')}
+                  title="Ángel de la Guarda"
+                  img={optionalPrayerThumbnail('guardian')}
+                  badge="Á"
+                />
+              </ShelfItem>
+              <ShelfItem label="San Benito">
+                <MercyWindowThumb
+                  active={optionalOpen && optionalPrayerId === 'benedict'}
+                  disabled={isTransitioning}
+                  onClick={() => openOptionalPrayer('benedict')}
+                  title="San Benito"
+                  img={optionalPrayerThumbnail('benedict')}
+                  badge="B"
                 />
               </ShelfItem>
             </>

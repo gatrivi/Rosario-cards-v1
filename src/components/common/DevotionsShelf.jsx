@@ -24,17 +24,20 @@ export default function DevotionsShelf({
   recorridos,
   breves,
   variant = 'pill',
+  open: openProp,
   onOpenChange,
 }) {
-  const [open, setOpen] = useState(false);
+  const [openInternal, setOpenInternal] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openInternal;
 
   const setShelfOpen = useCallback(
     (next) => {
       devLog('shelf-toggle', { open: next, misterio: misterioActual });
-      setOpen(next);
+      if (!controlled) setOpenInternal(next);
       onOpenChange?.(next);
     },
-    [misterioActual, onOpenChange]
+    [controlled, misterioActual, onOpenChange]
   );
   const rootRef = useRef(null);
   const lastMysteryRef = useRef(misterioActual);
@@ -53,11 +56,12 @@ export default function DevotionsShelf({
 
   useEffect(() => {
     if (!open) return undefined;
+    // pointerup (not down): avoids racing the toggle's own touchstart on mobile
     const close = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setShelfOpen(false);
     };
-    document.addEventListener('pointerdown', close);
-    return () => document.removeEventListener('pointerdown', close);
+    document.addEventListener('pointerup', close);
+    return () => document.removeEventListener('pointerup', close);
   }, [open, setShelfOpen]);
 
   const rootClass = `devotions-shelf${variant === 'footer' ? ' devotions-shelf--footer' : ''}`;
@@ -81,6 +85,7 @@ export default function DevotionsShelf({
         className={`devotions-shelf__toggle${active ? ' devotions-shelf__toggle--active' : ''}`}
         aria-expanded={open}
         aria-label="Devociones y oraciones breves"
+        onPointerUp={(e) => e.stopPropagation()}
         onClick={() => setShelfOpen(!open)}
       >
         <span aria-hidden="true">✦</span>

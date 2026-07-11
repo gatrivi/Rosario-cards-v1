@@ -4,12 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.52',
-  name: 'Voz guía · Corona completa',
+  version: '0.3.53',
+  name: 'San Benito en breves',
   CURRENT: [
-    'Fix Vercel CI: DevotionsShelf hooks (build ya no falla con CI=true)',
-    'Corona Sangre: voz en Cruz, Padre, Gloria, invocación, cierre; Letanía: 9 invocaciones iniciales',
-    'Motor: IndexedDB (grabaciones) primero; si no hay, Piper en /voice/sangrepreciosa',
+    'Oraciones breves: San Benito y Ángel de la Guarda en el estante Devociones',
+    'Móvil: Devociones ya no queda tapado por el chip Ángel·Benito',
   ],
   UPCOMING: [
     'Versos de la Letanía de la Sangre (líder + respuestas)',

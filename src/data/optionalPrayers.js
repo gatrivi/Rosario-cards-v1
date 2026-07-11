@@ -1,7 +1,15 @@
+import { imagePath } from './imageRegistry';
+
+const angelImg = imagePath('angelDeLaGuarda');
+const benedictImg = imagePath('sanctusBenedictus');
+const benedictLatinImg = imagePath('latinSanBenito');
+
 export const OPTIONAL_PRAYERS = [
   {
     id: 'guardian',
     title: 'Ángel de la Guarda',
+    img: angelImg,
+    imgCandidates: [angelImg].filter(Boolean),
     variants: [
       {
         id: 'es',
@@ -32,6 +40,8 @@ export const OPTIONAL_PRAYERS = [
   {
     id: 'benedict',
     title: 'San Benito',
+    img: benedictImg,
+    imgCandidates: [benedictImg, benedictLatinImg].filter(Boolean),
     variants: [
       {
         id: 'la',
@@ -54,3 +64,8 @@ export const OPTIONAL_PRAYERS = [
     ],
   },
 ];
+
+export const optionalPrayerThumbnail = (id) => {
+  const p = OPTIONAL_PRAYERS.find((x) => x.id === id);
+  return p?.img || p?.imgCandidates?.[0] || null;
+};

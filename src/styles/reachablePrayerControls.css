@@ -1,30 +1,6 @@
-/* Reachability fixes for optional prayers on tall touch phones. */
+/* Optional Ángel/Benito sheet — tall-phone sheet placement only.
+   Do NOT fixed-position the trigger: it covered Devociones in the footer. */
 @media (pointer: coarse) and (min-height: 760px) {
-  .booklet-progress .booklet-optional-btn {
-    position: fixed;
-    right: max(0.85rem, env(safe-area-inset-right));
-    bottom: calc(var(--booklet-footer-h, 3.25rem) + var(--app-above-nav, 70px) + 0.9rem);
-    min-height: 44px;
-    max-width: min(12rem, 52vw);
-    padding: 0.55rem 0.85rem;
-    margin-right: 0;
-    background: rgba(12, 10, 22, 0.72);
-    backdrop-filter: blur(7px);
-    -webkit-backdrop-filter: blur(7px);
-    border-color: rgba(212, 175, 55, 0.42);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36);
-    color: rgba(255, 230, 170, 0.96);
-    font-size: 0.72rem;
-    line-height: 1.1;
-    text-align: center;
-    touch-action: manipulation;
-  }
-
-  .booklet-progress .booklet-optional-btn__label {
-    display: inline-block;
-    white-space: normal;
-  }
-
   .optional-prayer-backdrop {
     align-items: flex-end;
     padding: 1rem 1rem calc(var(--booklet-footer-h, 3.25rem) + var(--app-above-nav, 70px) + 1rem);
@@ -50,11 +26,5 @@
 
   .optional-prayer-sheet__text {
     max-height: min(42vh, 19rem);
-  }
-}
-
-@media (pointer: coarse) and (min-height: 860px) {
-  .booklet-progress .booklet-optional-btn {
-    bottom: calc(var(--booklet-footer-h, 3.25rem) + var(--app-above-nav, 70px) + 1.25rem);
   }
 }

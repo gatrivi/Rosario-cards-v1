@@ -455,6 +455,7 @@
   margin-top: auto;
   min-height: var(--booklet-footer-h);
   padding: 0.35rem 0.65rem 0.45rem;
+  pointer-events: auto;
   position: relative;
 }
 

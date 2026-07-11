@@ -88,7 +88,22 @@ describe('devotions shelf flow', () => {
     expect(onMysteryChange).toHaveBeenCalledWith(DIVINE_MERCY_ID);
   });
 
-  test('Estaciones sub-menu picks Vía Crucis', () => {
+  test('shelf Oraciones breves includes San Benito', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={jest.fn()}
+        onMysteryChange={jest.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /devociones y oraciones breves/i }));
+    expect(screen.getByRole('button', { name: /^san benito$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^ángel de la guarda$/i })).toBeInTheDocument();
+  });
+
+  test('picking San Benito opens optional sheet without changing mystery', () => {
     const onMysteryChange = jest.fn();
     render(
       <BookletView
@@ -100,9 +115,12 @@ describe('devotions shelf flow', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /devociones y oraciones breves/i }));
-    fireEvent.click(screen.getByRole('button', { name: /estaciones — vía crucis y vía lucis/i }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /^vía crucis$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^san benito$/i }));
 
-    expect(onMysteryChange).toHaveBeenCalledWith('viacrucis');
+    expect(onMysteryChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /oración opcional/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog').querySelector('.optional-prayer-sheet__tab.active')).toHaveTextContent(
+      'San Benito'
+    );
   });
 });
