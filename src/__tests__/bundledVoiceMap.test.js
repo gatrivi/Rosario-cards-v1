@@ -8,12 +8,14 @@ describe('bundledVoiceMap', () => {
   test('resolves chaplet step ids with index suffix', () => {
     expect(resolveBundledVoiceUrl('PBContrition_1')).toBe(BUNDLED_VOICE_BY_ID.PBContrition);
     expect(resolveBundledVoiceUrl('PB_12')).toBe(BUNDLED_VOICE_BY_ID.PB);
+    expect(resolveBundledVoiceUrl('PB_P_2')).toBe(BUNDLED_VOICE_BY_ID.PB_P);
+    expect(resolveBundledVoiceUrl('PB_G_8')).toBe(BUNDLED_VOICE_BY_ID.PB_G);
     expect(resolveBundledVoiceUrl('PBClosing_50')).toBe(BUNDLED_VOICE_BY_ID.PBClosing);
   });
 
-  test('returns null for unknown / Padre Nuestro chaplet', () => {
-    expect(resolveBundledVoiceUrl('PB_P_2')).toBeNull();
-    expect(resolveBundledVoiceUrl('SC')).toBeNull();
+  test('resolves SC and returns null for unknown', () => {
+    expect(resolveBundledVoiceUrl('SC')).toBe(BUNDLED_VOICE_BY_ID.SC);
     expect(resolveBundledVoiceUrl(null)).toBeNull();
+    expect(resolveBundledVoiceUrl('LL')).toBeNull();
   });
 });

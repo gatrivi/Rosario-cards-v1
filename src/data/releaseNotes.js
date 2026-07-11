@@ -4,15 +4,15 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.51',
-  name: 'Voz guía · Preciosísima Sangre',
+  version: '0.3.52',
+  name: 'Voz guía · Corona completa',
   CURRENT: [
-    'Julio: voz guía Piper en 7 Ofrendas, Corona (contrición/invocación/cierre) y oración final de la Letanía',
-    'Libro: botón ▶ junto al título reproduce la voz guía (o tu grabación si hay)',
-    'Al avanzar de oración suena la voz si el sonido está activo',
+    'Fix Vercel CI: DevotionsShelf hooks (build ya no falla con CI=true)',
+    'Corona Sangre: voz en Cruz, Padre, Gloria, invocación, cierre; Letanía: 9 invocaciones iniciales',
+    'Motor: IndexedDB (grabaciones) primero; si no hay, Piper en /voice/sangrepreciosa',
   ],
   UPCOMING: [
-    'Más versos de la Letanía de la Sangre + Padre/Gloria de la Corona',
+    'Versos de la Letanía de la Sangre (líder + respuestas)',
     'Publicar reglas Firestore + Storage (si permiso denegado)',
     'Confirmación al borrar una toma de voz',
   ],

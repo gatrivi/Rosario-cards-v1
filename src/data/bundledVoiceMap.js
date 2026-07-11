@@ -16,8 +16,20 @@ export const BUNDLED_VOICE_BY_ID = {
   PBO_7: `${BASE}/PBO_7.wav`,
   PBContrition: `${BASE}/PBContrition.wav`,
   PB: `${BASE}/PB.wav`,
+  PB_P: `${BASE}/PB_P.wav`,
+  PB_G: `${BASE}/PB_G.wav`,
   PBClosing: `${BASE}/PBClosing.wav`,
   LPB_Close: `${BASE}/LPB_Close.wav`,
+  LPB_1: `${BASE}/LPB_1.wav`,
+  LPB_2: `${BASE}/LPB_2.wav`,
+  LPB_3: `${BASE}/LPB_3.wav`,
+  LPB_4: `${BASE}/LPB_4.wav`,
+  LPB_5: `${BASE}/LPB_5.wav`,
+  LPB_6: `${BASE}/LPB_6.wav`,
+  LPB_7: `${BASE}/LPB_7.wav`,
+  LPB_8: `${BASE}/LPB_8.wav`,
+  LPB_9: `${BASE}/LPB_9.wav`,
+  SC: `${BASE}/SC.wav`,
 };
 
 /** Resolve static voice URL for a sequence step id, or null. */

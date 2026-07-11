@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { devLog } from '../../utils/devotionsDebug';
 import './DevotionsShelf.css';
 
@@ -28,11 +28,14 @@ export default function DevotionsShelf({
 }) {
   const [open, setOpen] = useState(false);
 
-  const setShelfOpen = (next) => {
-    devLog('shelf-toggle', { open: next, misterio: misterioActual });
-    setOpen(next);
-    onOpenChange?.(next);
-  };
+  const setShelfOpen = useCallback(
+    (next) => {
+      devLog('shelf-toggle', { open: next, misterio: misterioActual });
+      setOpen(next);
+      onOpenChange?.(next);
+    },
+    [misterioActual, onOpenChange]
+  );
   const rootRef = useRef(null);
   const lastMysteryRef = useRef(misterioActual);
 
@@ -46,7 +49,7 @@ export default function DevotionsShelf({
       lastMysteryRef.current = misterioActual;
       setShelfOpen(false);
     }
-  }, [misterioActual]);
+  }, [misterioActual, setShelfOpen]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -55,7 +58,7 @@ export default function DevotionsShelf({
     };
     document.addEventListener('pointerdown', close);
     return () => document.removeEventListener('pointerdown', close);
-  }, [open]);
+  }, [open, setShelfOpen]);
 
   const rootClass = `devotions-shelf${variant === 'footer' ? ' devotions-shelf--footer' : ''}`;
 
