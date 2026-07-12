@@ -27,11 +27,9 @@ import { getUpdateSummaryLine } from '../../data/releaseNotes';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
 import FeedbackOverlay from '../common/FeedbackOverlay';
+import PrayForOrbs from '../common/PrayForOrbs';
 import {
-  IconFeedback,
   IconHelp,
-  IconSync,
-  IconSyncLoading,
   IconSettings,
   IconHandLeft,
   IconHandRight,
@@ -57,7 +55,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.54';
+const APP_VERSION = '0.3.55';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -230,14 +228,6 @@ export default function AppShell() {
     }
     setLoadedBookletFromCloud(true);
   }, [cloudState, loadedBookletFromCloud]);
-
-  const getSyncColor = () => {
-    if (syncStatus === 'loading') return '#888';
-    if (syncStatus === 'synced') return '#D4AF37';
-    if (syncStatus === 'local') return '#4CAF50'; // Green for safe local storage
-    if (syncStatus === 'error') return '#F44336';
-    return '#fff';
-  };
 
   useEffect(() => {
     if (initializedFromUrl.current) return;
@@ -497,11 +487,8 @@ export default function AppShell() {
       <AppActionDock
         oneHandMode={settings.oneHandMode === true}
         simpleMode={settings.simpleMode}
-        vistaActiva={vistaActiva}
-        syncStatus={syncStatus}
-        getSyncColor={getSyncColor}
-        onFeedback={() => setShowFeedback(true)}
-        onSync={() => setShowSync(true)}
+        soundEnabled={settings.soundEnabled}
+        onHelp={() => setShowIntro(true)}
         onSettings={() => setShowSettings(true)}
       />
 
@@ -607,6 +594,15 @@ export default function AppShell() {
             setShowSettings(false);
             setShowReleaseNotes(true);
           }}
+          onOpenSync={() => {
+            setShowSettings(false);
+            setShowSync(true);
+          }}
+          onOpenFeedback={() => {
+            setShowSettings(false);
+            setShowFeedback(true);
+          }}
+          syncStatus={syncStatus}
         />
       )}
 
@@ -726,11 +722,8 @@ export default function AppShell() {
 function AppActionDock({
   oneHandMode,
   simpleMode,
-  vistaActiva,
-  syncStatus,
-  getSyncColor,
-  onFeedback,
-  onSync,
+  soundEnabled = true,
+  onHelp,
   onSettings,
 }) {
   const dockClass = oneHandMode
@@ -739,34 +732,23 @@ function AppActionDock({
 
   return (
     <div className={dockClass}>
-      <div className="app-action-cluster app-action-cluster--left">
-        <button
-          type="button"
-          onClick={onFeedback}
-          title="Reportar problema o sugerencia"
-          aria-label={simpleMode ? 'Ayuda' : 'Reportar problema o sugerencia'}
-          className={`app-action-btn app-action-btn--feedback${simpleMode ? ' simple-mode' : ''}`}
-        >
-          {simpleMode ? (
-            <>
-              <IconHelp size={18} />
-              Ayuda
-            </>
-          ) : (
-            <IconFeedback size={18} />
-          )}
-        </button>
+      <div className="app-action-cluster app-action-cluster--left app-action-cluster--orbs">
+        <PrayForOrbs
+          simpleMode={simpleMode}
+          variant="header"
+          soundEnabled={soundEnabled}
+        />
       </div>
       <div className="app-action-cluster app-action-cluster--right">
         <button
           type="button"
-          onClick={onSync}
-          className="app-action-btn app-action-btn--round"
-          style={{ color: getSyncColor() }}
-          title={`Sincronización: ${syncStatus}`}
-          aria-label={`Sincronización: ${syncStatus}`}
+          onClick={onHelp}
+          title="Ayuda"
+          aria-label="Ayuda"
+          className={`app-action-btn app-action-btn--round${simpleMode ? ' simple-mode' : ''}`}
         >
-          {syncStatus === 'loading' ? <IconSyncLoading size={18} /> : <IconSync size={18} />}
+          <IconHelp size={18} />
+          {simpleMode && <span>Ayuda</span>}
         </button>
         <button
           type="button"

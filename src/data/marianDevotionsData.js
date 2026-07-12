@@ -4,7 +4,7 @@ export const ANGELUS_ID = 'angelus';
 export const MAGNIFICAT_ID = 'magnificat';
 export const MARIAN_DEVOTION_IDS = [ANGELUS_ID, MAGNIFICAT_ID];
 
-export const angelusThumbnail = imagePath('latinAngelus');
+export const angelusThumbnail = imagePath('allMary17th') || imagePath('latinAngelus');
 export const magnificatThumbnail = imagePath('magnificatVisitation');
 
 const SIGN_OF_CROSS_TEXT =
@@ -20,37 +20,37 @@ function step(id, title, text, imageId, extraImageIds = []) {
 }
 
 export const angelusSequence = [
-  step('ANG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'latinAngelus'),
+  step('ANG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'allMary17th', ['latinAngelus']),
   step(
     'ANG_ANNUNCIATION',
     'El Ángel del Señor',
     'El Ángel del Señor anunció a María.\nY concibió por obra y gracia del Espíritu Santo.',
-    'latinAngelus',
-    ['allMary17th']
+    'allMary17th',
+    ['latinAngelus', 'theotokos']
   ),
   step('ANG_AVE_1', 'Ave María', AVE_MARIA_TEXT, 'latinAveMaria', ['avemariaLat']),
   step(
     'ANG_FIAT',
     'He aquí la esclava',
     'He aquí la esclava del Señor.\nHágase en mí según tu palabra.',
-    'allMary17th',
-    ['theotokos']
+    'theotokos',
+    ['allMary17th']
   ),
   step('ANG_AVE_2', 'Ave María', AVE_MARIA_TEXT, 'avemariaLat', ['latinAveMaria']),
   step(
     'ANG_INCARNATION',
     'El Verbo se hizo carne',
     'Y el Verbo se hizo carne.\nY habitó entre nosotros.',
-    'theotokos',
-    ['reginaCaeli']
+    'reginaCaeli',
+    ['theotokos']
   ),
   step('ANG_AVE_3', 'Ave María', AVE_MARIA_TEXT, 'reginaCaeli', ['latinAveMaria']),
   step(
     'ANG_FINAL',
     'Oración final',
     'Ruega por nosotros, Santa Madre de Dios.\nPara que seamos dignos de alcanzar las promesas de Nuestro Señor Jesucristo.\n\nOremos: Infunde, Señor, tu gracia en nuestros corazones, para que quienes hemos conocido, por el anuncio del ángel, la encarnación de tu Hijo Jesucristo, por su pasión y cruz seamos llevados a la gloria de su resurrección. Por el mismo Jesucristo, nuestro Señor. Amén.',
-    'latinAngelus',
-    ['stainedGlass']
+    'stainedGlass',
+    ['latinAngelus', 'allMary17th']
   ),
 ];
 

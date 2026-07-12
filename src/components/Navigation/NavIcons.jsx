@@ -187,6 +187,22 @@ export function IconHandRight({ size = 24, ...props }) {
   );
 }
 
+export function IconStepPrev({ size = 24, ...props }) {
+  return (
+    <IconBase size={size} {...props}>
+      <path d="M15 6L9 12L15 18" />
+    </IconBase>
+  );
+}
+
+export function IconStepNext({ size = 24, ...props }) {
+  return (
+    <IconBase size={size} {...props}>
+      <path d="M9 6L15 12L9 18" />
+    </IconBase>
+  );
+}
+
 export const NAV_ICONS = {
   stats: IconStats,
   tracker: IconPlan,
@@ -195,4 +211,6 @@ export const NAV_ICONS = {
   rose: IconRosa,
   rosary: IconRosario,
   voz: IconVoz,
+  stepPrev: IconStepPrev,
+  stepNext: IconStepNext,
 };

@@ -18,6 +18,17 @@
   width: 100%;
 }
 
+.optional-prayer-sheet__art {
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 10px;
+  display: block;
+  height: 7.5rem;
+  margin: 0 auto 0.75rem;
+  object-fit: cover;
+  object-position: center top;
+  width: 100%;
+}
+
 .optional-prayer-sheet__hint {
   color: #888;
   font-size: 0.68rem;

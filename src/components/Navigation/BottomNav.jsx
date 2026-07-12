@@ -4,7 +4,7 @@ import { NAV_ICONS } from './NavIcons';
 import { getViewIdFromPath, getPathForView } from '../../navigation/routes';
 import './BottomNav.css';
 
-function NavButton({ iconId, texto, activo, onClick, disabled, simpleMode }) {
+function NavButton({ iconId, texto, activo, onClick, disabled, simpleMode, hideLabel }) {
   const Icon = NAV_ICONS[iconId];
   const iconSize = simpleMode ? 28 : 22;
 
@@ -13,26 +13,33 @@ function NavButton({ iconId, texto, activo, onClick, disabled, simpleMode }) {
       type="button"
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      className={`bottom-nav__btn${activo ? ' bottom-nav__btn--active' : ''}`}
+      className={`bottom-nav__btn${activo ? ' bottom-nav__btn--active' : ''}${hideLabel ? ' bottom-nav__btn--icon-only' : ''}`}
     >
       <span className="bottom-nav__icon">
         {Icon ? <Icon size={iconSize} /> : null}
       </span>
-      <span
-        className={`bottom-nav__label${
-          simpleMode ? ' bottom-nav__label--large' : ''
-        }${disabled ? ' bottom-nav__label--disabled' : ''}`}
-      >
-        {texto}
-      </span>
+      {!hideLabel && (
+        <span
+          className={`bottom-nav__label${
+            simpleMode ? ' bottom-nav__label--large' : ''
+          }${disabled ? ' bottom-nav__label--disabled' : ''}`}
+        >
+          {texto}
+        </span>
+      )}
     </button>
   );
+}
+
+function emitBookletStep(dir) {
+  window.dispatchEvent(new CustomEvent('rosario-booklet-step', { detail: { dir } }));
 }
 
 export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const vistaActiva = getViewIdFromPath(location.pathname);
+  const bookletMode = vistaActiva === 'booklet';
 
   const navItems = [
     { id: 'tracker', texto: 'Plan' },
@@ -44,15 +51,35 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   ];
 
   const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;
-  // UX: when viewing "Libro", keep only the 3 core actions so the prayer panel
-  // stays clean and unobstructed.
-  const visibleItems =
-    vistaActiva === 'booklet'
-      ? orderedItems.filter((i) => ['booklet', 'rose', 'voz'].includes(i.id))
-      : orderedItems;
+  // UX: when viewing "Libro", keep core actions + step icons.
+  const visibleItems = bookletMode
+    ? orderedItems.filter((i) => ['booklet', 'rose', 'voz'].includes(i.id))
+    : orderedItems;
+
+  const stepPrev = (
+    <NavButton
+      key="step-prev"
+      iconId="stepPrev"
+      texto="Anterior"
+      hideLabel
+      onClick={() => emitBookletStep(-1)}
+      simpleMode={simpleMode}
+    />
+  );
+  const stepNext = (
+    <NavButton
+      key="step-next"
+      iconId="stepNext"
+      texto="Siguiente"
+      hideLabel
+      onClick={() => emitBookletStep(1)}
+      simpleMode={simpleMode}
+    />
+  );
 
   return (
     <nav className="bottom-nav glass-footer" aria-label="Navegación principal">
+      {bookletMode && (isLeftHanded ? stepNext : stepPrev)}
       {visibleItems.map((item) => (
         <NavButton
           key={item.id}
@@ -63,6 +90,7 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
           simpleMode={simpleMode}
         />
       ))}
+      {bookletMode && (isLeftHanded ? stepPrev : stepNext)}
     </nav>
   );
 }

@@ -69,6 +69,10 @@
   filter: grayscale(1);
 }
 
+.bottom-nav__btn--icon-only .bottom-nav__icon {
+  margin-bottom: 0;
+}
+
 .bottom-nav__label {
   font-size: 0.7rem;
 }

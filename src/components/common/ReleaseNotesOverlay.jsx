@@ -106,7 +106,7 @@ export default function ReleaseNotesOverlay({ onClose, onOpenAssetStudio }) {
         )}
 
         <p style={{ color: '#444', fontSize: '0.65rem', margin: 0, lineHeight: 1.4 }}>
-          Ajustes = botón circular arriba a la derecha (no es un engranaje).
+          Ajustes = botón circular arriba a la derecha. Sync y mensajes viven dentro.
           Si hay parche PWA, verás un aviso “Actualizar” arriba.
         </p>
       </div>

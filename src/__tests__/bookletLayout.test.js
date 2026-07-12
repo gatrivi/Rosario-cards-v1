@@ -24,7 +24,7 @@ describe('booklet mobile layout CSS', () => {
 
   test('footer uses in-flow grid for nav + devociones row', () => {
     expect(bookletCss).toMatch(/\.booklet-footer[\s\S]*display:\s*grid/);
-    expect(bookletCss).toMatch(/grid-template-columns:\s*1fr auto 1fr/);
+    expect(bookletCss).toMatch(/booklet-footer--shelf-only/);
     expect(bookletCss).not.toMatch(/\.booklet-footer[\s\S]*z-index/);
   });
 });

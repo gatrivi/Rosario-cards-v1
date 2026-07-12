@@ -130,7 +130,7 @@ describe('BookletView', () => {
     expect(screen.getByText(/Creo en un solo Dios,/)).toBeInTheDocument();
   });
 
-  test('advances to next prayer when siguiente is clicked', () => {
+  test('advances to next prayer when booklet step event fires forward', () => {
     render(
       <BookletView
         currentPrayerIndex={0}
@@ -140,7 +140,7 @@ describe('BookletView', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+    fireEvent(window, new CustomEvent('rosario-booklet-step', { detail: { dir: 1 } }));
     advanceBookletTransition();
     expect(onUpdateProgreso).toHaveBeenCalledWith(1);
     expect(playBookletTransitionSound).toHaveBeenCalled();
@@ -158,12 +158,12 @@ describe('BookletView', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+    fireEvent(window, new CustomEvent('rosario-booklet-step', { detail: { dir: 1 } }));
     advanceBookletTransition();
     expect(onAveMariaComplete).toHaveBeenCalled();
   });
 
-  test('goes back when anterior is clicked', () => {
+  test('goes back when booklet step event fires backward', () => {
     render(
       <BookletView
         currentPrayerIndex={2}
@@ -173,12 +173,12 @@ describe('BookletView', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /oración anterior/i }));
+    fireEvent(window, new CustomEvent('rosario-booklet-step', { detail: { dir: -1 } }));
     advanceBookletTransition();
     expect(onUpdateProgreso).toHaveBeenCalledWith(1);
   });
 
-  test('disables anterior on first prayer', () => {
+  test('ignores backward step on first prayer', () => {
     render(
       <BookletView
         currentPrayerIndex={0}
@@ -188,7 +188,9 @@ describe('BookletView', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: /oración anterior/i })).toBeDisabled();
+    fireEvent(window, new CustomEvent('rosario-booklet-step', { detail: { dir: -1 } }));
+    advanceBookletTransition();
+    expect(onUpdateProgreso).not.toHaveBeenCalled();
   });
 
   test('changes mystery when pill is clicked', () => {
@@ -201,7 +203,7 @@ describe('BookletView', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Dolorosos' }));
+    fireEvent.click(screen.getByRole('button', { name: /Vía Dolorosa/i }));
     expect(onMysteryChange).toHaveBeenCalledWith('dolorosos');
   });
 
@@ -215,7 +217,7 @@ describe('BookletView', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+    fireEvent(window, new CustomEvent('rosario-booklet-step', { detail: { dir: 1 } }));
 
     act(() => {
       jest.advanceTimersByTime(BOOKLET_TIMING.textOut + BOOKLET_TIMING.linger);
@@ -290,7 +292,7 @@ describe('BookletView', () => {
     expect(document.querySelector('.booklet-mystery-bar')).not.toBeInTheDocument();
   });
 
-  test('renders pray-for orbs in header tools row', () => {
+  test('renders pray-for orbs outside booklet header (app chrome owns them)', () => {
     render(
       <BookletView
         currentPrayerIndex={0}
@@ -300,8 +302,8 @@ describe('BookletView', () => {
       />
     );
 
-    const tools = document.querySelector('.booklet-header__tools');
-    expect(tools?.querySelector('.pray-for-bar--header')).toBeInTheDocument();
+    expect(document.querySelector('.booklet-header__tools')).not.toBeInTheDocument();
+    expect(document.querySelector('.booklet-header .pray-for-bar')).not.toBeInTheDocument();
   });
 });
 

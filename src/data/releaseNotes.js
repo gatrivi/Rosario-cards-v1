@@ -4,11 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.54',
-  name: 'Devociones clickeable',
+  version: '0.3.55',
+  name: 'Chrome arriba + Ángel Guarda',
   CURRENT: [
-    'Fix: panel Devociones portaleado — ya no lo tapa Ajustes/Sync (clicks funcionan)',
-    'Oraciones breves: San Benito y Ángel de la Guarda en el estante',
+    'Ángel Guarda: ES rima primero + imagen; Ángelus con vitral Marian',
+    'Fila superior: globos · Ayuda · Ajustes; sync/mensaje dentro de Ajustes',
+    '‹ › del Libro en la barra inferior (iconos, con Rosa/Libro)',
   ],
   UPCOMING: [
     'Versos de la Letanía de la Sangre (líder + respuestas)',

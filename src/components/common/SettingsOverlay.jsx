@@ -48,6 +48,9 @@ export default function SettingsOverlay({
   onStartAmbientAudio,
   onOpenAssetStudio,
   onOpenReleaseNotes,
+  onOpenSync,
+  onOpenFeedback,
+  syncStatus,
 }) {
   const [rosaryZoom, setRosaryZoomState] = React.useState(readRosaryZoom);
   const activeZoomPreset = ROSARY_ZOOM_PRESETS.find((p) => p.zoom === rosaryZoom)?.id
@@ -349,12 +352,48 @@ export default function SettingsOverlay({
         </div>
 
         {/* Actions first so update / studio stay reachable on short screens */}
+        {onOpenSync && (
+          <button
+            type="button"
+            onClick={onOpenSync}
+            style={{
+              width: '100%', marginTop: '16px', padding: '14px',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+            }}
+          >
+            ☁️ Sincronizar / refrescar
+            <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
+              {syncStatus ? `Estado: ${syncStatus}` : 'Nube y llave de peregrinación'}
+            </span>
+          </button>
+        )}
+
+        {onOpenFeedback && (
+          <button
+            type="button"
+            onClick={onOpenFeedback}
+            style={{
+              width: '100%', marginTop: '10px', padding: '14px',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+            }}
+          >
+            💬 Mensaje / reporte
+            <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
+              Enviar un problema o sugerencia
+            </span>
+          </button>
+        )}
+
         {onCheckForUpdate && (
           <button
             type="button"
             onClick={onCheckForUpdate}
             style={{
-              width: '100%', marginTop: '16px', padding: '14px',
+              width: '100%', marginTop: onOpenSync || onOpenFeedback ? '10px' : '16px', padding: '14px',
               background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)',
               borderRadius: '12px', color: '#D4AF37', cursor: 'pointer',
               fontSize: '0.95rem', fontWeight: 'bold'

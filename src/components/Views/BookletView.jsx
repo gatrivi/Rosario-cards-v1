@@ -5,7 +5,6 @@ import {
 } from '../../data/prayerVariants';
 import PrayerRecorder from '../common/PrayerRecorder';
 import OptionalPrayerSheet from '../common/OptionalPrayerSheet';
-import PrayForOrbs from '../common/PrayForOrbs';
 import OfferingLight from '../common/OfferingLight';
 import { loadPrayForIntentions } from '../../utils/prayForStore';
 import {
@@ -93,22 +92,22 @@ function prefersReducedMotion() {
 const MYSTERY_OPTIONS = [
   {
     id: 'gozosos',
-    label: 'Gozosos',
+    label: 'Vía Gaudiosa',
     img: '/gallery-images/misterios/modooscuro/misteriogozo0.webp',
   },
   {
     id: 'dolorosos',
-    label: 'Dolorosos',
+    label: 'Vía Dolorosa',
     img: '/gallery-images/misterios/modooscuro/misteriodolor0.jpg',
   },
   {
     id: 'gloriosos',
-    label: 'Gloriosos',
+    label: 'Vía Gloriosa',
     img: '/gallery-images/misterios/modooscuro/misteriogloria0.jpg',
   },
   {
     id: 'luminosos',
-    label: 'Luminosos',
+    label: 'Vía Luminosa',
     img: '/gallery-images/misterios/modooscuro/misterioLUZ0.webp',
   },
 ];
@@ -371,10 +370,6 @@ export default function BookletView({
     scheduleTransition(() => setStepGlow(false), BOOKLET_TIMING.stepGlow);
   }, [isLitany, isPerVersePrayer, litanyVerseTotal, prayerVerseTotal, scheduleTransition]);
 
-  const canGoBack = displayIndex > 0 || (hasInnerVerses && innerVerseIndex > 0);
-  const canGoForward =
-    displayIndex < total - 1 || (hasInnerVerses && innerVerseIndex < innerVerseTotal - 1);
-
   const cycleVariant = useCallback(() => {
     if (!variants?.length) return;
     const idx = variants.findIndex((v) => v.id === variantId);
@@ -495,6 +490,17 @@ export default function BookletView({
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
+  }, [goPrev, goNext]);
+
+  // BottomNav ‹ › icons (same bar as Libro/Rosa) — keep booklet footer for Devociones only.
+  useEffect(() => {
+    const onStep = (event) => {
+      const dir = event?.detail?.dir;
+      if (dir < 0) goPrev();
+      else if (dir > 0) goNext();
+    };
+    window.addEventListener('rosario-booklet-step', onStep);
+    return () => window.removeEventListener('rosario-booklet-step', onStep);
   }, [goPrev, goNext]);
 
   const stepContext = useMemo(
@@ -723,7 +729,6 @@ export default function BookletView({
   }
 
   const activeVariantLabel = variants?.find((v) => v.id === variantId)?.label;
-  const turnSide = isLeftHanded ? 'booklet-footer--left' : 'booklet-footer--right';
 
   const vitralStyle = stepContextToVitralVars(stepContext);
   const vitralKind = isAveMaria || isMercyPassion
@@ -745,14 +750,6 @@ export default function BookletView({
 
       <div className={`booklet-prayer-chrome${chromePhaseClass}`}>
         <header className="booklet-header">
-          <div className="booklet-header__tools">
-            <PrayForOrbs
-              simpleMode={simpleMode}
-              offeringPulse={stepGlow}
-              variant="header"
-              soundEnabled={soundEnabled}
-            />
-          </div>
           {showRosaryPills && !shelfOpen && (
           <div className="booklet-mystery-bar">
             <div className="booklet-mystery-row">
@@ -1008,18 +1005,9 @@ export default function BookletView({
       )}
 
       <footer
-        className={`booklet-footer ${turnSide}${simpleMode ? ' booklet-footer--large' : ''}`}
+        className={`booklet-footer booklet-footer--shelf-only${simpleMode ? ' booklet-footer--large' : ''}`}
         data-testid="booklet-nav-footer"
       >
-        <button
-          type="button"
-          className="glass-turn booklet-turn--back"
-          onClick={goPrev}
-          disabled={!canGoBack || isTransitioning}
-          aria-label="Oración anterior"
-        >
-          ‹ anterior
-        </button>
         <DevotionsShelf
           variant="footer"
           misterioActual={misterioActual}
@@ -1119,15 +1107,6 @@ export default function BookletView({
             </>
           }
         />
-        <button
-          type="button"
-          className="glass-turn glass-turn--forward booklet-turn--forward"
-          onClick={goNext}
-          disabled={!canGoForward || isTransitioning}
-          aria-label="Siguiente oración"
-        >
-          siguiente ›
-        </button>
       </footer>
     </div>
   );

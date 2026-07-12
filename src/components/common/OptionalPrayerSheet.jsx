@@ -29,16 +29,15 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Oración opcional"
-        style={
-          bg
-            ? {
-                backgroundImage: `linear-gradient(160deg, rgba(12,10,16,0.82), rgba(20,16,28,0.88)), url("${bg.replace(/"/g, '\\"')}")`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }
-            : undefined
-        }
       >
+        {bg ? (
+          <img
+            className="optional-prayer-sheet__art"
+            src={bg}
+            alt=""
+            draggable={false}
+          />
+        ) : null}
         <p className="optional-prayer-sheet__hint">
           No cambia tu lugar en el rosario. Cierra para seguir.
         </p>
@@ -68,7 +67,7 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
         </div>
         <div className="optional-prayer-sheet__text">
           {variant.text.split('\n').map((line, i) => (
-            <p key={i}>{line}</p>
+            <p key={i}>{line || '\u00a0'}</p>
           ))}
         </div>
         <button type="button" className="optional-prayer-sheet__close" onClick={onClose}>
