@@ -258,7 +258,7 @@ describe('BookletView', () => {
     expect(document.querySelector('.booklet-vitral--ave')).toBeInTheDocument();
   });
 
-  test('keeps prayer scroll panel before footer in document flow', () => {
+  test('keeps prayer scroll panel without booklet footer chrome', () => {
     render(
       <BookletView
         currentPrayerIndex={0}
@@ -269,10 +269,8 @@ describe('BookletView', () => {
     );
 
     const scroll = screen.getByTestId('booklet-prayer-scroll');
-    const footer = screen.getByTestId('booklet-nav-footer');
-    expect(scroll.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(footer.querySelector('.devotions-shelf')).toBeInTheDocument();
     expect(scroll.className).toContain('booklet-glass-panel');
+    expect(screen.queryByTestId('booklet-nav-footer')).not.toBeInTheDocument();
   });
 
   test('hides rosary mystery pills while devociones shelf is open', () => {
@@ -286,9 +284,7 @@ describe('BookletView', () => {
     );
 
     expect(document.querySelector('.booklet-mystery-bar')).toBeInTheDocument();
-    fireEvent.click(
-      screen.getByRole('button', { name: /devociones y oraciones breves/i })
-    );
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
     expect(document.querySelector('.booklet-mystery-bar')).not.toBeInTheDocument();
   });
 

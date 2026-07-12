@@ -66,4 +66,26 @@ describe('DevotionsShelf', () => {
     );
     expect(onOpenChange).toHaveBeenCalledWith(true);
   });
+
+  test('externalToggle opens via rosario-devotions-toggle event', () => {
+    render(
+      <DevotionsShelf
+        externalToggle
+        misterioActual="gozosos"
+        recorridos={
+          <ShelfItem label="Sta. Faustina">
+            <button type="button">faustina</button>
+          </ShelfItem>
+        }
+        breves={
+          <ShelfItem label="Ángelus">
+            <button type="button">angelus</button>
+          </ShelfItem>
+        }
+      />
+    );
+    expect(screen.queryByRole('button', { name: /devociones y oraciones breves/i })).not.toBeInTheDocument();
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
 });

@@ -187,6 +187,14 @@ export function IconHandRight({ size = 24, ...props }) {
   );
 }
 
+export function IconDevociones({ size = 24, ...props }) {
+  return (
+    <IconBase size={size} {...props}>
+      <path d="M12 3L13.2 8.2L18 7L14.8 11L19 14L13.5 13.2L12 19L10.5 13.2L5 14L9.2 11L6 7L10.8 8.2L12 3Z" />
+    </IconBase>
+  );
+}
+
 export function IconStepPrev({ size = 24, ...props }) {
   return (
     <IconBase size={size} {...props}>
@@ -213,4 +221,5 @@ export const NAV_ICONS = {
   voz: IconVoz,
   stepPrev: IconStepPrev,
   stepNext: IconStepNext,
+  devociones: IconDevociones,
 };

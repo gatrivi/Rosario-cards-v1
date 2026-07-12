@@ -1004,110 +1004,106 @@ export default function BookletView({
         />
       )}
 
-      <footer
-        className={`booklet-footer booklet-footer--shelf-only${simpleMode ? ' booklet-footer--large' : ''}`}
-        data-testid="booklet-nav-footer"
-      >
-        <DevotionsShelf
-          variant="footer"
-          misterioActual={misterioActual}
-          active={!showRosaryPills}
-          open={shelfOpen}
-          onOpenChange={setShelfOpen}
-          recorridos={
-            <>
-              <ShelfItem label="Estaciones">
-                <StationsDevotionThumb
-                  misterioActual={misterioActual}
-                  onMysteryChange={onMysteryChange}
-                />
-              </ShelfItem>
-              <ShelfItem label="Letanía Sangre">
-                <MercyWindowThumb
-                  active={misterioActual === 'sangrepreciosa_litany'}
-                  onClick={() => pickDevotion('sangrepreciosa_litany', 'Letanía Sangre')}
-                  title="Letanía de la Preciosísima Sangre (Julio)"
-                  img={registryImage('vitreauxCruz')}
-                  badge="L"
-                />
-              </ShelfItem>
-              <ShelfItem label="Corona Sangre">
-                <MercyWindowThumb
-                  active={misterioActual === 'sangrepreciosa_chaplet'}
-                  onClick={() => pickDevotion('sangrepreciosa_chaplet', 'Corona Sangre')}
-                  title="Corona de la Preciosísima Sangre"
-                  img={registryImage('crux')}
-                  badge="C"
-                />
-              </ShelfItem>
-              <ShelfItem label="7 Ofrendas">
-                <MercyWindowThumb
-                  active={misterioActual === 'sangrepreciosa_ofrendas'}
-                  onClick={() => pickDevotion('sangrepreciosa_ofrendas', '7 Ofrendas')}
-                  title="Siete Ofrendas de la Sangre de Cristo"
-                  img={registryImage('lamb')}
-                  badge="7"
-                />
-              </ShelfItem>
-              <ShelfItem label="Sagrado Corazón">
-                <MercyWindowThumb
-                  active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
-                  onClick={() => pickDevotion(SAGRADO_CORAZON_ADORACION_ID, 'Sagrado Corazón')}
-                  title="Adoración Eucarística — Sagrado Corazón de Jesús"
-                  img={sagradoCorazonAdoracionThumbnail}
-                  badge="SC"
-                />
-              </ShelfItem>
-              <ShelfItem label="Sta. Faustina">
-                <FaustinaMercyThumb
-                  misterioActual={misterioActual}
-                  onMysteryChange={onMysteryChange}
-                />
-              </ShelfItem>
-            </>
-          }
-          breves={
-            <>
-              <ShelfItem label="Ángelus">
-                <MercyWindowThumb
-                  active={misterioActual === ANGELUS_ID}
-                  onClick={() => pickDevotion(ANGELUS_ID, 'Ángelus')}
-                  title="Ángelus"
-                  img={angelusThumbnail}
-                  badge="A"
-                />
-              </ShelfItem>
-              <ShelfItem label="Magnificat">
-                <MercyWindowThumb
-                  active={misterioActual === MAGNIFICAT_ID}
-                  onClick={() => pickDevotion(MAGNIFICAT_ID, 'Magnificat')}
-                  title="Magnificat"
-                  img={magnificatThumbnail}
-                  badge="M"
-                />
-              </ShelfItem>
-              <ShelfItem label="Ángel Guarda">
-                <MercyWindowThumb
-                  active={optionalOpen && optionalPrayerId === 'guardian'}
-                  onClick={() => openOptionalPrayer('guardian')}
-                  title="Ángel de la Guarda"
-                  img={optionalPrayerThumbnail('guardian')}
-                  badge="Á"
-                />
-              </ShelfItem>
-              <ShelfItem label="San Benito">
-                <MercyWindowThumb
-                  active={optionalOpen && optionalPrayerId === 'benedict'}
-                  onClick={() => openOptionalPrayer('benedict')}
-                  title="San Benito"
-                  img={optionalPrayerThumbnail('benedict')}
-                  badge="B"
-                />
-              </ShelfItem>
-            </>
-          }
-        />
-      </footer>
+      {/* Host only — toggle lives in BottomNav (Libro). */}
+      <DevotionsShelf
+        externalToggle
+        misterioActual={misterioActual}
+        active={!showRosaryPills}
+        open={shelfOpen}
+        onOpenChange={setShelfOpen}
+        recorridos={
+          <>
+            <ShelfItem label="Estaciones">
+              <StationsDevotionThumb
+                misterioActual={misterioActual}
+                onMysteryChange={onMysteryChange}
+              />
+            </ShelfItem>
+            <ShelfItem label="Letanía Sangre">
+              <MercyWindowThumb
+                active={misterioActual === 'sangrepreciosa_litany'}
+                onClick={() => pickDevotion('sangrepreciosa_litany', 'Letanía Sangre')}
+                title="Letanía de la Preciosísima Sangre (Julio)"
+                img={registryImage('vitreauxCruz')}
+                badge="L"
+              />
+            </ShelfItem>
+            <ShelfItem label="Corona Sangre">
+              <MercyWindowThumb
+                active={misterioActual === 'sangrepreciosa_chaplet'}
+                onClick={() => pickDevotion('sangrepreciosa_chaplet', 'Corona Sangre')}
+                title="Corona de la Preciosísima Sangre"
+                img={registryImage('crux')}
+                badge="C"
+              />
+            </ShelfItem>
+            <ShelfItem label="7 Ofrendas">
+              <MercyWindowThumb
+                active={misterioActual === 'sangrepreciosa_ofrendas'}
+                onClick={() => pickDevotion('sangrepreciosa_ofrendas', '7 Ofrendas')}
+                title="Siete Ofrendas de la Sangre de Cristo"
+                img={registryImage('lamb')}
+                badge="7"
+              />
+            </ShelfItem>
+            <ShelfItem label="Sagrado Corazón">
+              <MercyWindowThumb
+                active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
+                onClick={() => pickDevotion(SAGRADO_CORAZON_ADORACION_ID, 'Sagrado Corazón')}
+                title="Adoración Eucarística — Sagrado Corazón de Jesús"
+                img={sagradoCorazonAdoracionThumbnail}
+                badge="SC"
+              />
+            </ShelfItem>
+            <ShelfItem label="Sta. Faustina">
+              <FaustinaMercyThumb
+                misterioActual={misterioActual}
+                onMysteryChange={onMysteryChange}
+              />
+            </ShelfItem>
+          </>
+        }
+        breves={
+          <>
+            <ShelfItem label="Ángelus">
+              <MercyWindowThumb
+                active={misterioActual === ANGELUS_ID}
+                onClick={() => pickDevotion(ANGELUS_ID, 'Ángelus')}
+                title="Ángelus"
+                img={angelusThumbnail}
+                badge="A"
+              />
+            </ShelfItem>
+            <ShelfItem label="Magnificat">
+              <MercyWindowThumb
+                active={misterioActual === MAGNIFICAT_ID}
+                onClick={() => pickDevotion(MAGNIFICAT_ID, 'Magnificat')}
+                title="Magnificat"
+                img={magnificatThumbnail}
+                badge="M"
+              />
+            </ShelfItem>
+            <ShelfItem label="Ángel Guarda">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'guardian'}
+                onClick={() => openOptionalPrayer('guardian')}
+                title="Ángel de la Guarda"
+                img={optionalPrayerThumbnail('guardian')}
+                badge="Á"
+              />
+            </ShelfItem>
+            <ShelfItem label="San Benito">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'benedict'}
+                onClick={() => openOptionalPrayer('benedict')}
+                title="San Benito"
+                img={optionalPrayerThumbnail('benedict')}
+                badge="B"
+              />
+            </ShelfItem>
+          </>
+        }
+      />
     </div>
   );
 }

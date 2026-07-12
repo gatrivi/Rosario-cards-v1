@@ -22,9 +22,8 @@ describe('booklet mobile layout CSS', () => {
     );
   });
 
-  test('footer uses in-flow grid for nav + devociones row', () => {
-    expect(bookletCss).toMatch(/\.booklet-footer[\s\S]*display:\s*grid/);
-    expect(bookletCss).toMatch(/booklet-footer--shelf-only/);
+  test('footer chrome removed — Devociones lives in bottom nav tooltip', () => {
+    expect(bookletCss).toMatch(/--booklet-footer-h:\s*0px/);
     expect(bookletCss).not.toMatch(/\.booklet-footer[\s\S]*z-index/);
   });
 });

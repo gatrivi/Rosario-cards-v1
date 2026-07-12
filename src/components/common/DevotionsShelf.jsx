@@ -20,9 +20,11 @@ export function ShelfItem({ label, children }) {
 }
 
 /**
- * Collapses the loose devotion thumbnails into one 44px pill.
- * Panel is portaled to document.body so AppShell chrome (z-index 100+)
- * cannot steal clicks from the open menu.
+ * Collapses devotion thumbnails into one control + tooltip panel.
+ * Panel is portaled to document.body so AppShell chrome cannot steal clicks.
+ *
+ * `externalToggle`: Libro bottom-nav owns the ✦ button; this host only
+ * renders the floating tooltip and listens for `rosario-devotions-toggle`.
  */
 export default function DevotionsShelf({
   misterioActual,
@@ -32,6 +34,7 @@ export default function DevotionsShelf({
   variant = 'pill',
   open: openProp,
   onOpenChange,
+  externalToggle = false,
 }) {
   const [openInternal, setOpenInternal] = useState(false);
   const controlled = openProp !== undefined;
@@ -39,11 +42,19 @@ export default function DevotionsShelf({
 
   const setShelfOpen = useCallback(
     (next) => {
-      devLog('shelf-toggle', { open: next, misterio: misterioActual });
-      if (!controlled) setOpenInternal(next);
-      onOpenChange?.(next);
+      const apply = (current) => {
+        const value = typeof next === 'function' ? next(current) : next;
+        devLog('shelf-toggle', { open: value, misterio: misterioActual });
+        onOpenChange?.(value);
+        return value;
+      };
+      if (!controlled) {
+        setOpenInternal((prev) => apply(prev));
+        return;
+      }
+      apply(open);
     },
-    [controlled, misterioActual, onOpenChange]
+    [controlled, misterioActual, onOpenChange, open]
   );
   const rootRef = useRef(null);
   const panelRef = useRef(null);
@@ -61,12 +72,44 @@ export default function DevotionsShelf({
     }
   }, [misterioActual, setShelfOpen]);
 
+  useEffect(() => {
+    if (!externalToggle) return undefined;
+    const onToggle = () => {
+      setShelfOpen((wasOpen) => !wasOpen);
+    };
+    window.addEventListener('rosario-devotions-toggle', onToggle);
+    return () => window.removeEventListener('rosario-devotions-toggle', onToggle);
+  }, [externalToggle, setShelfOpen]);
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('rosario-devotions-state', {
+        detail: { open, active },
+      })
+    );
+  }, [open, active]);
+
   useLayoutEffect(() => {
-    if (!open || !rootRef.current) {
+    if (!open) {
       setPanelStyle(null);
       return undefined;
     }
+
     const place = () => {
+      if (externalToggle) {
+        // Smart tooltip above bottom nav (Libro).
+        setPanelStyle({
+          position: 'fixed',
+          left: '50%',
+          bottom: 'calc(var(--app-above-nav, 70px) + 10px)',
+          transform: 'translateX(-50%)',
+        });
+        return;
+      }
+      if (!rootRef.current) {
+        setPanelStyle(null);
+        return;
+      }
       const rect = rootRef.current.getBoundingClientRect();
       setPanelStyle({
         position: 'fixed',
@@ -75,6 +118,7 @@ export default function DevotionsShelf({
         transform: 'translateX(-50%)',
       });
     };
+
     place();
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
@@ -82,16 +126,15 @@ export default function DevotionsShelf({
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [open]);
+  }, [open, externalToggle]);
 
   useEffect(() => {
     if (!open) return undefined;
-    // Deferred pointerdown: opening click must not instantly close;
-    // portal panel is outside rootRef so check both refs.
     let remove = () => {};
     const id = requestAnimationFrame(() => {
       const close = (e) => {
         const t = e.target;
+        if (t?.closest?.('[data-devotions-toggle]')) return;
         if (rootRef.current?.contains(t) || panelRef.current?.contains(t)) return;
         setShelfOpen(false);
       };
@@ -104,7 +147,9 @@ export default function DevotionsShelf({
     };
   }, [open, setShelfOpen]);
 
-  const rootClass = `devotions-shelf${variant === 'footer' ? ' devotions-shelf--footer' : ''}`;
+  const rootClass = `devotions-shelf${variant === 'footer' ? ' devotions-shelf--footer' : ''}${
+    externalToggle ? ' devotions-shelf--nav-host' : ''
+  }`;
 
   const panel = open && panelStyle && (
     <div
@@ -124,16 +169,18 @@ export default function DevotionsShelf({
   return (
     <div className={rootClass} ref={rootRef}>
       {panel && createPortal(panel, document.body)}
-      <button
-        type="button"
-        className={`devotions-shelf__toggle${active ? ' devotions-shelf__toggle--active' : ''}`}
-        aria-expanded={open}
-        aria-label="Devociones y oraciones breves"
-        onClick={() => setShelfOpen(!open)}
-      >
-        <span aria-hidden="true">✦</span>
-        {variant === 'footer' ? 'Devoc.' : 'Devociones'}
-      </button>
+      {!externalToggle && (
+        <button
+          type="button"
+          className={`devotions-shelf__toggle${active ? ' devotions-shelf__toggle--active' : ''}`}
+          aria-expanded={open}
+          aria-label="Devociones y oraciones breves"
+          onClick={() => setShelfOpen(!open)}
+        >
+          <span aria-hidden="true">✦</span>
+          {variant === 'footer' ? 'Devoc.' : 'Devociones'}
+        </button>
+      )}
     </div>
   );
 }

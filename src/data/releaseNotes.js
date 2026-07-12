@@ -4,12 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.55',
-  name: 'Chrome arriba + Ángel Guarda',
+  version: '0.3.56',
+  name: 'Devociones en barra inferior',
   CURRENT: [
-    'Ángel Guarda: ES rima primero + imagen; Ángelus con vitral Marian',
-    'Fila superior: globos · Ayuda · Ajustes; sync/mensaje dentro de Ajustes',
-    '‹ › del Libro en la barra inferior (iconos, con Rosa/Libro)',
+    'Globos + Ayuda + Ajustes fijos arriba (one-hand ya no los baja)',
+    'Devociones: icono en barra Libro → tooltip; ya no tapa el footer',
   ],
   UPCOMING: [
     'Versos de la Letanía de la Sangre (líder + respuestas)',

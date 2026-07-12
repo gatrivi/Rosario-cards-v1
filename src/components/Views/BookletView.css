@@ -9,7 +9,7 @@
   position: relative;
   color: #f8f4e6;
   font-family: Georgia, 'Times New Roman', serif;
-  --booklet-footer-h: 3.25rem;
+  --booklet-footer-h: 0px;
 }
 
 .booklet-view .booklet-vitral__shade {

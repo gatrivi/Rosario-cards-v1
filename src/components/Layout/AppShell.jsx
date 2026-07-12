@@ -55,7 +55,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.55';
+const APP_VERSION = '0.3.56';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -485,7 +485,6 @@ export default function AppShell() {
     }} className={`app-shell${vistaActiva === 'booklet' ? ' app-shell--booklet' : ''}${settings.oneHandMode ? ' app-shell--one-hand' : ''}`}>
       
       <AppActionDock
-        oneHandMode={settings.oneHandMode === true}
         simpleMode={settings.simpleMode}
         soundEnabled={settings.soundEnabled}
         onHelp={() => setShowIntro(true)}
@@ -720,18 +719,15 @@ export default function AppShell() {
 // --- Sub-components ---
 
 function AppActionDock({
-  oneHandMode,
   simpleMode,
   soundEnabled = true,
   onHelp,
   onSettings,
 }) {
-  const dockClass = oneHandMode
-    ? 'app-action-dock app-action-dock--bottom'
-    : 'app-action-dock app-action-dock--top';
-
+  // Always top: user wants globes + Ayuda + Ajustes on the first row.
+  // oneHandMode must not drag this chrome over Devociones / bottom nav.
   return (
-    <div className={dockClass}>
+    <div className="app-action-dock app-action-dock--top">
       <div className="app-action-cluster app-action-cluster--left app-action-cluster--orbs">
         <PrayForOrbs
           simpleMode={simpleMode}

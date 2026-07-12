@@ -47,7 +47,7 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /devociones y oraciones breves/i }));
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
     fireEvent.click(screen.getByRole('button', { name: /letanía de la preciosísima sangre/i }));
 
     expect(onMysteryChange).toHaveBeenCalledWith('sangrepreciosa_litany');
@@ -64,7 +64,7 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /devociones y oraciones breves/i }));
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
     fireEvent.click(screen.getByRole('button', { name: /^ángelus$/i }));
 
     expect(onMysteryChange).toHaveBeenCalledWith(ANGELUS_ID);
@@ -81,7 +81,7 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /devociones y oraciones breves/i }));
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
     fireEvent.click(screen.getByRole('button', { name: /divina misericordia — santa faustina/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /^corona$/i }));
 
@@ -98,7 +98,7 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /devociones y oraciones breves/i }));
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
     expect(screen.getByRole('button', { name: /^san benito$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^ángel de la guarda$/i })).toBeInTheDocument();
   });
@@ -114,7 +114,7 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /devociones y oraciones breves/i }));
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
     fireEvent.click(screen.getByRole('button', { name: /^san benito$/i }));
 
     expect(onMysteryChange).not.toHaveBeenCalled();

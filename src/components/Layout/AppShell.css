@@ -1,5 +1,6 @@
 /* AppShell — one-hand accessibility layout */
 
+:root,
 .app-shell {
   --app-bottom-nav-height: 70px;
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -18,7 +19,7 @@
 }
 
 .app-action-dock--top {
-  top: 15px;
+  top: max(10px, env(safe-area-inset-top, 0px));
 }
 
 .app-action-dock--bottom {
