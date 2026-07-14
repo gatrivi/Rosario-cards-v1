@@ -4,15 +4,15 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.56',
-  name: 'Devociones en barra inferior',
+  version: '0.3.57',
+  name: 'Voces Tier S / Tier 3',
   CURRENT: [
-    'Globos + Ayuda + Ajustes fijos arriba (one-hand ya no los baja)',
-    'Devociones: icono en barra Libro → tooltip; ya no tapa el footer',
+    'Voz: Tier S (tu grabación) + Tier 3 Piper (guía provisional)',
+    'Ángelus + Magnificat con voz guía T3; Estudio /voz muestra faltantes y permite subir audio',
   ],
   UPCOMING: [
+    'Más letanía Sangre (versos 10+) y rosario con guía T3',
     'Versos de la Letanía de la Sangre (líder + respuestas)',
-    'Publicar reglas Firestore + Storage (si permiso denegado)',
     'Confirmación al borrar una toma de voz',
   ],
 };

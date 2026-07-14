@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { buildRosarySequence, MYSTERY_OPTIONS } from '../../utils/rosarySequence';
+import { buildSequence } from '../../utils/bookletSequence';
 import {
   blobToObjectUrl,
   deleteRecording,
-  getCoverageMap,
   listRecordingsForSlot,
+  saveRecording,
 } from '../../utils/prayerRecordingStore';
+import { getVoiceCoverageMap, VOICE_STUDIO_OPTIONS } from '../../utils/voiceCoverage';
 import { usePrayerMediaRecorder } from '../../hooks/usePrayerMediaRecorder';
 import { useSpeechAdvance } from '../../hooks/useSpeechAdvance';
 import { getSpeechProviderLabel } from '../../utils/speechProvider';
+import { getVoicePrefs, setVoicePrefs } from '../../utils/voicePrefs';
 import './RecordingStudioView.css';
 
 export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
@@ -16,6 +18,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   const [coverage, setCoverage] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [voicePrefs, setVoicePrefsState] = useState(getVoicePrefs);
 
   const [sessionIndex, setSessionIndex] = useState(0);
   const [sessionOnlyMissing, setSessionOnlyMissing] = useState(true);
@@ -27,8 +30,19 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
 
   const audioRef = useRef(null);
   const autoStartedRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const uploadTargetRef = useRef(null);
 
-  const sequence = useMemo(() => buildRosarySequence(mysteryType), [mysteryType]);
+  const sequence = useMemo(
+    () =>
+      buildSequence(mysteryType, { novenaDay: 1 }).map((item, index) => ({
+        index,
+        id: item.id,
+        title: item.title,
+        text: item.text,
+      })),
+    [mysteryType]
+  );
 
   const sessionQueue = useMemo(() => {
     const items = sequence.map((item) => ({
@@ -39,7 +53,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     }));
     if (!sessionOnlyMissing) return items;
     const missing = new Set(
-      coverage.filter((c) => !c.hasRecording).map((c) => c.slotIndex)
+      coverage.filter((c) => !c.hasUser).map((c) => c.slotIndex)
     );
     return items.filter((item) => missing.has(item.slotIndex));
   }, [sequence, coverage, sessionOnlyMissing]);
@@ -51,7 +65,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   const refreshCoverage = useCallback(async () => {
     setLoading(true);
     try {
-      setCoverage(await getCoverageMap(mysteryType));
+      setCoverage(await getVoiceCoverageMap(mysteryType));
     } catch (e) {
       console.warn('[RecordingStudio] coverage', e);
     } finally {
@@ -89,25 +103,24 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   );
 
   const stats = useMemo(() => {
-    const done = coverage.filter((c) => c.hasRecording).length;
+    const userDone = coverage.filter((c) => c.hasUser).length;
+    const t3Only = coverage.filter((c) => !c.hasUser && c.hasBundled).length;
+    const empty = coverage.filter((c) => !c.hasUser && !c.hasBundled).length;
     const total = sequence.length;
-    const uniqueIds = new Set(sequence.map((s) => s.id));
-    const idsWithAny = new Set(
-      coverage.filter((c) => c.hasRecording).map((c) => c.prayerId)
-    );
     return {
-      done,
+      done: userDone,
       total,
-      missing: total - done,
-      pct: total ? Math.round((done / total) * 100) : 0,
-      uniqueDone: idsWithAny.size,
-      uniqueTotal: uniqueIds.size,
+      missing: total - userDone,
+      pct: total ? Math.round((userDone / total) * 100) : 0,
+      t3Only,
+      empty,
     };
   }, [coverage, sequence]);
 
   const filteredRows = useMemo(() => {
-    if (filter === 'missing') return coverage.filter((c) => !c.hasRecording);
-    if (filter === 'done') return coverage.filter((c) => c.hasRecording);
+    if (filter === 'missing') return coverage.filter((c) => !c.hasUser);
+    if (filter === 'empty') return coverage.filter((c) => !c.hasUser && !c.hasBundled);
+    if (filter === 'done') return coverage.filter((c) => c.hasUser);
     return coverage;
   }, [coverage, filter]);
 
@@ -148,32 +161,45 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           mystery: mysteryType,
           sequenceIndex: current.slotIndex,
           prayerId: current.prayerId,
-          prayerTitle: current.title,
           variantIndex,
-          label: `${current.title} · sesión`,
+          label: `${current.title} toma ${variantIndex + 1}`,
         });
-        setRecording(false);
-        if (saved) {
-          showToast('Grabación guardada');
-          await refreshClips();
-          await refreshCoverage();
-        }
+        if (saved) showToast('Guardado (Tier S)');
       }
+      setRecording(false);
+      await refreshClips();
+      await refreshCoverage();
       advanceSession();
     } catch (e) {
-      setError('No se pudo guardar la grabación');
+      setError('No se pudo guardar');
       console.warn(e);
     }
   }, [
     current,
+    clips,
     isRecording,
     stopAndSave,
     mysteryType,
-    clips,
-    advanceSession,
     refreshClips,
     refreshCoverage,
+    advanceSession,
   ]);
+
+  const startSession = (onlyMissing) => {
+    cancel();
+    setRecording(false);
+    setSessionOnlyMissing(onlyMissing);
+    setSessionIndex(0);
+    autoStartedRef.current = null;
+    setMode('session');
+  };
+
+  const jumpToSlot = (slotIndex) => {
+    setSessionOnlyMissing(false);
+    setSessionIndex(slotIndex);
+    autoStartedRef.current = null;
+    setMode('session');
+  };
 
   const handleSpeechComplete = useCallback(() => {
     finishAndSave();
@@ -184,6 +210,61 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     expectedText: current?.text ?? '',
     onComplete: handleSpeechComplete,
   });
+
+  const playClip = (clip) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      URL.revokeObjectURL(audioRef.current.src);
+    }
+    const url = blobToObjectUrl(clip);
+    if (!url) return;
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => URL.revokeObjectURL(url);
+    audio.play();
+  };
+
+  const handleDeleteClip = async (id) => {
+    await deleteRecording(id);
+    await refreshClips();
+    await refreshCoverage();
+  };
+
+  const openUpload = (row) => {
+    uploadTargetRef.current = row;
+    fileInputRef.current?.click();
+  };
+
+  const onFilePicked = async (e) => {
+    const file = e.target.files?.[0];
+    const row = uploadTargetRef.current;
+    e.target.value = '';
+    if (!file || !row) return;
+    try {
+      await saveRecording({
+        mystery: mysteryType,
+        sequenceIndex: row.slotIndex,
+        prayerId: row.prayerId,
+        variantIndex: row.takeCount || 0,
+        blob: file,
+        mimeType: file.type || 'audio/wav',
+        label: `Import · ${file.name}`,
+      });
+      showToast('Audio importado (Tier S)');
+      await refreshCoverage();
+    } catch (err) {
+      setError('No se pudo importar');
+      console.warn(err);
+    }
+  };
+
+  const togglePref = (key) => {
+    const next = setVoicePrefs({ [key]: !voicePrefs[key] });
+    setVoicePrefsState(next);
+  };
+
+  const mysteryLabel =
+    VOICE_STUDIO_OPTIONS.find((m) => m.id === mysteryType)?.label ?? mysteryType;
 
   useEffect(() => {
     if (mode !== 'session' || !recording || !speechOn) {
@@ -199,7 +280,6 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     const key = `${mysteryType}-${current.slotIndex}`;
     if (autoStartedRef.current === key) return undefined;
     autoStartedRef.current = key;
-
     const t = setTimeout(() => {
       beginRecording();
     }, 500);
@@ -207,66 +287,47 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   }, [mode, current, mysteryType, beginRecording]);
 
   useEffect(() => {
-    if (mode === 'session') {
-      setSessionIndex(0);
-      autoStartedRef.current = null;
-    }
-  }, [mode, sessionOnlyMissing, mysteryType]);
-
-  const startSession = (onlyMissing) => {
-    setSessionOnlyMissing(onlyMissing);
     setSessionIndex(0);
     autoStartedRef.current = null;
-    setMode('session');
-    setToast('');
-    setError('');
-  };
-
-  const jumpToSlot = (slotIndex) => {
-    setSessionOnlyMissing(false);
-    setSessionIndex(slotIndex);
-    autoStartedRef.current = null;
-    setMode('session');
-  };
-
-  const playClip = (clip) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      URL.revokeObjectURL(audioRef.current.src);
-    }
-    const url = blobToObjectUrl(clip);
-    if (!url) return;
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    audio.play();
-  };
-
-  const handleDelete = async (id) => {
-    await deleteRecording(id);
-    await refreshClips();
-    await refreshCoverage();
-  };
-
-  const mysteryLabel =
-    MYSTERY_OPTIONS.find((m) => m.id === mysteryType)?.label ?? mysteryType;
+  }, [sessionOnlyMissing, mysteryType]);
 
   return (
     <div className="recording-studio-view">
       <header className="rs-header">
         <h1 className="rs-title">Estudio de voz</h1>
         <p className="rs-sub">
-          Graba tu voz rezando para reproducirla después en el rosario automático.
+          Tier S = tu grabación · Tier 3 = guía Piper (provisional). Elige fuentes abajo; mapa
+          muestra qué falta.
         </p>
       </header>
 
+      <div className="rs-prefs-row">
+        <label className="rs-pref">
+          <input
+            type="checkbox"
+            checked={voicePrefs.useUserVoice}
+            onChange={() => togglePref('useUserVoice')}
+          />
+          Usar tu voz (S)
+        </label>
+        <label className="rs-pref">
+          <input
+            type="checkbox"
+            checked={voicePrefs.useBundledVoice}
+            onChange={() => togglePref('useBundledVoice')}
+          />
+          Guía Piper (T3)
+        </label>
+      </div>
+
       <div className="rs-mystery-row">
-        <label htmlFor="rs-mystery">Misterios</label>
+        <label htmlFor="rs-mystery">Devoción</label>
         <select
           id="rs-mystery"
-          value={mysteryType}
+          value={VOICE_STUDIO_OPTIONS.some((o) => o.id === mysteryType) ? mysteryType : 'angelus'}
           onChange={(e) => onMysteryChange?.(e.target.value)}
         >
-          {MYSTERY_OPTIONS.map((m) => (
+          {VOICE_STUDIO_OPTIONS.map((m) => (
             <option key={m.id} value={m.id}>
               {m.label}
             </option>
@@ -278,16 +339,23 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         <div className="rs-stat-main">
           <span className="rs-stat-num">{stats.done}</span>
           <span className="rs-stat-den">/ {stats.total}</span>
-          <span className="rs-stat-label">oraciones grabadas</span>
+          <span className="rs-stat-label">con tu voz (Tier S)</span>
         </div>
         <div className="rs-progress-bar">
           <div className="rs-progress-fill" style={{ width: `${stats.pct}%` }} />
         </div>
         <p className="rs-stat-meta">
-          {stats.missing} faltantes · {stats.uniqueDone}/{stats.uniqueTotal} textos únicos con al
-          menos una toma
+          {stats.missing} sin tu voz · {stats.t3Only} solo T3 · {stats.empty} sin audio
         </p>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="audio/*,.wav,.mp3,.ogg,.webm,.m4a"
+        hidden
+        onChange={onFilePicked}
+      />
 
       <div className="rs-mode-tabs">
         <button
@@ -326,50 +394,78 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
               className={filter === 'missing' ? 'active' : ''}
               onClick={() => setFilter('missing')}
             >
-              Faltantes ({stats.missing})
+              Sin S ({stats.missing})
+            </button>
+            <button
+              type="button"
+              className={filter === 'empty' ? 'active' : ''}
+              onClick={() => setFilter('empty')}
+            >
+              Sin audio ({stats.empty})
             </button>
             <button
               type="button"
               className={filter === 'done' ? 'active' : ''}
               onClick={() => setFilter('done')}
             >
-              Listas ({stats.done})
+              Tier S ({stats.done})
             </button>
           </div>
 
           {loading ? (
-            <p className="rs-loading">Cargando grabaciones…</p>
+            <p className="rs-loading">Cargando…</p>
           ) : (
             <ul className="rs-slot-list">
               {filteredRows.map((row) => (
-                <li
-                  key={row.slotIndex}
-                  className={`rs-slot ${row.hasRecording ? 'done' : 'missing'}`}
-                >
-                  <button
-                    type="button"
-                    className="rs-slot-btn"
-                    onClick={() => jumpToSlot(row.slotIndex)}
+                  <li
+                    key={row.slotIndex}
+                    className={`rs-slot ${row.hasUser ? 'done' : row.hasBundled ? 't3' : 'missing'}`}
                   >
-                    <span className="rs-slot-idx">{row.slotIndex + 1}</span>
-                    <span className="rs-slot-name">{row.title}</span>
-                    <span className="rs-slot-badge">
-                      {row.hasRecording
-                        ? `${row.takeCount} toma${row.takeCount !== 1 ? 's' : ''}`
-                        : '—'}
-                    </span>
-                  </button>
-                </li>
+                    <button
+                      type="button"
+                      className="rs-slot-btn"
+                      onClick={() => jumpToSlot(row.slotIndex)}
+                    >
+                      <span className="rs-slot-idx">{row.slotIndex + 1}</span>
+                      <span className="rs-slot-name">{row.title}</span>
+                      <span
+                        className={`rs-slot-badge ${row.hasUser ? 'tier-s' : row.hasBundled ? 'tier-t3' : 'tier-none'}`}
+                        title={
+                          row.hasUser
+                            ? 'Tu voz (Tier S)'
+                            : row.hasBundled
+                              ? 'Guía Piper (Tier 3)'
+                              : 'Sin audio'
+                        }
+                      >
+                        {row.hasUser
+                          ? `${row.takeCount}·S`
+                          : row.hasBundled
+                            ? 'T3'
+                            : '—'}
+                      </span>
+                    </button>
+                    {!row.hasUser && (
+                      <button
+                        type="button"
+                        className="rs-upload-btn"
+                        title="Subir audio (Tier S)"
+                        onClick={() => openUpload(row)}
+                      >
+                        ↑
+                      </button>
+                    )}
+                  </li>
               ))}
             </ul>
           )}
 
           <div className="rs-map-actions">
             <button type="button" className="rs-primary" onClick={() => startSession(true)}>
-              Rezar solo faltantes ({stats.missing})
+              Grabar sin tu voz ({stats.missing})
             </button>
             <button type="button" className="rs-secondary" onClick={() => startSession(false)}>
-              Rezar todo el rosario
+              Grabar todo
             </button>
           </div>
         </section>
@@ -379,7 +475,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         <section className="rs-session-section">
           {sessionQueue.length === 0 ? (
             <div className="rs-empty-session">
-              <p>¡Todo grabado para misterios {mysteryLabel}! No hay oraciones faltantes.</p>
+              <p>Todo con Tier S en {mysteryLabel}.</p>
               <button
                 type="button"
                 className="rs-secondary"
@@ -405,7 +501,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                 <p className="rs-prayer-text">{current.text}</p>
                 <p className="rs-session-hint">
                   Reza en voz alta. La grabación empieza sola. Di «Amén» al terminar o pulsa
-                  Terminé.
+                  Terminé. Queda como Tier S.
                 </p>
 
                 <div className={`rs-rec-indicator ${recording ? 'live' : ''}`}>
@@ -449,61 +545,27 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                 </div>
 
                 {clips.length > 0 && (
-                  <ul className="rs-takes-mini">
-                    {clips.slice(-3).map((clip) => (
+                  <ul className="rs-clip-list">
+                    {clips.map((clip) => (
                       <li key={clip.id}>
                         <button type="button" onClick={() => playClip(clip)}>
-                          ▶ {clip.label || clip.prayerKey}
+                          ▶ {clip.label || 'toma'}
                         </button>
-                        <button
-                          type="button"
-                          className="rs-del"
-                          onClick={() => handleDelete(clip.id)}
-                        >
-                          ✕
+                        <button type="button" onClick={() => handleDeleteClip(clip.id)}>
+                          ×
                         </button>
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
-
-              <div className="rs-session-nav">
-                <button
-                  type="button"
-                  disabled={sessionIndex <= 0}
-                  onClick={() => {
-                    cancel();
-                    setRecording(false);
-                    autoStartedRef.current = null;
-                    setSessionIndex((i) => Math.max(0, i - 1));
-                  }}
-                >
-                  ‹ Anterior
-                </button>
-                <button
-                  type="button"
-                  disabled={sessionIndex >= sessionQueue.length - 1}
-                  onClick={() => {
-                    cancel();
-                    setRecording(false);
-                    autoStartedRef.current = null;
-                    setSessionIndex((i) => i + 1);
-                  }}
-                >
-                  Siguiente ›
-                </button>
-              </div>
             </>
           )}
         </section>
       )}
 
-      <p className="rs-footnote">
-        Deepgram no está conectado aún — el avance por voz usa el reconocimiento del navegador
-        (Chrome/Android). Añade <code>REACT_APP_DEEPGRAM_API_KEY</code> en el futuro para mayor
-        precisión.
-      </p>
+      {mode === 'map' && toast && <p className="rs-toast rs-toast-float">{toast}</p>}
+      {mode === 'map' && error && <p className="rs-error">{error}</p>}
     </div>
   );
 }

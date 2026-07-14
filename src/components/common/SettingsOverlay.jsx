@@ -119,6 +119,30 @@ export default function SettingsOverlay({
             </label>
           </div>
 
+          {/* Voice sources: Tier S vs Tier 3 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ color: '#fff', fontSize: '1rem' }}>Voces al rezar</div>
+            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
+              <span>Tu voz (Tier S)</span>
+              <input
+                type="checkbox"
+                checked={settings.useUserVoice !== false}
+                onChange={(e) => onUpdateSettings({ ...settings, useUserVoice: e.target.checked })}
+              />
+            </label>
+            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
+              <span>Guía Piper (Tier 3)</span>
+              <input
+                type="checkbox"
+                checked={settings.useBundledVoice !== false}
+                onChange={(e) => onUpdateSettings({ ...settings, useBundledVoice: e.target.checked })}
+              />
+            </label>
+            <div style={{ color: '#666', fontSize: '0.7rem' }}>
+              Tier 3 es provisional. Subí o grabá Tier S en Estudio de voz (/voz).
+            </div>
+          </div>
+
           {/* Divine Mercy optional opening */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>

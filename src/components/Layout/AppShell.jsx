@@ -55,7 +55,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.56';
+const APP_VERSION = '0.3.57';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -110,6 +110,8 @@ export default function AppShell() {
       mercyOptionalOpening: true,
       litanyEntranceEnabled: true,
       perVersePrayerImages: false,
+      useUserVoice: localStorage.getItem('rosario_voice_user') !== 'false',
+      useBundledVoice: localStorage.getItem('rosario_voice_bundled') !== 'false',
     };
     const saved = localStorage.getItem('rosario_settings');
     return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
@@ -123,6 +125,8 @@ export default function AppShell() {
     localStorage.setItem('rosario_one_hand_mode', String(settings.oneHandMode === true));
     localStorage.setItem('rosario_one_hand_quick_toggle_enabled', String(settings.oneHandQuickToggleEnabled !== false));
     localStorage.setItem('rosario_mobile_element_arrows_enabled', String(settings.mobileElementArrowsEnabled !== false));
+    localStorage.setItem('rosario_voice_user', String(settings.useUserVoice !== false));
+    localStorage.setItem('rosario_voice_bundled', String(settings.useBundledVoice !== false));
   }, [settings]);
 
   // --- Lifting Prayer State ---
@@ -388,7 +392,7 @@ export default function AppShell() {
       case 'voz':
         return (
           <RecordingStudioView
-            mysteryType={rosaryMystery}
+            mysteryType={misterioActual}
             onMysteryChange={handleMysteryChange}
           />
         );

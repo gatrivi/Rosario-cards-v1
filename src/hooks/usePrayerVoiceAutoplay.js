@@ -3,12 +3,12 @@ import {
   pickRecordingForSlot,
   blobToObjectUrl,
 } from '../utils/prayerRecordingStore';
-import { resolveBundledVoiceUrl } from '../data/bundledVoiceMap';
+import { resolveBundledVoiceClip, VOICE_TIER_USER } from '../data/bundledVoiceMap';
+import { getVoicePrefs } from '../utils/voicePrefs';
 
 /**
- * When the active prayer changes, play the user's recording for that slot
- * (or a random take for the same prayerId). Falls back to bundled Piper WAV.
- * Stops previous audio on change / unmount.
+ * When the active prayer changes, play Tier S (user) then Tier 3 (bundled).
+ * Respects Ajustes voice source toggles. Stops previous audio on change / unmount.
  */
 export function usePrayerVoiceAutoplay({
   enabled = true,
@@ -45,19 +45,26 @@ export function usePrayerVoiceAutoplay({
 
     (async () => {
       try {
-        const rec = await pickRecordingForSlot(mystery, sequenceIndex, prayerId);
+        const prefs = getVoicePrefs();
         let url = null;
         let revokeOnEnd = false;
-        if (rec?.blob) {
-          url = blobToObjectUrl(rec);
-          revokeOnEnd = true;
-        } else {
-          url = resolveBundledVoiceUrl(prayerId);
+
+        if (prefs.useUserVoice) {
+          const rec = await pickRecordingForSlot(mystery, sequenceIndex, prayerId);
+          if (rec?.blob) {
+            url = blobToObjectUrl(rec);
+            revokeOnEnd = true;
+          }
+        }
+        if (!url && prefs.useBundledVoice) {
+          const clip = resolveBundledVoiceClip(prayerId);
+          if (clip?.url) url = clip.url;
         }
         if (!url || cancelled) return;
         if (revokeOnEnd) urlRef.current = url;
         const audio = new Audio(url);
         audioRef.current = audio;
+        audio.dataset.voiceTier = revokeOnEnd ? VOICE_TIER_USER : '3';
         audio.onended = () => {
           if (revokeOnEnd && urlRef.current === url) {
             URL.revokeObjectURL(url);

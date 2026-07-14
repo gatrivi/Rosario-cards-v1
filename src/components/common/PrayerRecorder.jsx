@@ -198,7 +198,9 @@ export default function PrayerRecorder({
         {simpleMode ? 'Graba tu voz' : 'Voz propia · suena al llegar a esta oración'}
       </p>
       {bundledUrl && !hasClips && (
-        <p className="prayer-recorder__hint">Hay voz guía (Piper). ▶ para oírla; 🎙️ para grabar la tuya.</p>
+        <p className="prayer-recorder__hint">
+          Guía Tier 3 (Piper). ▶ para oírla; 🎙️ graba Tier S (reemplaza la guía).
+        </p>
       )}
       {prayerId === 'A' && (
         <p className="prayer-recorder__hint">
