@@ -5,20 +5,24 @@ import './MercyWindowThumb.css';
 export default function MercyWindowThumb({
   active = false,
   disabled = false,
+  soon = false,
   onClick,
   title = 'Corona de la Divina Misericordia',
   isNovena = false,
   img,
   badge,
 }) {
+  const isDisabled = disabled || soon;
   return (
     <button
       type="button"
-      className={`mercy-window-thumb${active ? ' mercy-window-thumb--active' : ''}`}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      aria-label={title}
+      className={`mercy-window-thumb${active ? ' mercy-window-thumb--active' : ''}${
+        soon ? ' mercy-window-thumb--soon' : ''
+      }`}
+      onClick={isDisabled ? undefined : onClick}
+      disabled={isDisabled}
+      title={soon ? `${title} (próximamente)` : title}
+      aria-label={soon ? `${title} (próximamente)` : title}
       style={{ position: 'relative' }}
     >
       <img src={img || faustinaThumb} alt="" className="mercy-window-thumb__img" />

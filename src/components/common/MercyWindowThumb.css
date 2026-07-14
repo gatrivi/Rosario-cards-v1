@@ -22,7 +22,18 @@
 
 .mercy-window-thumb:disabled {
   cursor: default;
-  opacity: 0.55;
+  opacity: 0.5;
+}
+
+.mercy-window-thumb:disabled .mercy-window-thumb__img,
+.mercy-window-thumb--soon .mercy-window-thumb__img {
+  filter: grayscale(1) contrast(0.92) brightness(0.85);
+}
+
+.mercy-window-thumb--soon {
+  border-color: rgba(180, 180, 180, 0.45);
+  cursor: default;
+  opacity: 0.5;
 }
 
 .mercy-window-thumb__img {

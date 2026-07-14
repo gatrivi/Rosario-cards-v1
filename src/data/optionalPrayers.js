@@ -3,6 +3,7 @@ import { imagePath } from './imageRegistry';
 const angelImg = imagePath('angelDeLaGuarda');
 const benedictImg = imagePath('sanctusBenedictus');
 const benedictLatinImg = imagePath('latinSanBenito');
+const michaelImg = imagePath('galleryStMichael');
 
 export const OPTIONAL_PRAYERS = [
   {
@@ -35,6 +36,32 @@ export const OPTIONAL_PRAYERS = [
         label: 'LA',
         text:
           'Angele Dei, qui custos es mei, me tibi commissum pietate superna; illumina, custodi, rege et guberna. Amen.',
+      },
+    ],
+  },
+  {
+    id: 'michael',
+    title: 'San Miguel Arcángel',
+    img: michaelImg,
+    imgCandidates: [michaelImg].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'San Miguel Arcángel, defiéndenos en la batalla. Sé nuestro amparo contra la perversidad y las acechanzas del demonio. Reprímale Dios, pedimos suplicantes. Y tú, Príncipe de la milicia celestial, con el poder que Dios te ha conferido, arroja al infierno a Satanás y a los demás espíritus malignos que andan dispersos por el mundo para la perdición de las almas. Amén.',
+      },
+      {
+        id: 'en',
+        label: 'EN',
+        text:
+          'Saint Michael the Archangel, defend us in battle. Be our protection against the wickedness and snares of the devil. May God rebuke him, we humbly pray. And do thou, O Prince of the heavenly host, by the power of God, cast into hell Satan and all the evil spirits who prowl about the world seeking the ruin of souls. Amen.',
+      },
+      {
+        id: 'la',
+        label: 'LA',
+        text:
+          'Sancte Michael Archangele, defende nos in proelio; contra nequitiam et insidias diaboli esto praesidium. Imperet illi Deus, supplices deprecamur: tuque, Princeps militiae caelestis, Satanam aliosque spiritus malignos, qui ad perditionem animarum pervagantur in mundo, divina virtute, in infernum detrude. Amen.',
       },
     ],
   },

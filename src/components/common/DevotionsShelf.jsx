@@ -4,10 +4,10 @@ import { devLog } from '../../utils/devotionsDebug';
 import './DevotionsShelf.css';
 
 /** Captioned slot for a devotion thumb inside the shelf panel. */
-export function ShelfItem({ label, children }) {
+export function ShelfItem({ label, children, soon = false }) {
   return (
     <div
-      className="devotions-shelf__item"
+      className={`devotions-shelf__item${soon ? ' devotions-shelf__item--soon' : ''}`}
       onClick={(e) => {
         const btn = e.currentTarget.querySelector('button');
         if (btn && !btn.disabled && !btn.contains(e.target)) btn.click();
@@ -31,6 +31,7 @@ export default function DevotionsShelf({
   active = false,
   recorridos,
   breves,
+  proximas,
   variant = 'pill',
   open: openProp,
   onOpenChange,
@@ -163,6 +164,12 @@ export default function DevotionsShelf({
       <div className="devotions-shelf__row">{recorridos}</div>
       <p className="devotions-shelf__heading">Oraciones breves</p>
       <div className="devotions-shelf__row">{breves}</div>
+      {proximas ? (
+        <>
+          <p className="devotions-shelf__heading">Próximas</p>
+          <div className="devotions-shelf__row">{proximas}</div>
+        </>
+      ) : null}
     </div>
   );
 

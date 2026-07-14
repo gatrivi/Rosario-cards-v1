@@ -89,6 +89,10 @@
   pointer-events: none;
 }
 
+.devotions-shelf__item--soon .devotions-shelf__item-label {
+  color: rgba(180, 180, 180, 0.55);
+}
+
 .devotions-shelf__panel .mercy-window-thumb {
   height: 64px !important;
   min-width: 44px !important;

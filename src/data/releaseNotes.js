@@ -4,15 +4,15 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.58',
-  name: 'Libro · Loreto + voz EN',
+  version: '0.3.59',
+  name: 'San Miguel + Próximas',
   CURRENT: [
-    'Letanía de Loreto: nombre y secciones en español; TTS no lee títulos de oración',
-    'Títulos de misterios sin códigos MG/MD/ML; guías Piper ES retiradas (prep. voz EN)',
+    'Oración a San Miguel Arcángel (vitral) en Devociones → breves',
+    'Fila Próximas: Inmaculado Corazón, Espíritu Santo, Escápulario… (B/N, deshabilitadas)',
   ],
   UPCOMING: [
+    'Corazón Inmaculado / Escápulario / Memorare como recorridos',
     'Clips guía en inglés bajo /voice/en/',
-    'Versos Letanía Sangre / Loreto con voz guía',
     'Confirmación al borrar una toma de voz',
   ],
 };

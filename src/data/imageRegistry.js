@@ -103,6 +103,10 @@ const REGISTRY = {
   galleryAdoracionCandlelightSilence: { ...PUBLIC('/gallery-images/adoracion/Candlelight and Silence_ A Story from Adoration.jpg'), name: 'Adoración — Candlelight and Silence', tags: ['adoracion', 'eucharist'] },
   galleryPastor: { ...PUBLIC('/gallery-images/misterios/modooscuro/pastor.jpg'), name: 'Cristo Buen Pastor', tags: ['good-shepherd', 'christ'] },
   galleryMargaritaSacredHeart: { ...PUBLIC('/gallery-images/litany/modooscuro/SANTA MARGARITA MARIA DE ALACOQUE FRENTE AL SAGRADO CORAZON DE JESUS !!!.jpg'), name: 'Santa Margarita María — Sagrado Corazón', tags: ['sacred-heart', 'margarita-maria'] },
+  galleryStMichael: { ...PUBLIC('/gallery-images/litany/modooscuro/Stained glass of St_ Michael the Archangel.jpg'), name: 'San Miguel Arcángel — vitral', tags: ['michael', 'archangel', 'stained-glass'] },
+  galleryMaterImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/Mater immaculata.jpg'), name: 'Mater Immaculata', tags: ['mary', 'immaculate', 'stained-glass'] },
+  galleryVirgoImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/virgo-inmaculata.jpg'), name: 'Virgo Immaculata', tags: ['mary', 'immaculate'] },
+  galleryPentecost: { ...PUBLIC('/gallery-images/misterios/modooscuro/misteriogloria3.webp'), name: 'Pentecostés — Espíritu Santo', tags: ['holy-spirit', 'pentecost'] },
 
   // ── Unidentified / to be named via Asset Studio ──
   misc96PsRGiE: { path: misc96PsRGiE, name: 'Altar — tabernáculo y adoración', tags: ['eucharist', 'adoration', 'altar', 'tabernacle', 'custodia', 'exposition'], source: 'asset' },

@@ -48,6 +48,7 @@ import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
+import { upcomingDevotionThumbs } from '../../data/historicDevotionsCatalog';
 import { cleanPrayerDisplayTitle } from '../../utils/speakablePrayerText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
@@ -1093,6 +1094,15 @@ export default function BookletView({
                 badge="Á"
               />
             </ShelfItem>
+            <ShelfItem label="San Miguel">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'michael'}
+                onClick={() => openOptionalPrayer('michael')}
+                title="San Miguel Arcángel"
+                img={optionalPrayerThumbnail('michael')}
+                badge="SM"
+              />
+            </ShelfItem>
             <ShelfItem label="San Benito">
               <MercyWindowThumb
                 active={optionalOpen && optionalPrayerId === 'benedict'}
@@ -1102,6 +1112,19 @@ export default function BookletView({
                 badge="B"
               />
             </ShelfItem>
+          </>
+        }
+        proximas={
+          <>
+            {upcomingDevotionThumbs().map((d) => (
+              <ShelfItem key={d.id} label={d.label} soon>
+                <MercyWindowThumb
+                  soon
+                  title={d.note ? `${d.label} — ${d.note}` : d.label}
+                  img={d.img}
+                />
+              </ShelfItem>
+            ))}
           </>
         }
       />
