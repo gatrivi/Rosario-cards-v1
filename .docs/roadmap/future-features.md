@@ -36,6 +36,7 @@ Update this file when priorities change. Agents: prefer Tier ≤2 unless the use
 | Feature | Notes |
 |---------|--------|
 | Per-station dedicated images (Vía Crucis/Lucis) | Assign in Estudio; drop files into library |
+| Promote Próximas devoutions | See [historic-devotions.md](../libro/historic-devotions.md) — flip `soon`→`have` |
 | Confirm before delete voice take | One dialog in `PrayerRecorder` / RecordingStudio |
 | Tighten Firestore/Storage rules | Human in Firebase console; not code-heavy |
 | Release notes / Novedades bullets | `src/data/releaseNotes.js` on each version bump |

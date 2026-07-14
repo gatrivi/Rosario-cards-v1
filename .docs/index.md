@@ -15,6 +15,8 @@
     architecture-overview.md          ← high-level map (baseline)
     live-system-snapshot.md           ← pre-recovery monolith detail (partially stale)
     resonator-and-physics-blueprint.md
+  libro/
+    historic-devotions.md             ← popular devoutions catalog + San Miguel / Próximas
   virtual-rosary/
     rosary-ux-recovery-jun-2026.md    ← Jun 2026 session: 3 bugs fixed, stack
     interaction-rules.md              ← bead/chain selection MUSTS
@@ -51,6 +53,7 @@
 | Topic | Doc |
 |-------|-----|
 | **What runs today** | [current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) |
+| **Libro devoutions / Próximas** | [historic-devotions.md](./libro/historic-devotions.md) |
 | **Rosary recovery status** | [rosary-ux-recovery-jun-2026.md](./virtual-rosary/rosary-ux-recovery-jun-2026.md) |
 | **Bead click rules** | [interaction-rules.md](./virtual-rosary/interaction-rules.md) |
 | **Topology / merge plan** | [topology-current.md](./virtual-rosary/topology-current.md) |

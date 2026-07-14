@@ -67,7 +67,7 @@ export const HISTORIC_DEVOTIONS = [
     id: 'st_michael',
     label: 'San Miguel',
     note: 'León XIII · 1886',
-    status: 'add', // shipping now as oración breve
+    status: 'have',
     imgId: 'galleryStMichael',
   },
   {
