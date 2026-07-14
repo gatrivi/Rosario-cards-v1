@@ -1,5 +1,6 @@
 import React from 'react';
 import { getOutlineStepThumb } from '../../utils/bookletShare';
+import { cleanPrayerDisplayTitle } from '../../utils/speakablePrayerText';
 import './BookletOutlineView.css';
 
 export default function BookletOutlineView({
@@ -72,7 +73,9 @@ export default function BookletOutlineView({
                   )}
                   <span className="booklet-outline-path__copy">
                     <span className="booklet-outline-path__label">Paso {index + 1}</span>
-                    <span className="booklet-outline-path__name">{step.title}</span>
+                    <span className="booklet-outline-path__name">
+                      {cleanPrayerDisplayTitle(step.title)}
+                    </span>
                   </span>
                 </button>
               </li>

@@ -6,6 +6,10 @@
 import { resolveBundledVoiceUrl, VOICE_TIER_BUNDLED, VOICE_TIER_USER } from '../data/bundledVoiceMap';
 import { buildSequence, BOOKLET_MYSTERY_IDS } from './bookletSequence';
 import { listAllRecordings } from './prayerRecordingStore';
+import {
+  cleanPrayerDisplayTitle,
+  getSpeakablePrayerText,
+} from './speakablePrayerText';
 
 /** Studio dropdown — rosary + short / mid devotions. */
 export const VOICE_STUDIO_OPTIONS = [
@@ -36,8 +40,8 @@ export function getBundledCoverage(mysteryType, options = {}) {
     return {
       slotIndex,
       prayerId: step.id,
-      title: step.title,
-      text: step.text,
+      title: cleanPrayerDisplayTitle(step.title),
+      text: getSpeakablePrayerText(step),
       hasBundled,
       tier: hasBundled ? VOICE_TIER_BUNDLED : null,
     };
@@ -101,8 +105,8 @@ export async function getVoiceCoverageMap(mysteryType) {
     return {
       slotIndex,
       prayerId: step.id,
-      title: step.title,
-      text: step.text,
+      title: cleanPrayerDisplayTitle(step.title),
+      text: getSpeakablePrayerText(step),
       hasUser,
       takeCount,
       hasBundled,

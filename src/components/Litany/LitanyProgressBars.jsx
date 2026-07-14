@@ -74,7 +74,7 @@ const LitanyProgressBars = ({
       <div className="litany-bars">
         <div className="litany-bar-section">
           <div className="bar-label">
-            <span>Progress</span>
+            <span>Avance</span>
             <span className="bar-count">
               ({Math.max(0, currentVerseIndex - currentSection.start)}/
               {currentSection.total})

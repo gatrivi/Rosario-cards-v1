@@ -196,7 +196,8 @@ function buildStationSteps(stations, pool, prefix, opening) {
     steps.push({
       id: `${prefix}_${st.n}`,
       title: `Estación ${st.n} — ${st.title}`,
-      text: `${st.title}\n\n${st.text}`,
+      // ponytail: title is UI-only; keep text speakable for TTS without re-reading the station name
+      text: st.text,
       img,
       imgCandidates: [img],
     });

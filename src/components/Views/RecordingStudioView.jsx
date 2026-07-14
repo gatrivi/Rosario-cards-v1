@@ -296,7 +296,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
       <header className="rs-header">
         <h1 className="rs-title">Estudio de voz</h1>
         <p className="rs-sub">
-          Tier S = tu grabación · Tier 3 = guía Piper (provisional). Elige fuentes abajo; mapa
+          Tier S = tu grabación · Tier 3 = guía EN (vacío por ahora). Elige fuentes abajo; mapa
           muestra qué falta.
         </p>
       </header>
@@ -316,7 +316,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
             checked={voicePrefs.useBundledVoice}
             onChange={() => togglePref('useBundledVoice')}
           />
-          Guía Piper (T3)
+          Guía T3 (EN)
         </label>
       </div>
 
@@ -434,7 +434,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                           row.hasUser
                             ? 'Tu voz (Tier S)'
                             : row.hasBundled
-                              ? 'Guía Piper (Tier 3)'
+                              ? 'Guía T3 (EN)'
                               : 'Sin audio'
                         }
                       >

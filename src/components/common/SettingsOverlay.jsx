@@ -131,7 +131,7 @@ export default function SettingsOverlay({
               />
             </label>
             <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
-              <span>Guía Piper (Tier 3)</span>
+              <span>Guía T3 (EN)</span>
               <input
                 type="checkbox"
                 checked={settings.useBundledVoice !== false}
@@ -139,7 +139,7 @@ export default function SettingsOverlay({
               />
             </label>
             <div style={{ color: '#666', fontSize: '0.7rem' }}>
-              Tier 3 es provisional. Subí o grabá Tier S en Estudio de voz (/voz).
+              Tier 3 = guía EN (cuando haya clips). Tier S = tu voz en Estudio (/voz).
             </div>
           </div>
 

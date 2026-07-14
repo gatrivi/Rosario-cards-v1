@@ -48,6 +48,7 @@ import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
+import { cleanPrayerDisplayTitle } from '../../utils/speakablePrayerText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
 import PrayerShareCard from '../common/PrayerShareCard';
@@ -120,7 +121,7 @@ function getBookletDisplayTitle(prayer) {
   if (!prayer) return '';
   if (prayer.id === 'DMO1') return 'Expiraste, Jesús';
   if (prayer.id === 'DMO2') return 'Sangre y Agua';
-  return prayer.title;
+  return cleanPrayerDisplayTitle(prayer.title);
 }
 
 

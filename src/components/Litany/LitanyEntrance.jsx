@@ -96,7 +96,7 @@ const LitanyEntrance = ({ onComplete, currentMystery, duration = 3000 }) => {
             textShadow: `0 0 20px ${colors.primary}, 0 0 40px ${colors.secondary}`,
           }}
         >
-          Litany of Loreto
+          Letanía de Loreto
         </h1>
         <p
           className="subtitle"
@@ -105,7 +105,7 @@ const LitanyEntrance = ({ onComplete, currentMystery, duration = 3000 }) => {
             textShadow: `0 0 10px ${colors.accent}`,
           }}
         >
-          Letanía Lauretana
+          Litania Lauretana
         </p>
       </div>
 

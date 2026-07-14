@@ -4,15 +4,15 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.57',
-  name: 'Voces Tier S / Tier 3',
+  version: '0.3.58',
+  name: 'Libro · Loreto + voz EN',
   CURRENT: [
-    'Voz: Tier S (tu grabación) + Tier 3 Piper (guía provisional)',
-    'Ángelus + Magnificat con voz guía T3; Estudio /voz muestra faltantes y permite subir audio',
+    'Letanía de Loreto: nombre y secciones en español; TTS no lee títulos de oración',
+    'Títulos de misterios sin códigos MG/MD/ML; guías Piper ES retiradas (prep. voz EN)',
   ],
   UPCOMING: [
-    'Más letanía Sangre (versos 10+) y rosario con guía T3',
-    'Versos de la Letanía de la Sangre (líder + respuestas)',
+    'Clips guía en inglés bajo /voice/en/',
+    'Versos Letanía Sangre / Loreto con voz guía',
     'Confirmación al borrar una toma de voz',
   ],
 };
