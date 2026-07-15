@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.60',
-  name: 'Auto-play voz EN',
+  version: '0.3.61',
+  name: 'Rezá por Argentina',
   CURRENT: [
-    'Liber ▶: 1× oración · 2× auto ≫ hasta el final (TTS en-US; sin títulos)',
-    'Estudio /voz: ritmo TTS + fuentes; siempre-on por paso desactivado',
+    'Rezá por Argentina: compromiso de un Rosario completo (5 décenas)',
+    'Compartir PNG + texto + enlace · Ya recé al completar · first-run honesto',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',

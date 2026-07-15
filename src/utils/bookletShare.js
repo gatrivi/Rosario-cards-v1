@@ -189,15 +189,33 @@ export async function captureShareCardPng(cardElement) {
 
 /**
  * Share PNG via Web Share API, else download, else return blob for preview.
+ * URL drawn on the PNG is not clickable — always put the real link in `text` (and `url` when supported).
  * @returns {'shared'|'downloaded'|'preview'}
  */
-export async function deliverSharePng(blob, { filename, title, text }) {
+export async function deliverSharePng(blob, { filename, title, text, url }) {
   const file = new File([blob], filename, { type: 'image/png' });
+  const shareText = [text, url].filter(Boolean).join('\n\n');
+  const canShareFiles =
+    typeof navigator !== 'undefined' &&
+    navigator.share &&
+    navigator.canShare?.({ files: [file] });
 
-  if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
+  if (canShareFiles) {
     try {
-      await navigator.share({ files: [file], title, text });
+      // Files + text (link inside text). Some UAs drop a separate `url` when files are present.
+      await navigator.share({ files: [file], title, text: shareText });
       return 'shared';
+    } catch (err) {
+      if (err?.name === 'AbortError') return 'preview';
+    }
+  }
+
+  // Fallback: share clickable link+text, then offer PNG download.
+  if (typeof navigator !== 'undefined' && navigator.share && (shareText || url)) {
+    try {
+      const payload = { title: title || 'Rosario Cards', text: shareText || text };
+      if (url) payload.url = url;
+      await navigator.share(payload);
     } catch (err) {
       if (err?.name === 'AbortError') return 'preview';
     }
@@ -205,15 +223,15 @@ export async function deliverSharePng(blob, { filename, title, text }) {
 
   if (typeof document !== 'undefined') {
     try {
-      const url = URL.createObjectURL(blob);
+      const objectUrl = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
-      anchor.href = url;
+      anchor.href = objectUrl;
       anchor.download = filename;
       anchor.rel = 'noopener';
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(objectUrl);
       return 'downloaded';
     } catch (_) {
       /* fall through to preview */

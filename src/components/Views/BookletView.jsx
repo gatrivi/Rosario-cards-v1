@@ -754,7 +754,10 @@ export default function BookletView({
       const outcome = await deliverSharePng(blob, {
         filename,
         title: displayPrayerTitle,
-        text: shareCardPayload.devotionTitle,
+        text: `${shareCardPayload.devotionTitle}${shareCardPayload.prayerTitle ? ` — ${shareCardPayload.prayerTitle}` : ''}`,
+        url: typeof window !== 'undefined'
+          ? `${window.location.origin}${window.location.pathname}`
+          : undefined,
       });
       if (outcome === 'preview') {
         setSharePreviewUrl(URL.createObjectURL(blob));

@@ -1,0 +1,132 @@
+.compromiso-share-card__wash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(116, 172, 223, 0.35), transparent 55%),
+    linear-gradient(165deg, #0a1628 0%, #0d0a1a 45%, #1a0a0a 100%);
+}
+
+.compromiso-share-card--done .compromiso-share-card__wash {
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(212, 175, 55, 0.28), transparent 50%),
+    linear-gradient(165deg, #0d0a1a 0%, #142018 55%, #0a1628 100%);
+}
+
+.compromiso-share-card__url {
+  color: rgba(248, 244, 230, 0.4);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  margin: 0.65rem 0 0;
+  text-align: center;
+  word-break: break-all;
+  font-family: system-ui, sans-serif;
+}
+
+.compromiso-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.compromiso-sheet__card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  padding: 28px 22px 22px;
+  border-radius: 20px;
+  border: 1px solid rgba(116, 172, 223, 0.55);
+  background: linear-gradient(160deg, #0c1828, #120c14 70%);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+  text-align: center;
+  color: #e8e4d8;
+}
+
+.compromiso-sheet__card--done {
+  border-color: rgba(212, 175, 55, 0.65);
+}
+
+.compromiso-sheet__eyebrow {
+  margin: 0 0 8px;
+  color: #74acdf;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.compromiso-sheet__card--done .compromiso-sheet__eyebrow {
+  color: #d4af37;
+}
+
+.compromiso-sheet__title {
+  margin: 0 0 12px;
+  color: #f8f4e6;
+  font-size: 1.65rem;
+  font-weight: normal;
+  letter-spacing: 0.02em;
+}
+
+.compromiso-sheet__body {
+  margin: 0 0 18px;
+  color: rgba(232, 228, 216, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.compromiso-sheet__hint {
+  margin: 0 0 20px;
+  color: rgba(116, 172, 223, 0.85);
+  font-size: 0.78rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.compromiso-sheet__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compromiso-sheet__btn {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.compromiso-sheet__btn--primary {
+  background: linear-gradient(90deg, #74acdf, #f6f6f6);
+  color: #0a1628;
+}
+
+.compromiso-sheet__btn--gold {
+  background: linear-gradient(90deg, #d4af37, #c5a028);
+  color: #111;
+}
+
+.compromiso-sheet__btn--ghost {
+  background: transparent;
+  color: rgba(232, 228, 216, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-weight: 600;
+}
+
+.compromiso-sheet__btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.compromiso-offscreen {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
+}

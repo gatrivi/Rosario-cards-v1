@@ -49,13 +49,22 @@ import {
   resolveRosaryMystery,
   isValidBookletMystery,
   isValidRosaryMystery,
+  buildSequence,
 } from '../../utils/bookletSequence';
+import { getBookletStepContext } from '../../utils/bookletProgress';
+import {
+  saveCompromiso,
+  tryFulfillCompromiso,
+  isCompromisoCampaignActive,
+  hasActiveCompromiso,
+} from '../../utils/compromisoStore';
+import CompromisoSheet from '../compromiso/CompromisoSheet';
 import { SAGRADO_CORAZON_ADORACION_ID } from '../../data/sagradoCorazonAdoracionData';
 import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.60';
+const APP_VERSION = '0.3.61';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -70,14 +79,17 @@ export default function AppShell() {
   const vistaActiva = getViewIdFromPath(location.pathname);
   const initializedFromUrl = useRef(false);
 
-  const INTRO_VERSION = 'v1.0'; // Change this to show intro again on major updates
+  const INTRO_VERSION = 'v2.0'; // Honest first-run + compromiso CTAs
   const [showIntro, setShowIntro] = useState(false);
+  const [showCompromiso, setShowCompromiso] = useState(false);
+  const [compromisoMode, setCompromisoMode] = useState('commit'); // commit | done
   const [showSync, setShowSync] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const compromisoUrlHandled = useRef(false);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -266,6 +278,37 @@ export default function AppShell() {
     }
   }, [searchParams]);
 
+  // ?compromiso=1 → CTA → Libro (today's mystery after commit)
+  useEffect(() => {
+    if (compromisoUrlHandled.current) return;
+    const flag = searchParams.get('compromiso');
+    if (flag !== '1' && flag !== 'true') return;
+    compromisoUrlHandled.current = true;
+    if (isCompromisoCampaignActive()) {
+      setCompromisoMode('commit');
+      setShowCompromiso(true);
+      setShowIntro(false);
+      navigate('/libro', { replace: true });
+    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('compromiso');
+      return next;
+    }, { replace: true });
+  }, [searchParams, navigate, setSearchParams]);
+
+  // Honest first-run (skip if compromiso deep-link already open)
+  useEffect(() => {
+    try {
+      if (compromisoUrlHandled.current) return;
+      if (searchParams.get('compromiso') === '1' || searchParams.get('compromiso') === 'true') return;
+      if (!localStorage.getItem(`rosario_intro_${INTRO_VERSION}`)) {
+        setShowIntro(true);
+      }
+    } catch (_) { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
+  }, []);
+
   useEffect(() => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
@@ -279,6 +322,7 @@ export default function AppShell() {
       } else {
         next.delete('dia');
       }
+      next.delete('compromiso');
       if (prev.toString() === next.toString()) return prev;
       return next;
     }, { replace: true });
@@ -329,7 +373,17 @@ export default function AppShell() {
       localStorage.setItem(ROSARY_INDEX_KEY, String(newIndex));
     } catch (_) { /* ignore */ }
     syncToCloud({ bookletIndex: newIndex, todayDate: new Date().toDateString() });
-  }, [syncToCloud]);
+
+    if (hasActiveCompromiso() && isValidRosaryMystery(misterioActual)) {
+      const seq = buildSequence(misterioActual);
+      const decade = getBookletStepContext(seq, newIndex, seq.length)?.mysteryDecade;
+      const done = tryFulfillCompromiso(seq, newIndex, misterioActual, decade);
+      if (done) {
+        setCompromisoMode('done');
+        setShowCompromiso(true);
+      }
+    }
+  }, [syncToCloud, misterioActual]);
 
   const handleRosaryProgreso = React.useCallback((newIndex) => {
     setRosaryPrayerIndex(newIndex);
@@ -337,7 +391,17 @@ export default function AppShell() {
       localStorage.setItem(ROSARY_ONLY_INDEX_KEY, String(newIndex));
     } catch (_) { /* ignore */ }
     syncToCloud({ rosaryIndex: newIndex, todayDate: new Date().toDateString() });
-  }, [syncToCloud]);
+
+    if (hasActiveCompromiso() && isValidRosaryMystery(rosaryMystery)) {
+      const seq = buildSequence(rosaryMystery);
+      const decade = getBookletStepContext(seq, newIndex, seq.length)?.mysteryDecade;
+      const done = tryFulfillCompromiso(seq, newIndex, rosaryMystery, decade);
+      if (done) {
+        setCompromisoMode('done');
+        setShowCompromiso(true);
+      }
+    }
+  }, [syncToCloud, rosaryMystery]);
 
   const handleMysteryChange = React.useCallback((mystery) => {
     devLog('mystery-change', { mystery, from: misterioActual, view: vistaActiva });
@@ -355,6 +419,32 @@ export default function AppShell() {
     } catch (_) { /* ignore */ }
     syncToCloud({ bookletMystery: mystery, bookletIndex: 0, todayDate: new Date().toDateString() });
   }, [syncToCloud, misterioActual, vistaActiva]);
+
+  const startLibroHoy = React.useCallback((mystery) => {
+    const m = mystery || getDefaultMystery();
+    setMisterioActual(m);
+    setCurrentPrayerIndex(0);
+    if (isValidRosaryMystery(m)) {
+      setRosaryMystery(m);
+      try {
+        localStorage.setItem(ROSARY_ONLY_MYSTERY_KEY, m);
+      } catch (_) { /* ignore */ }
+    }
+    try {
+      localStorage.setItem(ROSARY_MYSTERY_KEY, m);
+      localStorage.setItem(ROSARY_INDEX_KEY, '0');
+    } catch (_) { /* ignore */ }
+    syncToCloud({ bookletMystery: m, bookletIndex: 0, todayDate: new Date().toDateString() });
+    navigate('/libro');
+  }, [navigate, syncToCloud]);
+
+  const handleCompromisoCommit = React.useCallback(() => {
+    const mystery = getDefaultMystery();
+    saveCompromiso({ mysteryId: mystery });
+    startLibroHoy(mystery);
+    setShowCompromiso(false);
+    dismissIntro();
+  }, [startLibroHoy]);
 
   const renderizarVista = () => {
     switch (vistaActiva) {
@@ -659,7 +749,7 @@ export default function AppShell() {
         </div>
       )}
 
-      {/* WELCOME INTRO */}
+      {/* WELCOME INTRO — honest first-run */}
       {showIntro && (
         <div className="modal-overlay" style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -667,53 +757,75 @@ export default function AppShell() {
         }} onClick={dismissIntro}>
           <div className="modal-content" style={{
             background: 'linear-gradient(145deg, #0d0d0d, #1a0a0a)', border: '1px solid #D4AF37',
-            borderRadius: '24px', padding: '40px 30px', maxWidth: '420px', width: '100%', textAlign: 'center',
+            borderRadius: '24px', padding: '36px 26px', maxWidth: '420px', width: '100%', textAlign: 'center',
             boxShadow: '0 30px 60px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)',
             position: 'relative', overflow: 'hidden'
           }} onClick={e => e.stopPropagation()}>
-            
-            {/* Subtle glow background */}
-            <div style={{ position: 'absolute', top: '-50px', left: '50%', transform: 'translateX(-50%)', width: '200px', height: '100px', background: 'rgba(212,175,55,0.1)', filter: 'blur(40px)', borderRadius: '50%' }} />
-
-            <h1 style={{ color: '#D4AF37', margin: '0 0 10px', fontSize: '2.2rem', letterSpacing: '1px' }}>Rosario Cards</h1>
-            <p style={{ color: '#ccc', fontSize: '1rem', lineHeight: '1.6', margin: '0 0 30px', fontStyle: 'italic', opacity: 0.8 }}>
-              «Herramienta devocional para la meditación profunda»
+            <h1 style={{ color: '#D4AF37', margin: '0 0 10px', fontSize: '2rem', letterSpacing: '1px' }}>Rosario Cards</h1>
+            <p style={{ color: '#ccc', fontSize: '0.95rem', lineHeight: '1.55', margin: '0 0 22px' }}>
+              El Libro te guía paso a paso en el Rosario de hoy. Un Rosario completo son cinco misterios (décenas).
             </p>
-            
-            <div style={{ 
-              textAlign: 'left', color: '#aaa', fontSize: '0.9rem', marginBottom: '35px', 
-              display: 'flex', flexDirection: 'column', gap: '15px',
-              background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', border: '1px solid rgba(212,175,55,0.1)'
-            }}>
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <span style={{ fontSize: '1.3rem' }}>🚶</span>
-                <div><strong>El Camino:</strong> Visualiza tu recorrido espiritual paso a paso.</div>
-              </div>
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <span style={{ fontSize: '1.3rem' }}>🌹</span>
-                <div><strong>Rezar:</strong> Un espacio minimalista para concentrarte en el misterio.</div>
-              </div>
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <span style={{ fontSize: '1.3rem' }}>🪴</span>
-                <div><strong>El Jardín:</strong> Tu disciplina florece en rosas únicas coleccionables.</div>
-              </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  dismissIntro();
+                  startLibroHoy();
+                }}
+                style={{
+                  width: '100%', padding: '16px', background: 'linear-gradient(90deg, #D4AF37, #C5A028)', color: '#000',
+                  border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.05rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Rezar el Rosario de hoy
+              </button>
+              {isCompromisoCampaignActive() ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    dismissIntro();
+                    setCompromisoMode('commit');
+                    setShowCompromiso(true);
+                  }}
+                  style={{
+                    width: '100%', padding: '14px', background: 'linear-gradient(90deg, #74acdf, #f6f6f6)', color: '#0a1628',
+                    border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Rezá por Argentina
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={dismissIntro}
+                style={{
+                  width: '100%', padding: '12px', background: 'transparent', color: '#888',
+                  border: '1px solid #333', borderRadius: '12px', fontSize: '0.9rem', cursor: 'pointer',
+                }}
+              >
+                Más tarde
+              </button>
             </div>
-            
-            <button 
-              onClick={dismissIntro}
-              style={{
-                width: '100%', padding: '16px', background: 'linear-gradient(90deg, #D4AF37, #C5A028)', color: '#000',
-                border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem',
-                cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,0,0,0.3)', transition: 'all 0.2s'
-              }}
-            >
-              Comenzar Peregrinación
-            </button>
-            <p style={{ fontSize: '0.75rem', color: '#555', margin: '20px 0 0 0' }}>
-              Podrás ver esta guía luego tocando los íconos (ℹ️).
+            <p style={{ fontSize: '0.72rem', color: '#555', margin: '18px 0 0 0' }}>
+              Ayuda (arriba) vuelve a abrir esta guía.
             </p>
           </div>
         </div>
+      )}
+
+      {showCompromiso && (
+        <CompromisoSheet
+          mode={compromisoMode}
+          onCommit={handleCompromisoCommit}
+          onDismiss={() => setShowCompromiso(false)}
+          onStartPray={() => {
+            setShowCompromiso(false);
+            navigate('/libro');
+          }}
+        />
       )}
 
     </div>
