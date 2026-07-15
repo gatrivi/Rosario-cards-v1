@@ -86,22 +86,13 @@ export default function SettingsOverlay({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          {/* Virtual Rosary Toggle */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ color: '#fff', fontSize: '1rem' }}>Rosario Virtual</div>
-              <div style={{ color: '#666', fontSize: '0.75rem' }}>Interactúa con el rosario físico (Beta)</div>
-            </div>
-            <label className="switch">
-              <input 
-                type="checkbox" 
-                checked={settings.virtualRosaryEnabled}
-                onChange={(e) => onUpdateSettings({ ...settings, virtualRosaryEnabled: e.target.checked })}
-              />
-              <span className="slider round"></span>
-            </label>
+
+          <div style={{ color: '#D4AF37', fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Principiante
           </div>
+          <p style={{ color: '#888', fontSize: '0.78rem', margin: '-8px 0 0', lineHeight: 1.4 }}>
+            Libro = texto · Rosario = cuentas · Rosa = meditación. Diario y Rosedal están tu compromiso del día.
+          </p>
 
           {/* Sound Toggle (Mirroring global state) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -119,28 +110,8 @@ export default function SettingsOverlay({
             </label>
           </div>
 
-          {/* Voice sources: Tier S vs Tier 3 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ color: '#fff', fontSize: '1rem' }}>Voces al rezar</div>
-            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
-              <span>Tu voz (Tier S)</span>
-              <input
-                type="checkbox"
-                checked={settings.useUserVoice !== false}
-                onChange={(e) => onUpdateSettings({ ...settings, useUserVoice: e.target.checked })}
-              />
-            </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
-              <span>Guía T3 (EN)</span>
-              <input
-                type="checkbox"
-                checked={settings.useBundledVoice !== false}
-                onChange={(e) => onUpdateSettings({ ...settings, useBundledVoice: e.target.checked })}
-              />
-            </label>
-            <div style={{ color: '#666', fontSize: '0.7rem' }}>
-              Liber ▶: una vez = oración · otra = auto ≫. Tier 3 / TTS EN en Estudio (/voz).
-            </div>
+          <div style={{ color: '#D4AF37', fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '4px' }}>
+            Oración
           </div>
 
           {/* Divine Mercy optional opening */}
@@ -273,7 +244,7 @@ export default function SettingsOverlay({
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(212, 175, 55, 0.08)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
               <div>
-                <div style={{ color: '#D4AF37', fontSize: '1rem', fontWeight: 'bold' }}>👵 Lectura Fácil</div>
+                <div style={{ color: '#D4AF37', fontSize: '1rem', fontWeight: 'bold' }}>Lectura Fácil</div>
                 <div style={{ color: '#aaa', fontSize: '0.75rem' }}>Letras grandes y toques simples</div>
               </div>
               <label className="switch">
@@ -351,9 +322,9 @@ export default function SettingsOverlay({
             <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '12px' }}>Ritmo de Meditación</div>
             <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '5px', borderRadius: '12px' }}>
               {[
-                { id: 'oro', label: '🌕 Oro', desc: 'Fluido' },
-                { id: 'incienso', label: '🌫️ Incienso', desc: 'Normal' },
-                { id: 'mirra', label: '🌑 Mirra', desc: 'Profundo' }
+                { id: 'oro', label: 'Oro', desc: 'Fluido' },
+                { id: 'incienso', label: 'Incienso', desc: 'Normal' },
+                { id: 'mirra', label: 'Mirra', desc: 'Profundo' }
               ].map(ritmo => (
                 <button
                   key={ritmo.id}
@@ -370,6 +341,34 @@ export default function SettingsOverlay({
                   <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>{ritmo.desc}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div style={{ color: '#D4AF37', fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '8px' }}>
+            Avanzado
+          </div>
+
+          {/* Voice sources */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ color: '#fff', fontSize: '1rem' }}>Voces al rezar</div>
+            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
+              <span>Tu voz</span>
+              <input
+                type="checkbox"
+                checked={settings.useUserVoice !== false}
+                onChange={(e) => onUpdateSettings({ ...settings, useUserVoice: e.target.checked })}
+              />
+            </label>
+            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
+              <span>Guía EN (TTS)</span>
+              <input
+                type="checkbox"
+                checked={settings.useBundledVoice !== false}
+                onChange={(e) => onUpdateSettings({ ...settings, useBundledVoice: e.target.checked })}
+              />
+            </label>
+            <div style={{ color: '#666', fontSize: '0.7rem' }}>
+              Liber ▶: una vez = oración · otra = auto ≫. Ritmo TTS en Más → Voz.
             </div>
           </div>
 

@@ -64,7 +64,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.61';
+const APP_VERSION = '0.3.62';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -409,8 +409,10 @@ export default function AppShell() {
     setCurrentPrayerIndex(0);
     if (isValidRosaryMystery(mystery)) {
       setRosaryMystery(mystery);
+      setRosaryPrayerIndex(0);
       try {
         localStorage.setItem(ROSARY_ONLY_MYSTERY_KEY, mystery);
+        localStorage.setItem(ROSARY_ONLY_INDEX_KEY, '0');
       } catch (_) { /* ignore */ }
     }
     try {
@@ -501,11 +503,16 @@ export default function AppShell() {
       );
       case 'jardin': return <JardinDeRosasView />;
       case 'tracker': return <DailyTracker />;
-      case 'rosary': return (
+      case 'rosary': {
+        const sharedClassic = isValidRosaryMystery(misterioActual);
+        const m = sharedClassic ? misterioActual : rosaryMystery;
+        const idx = sharedClassic ? currentPrayerIndex : rosaryPrayerIndex;
+        const onProg = sharedClassic ? handleUpdateProgreso : handleRosaryProgreso;
+        return (
         <RosarioVirtualView 
-          currentPrayerIndex={rosaryPrayerIndex}
-          misterioActual={rosaryMystery}
-          onUpdateProgreso={handleRosaryProgreso}
+          currentPrayerIndex={idx}
+          misterioActual={m}
+          onUpdateProgreso={onProg}
           soundEnabled={settings.soundEnabled}
           isLeftHanded={settings.isLeftHanded}
           simpleMode={settings.simpleMode}
@@ -522,19 +529,26 @@ export default function AppShell() {
             popRoseData();
           }}
         />
-      );
-      case 'rose': return (
+        );
+      }
+      case 'rose': {
+        const sharedClassic = isValidRosaryMystery(misterioActual);
+        const m = sharedClassic ? misterioActual : rosaryMystery;
+        const idx = sharedClassic ? currentPrayerIndex : rosaryPrayerIndex;
+        const onProg = sharedClassic ? handleUpdateProgreso : handleRosaryProgreso;
+        return (
         <RoseView 
-          currentPrayerIndex={rosaryPrayerIndex}
-          misterioActual={rosaryMystery}
-          onUpdateProgreso={handleRosaryProgreso}
+          currentPrayerIndex={idx}
+          misterioActual={m}
+          onUpdateProgreso={onProg}
           onBack={() => navigate(getPathForView('macetones'))}
           soundEnabled={settings.soundEnabled}
           onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
           meditationRitmo={settings.meditationRitmo}
           simpleMode={settings.simpleMode}
         />
-      );
+        );
+      }
       default: return (
         <PeregrinacionView
           onSelectLevel={() => navigate(getPathForView('tracker'))}

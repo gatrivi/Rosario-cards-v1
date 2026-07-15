@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.61',
-  name: 'Rezá por Argentina',
+  version: '0.3.62',
+  name: 'Libro · Rosario · Más',
   CURRENT: [
-    'Rezá por Argentina: compromiso de un Rosario completo (5 décenas)',
-    'Compartir PNG + texto + enlace · Ya recé al completar · first-run honesto',
+    'Nav clara: Libro · Rosario · Más (Diario/Rosedal/Camino/Rosa/Voz)',
+    'Misterios Gozosos… · Ajustes por secciones · Rezá por Argentina',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',

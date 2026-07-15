@@ -211,6 +211,16 @@ export function IconStepNext({ size = 24, ...props }) {
   );
 }
 
+export function IconMas({ size = 24, ...props }) {
+  return (
+    <IconBase size={size} {...props}>
+      <circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="18" r="1.5" fill="currentColor" stroke="none" />
+    </IconBase>
+  );
+}
+
 export const NAV_ICONS = {
   stats: IconStats,
   tracker: IconPlan,
@@ -219,6 +229,7 @@ export const NAV_ICONS = {
   rose: IconRosa,
   rosary: IconRosario,
   voz: IconVoz,
+  mas: IconMas,
   stepPrev: IconStepPrev,
   stepNext: IconStepNext,
   devociones: IconDevociones,

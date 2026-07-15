@@ -36,6 +36,7 @@ export default function DevotionsShelf({
   open: openProp,
   onOpenChange,
   externalToggle = false,
+  onReturnToRosary,
 }) {
   const [openInternal, setOpenInternal] = useState(false);
   const controlled = openProp !== undefined;
@@ -169,6 +170,18 @@ export default function DevotionsShelf({
           <p className="devotions-shelf__heading">Próximas</p>
           <div className="devotions-shelf__row">{proximas}</div>
         </>
+      ) : null}
+      {onReturnToRosary ? (
+        <button
+          type="button"
+          className="devotions-shelf__return"
+          onClick={() => {
+            setShelfOpen(false);
+            onReturnToRosary();
+          }}
+        >
+          Volver al Rosario
+        </button>
       ) : null}
     </div>
   );

@@ -45,7 +45,7 @@ export default function MacetonView({ onSelectMaceton, onViewGarden }) {
       backgroundColor: '#0A0A0A', color: '#fff', display: 'flex', flexDirection: 'column'
     }}>
       <div style={{ textAlign: 'center', marginBottom: '25px', marginTop: '10px' }}>
-        <h2 style={{ color: '#D4AF37', margin: '0 0 5px', fontSize: '1.4rem', fontFamily: 'serif' }}>El Rosedal Diario</h2>
+        <h2 style={{ color: '#D4AF37', margin: '0 0 5px', fontSize: '1.4rem', fontFamily: 'serif' }}>Rosedal</h2>
         <p style={{ color: '#888', fontSize: '0.85rem' }}>
           Hoy: <span style={{ color: '#D4AF37', fontWeight: 'bold' }}>{Math.floor(dailyAveMarias / 50)} / {objetivoMacetonesHoy}</span> Rosarios cultivados
         </p>

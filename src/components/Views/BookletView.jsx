@@ -30,7 +30,8 @@ import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
-import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode } from '../../utils/bookletSequence';
+import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery } from '../../utils/bookletSequence';
+import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { imagePath as registryImage } from '../../data/imageRegistry';
 import {
   ANGELUS_ID,
@@ -48,7 +49,6 @@ import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
-import { upcomingDevotionThumbs } from '../../data/historicDevotionsCatalog';
 import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import {
@@ -99,22 +99,22 @@ function prefersReducedMotion() {
 const MYSTERY_OPTIONS = [
   {
     id: 'gozosos',
-    label: 'Vía Gaudiosa',
+    label: 'Gozosos',
     img: '/gallery-images/misterios/modooscuro/misteriogozo0.webp',
   },
   {
     id: 'dolorosos',
-    label: 'Vía Dolorosa',
+    label: 'Dolorosos',
     img: '/gallery-images/misterios/modooscuro/misteriodolor0.jpg',
   },
   {
     id: 'gloriosos',
-    label: 'Vía Gloriosa',
+    label: 'Gloriosos',
     img: '/gallery-images/misterios/modooscuro/misteriogloria0.jpg',
   },
   {
     id: 'luminosos',
-    label: 'Vía Luminosa',
+    label: 'Luminosos',
     img: '/gallery-images/misterios/modooscuro/misterioLUZ0.webp',
   },
 ];
@@ -1200,18 +1200,11 @@ export default function BookletView({
             </ShelfItem>
           </>
         }
-        proximas={
-          <>
-            {upcomingDevotionThumbs().map((d) => (
-              <ShelfItem key={d.id} label={d.label} soon>
-                <MercyWindowThumb
-                  soon
-                  title={d.note ? `${d.label} — ${d.note}` : d.label}
-                  img={d.img}
-                />
-              </ShelfItem>
-            ))}
-          </>
+        proximas={null}
+        onReturnToRosary={
+          !isValidRosaryMystery(misterioActual)
+            ? () => onMysteryChange?.(getDefaultMystery())
+            : undefined
         }
       />
     </div>

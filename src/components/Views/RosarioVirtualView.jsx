@@ -448,10 +448,12 @@ export default function RosarioVirtualView({
 
       {showHint && guided && (
         <div className="rosary-hint">
-          <div className="rosary-hint__title">Modo Guiado</div>
+          <div className="rosary-hint__title">Rosario = cuentas</div>
           Mantén presionado para rezar • Desliza ← → para avanzar
           <br />
-          <span style={{ opacity: 0.6, fontSize: '0.75rem' }}>Dibuja ✝ para reunir las cuentas</span>
+          <span style={{ opacity: 0.6, fontSize: '0.75rem' }}>
+            Libro = texto · Rosa = meditación · Dibuja ✝ para reunir cuentas
+          </span>
         </div>
       )}
     </div>

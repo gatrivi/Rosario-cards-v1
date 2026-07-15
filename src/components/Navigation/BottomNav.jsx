@@ -51,6 +51,16 @@ function emitDevotionsToggle() {
   window.dispatchEvent(new CustomEvent('rosario-devotions-toggle'));
 }
 
+const MAS_DESTINATIONS = [
+  { id: 'tracker', texto: 'Diario', hint: 'Compromiso diario / Rosedal' },
+  { id: 'macetones', texto: 'Rosedal', hint: 'Macetones del día' },
+  { id: 'camino', texto: 'Camino', hint: 'Peregrinación' },
+  { id: 'rose', texto: 'Rosa', hint: 'Meditación (mantener)' },
+  { id: 'voz', texto: 'Voz', hint: 'Estudio de grabación' },
+];
+
+const MAS_ACTIVE = new Set(['tracker', 'macetones', 'camino', 'rose', 'voz', 'jardin', 'monk']);
+
 export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +68,7 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   const bookletMode = vistaActiva === 'booklet';
   const [devotionsOpen, setDevotionsOpen] = useState(false);
   const [devotionsActive, setDevotionsActive] = useState(false);
+  const [masOpen, setMasOpen] = useState(false);
 
   useEffect(() => {
     if (!bookletMode) {
@@ -73,20 +84,15 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
     return () => window.removeEventListener('rosario-devotions-state', onState);
   }, [bookletMode]);
 
-  const navItems = [
-    { id: 'tracker', texto: 'Plan' },
-    { id: 'camino', texto: 'Camino' },
-    { id: 'booklet', texto: 'Libro' },
-    { id: 'rose', texto: 'Rosa' },
-    { id: 'rosary', texto: 'Rosario' },
-    { id: 'voz', texto: 'Voz' },
-  ];
+  useEffect(() => {
+    setMasOpen(false);
+  }, [vistaActiva]);
 
-  const orderedItems = isLeftHanded ? [...navItems].reverse() : navItems;
-  // Libro: step icons + Devociones tooltip + core destinations.
-  const visibleItems = bookletMode
-    ? orderedItems.filter((i) => ['booklet', 'rose', 'voz'].includes(i.id))
-    : orderedItems;
+  const coreItems = [
+    { id: 'booklet', texto: 'Libro' },
+    { id: 'rosary', texto: 'Rosario' },
+  ];
+  const orderedCore = isLeftHanded ? [...coreItems].reverse() : coreItems;
 
   const stepPrev = (
     <NavButton
@@ -125,21 +131,69 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
     />
   ) : null;
 
+  const masActivo = MAS_ACTIVE.has(vistaActiva);
+
   return (
-    <nav className="bottom-nav glass-footer" aria-label="Navegación principal">
-      {bookletMode && (isLeftHanded ? stepNext : stepPrev)}
-      {visibleItems.map((item) => (
+    <>
+      {masOpen ? (
+        <div
+          className="bottom-nav__mas-scrim"
+          role="presentation"
+          onClick={() => setMasOpen(false)}
+        >
+          <div
+            className="bottom-nav__mas-sheet"
+            role="menu"
+            aria-label="Más opciones"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="bottom-nav__mas-map">
+              Libro = texto · Rosario = cuentas · Rosa = meditación
+            </p>
+            {MAS_DESTINATIONS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="menuitem"
+                className={`bottom-nav__mas-item${vistaActiva === item.id ? ' bottom-nav__mas-item--active' : ''}`}
+                onClick={() => {
+                  setMasOpen(false);
+                  navigate(getPathForView(item.id));
+                }}
+              >
+                <span className="bottom-nav__mas-item-title">{item.texto}</span>
+                <span className="bottom-nav__mas-item-hint">{item.hint}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <nav className="bottom-nav glass-footer" aria-label="Navegación principal">
+        {bookletMode && (isLeftHanded ? stepNext : stepPrev)}
+        {orderedCore.map((item) => (
+          <NavButton
+            key={item.id}
+            iconId={item.id}
+            texto={item.texto}
+            activo={vistaActiva === item.id}
+            onClick={() => navigate(getPathForView(item.id))}
+            simpleMode={simpleMode}
+          />
+        ))}
         <NavButton
-          key={item.id}
-          iconId={item.id}
-          texto={item.texto}
-          activo={vistaActiva === item.id}
-          onClick={() => navigate(getPathForView(item.id))}
+          key="mas"
+          iconId="mas"
+          texto="Más"
+          activo={masActivo || masOpen}
+          ariaExpanded={masOpen}
+          onClick={() => setMasOpen((o) => !o)}
           simpleMode={simpleMode}
+          dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Rosa, Voz' }}
         />
-      ))}
-      {devotionsBtn}
-      {bookletMode && (isLeftHanded ? stepPrev : stepNext)}
-    </nav>
+        {devotionsBtn}
+        {bookletMode && (isLeftHanded ? stepPrev : stepNext)}
+      </nav>
+    </>
   );
 }

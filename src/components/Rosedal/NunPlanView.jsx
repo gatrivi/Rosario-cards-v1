@@ -27,9 +27,9 @@ export default function NunPlanView() {
   return (
     <div className="nun-plan">
       <header className="nun-plan__header">
-        <h1 className="nun-plan__title">Plan de la Hermana</h1>
+        <h1 className="nun-plan__title">Diario</h1>
         <p className="nun-plan__subtitle">
-          Elige tu ritmo — de una semilla de oración hasta la entrega de Padre Pío
+          Tu compromiso del día — el Rosedal guarda lo rezado.
         </p>
       </header>
 
