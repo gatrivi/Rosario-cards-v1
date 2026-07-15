@@ -19,7 +19,7 @@ import {
   resolveLitanyVerseImage,
   getPrayerImageCandidates,
 } from '../../utils/prayerImages';
-import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
+import { getLitanyVerse, isLitanyPrayer, formatLitanyLine } from '../../utils/litanyHelpers';
 import {
   getPrayerVerseCount,
   getPrayerVerseText,
@@ -49,9 +49,14 @@ import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { resolveDisplayText } from '../../utils/bookletDisplayText';
 import { upcomingDevotionThumbs } from '../../data/historicDevotionsCatalog';
-import { cleanPrayerDisplayTitle } from '../../utils/speakablePrayerText';
+import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
-import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
+import {
+  playStepVoice,
+  stopStepVoice,
+  nextVoiceMode,
+  VOICE_MODES,
+} from '../../utils/prayerVoicePlayback';
 import PrayerShareCard from '../common/PrayerShareCard';
 import PrayerSharePreviewModal from '../common/PrayerSharePreviewModal';
 import BookletOutlineView from './BookletOutlineView';
@@ -211,13 +216,12 @@ export default function BookletView({
   const [sharePreviewOpen, setSharePreviewOpen] = useState(false);
   const [sharePreviewUrl, setSharePreviewUrl] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(VOICE_MODES.OFF);
+  const [voicePlaying, setVoicePlaying] = useState(false);
+  const voiceModeRef = useRef(VOICE_MODES.OFF);
+  const canAdvanceVoiceRef = useRef(false);
 
-  usePrayerVoiceAutoplay({
-    enabled: soundEnabled && !isTransitioning,
-    mystery: misterioActual,
-    sequenceIndex: displayIndex,
-    prayerId: activePrayer?.id,
-  });
+  // Always-on step autoplay removed — Liber ▶ owns once/auto (see prayerVoicePlayback).
 
   const isLitany = isLitanyPrayer(activePrayer);
   const isPerVersePrayer = perVersePrayerImages && supportsPerVerseImages(activePrayer?.id);
@@ -478,6 +482,81 @@ export default function BookletView({
     }
     if (displayIndex < total - 1) navigateTo(displayIndex + 1);
   }, [hasInnerVerses, innerVerseIndex, innerVerseTotal, bumpInnerVerse, navigateTo, displayIndex, total]);
+
+  voiceModeRef.current = voiceMode;
+  canAdvanceVoiceRef.current =
+    (hasInnerVerses && innerVerseIndex < innerVerseTotal - 1) || displayIndex < total - 1;
+
+  const speakableText = useMemo(() => {
+    if (isLitany && litanyVerse) return formatLitanyLine(litanyVerse);
+    if (isPerVersePrayer) {
+      return getPrayerVerseText(activePrayer?.id, prayerVerseIndex) || '';
+    }
+    return getSpeakablePrayerText(activePrayer);
+  }, [isLitany, litanyVerse, isPerVersePrayer, activePrayer, prayerVerseIndex]);
+
+  const voiceStepKey = `${misterioActual}:${displayIndex}:${innerVerseIndex}:${activePrayer?.id || ''}`;
+
+  useEffect(() => {
+    voiceModeRef.current = VOICE_MODES.OFF;
+    setVoiceMode(VOICE_MODES.OFF);
+    setVoicePlaying(false);
+    stopStepVoice();
+  }, [misterioActual]);
+
+  useEffect(() => {
+    if (!soundEnabled || voiceMode === VOICE_MODES.OFF || isTransitioning) {
+      if (voiceMode === VOICE_MODES.OFF) {
+        stopStepVoice();
+        setVoicePlaying(false);
+      }
+      return undefined;
+    }
+
+    let cancelled = false;
+    setVoicePlaying(true);
+    (async () => {
+      const result = await playStepVoice({
+        text: speakableText,
+        prayerId: activePrayer?.id,
+        mystery: misterioActual,
+        sequenceIndex: displayIndex,
+      });
+      if (cancelled) return;
+      setVoicePlaying(false);
+      if (result.cancelled || !result.ended) return;
+      const mode = voiceModeRef.current;
+      if (mode === VOICE_MODES.ONCE) {
+        setVoiceMode(VOICE_MODES.OFF);
+        return;
+      }
+      if (mode === VOICE_MODES.AUTO) {
+        if (canAdvanceVoiceRef.current) goNext();
+        else setVoiceMode(VOICE_MODES.OFF);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      stopStepVoice();
+    };
+    // ponytail: voiceMode===off gates; once→auto must not restart mid-utterance
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceStepKey, voiceMode === VOICE_MODES.OFF, soundEnabled, isTransitioning, speakableText]);
+
+  const handleVoiceControlTap = useCallback(() => {
+    if (!soundEnabled) return;
+    const next = nextVoiceMode(voiceModeRef.current, 'tap');
+    if (next === VOICE_MODES.OFF) {
+      stopStepVoice();
+      setVoicePlaying(false);
+    }
+    setVoiceMode(next);
+  }, [soundEnabled]);
+
+  useEffect(() => {
+    return () => stopStepVoice();
+  }, []);
 
   useEffect(() => {
     const handleKey = (event) => {
@@ -917,6 +996,10 @@ export default function BookletView({
             simpleMode={simpleMode}
             placement="title"
             isLeftHanded={isLeftHanded}
+            voiceControlEnabled
+            voiceMode={voiceMode}
+            voicePlaying={voicePlaying}
+            onVoiceControlTap={handleVoiceControlTap}
           >
             <h1
               className={`booklet-title${isAveMaria || isMercyPassion ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' || isMercyDecade ? ' booklet-title--mystery' : ''}`}

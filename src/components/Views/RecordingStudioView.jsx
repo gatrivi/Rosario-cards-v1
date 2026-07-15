@@ -296,8 +296,8 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
       <header className="rs-header">
         <h1 className="rs-title">Estudio de voz</h1>
         <p className="rs-sub">
-          Tier S = tu grabación · Tier 3 = guía EN (vacío por ahora). Elige fuentes abajo; mapa
-          muestra qué falta.
+          Liber ▶: 1× oración · 2× auto ≫ hasta el final. Fallback: TTS del navegador (en-US). Tier S
+          gana si hay grabación; T3 cuando haya WAV en /voice/en/.
         </p>
       </header>
 
@@ -318,6 +318,36 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           />
           Guía T3 (EN)
         </label>
+        <label className="rs-pref">
+          <input
+            type="checkbox"
+            checked={voicePrefs.useBrowserTts !== false}
+            onChange={() => togglePref('useBrowserTts')}
+          />
+          TTS navegador EN
+        </label>
+      </div>
+
+      <div className="rs-prefs-row rs-prefs-row--tts">
+        <label className="rs-pref rs-pref--slider" htmlFor="rs-tts-rate">
+          Ritmo TTS
+          <input
+            id="rs-tts-rate"
+            type="range"
+            min="0.7"
+            max="1.5"
+            step="0.05"
+            value={voicePrefs.ttsRate ?? 1}
+            onChange={(e) => {
+              const next = setVoicePrefs({ ttsRate: parseFloat(e.target.value) });
+              setVoicePrefsState(next);
+            }}
+          />
+          <span>{Number(voicePrefs.ttsRate ?? 1).toFixed(2)}×</span>
+        </label>
+        <p className="rs-pref-legend">
+          Idioma guía: {voicePrefs.ttsLang || 'en-US'} (sin títulos de oración).
+        </p>
       </div>
 
       <div className="rs-mystery-row">

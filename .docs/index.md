@@ -17,6 +17,7 @@
     resonator-and-physics-blueprint.md
   libro/
     historic-devotions.md             ← popular devoutions catalog + San Miguel / Próximas
+    voice-autoplay.md                 ← Liber ▶ once / auto ≫ EN TTS
   virtual-rosary/
     rosary-ux-recovery-jun-2026.md    ← Jun 2026 session: 3 bugs fixed, stack
     interaction-rules.md              ← bead/chain selection MUSTS
@@ -54,6 +55,7 @@
 |-------|-----|
 | **What runs today** | [current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) |
 | **Libro devoutions / Próximas** | [historic-devotions.md](./libro/historic-devotions.md) |
+| **Liber voice autoplay** | [voice-autoplay.md](./libro/voice-autoplay.md) |
 | **Rosary recovery status** | [rosary-ux-recovery-jun-2026.md](./virtual-rosary/rosary-ux-recovery-jun-2026.md) |
 | **Bead click rules** | [interaction-rules.md](./virtual-rosary/interaction-rules.md) |
 | **Topology / merge plan** | [topology-current.md](./virtual-rosary/topology-current.md) |

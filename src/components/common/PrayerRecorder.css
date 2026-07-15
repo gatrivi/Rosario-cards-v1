@@ -173,6 +173,12 @@
   width: 2rem;
 }
 
+.prayer-recorder__side-btn--auto {
+  border-color: rgba(212, 175, 55, 0.9);
+  color: #d4af37;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35);
+}
+
 .prayer-recorder__side-spacer {
   display: block;
   height: 2rem;

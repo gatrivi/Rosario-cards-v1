@@ -4,15 +4,15 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.59',
-  name: 'San Miguel + Próximas',
+  version: '0.3.60',
+  name: 'Auto-play voz EN',
   CURRENT: [
-    'Oración a San Miguel Arcángel (vitral) en Devociones → breves',
-    'Fila Próximas: Inmaculado Corazón, Espíritu Santo, Escápulario… (B/N, deshabilitadas)',
+    'Liber ▶: 1× oración · 2× auto ≫ hasta el final (TTS en-US; sin títulos)',
+    'Estudio /voz: ritmo TTS + fuentes; siempre-on por paso desactivado',
   ],
   UPCOMING: [
-    'Corazón Inmaculado / Escápulario / Memorare como recorridos',
-    'Clips guía en inglés bajo /voice/en/',
+    'Clips guía EN en /voice/en/',
+    'Corazón Inmaculado / Escápulario como recorridos',
     'Confirmación al borrar una toma de voz',
   ],
 };

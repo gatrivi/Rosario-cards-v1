@@ -7,8 +7,8 @@ import { resolveBundledVoiceClip, VOICE_TIER_USER } from '../data/bundledVoiceMa
 import { getVoicePrefs } from '../utils/voicePrefs';
 
 /**
- * When the active prayer changes, play Tier S (user) then Tier 3 (bundled).
- * Respects Ajustes voice source toggles. Stops previous audio on change / unmount.
+ * Legacy always-on step voice. Prefer Libro ▶ FSM (`prayerVoicePlayback` + BookletView).
+ * Call with enabled=false unless an explicit auto-mode session owns playback.
  */
 export function usePrayerVoiceAutoplay({
   enabled = true,

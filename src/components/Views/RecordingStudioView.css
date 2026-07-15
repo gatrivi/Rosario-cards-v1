@@ -54,6 +54,11 @@
   margin-bottom: 14px;
 }
 
+.rs-prefs-row--tts {
+  flex-direction: column;
+  gap: 6px;
+}
+
 .rs-pref {
   display: flex;
   align-items: center;
@@ -61,6 +66,23 @@
   color: #ccc;
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+.rs-pref--slider {
+  width: 100%;
+  max-width: 22rem;
+  cursor: default;
+}
+
+.rs-pref--slider input[type='range'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.rs-pref-legend {
+  margin: 0;
+  color: #777;
+  font-size: 0.75rem;
 }
 
 .rs-slot {

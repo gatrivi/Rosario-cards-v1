@@ -1,25 +1,51 @@
 /**
- * Which voice sources play during autoplay.
- * Tier S = user recordings · Tier 3 = bundled Piper failsafe.
+ * Voice source + EN browser-TTS prefs.
+ * Tier S = user mic · Tier 3 = bundled EN WAV · browser TTS = speechSynthesis fallback.
  */
 
 const KEY_USER = 'rosario_voice_user';
 const KEY_BUNDLED = 'rosario_voice_bundled';
+const KEY_TTS_LANG = 'rosario_voice_tts_lang';
+const KEY_TTS_RATE = 'rosario_voice_tts_rate';
+const KEY_BROWSER_TTS = 'rosario_voice_browser_tts';
+
+const DEFAULTS = {
+  useUserVoice: true,
+  useBundledVoice: true,
+  useBrowserTts: true,
+  ttsLang: 'en-US',
+  ttsRate: 1,
+};
+
+function clampRate(n) {
+  const x = typeof n === 'number' ? n : parseFloat(n);
+  if (Number.isNaN(x)) return DEFAULTS.ttsRate;
+  return Math.min(1.5, Math.max(0.7, x));
+}
 
 export function getVoicePrefs() {
   if (typeof localStorage === 'undefined') {
-    return { useUserVoice: true, useBundledVoice: true };
+    return { ...DEFAULTS };
   }
+  const rateRaw = localStorage.getItem(KEY_TTS_RATE);
   return {
     useUserVoice: localStorage.getItem(KEY_USER) !== 'false',
     useBundledVoice: localStorage.getItem(KEY_BUNDLED) !== 'false',
+    useBrowserTts: localStorage.getItem(KEY_BROWSER_TTS) !== 'false',
+    ttsLang: localStorage.getItem(KEY_TTS_LANG) || DEFAULTS.ttsLang,
+    ttsRate: clampRate(rateRaw != null ? rateRaw : DEFAULTS.ttsRate),
   };
 }
 
 export function setVoicePrefs(partial) {
   const next = { ...getVoicePrefs(), ...partial };
+  next.ttsRate = clampRate(next.ttsRate);
+  next.ttsLang = next.ttsLang || DEFAULTS.ttsLang;
   localStorage.setItem(KEY_USER, String(next.useUserVoice !== false));
   localStorage.setItem(KEY_BUNDLED, String(next.useBundledVoice !== false));
+  localStorage.setItem(KEY_BROWSER_TTS, String(next.useBrowserTts !== false));
+  localStorage.setItem(KEY_TTS_LANG, next.ttsLang);
+  localStorage.setItem(KEY_TTS_RATE, String(next.ttsRate));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('rosario-voice-prefs', { detail: next }));
   }

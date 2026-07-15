@@ -139,7 +139,7 @@ export default function SettingsOverlay({
               />
             </label>
             <div style={{ color: '#666', fontSize: '0.7rem' }}>
-              Tier 3 = guía EN (cuando haya clips). Tier S = tu voz en Estudio (/voz).
+              Liber ▶: una vez = oración · otra = auto ≫. Tier 3 / TTS EN en Estudio (/voz).
             </div>
           </div>
 

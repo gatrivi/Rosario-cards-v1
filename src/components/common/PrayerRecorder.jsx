@@ -7,7 +7,20 @@ import {
   blobToObjectUrl,
 } from '../../utils/prayerRecordingStore';
 import { resolveBundledVoiceUrl } from '../../data/bundledVoiceMap';
+import { VOICE_MODES } from '../../utils/prayerVoicePlayback';
 import './PrayerRecorder.css';
+
+function voiceControlIcon(voiceMode, voicePlaying) {
+  if (voiceMode === VOICE_MODES.AUTO) return '≫';
+  if (voicePlaying) return '⏸';
+  return '▶';
+}
+
+function voiceControlLabel(voiceMode, voicePlaying) {
+  if (voiceMode === VOICE_MODES.AUTO) return 'Detener auto-play';
+  if (voicePlaying) return 'Activar auto-play (o pausar)';
+  return 'Reproducir oración';
+}
 
 export default function PrayerRecorder({
   prayerId,
@@ -18,6 +31,11 @@ export default function PrayerRecorder({
   placement = 'header',
   isLeftHanded = false,
   children,
+  /** Lifted Libro voice FSM */
+  voiceMode = VOICE_MODES.OFF,
+  voicePlaying = false,
+  onVoiceControlTap,
+  voiceControlEnabled = false,
 }) {
   const [expanded, setExpanded] = useState(false);
   const [micAvailable, setMicAvailable] = useState(null);
@@ -189,17 +207,21 @@ export default function PrayerRecorder({
 
   const disabled = micAvailable === false;
   const hasClips = clips.length > 0;
-  const canPlay = hasClips || Boolean(bundledUrl);
+  const canPlayLegacy = hasClips || Boolean(bundledUrl);
   const isTitle = placement === 'title';
+  const showVoiceControl = voiceControlEnabled || canPlayLegacy;
 
   const panel = expanded && (
     <div className="prayer-recorder__panel">
       <p className="prayer-recorder__title">
         {simpleMode ? 'Graba tu voz' : 'Voz propia · suena al llegar a esta oración'}
       </p>
+      <p className="prayer-recorder__hint">
+        ▶ una vez = esta oración · otra vez = auto ≫ hasta el final · /voz para ritmo EN TTS.
+      </p>
       {bundledUrl && !hasClips && (
         <p className="prayer-recorder__hint">
-          Guía Tier 3 (Piper). ▶ para oírla; 🎙️ graba Tier S (reemplaza la guía).
+          Guía Tier 3. ▶ para oírla; 🎙️ graba Tier S (reemplaza la guía).
         </p>
       )}
       {prayerId === 'A' && (
@@ -251,20 +273,43 @@ export default function PrayerRecorder({
   );
 
   if (isTitle) {
+    const useLifted = typeof onVoiceControlTap === 'function';
     return (
       <div
-        className={`prayer-recorder prayer-recorder--title${expanded ? ' prayer-recorder--open' : ''}${disabled ? ' prayer-recorder--disabled' : ''}`}
+        className={`prayer-recorder prayer-recorder--title${expanded ? ' prayer-recorder--open' : ''}${disabled ? ' prayer-recorder--disabled' : ''}${
+          voiceMode === VOICE_MODES.AUTO ? ' prayer-recorder--auto' : ''
+        }`}
       >
         <div className={`prayer-recorder__title-row${isLeftHanded ? ' prayer-recorder__title-row--left' : ''}`}>
-          {canPlay ? (
+          {showVoiceControl || useLifted ? (
             <button
               type="button"
-              className="prayer-recorder__side-btn"
-              onClick={togglePlayback}
-              aria-label={playing ? 'Pausar' : 'Reproducir voz'}
-              title={playing ? 'Pausar' : hasClips ? 'Reproducir tu grabación' : 'Reproducir voz guía'}
+              className={`prayer-recorder__side-btn${
+                voiceMode === VOICE_MODES.AUTO ? ' prayer-recorder__side-btn--auto' : ''
+              }`}
+              onClick={useLifted ? onVoiceControlTap : togglePlayback}
+              aria-label={
+                useLifted
+                  ? voiceControlLabel(voiceMode, voicePlaying)
+                  : playing
+                    ? 'Pausar'
+                    : 'Reproducir voz'
+              }
+              title={
+                useLifted
+                  ? voiceControlLabel(voiceMode, voicePlaying)
+                  : playing
+                    ? 'Pausar'
+                    : hasClips
+                      ? 'Reproducir tu grabación'
+                      : 'Reproducir voz'
+              }
             >
-              {playing ? '⏸' : '▶'}
+              {useLifted
+                ? voiceControlIcon(voiceMode, voicePlaying)
+                : playing
+                  ? '⏸'
+                  : '▶'}
             </button>
           ) : (
             <span className="prayer-recorder__side-spacer" aria-hidden="true" />
@@ -288,8 +333,8 @@ export default function PrayerRecorder({
   }
 
   const handleToggle = () => {
-    if (disabled && !canPlay) return;
-    if (canPlay && placement === 'footer-inline') {
+    if (disabled && !canPlayLegacy) return;
+    if (canPlayLegacy && placement === 'footer-inline') {
       togglePlayback();
       return;
     }
@@ -305,18 +350,18 @@ export default function PrayerRecorder({
         className="prayer-recorder__toggle"
         onClick={handleToggle}
         aria-expanded={expanded}
-        disabled={disabled && !canPlay}
+        disabled={disabled && !canPlayLegacy}
         title={
-          disabled && !canPlay
+          disabled && !canPlayLegacy
             ? 'Micrófono no disponible en este dispositivo'
-            : canPlay && placement === 'footer-inline'
+            : canPlayLegacy && placement === 'footer-inline'
               ? playing
                 ? 'Pausar'
                 : 'Reproducir'
               : 'Grabar tu voz para modo automático'
         }
       >
-        {canPlay && placement === 'footer-inline'
+        {canPlayLegacy && placement === 'footer-inline'
           ? playing
             ? '⏸'
             : '▶'

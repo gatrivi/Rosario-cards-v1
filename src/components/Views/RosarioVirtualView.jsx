@@ -66,7 +66,7 @@ export default function RosarioVirtualView({
   const activePrayer = secuencia[safeIndex];
 
   usePrayerVoiceAutoplay({
-    enabled: soundEnabled !== false,
+    enabled: false,
     mystery: misterioActual,
     sequenceIndex: safeIndex,
     prayerId: activePrayer?.id,
