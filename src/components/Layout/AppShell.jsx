@@ -559,6 +559,11 @@ export default function AppShell() {
           onSelectLevel={() => navigate(getPathForView('tracker'))}
           onPray={() => navigate(getPathForView('rosary'))}
           onRosedal={() => navigate(getPathForView('macetones'))}
+          onContinueCompromiso={() => navigate('/libro')}
+          onOpenCompromiso={() => {
+            setCompromisoMode('commit');
+            setShowCompromiso(true);
+          }}
         />
       );
     }
