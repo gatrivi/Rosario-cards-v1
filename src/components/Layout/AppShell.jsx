@@ -64,7 +64,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.62';
+const APP_VERSION = '0.3.63';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -493,6 +493,11 @@ export default function AppShell() {
           onSelectLevel={() => navigate(getPathForView('tracker'))}
           onPray={() => navigate(getPathForView('rosary'))}
           onRosedal={() => navigate(getPathForView('macetones'))}
+          onContinueCompromiso={() => navigate('/libro')}
+          onOpenCompromiso={() => {
+            setCompromisoMode('commit');
+            setShowCompromiso(true);
+          }}
         />
       );
       case 'macetones': return (
@@ -804,8 +809,10 @@ export default function AppShell() {
                     setShowCompromiso(true);
                   }}
                   style={{
-                    width: '100%', padding: '14px', background: 'linear-gradient(90deg, #74acdf, #f6f6f6)', color: '#0a1628',
-                    border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem',
+                    width: '100%', padding: '14px',
+                    background: 'linear-gradient(90deg, #2a0a0a, #3d0f0f)',
+                    border: '1px solid #D4AF37', borderRadius: '12px',
+                    color: '#D4AF37', fontWeight: 'bold', fontSize: '1rem',
                     cursor: 'pointer',
                   }}
                 >
@@ -838,6 +845,10 @@ export default function AppShell() {
           onStartPray={() => {
             setShowCompromiso(false);
             navigate('/libro');
+          }}
+          onOpenCamino={() => {
+            setShowCompromiso(false);
+            navigate(getPathForView('camino'));
           }}
         />
       )}

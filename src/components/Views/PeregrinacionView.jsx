@@ -1,6 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { PEREGRINACIONES, getPeregrinacionActual } from '../../data/LevelConfig';
+import {
+  getCompromisoProgress,
+  COMPROMISO_HEADLINE,
+  isCompromisoCampaignActive,
+} from '../../utils/compromisoStore';
 import TutorialOverlay from '../common/TutorialOverlay';
 import santaMariaImg from '../../data/assets/img/Theotokos.jpg';
 import './PeregrinacionView.css';
@@ -16,10 +21,20 @@ function CaminoChurchIcon({ className = '' }) {
   );
 }
 
-export default function PeregrinacionView({ onSelectLevel, onPray, onRosedal }) {
+export default function PeregrinacionView({
+  onSelectLevel,
+  onPray,
+  onRosedal,
+  onContinueCompromiso,
+  onOpenCompromiso,
+}) {
   const { totalAveMarias } = useAveMariaStats();
   const { actual, next } = getPeregrinacionActual(totalAveMarias);
   const [selectedPin, setSelectedPin] = useState(null);
+  const compromiso = useMemo(() => {
+    if (!isCompromisoCampaignActive()) return null;
+    return getCompromisoProgress();
+  }, [totalAveMarias]);
 
   const journeyProgressPct = useMemo(() => {
     if (!next) return 100;
@@ -49,12 +64,63 @@ export default function PeregrinacionView({ onSelectLevel, onPray, onRosedal }) 
           <TutorialOverlay
             title="El Camino"
             imageSrc={santaMariaImg}
-            text="Cada Ave María es un paso. Las metas son peregrinaciones reales — de tu parroquia al Camino de Santiago y más allá. Elige tu ritmo diario en Plan, reza, y mira avanzar el camino."
+            text="Cada Ave María es un paso. Las metas son peregrinaciones reales — de tu parroquia al Camino de Santiago y más allá. Elige tu ritmo diario en Diario, reza, y mira avanzar el camino."
           />
         </div>
 
         <h2 className="camino-title">El Camino</h2>
         <p className="camino-tagline">{totalAveMarias.toLocaleString()} rosas · destino: {next?.name || actual.name}</p>
+
+        {compromiso ? (
+          <div className="camino-journey-card camino-compromiso-card">
+            <div className="camino-journey-row">
+              <div>
+                <div className="camino-journey-label">
+                  {compromiso.status === 'fulfilled' ? 'Compromiso cumplido' : 'Compromiso activo'}
+                </div>
+                <div className="camino-journey-destination">{COMPROMISO_HEADLINE}</div>
+              </div>
+              <div className="camino-journey-req">
+                {compromiso.status === 'fulfilled'
+                  ? '✓ 5/5'
+                  : `${compromiso.decades} / 5 décenas`}
+              </div>
+            </div>
+            <div className="camino-progress-track" aria-label="Progreso del Rosario comprometido">
+              <div
+                className="camino-progress-fill"
+                style={{ width: `${(compromiso.decades / 5) * 100}%` }}
+              />
+            </div>
+            <div className="camino-compromiso-actions">
+              {compromiso.status === 'active' && onContinueCompromiso ? (
+                <button type="button" className="camino-btn camino-btn--primary" onClick={onContinueCompromiso}>
+                  Continuar Rosario
+                </button>
+              ) : null}
+              {compromiso.status !== 'active' && onOpenCompromiso ? (
+                <button type="button" className="camino-btn" onClick={onOpenCompromiso}>
+                  Nuevo compromiso
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : isCompromisoCampaignActive() && onOpenCompromiso ? (
+          <div className="camino-journey-card camino-compromiso-card">
+            <div className="camino-journey-row">
+              <div>
+                <div className="camino-journey-label">Intención especial</div>
+                <div className="camino-journey-destination">{COMPROMISO_HEADLINE}</div>
+              </div>
+            </div>
+            <p className="camino-compromiso-hint">
+              Un Rosario completo (5 décenas) — se suma a tu peregrinación de siempre.
+            </p>
+            <button type="button" className="camino-btn camino-btn--primary" onClick={onOpenCompromiso}>
+              Comprometerse
+            </button>
+          </div>
+        ) : null}
 
         <div className="camino-journey-card">
           <div className="camino-journey-row">
@@ -76,7 +142,7 @@ export default function PeregrinacionView({ onSelectLevel, onPray, onRosedal }) 
             Rezar ahora
           </button>
           <button type="button" className="camino-btn" onClick={onSelectLevel}>
-            Plan · elegir nivel
+            Diario · elegir nivel
           </button>
           <button type="button" className="camino-btn" onClick={onRosedal}>
             Rosedal

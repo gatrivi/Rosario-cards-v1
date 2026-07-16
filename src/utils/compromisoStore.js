@@ -72,6 +72,23 @@ export function hasFulfilledCompromiso() {
   return Boolean(c && c.status === 'fulfilled' && c.campaignId === COMPROMISO_CAMPAIGN_ID);
 }
 
+/** Progress for Camino / Diario chips. null if no campaign commitment. */
+export function getCompromisoProgress() {
+  const c = loadCompromiso();
+  if (!c || c.campaignId !== COMPROMISO_CAMPAIGN_ID) return null;
+  if (c.status === 'fulfilled') {
+    return { status: 'fulfilled', decades: 5, mysteryId: c.fulfilledMysteryId || c.mysteryId };
+  }
+  if (c.status === 'active') {
+    return {
+      status: 'active',
+      decades: Math.min(5, c.maxDecadeReached || 0),
+      mysteryId: c.mysteryId,
+    };
+  }
+  return null;
+}
+
 /**
  * Start (or restart) a commitment for today's classic mystery.
  */

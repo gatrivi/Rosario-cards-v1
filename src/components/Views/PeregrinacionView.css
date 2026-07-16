@@ -58,6 +58,25 @@
   padding: 12px 12px 14px;
 }
 
+.camino-compromiso-card {
+  border-color: rgba(212, 175, 55, 0.35);
+}
+
+.camino-compromiso-hint {
+  color: rgba(204, 204, 204, 0.85);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin: 0 0 10px;
+  text-align: left;
+}
+
+.camino-compromiso-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .camino-journey-row {
   display: flex;
   justify-content: space-between;

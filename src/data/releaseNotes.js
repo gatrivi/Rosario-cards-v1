@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.62',
-  name: 'Libro · Rosario · Más',
+  version: '0.3.63',
+  name: 'Compromiso en el Camino',
   CURRENT: [
-    'Nav clara: Libro · Rosario · Más (Diario/Rosedal/Camino/Rosa/Voz)',
-    'Misterios Gozosos… · Ajustes por secciones · Rezá por Argentina',
+    'Rezá por Argentina: modal dorado del app + progreso en el Camino',
+    'Libro · Rosario · Más · compromiso = 5 décenas (Ya recé)',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',
