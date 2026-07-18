@@ -5,6 +5,7 @@ import { buildSequence } from '../utils/bookletSequence';
 import { DIVINE_MERCY_ID, DIVINE_MERCY_NOVENA_ID } from '../data/divineMercyData';
 import { ANGELUS_ID, MAGNIFICAT_ID } from '../data/marianDevotionsData';
 import { SAGRADO_CORAZON_ADORACION_ID } from '../data/sagradoCorazonAdoracionData';
+import { SAN_EXPEDITO_ID } from '../data/sanExpeditoData';
 
 /** Every devotion reachable from the Libro footer shelf. */
 const SHELF_DEVOTION_IDS = [
@@ -18,6 +19,7 @@ const SHELF_DEVOTION_IDS = [
   DIVINE_MERCY_NOVENA_ID,
   ANGELUS_ID,
   MAGNIFICAT_ID,
+  SAN_EXPEDITO_ID,
 ];
 
 function expectValidSequence(id) {
@@ -68,6 +70,23 @@ describe('devotions shelf flow', () => {
     fireEvent.click(screen.getByRole('button', { name: /^ángelus$/i }));
 
     expect(onMysteryChange).toHaveBeenCalledWith(ANGELUS_ID);
+  });
+
+  test('shelf San Expedito opens the full devotion', () => {
+    const onMysteryChange = jest.fn();
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={jest.fn()}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+    fireEvent.click(screen.getByRole('button', { name: /oración a san expedito/i }));
+
+    expect(onMysteryChange).toHaveBeenCalledWith(SAN_EXPEDITO_ID);
   });
 
   test('Faustina sub-menu picks Corona', () => {
