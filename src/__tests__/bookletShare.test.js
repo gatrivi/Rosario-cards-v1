@@ -2,6 +2,7 @@ import {
   buildShareCardPayload,
   formatBookletShareProgress,
   getBookletDevotionLabel,
+  getBookletShareUrl,
   truncateShareText,
   makeShareFilename,
 } from '../utils/bookletShare';
@@ -16,6 +17,16 @@ describe('bookletShare', () => {
   test('getBookletDevotionLabel returns Divine Mercy novena', () => {
     const label = getBookletDevotionLabel('divinamisericordia_novena');
     expect(label.title).toMatch(/Novena de la Divina Misericordia/);
+  });
+
+  test('getBookletDevotionLabel returns San Expedito context', () => {
+    const label = getBookletDevotionLabel('sanexpedito');
+    expect(label.title).toBe('San Expedito');
+    expect(label.subtitle).toMatch(/Balvanera/);
+  });
+
+  test('getBookletShareUrl uses the canonical San Expedito path', () => {
+    expect(new URL(getBookletShareUrl('sanexpedito')).pathname).toBe('/san-expedito/');
   });
 
   test('formatBookletShareProgress uses Paso for Sagrado Corazón', () => {
