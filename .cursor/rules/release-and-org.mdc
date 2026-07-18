@@ -5,6 +5,12 @@ alwaysApply: true
 
 # Release, updates & project org (Rosario Cards)
 
+## Production URL
+
+- **Main deploy:** https://rosario.gatrivi.com (custom domain on Vercel).
+- Prefer this in share links, deep links, and docs — not `rosario-cards-v*.vercel.app` (previews / aliases only).
+- Code defaults already use it: `compromisoStore.js`, `SettingsOverlay.jsx`.
+
 ## After shipping a feature (small checklist)
 
 When a feature is **committed/pushed** or a version is bumped:

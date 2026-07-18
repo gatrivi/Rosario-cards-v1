@@ -82,7 +82,7 @@ Also on shelf but outside this table: Magnificat, Ángel Guarda, San Benito, San
 
 - **Data:** `optionalPrayers.js` → `id: 'expedito'` (ES / EN / LA · *hodie, non cras*).
 - **Thumb / bg:** `gallerySanExpedito` (Wellcome CC BY · Palermo s. XIX) + alts `galleryCruzVsRoma`, `vitreauxCruz`.
-- **UI:** Oraciones breves → San Expedito (badge `H`); deep link `?oracion=expedito`.
+- **UI:** Oraciones breves → San Expedito (badge `H`); deep link https://rosario.gatrivi.com/libro?oracion=expedito
 - **Dates:** popular devotion for urgent causes (feast traditionally 19 Apr in some places).
 
 ## San Miguel (shipped)

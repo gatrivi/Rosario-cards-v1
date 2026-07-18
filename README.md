@@ -1,5 +1,7 @@
 # Rosario Cards
 
+**Live:** [https://rosario.gatrivi.com](https://rosario.gatrivi.com) (Vercel · custom domain · branch `cloud-rosary-v2`)
+
 Una aplicación devocional interactiva diseñada para guiar el rezo del Rosario a través del arte generativo y la meditación guiada táctil.
 
 ## Filosofía de Diseño ("Visual First")

@@ -2,7 +2,8 @@
 
 **Start here.** Canonical context for agents and humans. Model-efficient: tables, paths, invariants.
 
-**Live stack:** [architecture/current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) · **v0.3.49** (`src/data/releaseNotes.js`)  
+**Live (prod):** [https://rosario.gatrivi.com](https://rosario.gatrivi.com) — not `*.vercel.app` for share / deep links  
+**Live stack:** [architecture/current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) · version in `releaseNotes.js` / `AppShell` `APP_VERSION`  
 **Shipped / next bullets:** `releaseNotes.js` → Ajustes → Novedades · version badge tap
 
 ## Tree

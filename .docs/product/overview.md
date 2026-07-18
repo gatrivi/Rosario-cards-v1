@@ -1,5 +1,7 @@
 # Product Overview
 
+**Live:** https://rosario.gatrivi.com
+
 Rosario Cards is an interactive devotional app that guides the Rosary through:
 - Generative, procedural visuals
 - Tactile/interactive meditation flow

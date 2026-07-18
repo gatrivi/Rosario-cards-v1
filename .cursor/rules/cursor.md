@@ -40,7 +40,7 @@
     * **Routing:** `react-router-dom` 7 (AppShell entry via `index.js`)
     * **Physics Engine:** Matter.js
     * *Do not suggest alternatives unless explicitly asked.*
-* **Vercel-Ready Code:** All code modifications must maintain compatibility with Vercel deployment pipelines.
+* **Vercel-Ready Code:** All code modifications must maintain compatibility with Vercel deployment pipelines. **Prod URL:** https://rosario.gatrivi.com (prefer in share/deep links; `*.vercel.app` = previews only).
 * **Pre-Push Checks:** Before finalizing a task, ensure `npm run build` succeeds. Prefer `npm test -- --watchAll=false --maxWorkers=2` on Windows (full suite can OOM).
 
 ## 7. State, Memory, & Domain-Specific Context

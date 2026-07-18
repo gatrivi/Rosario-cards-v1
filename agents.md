@@ -3,7 +3,8 @@
 > **Canonical deep context:** [`.docs/index.md`](.docs/index.md) → [`.docs/architecture/current-stack-jun-2026.md`](.docs/architecture/current-stack-jun-2026.md).  
 > **This file is a legacy audit snapshot (Apr–Jun 2026).** Do not trust version numbers, routing, or component status here — use `.docs/` + `releaseNotes.js`.
 
-**Repo:** `rosario-cards-v1` (GitHub: `gatrivi/Rosario-cards-v1`) · **v0.3.49**  
+**Repo:** `rosario-cards-v1` (GitHub: `gatrivi/Rosario-cards-v1`)  
+**Live:** https://rosario.gatrivi.com · version in `releaseNotes.js` / `APP_VERSION`  
 **Stack:** React 19, CRA, Matter.js, react-router v7, optional Firebase  
 **User handle:** gatrivi
 

@@ -1,6 +1,7 @@
 # Current stack — Jun 2026 (updated Jul 2026)
 
-**Version:** v0.3.49 — Ajustes desplazables (`AppShell.jsx` `APP_VERSION`, `releaseNotes.js`)  
+**Live (prod):** https://rosario.gatrivi.com (Vercel custom domain; previews may still be `*.vercel.app`)  
+**Version:** see `AppShell.jsx` `APP_VERSION` + `src/data/releaseNotes.js`  
 **Entry:** `src/index.js` → `App.js` → `AppShell.jsx` (react-router v7)
 
 ## View routing (`src/navigation/routes.js` → `AppShell`)
@@ -26,7 +27,9 @@
 Classic mysteries: `?misterio=gozosos|dolorosos|gloriosos|luminosos`  
 Faustina: Corona / Novena (`?dia=` for novena day)  
 Estaciones: Vía Crucis / Vía Lucis (`?misterio=viacrucis|vialucis`)  
-Sangre Preciosa, Ofrendas, Ángel/Benito — see `BookletView` + `session-report-2026-07-03-night.md`
+Oraciones breves: `?oracion=expedito|michael|guardian|benedict|carmen`  
+Sangre Preciosa, Ofrendas — see `BookletView` + `session-report-2026-07-03-night.md`  
+Share / deep-link base: **`https://rosario.gatrivi.com`** (also hardcoded in `compromisoStore.js`, `SettingsOverlay.jsx`)
 
 ## Rosary path (production)
 
