@@ -30,7 +30,7 @@ import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
-import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery } from '../../utils/bookletSequence';
+import { buildSequence, isDivineMercyMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery } from '../../utils/bookletSequence';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { imagePath as registryImage } from '../../data/imageRegistry';
 import {
@@ -43,6 +43,10 @@ import {
   SAGRADO_CORAZON_ADORACION_ID,
   sagradoCorazonAdoracionThumbnail,
 } from '../../data/sagradoCorazonAdoracionData';
+import {
+  SAN_EXPEDITO_ID,
+  sanExpeditoThumbnail,
+} from '../../data/sanExpeditoData';
 import FaustinaMercyThumb from '../common/FaustinaMercyThumb';
 import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
@@ -67,6 +71,7 @@ import {
   deliverSharePng,
   formatBookletShareProgress,
   getBookletDevotionLabel,
+  getBookletShareUrl,
   makeShareFilename,
   preloadShareImage,
 } from '../../utils/bookletShare';
@@ -149,10 +154,8 @@ export default function BookletView({
   openOptionalId = null,
 }) {
   const isMercy = isDivineMercyMode(misterioActual);
-  const isStations = isStationsDevotion(misterioActual);
-  const isMarianDevotion = isMarianDevotionMode(misterioActual);
   const isSagradoCorazon = isSagradoCorazonAdoracionMode(misterioActual);
-  const showRosaryPills = !isMercy && !isStations && !isMarianDevotion && !isSagradoCorazon;
+  const showRosaryPills = isValidRosaryMystery(misterioActual);
   const pickDevotion = useCallback(
     (id, label) => {
       devLog('shelf-pick', { id, label, from: misterioActual });
@@ -762,9 +765,7 @@ export default function BookletView({
         filename,
         title: displayPrayerTitle,
         text: `${shareCardPayload.devotionTitle}${shareCardPayload.prayerTitle ? ` — ${shareCardPayload.prayerTitle}` : ''}`,
-        url: typeof window !== 'undefined'
-          ? `${window.location.origin}${window.location.pathname}`
-          : undefined,
+        url: getBookletShareUrl(misterioActual),
       });
       if (outcome === 'preview') {
         setSharePreviewUrl(URL.createObjectURL(blob));
@@ -784,6 +785,7 @@ export default function BookletView({
     activePrayer,
     shareCardPayload,
     displayPrayerTitle,
+    misterioActual,
   ]);
 
   const handleSharePreviewDownload = useCallback(() => {
@@ -1207,10 +1209,10 @@ export default function BookletView({
             </ShelfItem>
             <ShelfItem label="San Expedito">
               <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'expedito'}
-                onClick={() => openOptionalPrayer('expedito')}
-                title="San Expedito — causas urgentes (HODIE)"
-                img={optionalPrayerThumbnail('expedito')}
+                active={misterioActual === SAN_EXPEDITO_ID}
+                onClick={() => pickDevotion(SAN_EXPEDITO_ID, 'San Expedito')}
+                title="Oración a San Expedito — causas justas y urgentes"
+                img={sanExpeditoThumbnail}
                 badge="H"
               />
             </ShelfItem>
