@@ -3,6 +3,7 @@ import { ANGELUS_ID, MAGNIFICAT_ID } from '../data/marianDevotionsData';
 import { SAGRADO_CORAZON_ADORACION_ID } from '../data/sagradoCorazonAdoracionData';
 import { formatLitanyLine } from './litanyHelpers';
 import { pickPrayerImage } from './prayerImages';
+import { SAN_EXPEDITO_ID, SAN_EXPEDITO_SHARE_PATH } from '../data/sanExpeditoData';
 
 const MYSTERY_SUBTITLES = {
   gozosos: 'Misterios Gozosos',
@@ -19,6 +20,9 @@ export function getBookletDevotionLabel(misterioActual) {
   }
   if (misterioActual === MAGNIFICAT_ID) {
     return { title: 'Magnificat', subtitle: 'Cántico de María' };
+  }
+  if (misterioActual === SAN_EXPEDITO_ID) {
+    return { title: 'San Expedito', subtitle: 'Causas justas y urgentes · Balvanera' };
   }
   if (misterioActual === 'divinamisericordia_novena') {
     return { title: 'Novena de la Divina Misericordia', subtitle: null };
@@ -122,6 +126,14 @@ export function resolveShareBackgroundUrl(rawUrl) {
     return `${window.location.origin}${rawUrl}`;
   }
   return rawUrl;
+}
+
+export function getBookletShareUrl(misterioActual) {
+  if (typeof window === 'undefined') return undefined;
+  if (misterioActual === SAN_EXPEDITO_ID) {
+    return new URL(SAN_EXPEDITO_SHARE_PATH, window.location.origin).href;
+  }
+  return window.location.href;
 }
 
 export function buildShareCardPayload({
