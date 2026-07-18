@@ -68,6 +68,7 @@ No auto month-switch in UI yet — shelf copy / titles mention Julio for Sangre;
 | `precious_blood` | Preciosísima Sangre | julio | `lamb` | have |
 | `loreto` | Letanía de Loreto | cierres del Rosario | `galleryMaterImmaculata` | have |
 | `st_michael` | San Miguel | León XIII · 1886 | `galleryStMichael` | **have** (v0.3.59 breve) |
+| `st_expeditus` | San Expedito | causas urgentes · HODIE | `gallerySanExpedito` | **have** (v0.3.64 breve) |
 | `immaculate_heart` | Inmaculado Corazón | Fátima | `galleryMaterImmaculata` | soon |
 | `holy_spirit` | Espíritu Santo | Pentecostés | `galleryPentecost` | soon |
 | `scapular` | Escápulario | Carmen | `theotokos` | soon |
@@ -76,6 +77,13 @@ No auto month-switch in UI yet — shelf copy / titles mention Julio for Sangre;
 | `memorare` | Memorare | S. Bernardo | `reginaCaeli` | soon |
 
 Also on shelf but outside this table: Magnificat, Ángel Guarda, San Benito, Sangre (litany/corona/ofrendas), Via Lucis, Novena Misericordia.
+
+## San Expedito (shipped v0.3.64)
+
+- **Data:** `optionalPrayers.js` → `id: 'expedito'` (ES / EN / LA · *hodie, non cras*).
+- **Thumb / bg:** `gallerySanExpedito` (Wellcome CC BY · Palermo s. XIX) + alts `galleryCruzVsRoma`, `vitreauxCruz`.
+- **UI:** Oraciones breves → San Expedito (badge `H`); deep link `?oracion=expedito`.
+- **Dates:** popular devotion for urgent causes (feast traditionally 19 Apr in some places).
 
 ## San Miguel (shipped)
 

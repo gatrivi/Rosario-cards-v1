@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.63',
-  name: 'Compromiso en el Camino',
+  version: '0.3.64',
+  name: 'San Expedito · HODIE',
   CURRENT: [
-    'Rezá por Argentina: modal dorado del app + progreso en el Camino',
-    'Libro · Rosario · Más · compromiso = 5 décenas (Ya recé)',
+    'San Expedito en Oraciones breves (ES / EN / LA) · ?oracion=expedito',
+    'Virgen del Carmen en shelf (16 jul)',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',

@@ -71,6 +71,13 @@ export const HISTORIC_DEVOTIONS = [
     imgId: 'galleryStMichael',
   },
   {
+    id: 'st_expeditus',
+    label: 'San Expedito',
+    note: 'causas urgentes · HODIE',
+    status: 'have',
+    imgId: 'gallerySanExpedito',
+  },
+  {
     id: 'immaculate_heart',
     label: 'Inmaculado Corazón',
     note: 'Mateo · Fátima',

@@ -4,6 +4,14 @@ const angelImg = imagePath('angelDeLaGuarda');
 const benedictImg = imagePath('sanctusBenedictus');
 const benedictLatinImg = imagePath('latinSanBenito');
 const michaelImg = imagePath('galleryStMichael');
+const carmenImg = imagePath('theotokos');
+const carmenImgAlt = imagePath('galleryMaterImmaculata');
+const carmenImgAlt2 = imagePath('allMary17th');
+const carmenCandidates = [carmenImg, carmenImgAlt, carmenImgAlt2].filter(Boolean);
+const expeditoImg = imagePath('gallerySanExpedito');
+const expeditoImgAlt = imagePath('galleryCruzVsRoma');
+const expeditoImgAlt2 = imagePath('vitreauxCruz');
+const expeditoCandidates = [expeditoImg, expeditoImgAlt, expeditoImgAlt2].filter(Boolean);
 
 export const OPTIONAL_PRAYERS = [
   {
@@ -62,6 +70,52 @@ export const OPTIONAL_PRAYERS = [
         label: 'LA',
         text:
           'Sancte Michael Archangele, defende nos in proelio; contra nequitiam et insidias diaboli esto praesidium. Imperet illi Deus, supplices deprecamur: tuque, Princeps militiae caelestis, Satanam aliosque spiritus malignos, qui ad perditionem animarum pervagantur in mundo, divina virtute, in infernum detrude. Amen.',
+      },
+    ],
+  },
+  {
+    id: 'carmen',
+    title: 'Virgen del Carmen',
+    img: carmenImg,
+    imgCandidates: carmenCandidates.length ? carmenCandidates : [carmenImg].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'Virgen Santísima del Carmen, Madre de Dios y Madre nuestra, míranos con bondad y presérvanos de todo mal. Cúbrenos con tu sagrado manto y condúcenos por los caminos del cielo.\n\nEn tu gloriosa fiesta renovamos la consagración de nuestra familia bajo tu protección maternal. Te ofrecemos la devoción de nuestro corazón y recibimos con amor tu santo Escapulario, señal de tu amor y custodia.\n\nRuega por nosotros, Madre del Carmen, y llévanos a tu Hijo Jesús. Amén.',
+      },
+      {
+        id: 'es_corta',
+        label: 'ES breve',
+        text:
+          'Señora del Carmen: cubrenos con tu manto sagrado, presérvanos del mal y preséntanos al Altísimo como hijos fieles. Amén.',
+      },
+    ],
+  },
+  {
+    id: 'expedito',
+    title: 'San Expedito',
+    img: expeditoImg,
+    imgCandidates: expeditoCandidates.length ? expeditoCandidates : [expeditoImg].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'Oh glorioso mártir San Expedito, soldado de Cristo, que con tu ejemplo nos enseñas a poner en Dios toda nuestra confianza: intercede por nosotros en esta causa urgente.\n\nConcédenos la gracia de no dejar para mañana lo que podemos hacer hoy, y de vivir cada día con fe y esperanza.\n\nSan Expedito, abogado de las causas justas y urgentes: hoy, no mañana. Amén.',
+      },
+      {
+        id: 'en',
+        label: 'EN',
+        text:
+          'O glorious martyr Saint Expeditus, soldier of Christ, who by your example teach us to place all our trust in God: intercede for us in this urgent need.\n\nGrant us the grace not to put off until tomorrow what we can do today, and to live each day in faith and hope.\n\nSaint Expeditus, advocate of just and urgent causes: today, not tomorrow. Amen.',
+      },
+      {
+        id: 'la',
+        label: 'LA',
+        text:
+          'Gloriose martyr Sancte Expedite, miles Christi, qui exemplo tuo doces nos omnem fiduciam in Deo ponere: intercede pro nobis in hac necessitate urgenti.\n\nConcede nobis gratiam non differendi in cras quod hodie facere possumus, et unumquemque diem in fide et spe vivere.\n\nSancte Expedite, advocatus causarum iustarum et urgentium: hodie, non cras. Amen.',
       },
     ],
   },

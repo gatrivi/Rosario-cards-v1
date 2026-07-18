@@ -19,7 +19,7 @@
  * runtime; those edits are persisted to localStorage and merged over this table.
  */
 
-import crux from './assets/img/crux.jpg';
+import crux from './assets/img/Prayer-text-handwritten/crux.jpg';
 import lamb from './assets/img/lamb.jpg';
 import vitreauxCruz from './assets/img/vitreaux-cruz.jpg';
 import theotokos from './assets/img/Theotokos.jpg';
@@ -27,14 +27,14 @@ import earlyChristian from './assets/img/Early-Christian-Art-768x549.jpg';
 import byzantineArt from './assets/img/Religious-Byzantine-Art-825x1024.jpg';
 import stainedGlass from './assets/img/Stained glass_..jpg';
 import cover from './assets/img/cover.jpg';
-import avemariaLat from './assets/img/avemarialat.png';
-import latinAveMaria from './assets/img/latin-ave-maria.jpg';
-import latinGloria from './assets/img/latin-gloria.jpg';
-import latinPaterNoster from './assets/img/latin-pater-noster.jpg';
-import latinAngelus from './assets/img/latin-angelus.jpg';
+import avemariaLat from './assets/img/Prayer-text-handwritten/avemarialat.png';
+import latinAveMaria from './assets/img/Prayer-text-handwritten/latin-ave-maria.jpg';
+import latinGloria from './assets/img/Prayer-text-handwritten/latin-gloria.jpg';
+import latinPaterNoster from './assets/img/Prayer-text-handwritten/latin-pater-noster.jpg';
+import latinAngelus from './assets/img/Prayer-text-handwritten/latin-angelus.jpg';
 import latinSanBenito from './assets/img/latin-san-benito.jpg';
 import sanctusBenedictus from './assets/img/sanctus-benedictus.jpg';
-import reginaCaeli from './assets/img/regina caeli.jpg';
+import reginaCaeli from './assets/img/Prayer-text-handwritten/regina caeli.jpg';
 import stAnthony from './assets/img/st-anthony-of-padua-icon-402.jpg';
 import franciscoDeAsis from './assets/img/francisco_de_asis_2.jpg';
 import allMary17th from './assets/img/AllMary17thLith.jpeg';
@@ -104,6 +104,8 @@ const REGISTRY = {
   galleryPastor: { ...PUBLIC('/gallery-images/misterios/modooscuro/pastor.jpg'), name: 'Cristo Buen Pastor', tags: ['good-shepherd', 'christ'] },
   galleryMargaritaSacredHeart: { ...PUBLIC('/gallery-images/litany/modooscuro/SANTA MARGARITA MARIA DE ALACOQUE FRENTE AL SAGRADO CORAZON DE JESUS !!!.jpg'), name: 'Santa Margarita María — Sagrado Corazón', tags: ['sacred-heart', 'margarita-maria'] },
   galleryStMichael: { ...PUBLIC('/gallery-images/litany/modooscuro/Stained glass of St_ Michael the Archangel.jpg'), name: 'San Miguel Arcángel — vitral', tags: ['michael', 'archangel', 'stained-glass'] },
+  gallerySanExpedito: { ...PUBLIC('/gallery-images/litany/modooscuro/san-expedito.jpg'), name: 'San Expedito — HODIE (Wellcome)', tags: ['expeditus', 'saint', 'hodie', 'martyr'] },
+  galleryCruzVsRoma: { ...PUBLIC('/gallery-images/misterios/modooscuro/cruz-vs-roma.jpg'), name: 'Triunfo de la Cruz sobre Roma', tags: ['cross', 'rome', 'expeditus', 'bg'] },
   galleryMaterImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/Mater immaculata.jpg'), name: 'Mater Immaculata', tags: ['mary', 'immaculate', 'stained-glass'] },
   galleryVirgoImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/virgo-inmaculata.jpg'), name: 'Virgo Immaculata', tags: ['mary', 'immaculate'] },
   galleryPentecost: { ...PUBLIC('/gallery-images/misterios/modooscuro/misteriogloria3.webp'), name: 'Pentecostés — Espíritu Santo', tags: ['holy-spirit', 'pentecost'] },

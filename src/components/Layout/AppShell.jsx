@@ -64,7 +64,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.63';
+const APP_VERSION = '0.3.64';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -89,7 +89,9 @@ export default function AppShell() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [openOptionalId, setOpenOptionalId] = useState(null);
   const compromisoUrlHandled = useRef(false);
+  const oracionUrlHandled = useRef(false);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -297,11 +299,28 @@ export default function AppShell() {
     }, { replace: true });
   }, [searchParams, navigate, setSearchParams]);
 
-  // Honest first-run (skip if compromiso deep-link already open)
+  // ?oracion=expedito → Libro + optional prayer sheet
+  useEffect(() => {
+    if (oracionUrlHandled.current) return;
+    const id = searchParams.get('oracion');
+    if (!id) return;
+    oracionUrlHandled.current = true;
+    setOpenOptionalId(id);
+    setShowIntro(false);
+    navigate('/libro', { replace: true });
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('oracion');
+      return next;
+    }, { replace: true });
+  }, [searchParams, navigate, setSearchParams]);
+
+  // Honest first-run (skip if compromiso / oración deep-link already open)
   useEffect(() => {
     try {
-      if (compromisoUrlHandled.current) return;
+      if (compromisoUrlHandled.current || oracionUrlHandled.current) return;
       if (searchParams.get('compromiso') === '1' || searchParams.get('compromiso') === 'true') return;
+      if (searchParams.get('oracion')) return;
       if (!localStorage.getItem(`rosario_intro_${INTRO_VERSION}`)) {
         setShowIntro(true);
       }
@@ -323,6 +342,7 @@ export default function AppShell() {
         next.delete('dia');
       }
       next.delete('compromiso');
+      next.delete('oracion');
       if (prev.toString() === next.toString()) return prev;
       return next;
     }, { replace: true });
@@ -477,6 +497,7 @@ export default function AppShell() {
             }}
             novenaDay={novenaDay}
             onNovenaDayChange={handleNovenaDayChange}
+            openOptionalId={openOptionalId}
           />
         );
       case 'monk': return <MonkView />;

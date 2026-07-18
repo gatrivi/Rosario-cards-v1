@@ -146,6 +146,7 @@ export default function BookletView({
   onAveMariaUndo,
   novenaDay = 1,
   onNovenaDayChange,
+  openOptionalId = null,
 }) {
   const isMercy = isDivineMercyMode(misterioActual);
   const isStations = isStationsDevotion(misterioActual);
@@ -267,6 +268,12 @@ export default function BookletView({
     setOptionalOpen(true);
     resetOptionalIdle();
   }, [resetOptionalIdle]);
+
+  // Deep link ?oracion=expedito (etc.) — open once when Libro mounts with id.
+  useEffect(() => {
+    if (!openOptionalId || !optionalPrayerThumbnail(openOptionalId)) return;
+    openOptionalPrayer(openOptionalId);
+  }, [openOptionalId, openOptionalPrayer]);
 
   useEffect(() => {
     resetOptionalIdle();
@@ -1171,6 +1178,15 @@ export default function BookletView({
                 badge="M"
               />
             </ShelfItem>
+            <ShelfItem label="Virgen del Carmen">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'carmen'}
+                onClick={() => openOptionalPrayer('carmen')}
+                title="Virgen del Carmen — 16 de julio"
+                img={optionalPrayerThumbnail('carmen')}
+                badge="16"
+              />
+            </ShelfItem>
             <ShelfItem label="Ángel Guarda">
               <MercyWindowThumb
                 active={optionalOpen && optionalPrayerId === 'guardian'}
@@ -1187,6 +1203,15 @@ export default function BookletView({
                 title="San Miguel Arcángel"
                 img={optionalPrayerThumbnail('michael')}
                 badge="SM"
+              />
+            </ShelfItem>
+            <ShelfItem label="San Expedito">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'expedito'}
+                onClick={() => openOptionalPrayer('expedito')}
+                title="San Expedito — causas urgentes (HODIE)"
+                img={optionalPrayerThumbnail('expedito')}
+                badge="H"
               />
             </ShelfItem>
             <ShelfItem label="San Benito">
