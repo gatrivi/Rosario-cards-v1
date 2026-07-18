@@ -1,6 +1,6 @@
 # Historic Christian devoutions (Libro shelf)
 
-**v0.3.59+** · Source of truth: `src/data/historicDevotionsCatalog.js`  
+**v0.3.65+** · Source of truth: `src/data/historicDevotionsCatalog.js`  
 UI: Libro → Devociones (`DevotionsShelf`) · rows **Devociones** / **Oraciones breves** / **Próximas**
 
 Prefer **modooscuro / stained-glass** thumbs (`imageRegistry` ids).
@@ -68,7 +68,7 @@ No auto month-switch in UI yet — shelf copy / titles mention Julio for Sangre;
 | `precious_blood` | Preciosísima Sangre | julio | `lamb` | have |
 | `loreto` | Letanía de Loreto | cierres del Rosario | `galleryMaterImmaculata` | have |
 | `st_michael` | San Miguel | León XIII · 1886 | `galleryStMichael` | **have** (v0.3.59 breve) |
-| `st_expeditus` | San Expedito | causas urgentes · HODIE | `gallerySanExpedito` | **have** (v0.3.64 breve) |
+| `st_expeditus` | San Expedito | causas urgentes · HODIE | `gallerySanExpeditoBalvanera` | **have** (v0.3.65 devoción) |
 | `immaculate_heart` | Inmaculado Corazón | Fátima | `galleryMaterImmaculata` | soon |
 | `holy_spirit` | Espíritu Santo | Pentecostés | `galleryPentecost` | soon |
 | `scapular` | Escápulario | Carmen | `theotokos` | soon |
@@ -78,11 +78,14 @@ No auto month-switch in UI yet — shelf copy / titles mention Julio for Sangre;
 
 Also on shelf but outside this table: Magnificat, Ángel Guarda, San Benito, Sangre (litany/corona/ofrendas), Via Lucis, Novena Misericordia.
 
-## San Expedito (shipped v0.3.64)
+## San Expedito (devoción v0.3.65)
 
-- **Data:** `optionalPrayers.js` → `id: 'expedito'` (ES / EN / LA · *hodie, non cras*).
-- **Thumb / bg:** `gallerySanExpedito` (Wellcome CC BY · Palermo s. XIX) + alts `galleryCruzVsRoma`, `vitreauxCruz`.
-- **UI:** Oraciones breves → San Expedito (badge `H`); deep link https://rosario.gatrivi.com/libro?oracion=expedito
+- **Data:** `sanExpeditoData.js` → `id: 'sanexpedito'`; oración de la Parroquia Nuestra Señora de Balvanera + invocación final.
+- **Thumb / bg:** `gallerySanExpeditoBalvanera` (arte propio servido por `/api/san-expedito-art`) + alts existentes.
+- **UI:** Oraciones breves → San Expedito (badge `H`); abre el recorrido completo en Libro.
+- **URL canónica:** https://rosario.gatrivi.com/san-expedito/ → `/libro?misterio=sanexpedito&paso=0`.
+- **Social:** `/api/san-expedito-og` (JPEG 1200 × 630; OG + X).
+- **Compatibilidad:** el enlace anterior `?oracion=expedito` sigue abriendo la hoja breve.
 - **Dates:** popular devotion for urgent causes (feast traditionally 19 Apr in some places).
 
 ## San Miguel (shipped)
