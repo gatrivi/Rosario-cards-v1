@@ -4,6 +4,12 @@
 **Objetivo:** `cloud-rosary-v2` · observado en `v0.3.64`  
 **Alcance:** aviso de actualización, bienvenida, biblioteca de devociones y lector de oraciones breves.
 
+## Referencia visual obligatoria
+
+![Objetivo visual para las cuatro superficies](./devotions-surfaces-mockup.png)
+
+Esta imagen es el **objetivo de aceptación visual**, no una ilustración decorativa. Igualar de cerca composición, jerarquía, densidad, proporciones, tratamiento del arte, marcos dorados y contraste. Usar los assets reales del proyecto. Sólo apartarse por contenido dinámico, safe areas o accesibilidad, y comparar capturas lado a lado en `390×844` antes de cerrar.
+
 ## 0. Resultado buscado
 
 Estas cuatro superficies deben sentirse como partes del mismo **libro de oración nocturno**: tinta oscura, marfil, filetes de oro, rojo profundo y arte sacro. No deben parecer banners, tarjetas SaaS ni una colección de botones agregados en distintas épocas.
