@@ -13,6 +13,7 @@
   index.md                          ← you are here
   architecture/
     current-stack-jun-2026.md       ← production views, data, audio, inventory
+    cat-audio-engine-rosario-map.md ← Fase 0 Cat Audio Engine (Rosario only)
     architecture-overview.md          ← high-level map (baseline)
     live-system-snapshot.md           ← pre-recovery monolith detail (partially stale)
     resonator-and-physics-blueprint.md
