@@ -31,10 +31,8 @@ export default function PeregrinacionView({
   const { totalAveMarias } = useAveMariaStats();
   const { actual, next } = getPeregrinacionActual(totalAveMarias);
   const [selectedPin, setSelectedPin] = useState(null);
-  const compromiso = useMemo(() => {
-    if (!isCompromisoCampaignActive()) return null;
-    return getCompromisoProgress();
-  }, [totalAveMarias]);
+  // ponytail: component already re-renders on totalAveMarias; no memo needed
+  const compromiso = isCompromisoCampaignActive() ? getCompromisoProgress() : null;
 
   const journeyProgressPct = useMemo(() => {
     if (!next) return 100;
