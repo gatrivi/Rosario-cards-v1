@@ -1,6 +1,7 @@
 import { imagePath } from './imageRegistry';
 
-const angelImg = imagePath('angelDeLaGuarda');
+const angelImg = imagePath('angelDeLaGuarda') || imagePath('angelDeLaGuardaLegacy');
+const angelImgAlt = imagePath('angelDeLaGuardaLegacy');
 const benedictImg = imagePath('sanctusBenedictus');
 const benedictLatinImg = imagePath('latinSanBenito');
 const michaelImg = imagePath('galleryStMichael');
@@ -18,7 +19,7 @@ export const OPTIONAL_PRAYERS = [
     id: 'guardian',
     title: 'Ángel de la Guarda',
     img: angelImg,
-    imgCandidates: [angelImg].filter(Boolean),
+    imgCandidates: [angelImg, angelImgAlt].filter(Boolean),
     variants: [
       {
         // Default: the rhymed Spanish form the user prefers.

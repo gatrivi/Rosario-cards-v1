@@ -1,6 +1,6 @@
 .mercy-window-thumb {
   align-items: center;
-  background: transparent;
+  background: rgba(8, 6, 14, 0.55);
   border: 1px solid rgba(212, 175, 55, 0.7);
   border-radius: 10px 10px 4px 4px;
   box-sizing: border-box;
@@ -10,9 +10,10 @@
   height: 58px;
   justify-content: center;
   overflow: hidden;
-  padding: 2px;
+  padding: 0;
+  position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-  width: 34px;
+  width: 40px;
 }
 
 .mercy-window-thumb:hover:not(:disabled) {
@@ -39,11 +40,41 @@
 .mercy-window-thumb__img {
   display: block;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center 20%;
   width: 100%;
 }
 
 .mercy-window-thumb--active {
   border-color: #d4af37;
   box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35), 0 0 8px rgba(212, 175, 55, 0.4);
+}
+
+.mercy-window-thumb__badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background-color: #d4af37;
+  color: #000;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 1px solid #000;
+  box-shadow: 0 0 4px rgba(212, 175, 55, 0.8);
+}
+
+/* Square photo tile — oraciones breves */
+.mercy-window-thumb--photo {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+}
+
+.mercy-window-thumb--photo .mercy-window-thumb__img {
+  object-position: center center;
 }

@@ -84,7 +84,8 @@ const REGISTRY = {
   // ─<arg_value> Early Christian / Byzantine / general sacred art ──
   earlyChristian: { path: earlyChristian, name: 'Arte cristiano primitivo', tags: ['early-christian', 'catacombs', 'art'], source: 'asset' },
   earlyChristianAlt: { path: earlyChristianAlt, name: 'Arte cristiano primitivo (alt.)', tags: ['early-christian', 'art'], source: 'asset' },
-  angelDeLaGuarda: { ...PUBLIC('/gallery-images/misterios/gloria/angel-de-la-guarda.jpg'), name: 'Ángel de la Guarda', tags: ['angel', 'guardian', 'optional'] },
+  angelDeLaGuarda: { ...PUBLIC('/gallery-images/angel-de-la-guarda_litog.jpg'), name: 'Ángel de la Guarda (litog.)', tags: ['angel', 'guardian', 'optional'] },
+  angelDeLaGuardaLegacy: { ...PUBLIC('/gallery-images/misterios/gloria/angel-de-la-guarda.jpg'), name: 'Ángel de la Guarda (legacy)', tags: ['angel', 'guardian'] },
   byzantineArt: { path: byzantineArt, name: 'Arte bizantino', tags: ['byzantine', 'icon', 'art'], source: 'asset' },
   stainedGlass: { path: stainedGlass, name: 'Vitral genérico', tags: ['stained-glass', 'generic'], source: 'asset' },
   encountersCathedral: { path: encountersCathedral, name: 'Catedral — encuentro', tags: ['cathedral', 'interior'], source: 'asset' },

@@ -1,0 +1,101 @@
+.update-notice {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 12px;
+  right: 12px;
+  z-index: 600;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 10px 12px;
+  border: 1px solid var(--sacred-line, rgba(212, 175, 55, 0.34));
+  border-radius: 10px;
+  background: rgba(16, 12, 18, 0.96);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  color: var(--sacred-ivory, #f4eddd);
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+@media (min-width: 768px) {
+  .update-notice {
+    left: auto;
+    right: 16px;
+    margin: 0;
+  }
+}
+
+.update-notice__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+
+.update-notice__seal {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--sacred-line, rgba(212, 175, 55, 0.34));
+  border-radius: 999px;
+  color: var(--sacred-gold, #d4af37);
+  font-size: 0.85rem;
+}
+
+.update-notice__copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.update-notice__title {
+  margin: 0;
+  color: var(--sacred-gold, #d4af37);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.update-notice__summary {
+  margin: 0.15rem 0 0;
+  color: var(--sacred-muted, #aaa092);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.update-notice__cta {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--sacred-radius-sm, 8px);
+  background: var(--sacred-gold, #d4af37);
+  color: #100c12;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.update-notice__notes {
+  display: block;
+  margin: 6px 0 0 38px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sacred-muted, #aaa092);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.update-notice__notes:hover,
+.update-notice__notes:focus-visible {
+  color: var(--sacred-gold, #d4af37);
+  outline: 2px solid var(--sacred-gold, #d4af37);
+  outline-offset: 2px;
+}

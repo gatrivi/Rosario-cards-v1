@@ -203,8 +203,20 @@ describe('BookletView', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /Vía Dolorosa/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Dolorosos/i }));
     expect(onMysteryChange).toHaveBeenCalledWith('dolorosos');
+  });
+
+  test('rosary mystery pills show guide-audio mark', () => {
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={onUpdateProgreso}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+    expect(document.querySelectorAll('.guide-audio-mark').length).toBe(4);
   });
 
   test('completes staged transition when parent index updates mid-sequence', () => {

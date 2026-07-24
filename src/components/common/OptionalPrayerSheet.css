@@ -1,88 +1,272 @@
 .optional-prayer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  z-index: 480;
+  z-index: 1400;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: 1rem;
+  background: rgba(16, 12, 18, 0.72);
+  padding: 0;
 }
 
 .optional-prayer-sheet {
-  background: linear-gradient(160deg, #141018, #1e1828);
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  border-radius: 14px;
-  max-width: 20rem;
-  padding: 1rem;
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  background: var(--sacred-ink, #100c12);
+  border: 0;
+  border-radius: 0;
+  color: var(--sacred-ivory, #f4eddd);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .optional-prayer-backdrop {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .optional-prayer-sheet {
+    width: min(92vw, 500px);
+    height: auto;
+    max-height: min(94dvh, 820px);
+    border-radius: var(--sacred-radius-sheet, 18px);
+    border: 1px solid var(--sacred-line, rgba(212, 175, 55, 0.34));
+  }
+}
+
+.optional-prayer-sheet__scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0;
+}
+
+/* Full-bleed opening art — same asset as picker thumb, edge-to-edge. */
+.optional-prayer-sheet__opening {
+  position: relative;
+  width: 100%;
+  min-height: min(78dvh, 640px);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #1a1524;
 }
 
 .optional-prayer-sheet__art {
-  border: 1px solid rgba(212, 175, 55, 0.28);
-  border-radius: 10px;
+  position: absolute;
+  inset: 0;
   display: block;
-  height: 7.5rem;
-  margin: 0 auto 0.75rem;
-  object-fit: cover;
-  object-position: center top;
   width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center 22%;
+}
+
+.optional-prayer-sheet__art--empty {
+  background: linear-gradient(160deg, #1a1524, #2a1f18);
+}
+
+.optional-prayer-sheet__opening-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32%;
+  background: linear-gradient(transparent, var(--sacred-ink, #100c12));
+  pointer-events: none;
+}
+
+.optional-prayer-sheet__toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: calc(0.75rem + env(safe-area-inset-top, 0)) 1rem 2.5rem;
+  border: 0;
+  background: linear-gradient(180deg, rgba(16, 12, 18, 0.78) 0%, rgba(16, 12, 18, 0.2) 70%, transparent);
+}
+
+.optional-prayer-sheet__eyebrow {
+  margin: 0;
+  color: var(--sacred-gold, #d4af37);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.7rem;
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+}
+
+.optional-prayer-sheet__heading {
+  margin: 0.15rem 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+  text-wrap: balance;
+}
+
+.optional-prayer-sheet__x {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--sacred-line, rgba(212, 175, 55, 0.34));
+  border-radius: 8px;
+  background: rgba(16, 12, 18, 0.55);
+  color: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.optional-prayer-sheet__body {
+  position: relative;
+  z-index: 1;
+  margin-top: -1.5rem;
+  padding: 0 0 1.25rem;
+  background: var(--sacred-ink, #100c12);
 }
 
 .optional-prayer-sheet__hint {
-  color: #888;
-  font-size: 0.68rem;
-  margin: 0 0 0.65rem;
-  text-align: center;
+  margin: 0.35rem 1rem 0;
+  color: var(--sacred-muted, #aaa092);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.78rem;
+  font-style: italic;
+  line-height: 1.35;
 }
 
-.optional-prayer-sheet__tabs,
+.optional-prayer-sheet__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.75rem 1rem 0.4rem;
+}
+
+.optional-prayer-sheet__title {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+}
+
+.optional-prayer-sheet__change {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 0.7rem;
+  border: 1px solid var(--sacred-line, rgba(212, 175, 55, 0.34));
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sacred-gold, #d4af37);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+/* Picker keeps cropped thumbs — second art state lives only in __opening. */
+.optional-prayer-sheet__picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0 1rem 0.75rem;
+}
+
+.optional-prayer-sheet__pick {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 64px;
+  padding: 0.4rem;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 8px;
+  background: rgba(8, 6, 14, 0.45);
+  color: inherit;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.optional-prayer-sheet__pick.active {
+  background: var(--sacred-gold-soft, rgba(212, 175, 55, 0.18));
+  border-color: var(--sacred-gold, #d4af37);
+}
+
+.optional-prayer-sheet__pick-art {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex: 0 0 48px;
+}
+
 .optional-prayer-sheet__langs {
   display: flex;
-  gap: 0.35rem;
-  justify-content: center;
-  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 1rem 0.75rem;
 }
 
-.optional-prayer-sheet__tab,
 .optional-prayer-sheet__lang {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 8px;
-  color: #ccc;
+  background: transparent;
+  color: var(--sacred-muted, #aaa092);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.85rem;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 0.72rem;
-  padding: 0.35rem 0.55rem;
 }
 
-.optional-prayer-sheet__tab.active,
 .optional-prayer-sheet__lang.active {
-  border-color: rgba(212, 175, 55, 0.55);
-  color: #d4af37;
+  border-color: var(--sacred-gold, #d4af37);
+  color: var(--sacred-gold, #d4af37);
+  background: var(--sacred-gold-soft, rgba(212, 175, 55, 0.18));
 }
 
 .optional-prayer-sheet__text {
-  color: #f8f4e6;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  margin-bottom: 0.75rem;
-  max-height: 40vh;
-  overflow-y: auto;
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+  max-width: 31ch;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.1rem;
+  line-height: 1.68;
   text-align: center;
+  text-wrap: pretty;
+  color: var(--sacred-ivory, #f4eddd);
 }
 
 .optional-prayer-sheet__text p {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.8em;
+}
+
+.optional-prayer-sheet__footer {
+  flex: 0 0 auto;
+  padding: 0.55rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0));
+  border-top: 1px solid rgba(212, 175, 55, 0.18);
+  background: rgba(16, 12, 18, 0.98);
 }
 
 .optional-prayer-sheet__close {
+  display: block;
   width: 100%;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  min-height: 48px;
+  border: 1px solid var(--sacred-line, rgba(212, 175, 55, 0.34));
   border-radius: 8px;
-  color: #d4af37;
+  background: transparent;
+  color: var(--sacred-gold, #d4af37);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.95rem;
   cursor: pointer;
-  font-family: inherit;
-  padding: 0.55rem;
 }

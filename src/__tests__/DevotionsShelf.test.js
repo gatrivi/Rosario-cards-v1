@@ -1,70 +1,65 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import DevotionsShelf, { ShelfItem } from '../components/common/DevotionsShelf';
+import DevotionsShelf from '../components/common/DevotionsShelf';
 
-describe('DevotionsShelf', () => {
-  const shelf = (misterio = 'gozosos') => (
+describe('DevotionsShelf library sheet', () => {
+  const journeys = [
+    {
+      id: 'sc',
+      label: 'Sagrado Corazón',
+      image: '/x.jpg',
+      active: false,
+      onSelect: jest.fn(),
+    },
+  ];
+  const briefs = [
+    {
+      id: 'guardian',
+      label: 'Ángel de la Guarda',
+      image: '/y.jpg',
+      active: false,
+      onSelect: jest.fn(),
+    },
+  ];
+
+  const shelf = (misterio = 'gozosos', extra = {}) => (
     <DevotionsShelf
       misterioActual={misterio}
       active={misterio !== 'gozosos'}
-      recorridos={
-        <ShelfItem label="Sta. Faustina">
-          <button type="button">faustina</button>
-        </ShelfItem>
-      }
-      breves={
-        <ShelfItem label="Ángelus">
-          <button type="button">angelus</button>
-        </ShelfItem>
-      }
+      journeys={journeys}
+      briefs={briefs}
+      {...extra}
     />
   );
 
   test('panel is closed by default and opens on toggle', () => {
     render(shelf());
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /Devociones/i })).not.toBeInTheDocument();
     fireEvent.click(
       screen.getByRole('button', { name: /devociones y oraciones breves/i })
     );
-    expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByRole('menu').querySelector('.devotions-shelf__heading')).toHaveTextContent('Devociones');
+    expect(screen.getByRole('dialog', { name: /Devociones/i })).toBeInTheDocument();
+    expect(screen.getByText('Recorridos')).toBeInTheDocument();
     expect(screen.getByText('Oraciones breves')).toBeInTheDocument();
   });
 
-  test('closes when the active devotion changes', () => {
-    const { rerender } = render(shelf());
-    fireEvent.click(
-      screen.getByRole('button', { name: /devociones y oraciones breves/i })
-    );
-    expect(screen.getByRole('menu')).toBeInTheDocument();
-    rerender(shelf('divinamisericordia'));
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-  });
-
-  test('panel is portaled to document.body above app chrome', () => {
+  test('selecting a brief calls onSelect', () => {
     render(shelf());
     fireEvent.click(
       screen.getByRole('button', { name: /devociones y oraciones breves/i })
     );
-    const menu = screen.getByRole('menu');
-    expect(menu).toHaveClass('devotions-shelf__panel--portal');
-    expect(menu.parentElement).toBe(document.body);
+    fireEvent.click(screen.getByRole('button', { name: /Ángel de la Guarda/i }));
+    expect(briefs[0].onSelect).toHaveBeenCalled();
   });
 
-  test('calls onOpenChange when toggled', () => {
-    const onOpenChange = jest.fn();
-    render(
-      <DevotionsShelf
-        misterioActual="gozosos"
-        onOpenChange={onOpenChange}
-        recorridos={<ShelfItem label="Test"><button type="button">x</button></ShelfItem>}
-        breves={<ShelfItem label="Breve"><button type="button">y</button></ShelfItem>}
-      />
-    );
+  test('return CTA only when provided', () => {
+    const onReturn = jest.fn();
+    render(shelf('sagrado_corazon_adoracion', { onReturnToRosary: onReturn }));
     fireEvent.click(
       screen.getByRole('button', { name: /devociones y oraciones breves/i })
     );
-    expect(onOpenChange).toHaveBeenCalledWith(true);
+    fireEvent.click(screen.getByRole('button', { name: /Volver al Rosario/i }));
+    expect(onReturn).toHaveBeenCalled();
   });
 
   test('externalToggle opens via rosario-devotions-toggle event', () => {
@@ -72,20 +67,12 @@ describe('DevotionsShelf', () => {
       <DevotionsShelf
         externalToggle
         misterioActual="gozosos"
-        recorridos={
-          <ShelfItem label="Sta. Faustina">
-            <button type="button">faustina</button>
-          </ShelfItem>
-        }
-        breves={
-          <ShelfItem label="Ángelus">
-            <button type="button">angelus</button>
-          </ShelfItem>
-        }
+        journeys={journeys}
+        briefs={briefs}
       />
     );
     expect(screen.queryByRole('button', { name: /devociones y oraciones breves/i })).not.toBeInTheDocument();
     fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Devociones/i })).toBeInTheDocument();
   });
 });

@@ -23,13 +23,12 @@ import SyncManager from '../common/SyncManager';
 import SettingsOverlay from '../common/SettingsOverlay';
 import ReleaseNotesOverlay from '../common/ReleaseNotesOverlay';
 import ViewErrorBoundary from '../common/ViewErrorBoundary';
-import { getUpdateSummaryLine } from '../../data/releaseNotes';
+import UpdateNotice from '../common/UpdateNotice';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import DailyTracker from '../Rosedal/DailyTracker';
 import FeedbackOverlay from '../common/FeedbackOverlay';
 import PrayForOrbs from '../common/PrayForOrbs';
 import {
-  IconHelp,
   IconSettings,
   IconHandLeft,
   IconHandRight,
@@ -79,8 +78,6 @@ export default function AppShell() {
   const vistaActiva = getViewIdFromPath(location.pathname);
   const initializedFromUrl = useRef(false);
 
-  const INTRO_VERSION = 'v2.0'; // Honest first-run + compromiso CTAs
-  const [showIntro, setShowIntro] = useState(false);
   const [showCompromiso, setShowCompromiso] = useState(false);
   const [compromisoMode, setCompromisoMode] = useState('commit'); // commit | done
   const [showSync, setShowSync] = useState(false);
@@ -289,7 +286,6 @@ export default function AppShell() {
     if (isCompromisoCampaignActive()) {
       setCompromisoMode('commit');
       setShowCompromiso(true);
-      setShowIntro(false);
       navigate('/libro', { replace: true });
     }
     setSearchParams((prev) => {
@@ -306,7 +302,6 @@ export default function AppShell() {
     if (!id) return;
     oracionUrlHandled.current = true;
     setOpenOptionalId(id);
-    setShowIntro(false);
     navigate('/libro', { replace: true });
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
@@ -314,19 +309,6 @@ export default function AppShell() {
       return next;
     }, { replace: true });
   }, [searchParams, navigate, setSearchParams]);
-
-  // Honest first-run (skip if compromiso / oración deep-link already open)
-  useEffect(() => {
-    try {
-      if (compromisoUrlHandled.current || oracionUrlHandled.current) return;
-      if (searchParams.get('compromiso') === '1' || searchParams.get('compromiso') === 'true') return;
-      if (searchParams.get('oracion')) return;
-      if (!localStorage.getItem(`rosario_intro_${INTRO_VERSION}`)) {
-        setShowIntro(true);
-      }
-    } catch (_) { /* ignore */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
-  }, []);
 
   useEffect(() => {
     setSearchParams((prev) => {
@@ -380,11 +362,6 @@ export default function AppShell() {
   const dismissSync = () => {
     setPendingSyncId(null);
     cleanSyncParam();
-  };
-
-  const dismissIntro = () => {
-    localStorage.setItem(`rosario_intro_${INTRO_VERSION}`, '1');
-    setShowIntro(false);
   };
 
   const handleUpdateProgreso = React.useCallback((newIndex) => {
@@ -465,7 +442,6 @@ export default function AppShell() {
     saveCompromiso({ mysteryId: mystery });
     startLibroHoy(mystery);
     setShowCompromiso(false);
-    dismissIntro();
   }, [startLibroHoy]);
 
   const renderizarVista = () => {
@@ -626,53 +602,24 @@ export default function AppShell() {
       <AppActionDock
         simpleMode={settings.simpleMode}
         soundEnabled={settings.soundEnabled}
-        onHelp={() => setShowIntro(true)}
         onSettings={() => setShowSettings(true)}
       />
 
-      {/* Update banner — visible when a new service worker is waiting */}
-      {updateAvailable && (
-        <div style={{
-          position: 'absolute', top: 60, left: 12, right: 12, zIndex: 200,
-          background: 'rgba(20,20,20,0.95)', border: '1px solid #D4AF37',
-          borderRadius: '12px', padding: '12px 14px',
-          display: 'flex', flexDirection: 'column', gap: '10px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ color: '#D4AF37', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                Nueva versión (v{APP_VERSION})
-              </div>
-              <div style={{ color: '#aaa', fontSize: '0.75rem', marginTop: '4px', lineHeight: 1.35 }}>
-                {getUpdateSummaryLine()}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={applyPendingUpdate}
-              style={{
-                background: '#D4AF37', color: '#000', border: 'none',
-                borderRadius: '8px', padding: '8px 14px', fontWeight: 'bold',
-                cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0
-              }}
-            >
-              Actualizar
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowReleaseNotes(true)}
-            style={{
-              background: 'transparent', border: 'none', color: '#888',
-              fontSize: '0.7rem', cursor: 'pointer', textAlign: 'left', padding: 0,
-              textDecoration: 'underline',
-            }}
-          >
-            Ver todas las novedades
-          </button>
-        </div>
-      )}
+      {/* Update notice — deferred while blocking overlays are open */}
+      <UpdateNotice
+        visible={
+          updateAvailable &&
+          !showSettings &&
+          !showSync &&
+          !showReleaseNotes &&
+          !showFeedback &&
+          !showCompromiso &&
+          !pendingSyncId
+        }
+        version={APP_VERSION}
+        onUpdate={applyPendingUpdate}
+        onOpenNotes={() => setShowReleaseNotes(true)}
+      />
 
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', zIndex: 10, minHeight: 0 }} className="view-enter-active app-view-layer">
         <ViewErrorBoundary viewId={vistaActiva}>
@@ -794,75 +741,6 @@ export default function AppShell() {
         </div>
       )}
 
-      {/* WELCOME INTRO — honest first-run */}
-      {showIntro && (
-        <div className="modal-overlay" style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
-        }} onClick={dismissIntro}>
-          <div className="modal-content" style={{
-            background: 'linear-gradient(145deg, #0d0d0d, #1a0a0a)', border: '1px solid #D4AF37',
-            borderRadius: '24px', padding: '36px 26px', maxWidth: '420px', width: '100%', textAlign: 'center',
-            boxShadow: '0 30px 60px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)',
-            position: 'relative', overflow: 'hidden'
-          }} onClick={e => e.stopPropagation()}>
-            <h1 style={{ color: '#D4AF37', margin: '0 0 10px', fontSize: '2rem', letterSpacing: '1px' }}>Rosario Cards</h1>
-            <p style={{ color: '#ccc', fontSize: '0.95rem', lineHeight: '1.55', margin: '0 0 22px' }}>
-              El Libro te guía paso a paso en el Rosario de hoy. Un Rosario completo son cinco misterios (décenas).
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  dismissIntro();
-                  startLibroHoy();
-                }}
-                style={{
-                  width: '100%', padding: '16px', background: 'linear-gradient(90deg, #D4AF37, #C5A028)', color: '#000',
-                  border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.05rem',
-                  cursor: 'pointer',
-                }}
-              >
-                Rezar el Rosario de hoy
-              </button>
-              {isCompromisoCampaignActive() ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    dismissIntro();
-                    setCompromisoMode('commit');
-                    setShowCompromiso(true);
-                  }}
-                  style={{
-                    width: '100%', padding: '14px',
-                    background: 'linear-gradient(90deg, #2a0a0a, #3d0f0f)',
-                    border: '1px solid #D4AF37', borderRadius: '12px',
-                    color: '#D4AF37', fontWeight: 'bold', fontSize: '1rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Rezá por Argentina
-                </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={dismissIntro}
-                style={{
-                  width: '100%', padding: '12px', background: 'transparent', color: '#888',
-                  border: '1px solid #333', borderRadius: '12px', fontSize: '0.9rem', cursor: 'pointer',
-                }}
-              >
-                Más tarde
-              </button>
-            </div>
-            <p style={{ fontSize: '0.72rem', color: '#555', margin: '18px 0 0 0' }}>
-              Ayuda (arriba) vuelve a abrir esta guía.
-            </p>
-          </div>
-        </div>
-      )}
-
       {showCompromiso && (
         <CompromisoSheet
           mode={compromisoMode}
@@ -888,11 +766,9 @@ export default function AppShell() {
 function AppActionDock({
   simpleMode,
   soundEnabled = true,
-  onHelp,
   onSettings,
 }) {
-  // Always top: user wants globes + Ayuda + Ajustes on the first row.
-  // oneHandMode must not drag this chrome over Devociones / bottom nav.
+  // Always top: orbs + Ajustes. oneHandMode must not drag this over Devociones / bottom nav.
   return (
     <div className="app-action-dock app-action-dock--top">
       <div className="app-action-cluster app-action-cluster--left app-action-cluster--orbs">
@@ -903,16 +779,6 @@ function AppActionDock({
         />
       </div>
       <div className="app-action-cluster app-action-cluster--right">
-        <button
-          type="button"
-          onClick={onHelp}
-          title="Ayuda"
-          aria-label="Ayuda"
-          className={`app-action-btn app-action-btn--round${simpleMode ? ' simple-mode' : ''}`}
-        >
-          <IconHelp size={18} />
-          {simpleMode && <span>Ayuda</span>}
-        </button>
         <button
           type="button"
           onClick={onSettings}

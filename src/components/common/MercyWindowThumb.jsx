@@ -11,6 +11,8 @@ export default function MercyWindowThumb({
   isNovena = false,
   img,
   badge,
+  /** photo = square tile (breves); default = gothic window */
+  variant = 'window',
 }) {
   const isDisabled = disabled || soon;
   return (
@@ -18,32 +20,17 @@ export default function MercyWindowThumb({
       type="button"
       className={`mercy-window-thumb${active ? ' mercy-window-thumb--active' : ''}${
         soon ? ' mercy-window-thumb--soon' : ''
-      }`}
+      }${variant === 'photo' ? ' mercy-window-thumb--photo' : ''}`}
       onClick={isDisabled ? undefined : onClick}
       disabled={isDisabled}
       title={soon ? `${title} (próximamente)` : title}
       aria-label={soon ? `${title} (próximamente)` : title}
-      style={{ position: 'relative' }}
     >
       <img src={img || faustinaThumb} alt="" className="mercy-window-thumb__img" />
       {(isNovena || badge) && (
-        <span style={{
-          position: 'absolute',
-          bottom: '2px',
-          right: '2px',
-          backgroundColor: '#d4af37',
-          color: '#000',
-          borderRadius: '50%',
-          width: '12px',
-          height: '12px',
-          fontSize: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          border: '1px solid #000',
-          boxShadow: '0 0 4px rgba(212, 175, 55, 0.8)'
-        }}>{badge || '9'}</span>
+        <span className="mercy-window-thumb__badge" aria-hidden="true">
+          {badge || '9'}
+        </span>
       )}
     </button>
   );

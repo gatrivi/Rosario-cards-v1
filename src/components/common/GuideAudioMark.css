@@ -1,0 +1,19 @@
+/* Tiny corner pip — guide audio pack ready (CatTS). */
+.guide-audio-mark {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d4af37;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 6px rgba(212, 175, 55, 0.55);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.guide-audio-mark__host {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}

@@ -174,14 +174,14 @@ No usar `MercyWindowThumb` (34 × 58 px) como primitiva de layout y luego correg
 ### 6.1 Estructura
 
 1. Toolbar sticky: ceja **ORACIÓN BREVE**, título actual y cerrar (`×`, 44 px).
-2. Arte hero de `136–160px`, ancho completo, `object-position: center 22%` salvo override futuro.
+2. **Apertura a sangre** del mismo arte del picker: full-bleed edge-to-edge (`min-height` ~78dvh), sin card, márgenes ni hero tipo thumbnail. Toolbar sobre el arte. Al hacer scroll, la oración continúa debajo.
 3. Línea de contexto: **Pausa breve · tu lugar en el Rosario queda guardado.**
 4. Fila de título + botón **Cambiar oración**.
 5. Control segmentado de idiomas/versiones, una sola fila, 44 px de alto.
 6. Texto de oración.
 7. Footer sticky **Volver al Rosario**.
 
-En mobile la sheet ocupa `calc(100dvh - 12px)` y nace desde abajo; en desktop `max-width: 500px`, `max-height: min(90dvh, 760px)`. Toolbar y footer no scrollean; sólo el cuerpo central.
+No usar intro-card para oraciones breves: picker thumb → sheet con apertura a sangre. En mobile la sheet es `100dvh` a filo; en desktop `max-width: 500px`, `max-height: min(94dvh, 820px)`. Footer sticky; scroll del cuerpo incluye el arte de apertura.
 
 ### 6.2 Selector
 

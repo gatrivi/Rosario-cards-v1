@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — El Camino (8-bit)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  :root{
+    --ink:#16141f;
+    --panel:#211e2d;
+    --gold:#d4af37;
+    --gold-dim:#6b5c2c;
+    --parchment:#f1e6cf;
+    --ember:#b0432c;
+    --line:#3a3550;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#e9e4d8;
+    font-family:'Press Start 2P', ui-monospace, 'Courier New', monospace;
+    display:flex;
+    justify-content:center;
+    padding:32px 12px;
+  }
+  .device{
+    width:460px;
+    max-width:100%;
+    background:var(--ink);
+    border:6px solid #0a0910;
+    border-radius:14px;
+    padding:16px 14px 20px;
+    box-shadow:0 8px 0 #0a0910;
+  }
+  .screen-title{ color:var(--gold); font-size:11px; text-align:center; margin:2px 0 12px; }
+  svg.scene{ width:100%; display:block; image-rendering:pixelated; }
+  .wp{ cursor:pointer; }
+  .wp:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  .hud{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--panel); border:2px solid var(--line);
+    padding:8px 10px; margin-top:10px;
+  }
+  .hud .label{ color:var(--parchment); opacity:.6; font-size:6px; }
+  .hud .value{ color:var(--gold); font-size:8px; margin-top:4px; }
+  .bar{ width:80px; height:6px; background:#171522; border:1px solid var(--line); }
+  .bar-fill{ height:100%; background:var(--gold-dim); }
+
+  .dialogue{
+    margin-top:10px; background:var(--parchment); border:3px solid var(--gold-dim);
+    padding:10px 12px;
+  }
+  .dialogue .name{ color:var(--ink); font-size:10px; margin:0 0 6px; }
+  .dialogue .desc{ color:#4a4230; font-size:8px; font-family:ui-monospace,monospace; line-height:1.6; margin:0 0 6px; }
+  .dialogue .stat{ color:var(--ember); font-size:7px; font-family:ui-monospace,monospace; margin:0; }
+  .dialogue .hint{ font-size:6px; color:#7a6f52; margin-top:8px; font-family:ui-monospace,monospace; }
+
+  @keyframes bob{ 50%{ transform:translateY(-3px); } }
+  .pilgrim{ animation:bob 0.6s steps(2) infinite; }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <p class="screen-title">el camino</p>
+  <svg class="scene" viewBox="0 0 720 260" shape-rendering="crispEdges" role="img" aria-label="Mapa de peregrinación en estilo 8 bits">
+    <rect x="0" y="0" width="720" height="90" fill="#1c1830"/>
+    <rect x="0" y="90" width="720" height="50" fill="#332a52"/>
+    <rect x="0" y="140" width="720" height="120" fill="#3c5432"/>
+    <g id="dither"></g>
+
+    <polyline points="20,220 100,220 100,195 190,195 190,215 280,215 280,180 370,180 370,200 460,200 460,170 550,170 550,190 640,190 640,165 700,165"
+      fill="none" stroke="#5a4028" stroke-width="8" stroke-linejoin="miter"/>
+    <polyline points="20,220 100,220 100,195 190,195 190,215 280,215 280,180 370,180 370,200 460,200 460,170 550,170 550,190 640,190 640,165 700,165"
+      fill="none" stroke="#8a6a45" stroke-width="4" stroke-linejoin="miter"/>
+
+    <!-- 1. Iglesia local -->
+    <g class="wp" tabindex="0" role="button" aria-label="Ir a la Iglesia local, 200 aves, completada" data-i="0" transform="translate(60,220)">
+      <rect x="-20" y="-2" width="40" height="6" fill="#2f451f"/>
+      <rect x="-9" y="-14" width="18" height="14" fill="#c9b98f"/>
+      <polygon points="-11,-14 0,-24 11,-14" fill="#7a5a3a"/>
+      <rect x="-3" y="-7" width="6" height="7" fill="#5a4a30"/>
+      <rect x="-1" y="-31" width="2" height="6" fill="var(--parchment)"/>
+      <rect x="-3" y="-28" width="6" height="2" fill="var(--parchment)"/>
+    </g>
+
+    <!-- 2. Schoenstatt -->
+    <g class="wp" tabindex="0" role="button" aria-label="Santuario de Schoenstatt, 1000 aves, completada" data-i="1" transform="translate(150,195)">
+      <rect x="-22" y="-2" width="44" height="6" fill="#2f451f"/>
+      <rect x="-12" y="-20" width="24" height="20" fill="#c9b98f"/>
+      <polygon points="-14,-20 0,-32 14,-20" fill="#7a5a3a"/>
+      <rect x="-4" y="-10" width="8" height="10" fill="#5a4a30"/>
+      <rect x="-1" y="-39" width="2" height="7" fill="var(--parchment)"/>
+      <rect x="-3" y="-36" width="6" height="2" fill="var(--parchment)"/>
+    </g>
+
+    <!-- 3. Lujan -->
+    <g class="wp" tabindex="0" role="button" aria-label="Santuario de Lujan, 3000 aves, actual" data-i="2" transform="translate(240,215)">
+      <rect x="-26" y="-2" width="52" height="6" fill="#2f451f"/>
+      <rect x="-16" y="-24" width="32" height="24" fill="#d8c9a0"/>
+      <rect x="-20" y="-34" width="8" height="34" fill="#c9b98f"/>
+      <rect x="12" y="-34" width="8" height="34" fill="#c9b98f"/>
+      <polygon points="-20,-34 -16,-42 -12,-34" fill="#7a5a3a"/>
+      <polygon points="12,-34 16,-42 20,-34" fill="#7a5a3a"/>
+      <circle cx="0" cy="-12" r="3" fill="#5a4a30"/>
+      <rect x="-1" y="-48" width="2" height="6" fill="var(--gold)"/>
+      <rect x="-3" y="-45" width="6" height="2" fill="var(--gold)"/>
+    </g>
+
+    <!-- pilgrim, standing just before Lujan -->
+    <g class="pilgrim" transform="translate(205,215)">
+      <polygon points="-6,0 6,0 4,-14 -4,-14" fill="#8a6a45"/>
+      <circle cx="0" cy="-18" r="4" fill="#c9a878"/>
+      <line x1="8" y1="0" x2="10" y2="-21" stroke="#5a4a30" stroke-width="2"/>
+    </g>
+
+    <!-- 4. Jesus Trail (locked/future) -->
+    <g class="wp" tabindex="0" role="button" aria-label="The Jesus Trail, 3600 aves, todavia no alcanzada" data-i="3" transform="translate(330,180)" opacity="0.45">
+      <polygon points="-14,-2 -18,-22 -10,-22" fill="#3a5230"/>
+      <polygon points="12,-2 8,-18 16,-18" fill="#3a5230"/>
+      <rect x="-1" y="-20" width="2" height="20" fill="#7a5a3a"/>
+      <rect x="-7" y="-20" width="12" height="5" fill="#7a5a3a"/>
+    </g>
+
+    <!-- 5. Fatima (locked/future) -->
+    <g class="wp" tabindex="0" role="button" aria-label="Santuario de Fatima, 7000 aves, todavia no alcanzada" data-i="4" transform="translate(460,200)" opacity="0.45">
+      <rect x="-26" y="-2" width="52" height="6" fill="#2f451f"/>
+      <rect x="-14" y="-16" width="28" height="16" fill="#c9b98f"/>
+      <rect x="-10" y="-24" width="20" height="8" fill="#c9b98f"/>
+      <rect x="-7" y="-30" width="14" height="6" fill="#c9b98f"/>
+      <rect x="-4" y="-34" width="8" height="4" fill="#c9b98f"/>
+      <rect x="-1" y="-39" width="2" height="5" fill="var(--parchment)"/>
+    </g>
+
+    <!-- beyond: rest of the route, dim silhouette -->
+    <g opacity="0.35" transform="translate(670,165)">
+      <rect x="-40" y="-14" width="80" height="14" fill="#5a5470"/>
+      <rect x="-36" y="-18" width="6" height="4" fill="#5a5470"/>
+      <rect x="-22" y="-18" width="6" height="4" fill="#5a5470"/>
+      <rect x="-8" y="-18" width="6" height="4" fill="#5a5470"/>
+      <rect x="6" y="-18" width="6" height="4" fill="#5a5470"/>
+      <rect x="20" y="-18" width="6" height="4" fill="#5a5470"/>
+      <rect x="-6" y="-26" width="12" height="8" fill="#5a5470"/>
+      <rect x="-1" y="-31" width="2" height="5" fill="#5a5470"/>
+    </g>
+    <text x="600" y="248" fill="#8a84a0" font-size="8" font-family="ui-monospace, monospace">guadalupe · asís · santiago · roma · jerusalén ···</text>
+  </svg>
+
+  <div class="hud">
+    <div>
+      <div class="label">peregrinación</div>
+      <div class="value">1.847 aves</div>
+    </div>
+    <div>
+      <div class="label">próxima parada</div>
+      <div class="value" id="hud-next">Santuario de Luján</div>
+    </div>
+    <div class="bar"><div class="bar-fill" style="width:62%"></div></div>
+  </div>
+
+  <div class="dialogue">
+    <p class="name" id="d-name">Santuario de Luján</p>
+    <p class="desc" id="d-desc">Desde Buenos Aires a Luján (60km).</p>
+    <p class="stat" id="d-stat">3.000 aves · faltan 1.153</p>
+    <p class="hint">tocar una parada del mapa la muestra acá. cada lugar tiene su propio ícono — nada de repetir la misma iglesia doce veces.</p>
+  </div>
+</div>
+
+<script>
+const STOPS = [
+  {n:'Ir a la Iglesia (Local)', d:'Caminar a la parroquia local.', req:200, done:true},
+  {n:'Santuario de Schoenstatt', d:'Peregrinación urbana.', req:1000, done:true},
+  {n:'Santuario de Luján', d:'Desde Buenos Aires a Luján (60km).', req:3000, current:true},
+  {n:'The Jesus Trail', d:'De Nazaret a Cafarnaúm (65km).', req:3600},
+  {n:'Santuario de Fátima', d:'Desde Lisboa a Fátima (140km).', req:7000},
+];
+const TOTAL = 1847;
+
+function pad(n){ return n.toLocaleString('es-AR'); }
+
+function select(i){
+  const s = STOPS[i];
+  document.getElementById('d-name').textContent = s.n;
+  document.getElementById('d-desc').textContent = s.d;
+  const remaining = s.req - TOTAL;
+  document.getElementById('d-stat').textContent = remaining > 0
+    ? `${pad(s.req)} aves · faltan ${pad(remaining)}`
+    : `${pad(s.req)} aves · completada`;
+}
+
+document.querySelectorAll('.wp').forEach(el => {
+  const i = Number(el.dataset.i);
+  el.addEventListener('click', () => select(i));
+  el.addEventListener('keydown', (e) => { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); select(i); } });
+});
+
+// ground dither texture, placed programmatically so the markup above stays readable
+const dither = document.getElementById('dither');
+const spots = [40,95,150,205,260,315,370,425,480,535,590,645,700];
+spots.forEach((x,idx) => {
+  const y = 150 + (idx % 3) * 22 + 10;
+  const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  r.setAttribute('x', x); r.setAttribute('y', y);
+  r.setAttribute('width', 4); r.setAttribute('height', 4);
+  r.setAttribute('fill', idx % 2 === 0 ? '#345028' : '#4a6a3c');
+  dither.appendChild(r);
+});
+</script>
+
+</body>
+</html>

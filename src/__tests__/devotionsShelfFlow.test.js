@@ -23,7 +23,7 @@ const SHELF_DEVOTION_IDS = [
 function expectValidSequence(id) {
   const seq = buildSequence(id, { novenaDay: 1 });
   expect(seq.length).toBeGreaterThan(0);
-  seq.forEach((step, i) => {
+  seq.forEach((step) => {
     expect(step.img).toBeTruthy();
     expect(step.imgCandidates?.length).toBeGreaterThan(0);
     expect(step.title).toBeTruthy();
@@ -31,12 +31,20 @@ function expectValidSequence(id) {
   });
 }
 
+function openShelf() {
+  fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+}
+
+function beginIntro() {
+  fireEvent.click(screen.getByRole('button', { name: /^comenzar$/i }));
+}
+
 describe('devotions shelf flow', () => {
   test.each(SHELF_DEVOTION_IDS)('buildSequence(%s) yields imaged steps', (id) => {
     expectValidSequence(id);
   });
 
-  test('shelf opens and picking Letanía Sangre calls onMysteryChange', () => {
+  test('shelf opens and picking Letanía Sangre calls onMysteryChange after intro', () => {
     const onMysteryChange = jest.fn();
     render(
       <BookletView
@@ -47,13 +55,13 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
-    fireEvent.click(screen.getByRole('button', { name: /letanía de la preciosísima sangre/i }));
-
+    openShelf();
+    fireEvent.click(screen.getByRole('button', { name: /letanía de la sangre/i }));
+    beginIntro();
     expect(onMysteryChange).toHaveBeenCalledWith('sangrepreciosa_litany');
   });
 
-  test('shelf opens and picking Ángelus calls onMysteryChange', () => {
+  test('shelf opens and picking Ángelus calls onMysteryChange after intro', () => {
     const onMysteryChange = jest.fn();
     render(
       <BookletView
@@ -64,13 +72,13 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+    openShelf();
     fireEvent.click(screen.getByRole('button', { name: /^ángelus$/i }));
-
+    beginIntro();
     expect(onMysteryChange).toHaveBeenCalledWith(ANGELUS_ID);
   });
 
-  test('Faustina sub-menu picks Corona', () => {
+  test('Faustina choices pick Corona after intro', () => {
     const onMysteryChange = jest.fn();
     render(
       <BookletView
@@ -81,10 +89,10 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
-    fireEvent.click(screen.getByRole('button', { name: /divina misericordia — santa faustina/i }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /^corona$/i }));
-
+    openShelf();
+    fireEvent.click(screen.getByRole('button', { name: /sta\. faustina/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^corona$/i }));
+    beginIntro();
     expect(onMysteryChange).toHaveBeenCalledWith(DIVINE_MERCY_ID);
   });
 
@@ -98,12 +106,12 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+    openShelf();
     expect(screen.getByRole('button', { name: /^san benito$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^ángel de la guarda$/i })).toBeInTheDocument();
   });
 
-  test('picking San Benito opens optional sheet without changing mystery', () => {
+  test('picking San Benito opens full-bleed sheet without intro or mystery change', () => {
     const onMysteryChange = jest.fn();
     render(
       <BookletView
@@ -114,13 +122,13 @@ describe('devotions shelf flow', () => {
       />
     );
 
-    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+    openShelf();
     fireEvent.click(screen.getByRole('button', { name: /^san benito$/i }));
 
+    expect(screen.queryByRole('button', { name: /^comenzar$/i })).not.toBeInTheDocument();
     expect(onMysteryChange).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: /oración opcional/i })).toBeInTheDocument();
-    expect(screen.getByRole('dialog').querySelector('.optional-prayer-sheet__tab.active')).toHaveTextContent(
-      'San Benito'
-    );
+    expect(screen.getByRole('dialog', { name: /oración breve: san benito/i })).toBeInTheDocument();
+    expect(document.querySelector('.optional-prayer-sheet__opening')).toBeTruthy();
+    expect(document.querySelector('.optional-prayer-sheet__art')).toBeTruthy();
   });
 });

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — Elegir tu ritmo (8-bit)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  :root{
+    --ink:#16141f;
+    --panel:#211e2d;
+    --gold:#d4af37;
+    --gold-dim:#6b5c2c;
+    --parchment:#f1e6cf;
+    --ember:#b0432c;
+    --ember-text:#3a1109;
+    --line:#3a3550;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#e9e4d8;
+    font-family:'Press Start 2P', ui-monospace, 'Courier New', monospace;
+    display:flex;
+    justify-content:center;
+    padding:32px 12px;
+  }
+  .device{
+    width:380px;
+    max-width:100%;
+    background:var(--ink);
+    border:6px solid #0a0910;
+    border-radius:14px;
+    padding:16px 14px 20px;
+    box-shadow:0 8px 0 #0a0910;
+  }
+  .screen-title{
+    color:var(--gold);
+    font-size:11px;
+    line-height:1.6;
+    text-align:center;
+    margin:2px 0 4px;
+  }
+  .screen-sub{
+    color:var(--parchment);
+    opacity:.65;
+    font-size:8px;
+    text-align:center;
+    margin:0 0 14px;
+    font-family:ui-monospace, monospace;
+  }
+  .path{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    position:relative;
+    max-height:420px;
+    overflow-y:auto;
+    padding:4px 2px 6px;
+  }
+  .path::before{
+    content:'';
+    position:absolute;
+    left:20px;
+    top:8px;
+    bottom:8px;
+    width:2px;
+    background:repeating-linear-gradient(var(--line),var(--line) 4px,transparent 4px,transparent 8px);
+  }
+  .node{
+    all:unset;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel);
+    border:2px solid var(--line);
+    padding:8px 10px;
+    position:relative;
+  }
+  .node:nth-child(odd){ margin-left:0; }
+  .node:nth-child(even){ margin-left:26px; }
+  .node:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  .node .icon-wrap{
+    width:28px; height:28px;
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    background:#171522;
+    border:2px solid var(--line);
+  }
+  .node svg{ width:16px; height:20px; image-rendering:pixelated; }
+
+  .node .body{ flex:1; min-width:0; }
+  .node .name{ color:var(--parchment); font-size:9px; line-height:1.4; }
+  .node .meta{ color:var(--parchment); opacity:.55; font-size:7px; margin-top:3px; font-family:ui-monospace,monospace; letter-spacing:.5px; }
+
+  .node .num{ color:var(--gold-dim); font-size:8px; width:16px; flex:0 0 auto; }
+
+  .tag{
+    font-size:6px;
+    font-family:ui-monospace,monospace;
+    background:var(--ember);
+    color:var(--ember-text);
+    padding:2px 4px;
+    margin-left:6px;
+    flex:0 0 auto;
+  }
+
+  .node--done .icon-wrap{ border-color:var(--gold-dim); }
+  .node--done .num{ color:var(--gold-dim); }
+  .node--done .name{ opacity:.75; }
+  .node--done .flame{ fill:var(--gold-dim); }
+  .node--done::after{ content:'done'; position:absolute; top:-1px; right:-1px; background:var(--gold-dim); color:var(--ink); font-size:6px; padding:2px 3px; }
+
+  .node--current{ border-color:var(--gold); }
+  .node--current .icon-wrap{ border-color:var(--gold); }
+  .node--current .num{ color:var(--gold); }
+  .node--current .flame{ fill:var(--gold); }
+  .node--current .name{ color:var(--gold); }
+  .node--current .cursor{
+    position:absolute; left:-16px; top:50%; transform:translateY(-50%);
+    color:var(--gold); font-size:10px;
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .node--future .icon-wrap{ opacity:.5; }
+  .node--future .flame{ fill:var(--line); }
+  .node--future .name{ color:var(--parchment); opacity:.4; }
+  .node--future .meta{ opacity:.3; }
+  .node--future .num{ opacity:.4; }
+  .lock{ width:10px; height:10px; flex:0 0 auto; opacity:.6; }
+
+  .dialogue{
+    margin-top:14px;
+    background:var(--parchment);
+    border:3px solid var(--gold-dim);
+    padding:10px 12px;
+    position:relative;
+  }
+  .dialogue .name{ color:var(--ink); font-size:10px; margin:0 0 6px; }
+  .dialogue .desc{ color:#4a4230; font-size:8px; font-family:ui-monospace,monospace; line-height:1.6; margin:0 0 8px; }
+  .dialogue .stat{ color:var(--ember); font-size:7px; font-family:ui-monospace,monospace; margin:0 0 10px; }
+  .dialogue button{
+    all:unset;
+    cursor:pointer;
+    display:inline-block;
+    background:var(--gold);
+    color:#3a2f0d;
+    font-family:'Press Start 2P',monospace;
+    font-size:8px;
+    padding:8px 10px;
+  }
+  .dialogue button:active{ transform:translateY(1px); }
+  .dialogue button:focus-visible{ outline:2px solid var(--ember); outline-offset:2px; }
+  .dialogue .hint{ font-size:6px; color:#7a6f52; margin-top:8px; font-family:ui-monospace,monospace; }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <p class="screen-title">elegir tu ritmo</p>
+  <p class="screen-sub">de una semilla hasta la entrega total</p>
+
+  <div class="path" id="path"></div>
+
+  <div class="dialogue" id="dialogue">
+    <p class="name" id="d-name">La Semilla</p>
+    <p class="desc" id="d-desc">El inicio del hábito.</p>
+    <p class="stat" id="d-stat">1 rosario / día</p>
+    <button id="d-confirm" type="button">elegir este nivel →</button>
+    <p class="hint">tocar un nivel lo previsualiza acá abajo. este botón lo confirma.</p>
+  </div>
+</div>
+
+<script>
+// Real data straight from LevelConfig.js (NIVELES) so this mockup matches the actual system.
+const LEVELS = [
+  {n:'La Semilla', d:'El inicio del hábito.', rate:'1 rosario / día'},
+  {n:'El Buscador', d:'Buscando constancia.', rate:'2 rosarios / día'},
+  {n:'Fiel Diario', d:'Fidelidad de un misterio.', rate:'3 rosarios / día'},
+  {n:'Ferviente', d:'Aumentando el fervor.', rate:'4 rosarios / día'},
+  {n:'Devoto', d:'Dedicación consistente.', rate:'5 rosarios / día'},
+  {n:'Rosario Completo', d:'Los 4 misterios del día.', rate:'4-6 rosarios / día'},
+  {n:'El Asceta', d:'Régimen intensivo de fin de semana y días de penitencia.', rate:'6-18 rosarios / día', intense:true},
+  {n:'Guerrero Espiritual', d:'Constancia y disciplina robusta.', rate:'12-18 rosarios / día', intense:true},
+  {n:'Intercesor', d:'Oración profunda diaria.', rate:'15-20 rosarios / día', intense:true},
+  {n:'Contemplativo', d:'Viviendo en oración.', rate:'20-25 rosarios / día', intense:true},
+  {n:'Místico', d:'Unión ininterrumpida.', rate:'25-30 rosarios / día', intense:true},
+  {n:'Padre Pío', d:'Oración incesante.', rate:'34 rosarios / día — una vida consagrada', intense:true},
+];
+
+const CURRENT_INDEX = 2; // demo state: user is on level 3, "Fiel Diario"
+let previewIndex = CURRENT_INDEX;
+let confirmedIndex = CURRENT_INDEX;
+
+// one reusable pixel flame, palette-swapped per state via CSS currentColor/class
+const FLAME_CELLS = [
+  [2,0],[3,0],
+  [1,1],[2,1],[3,1],[4,1],
+  [1,2],[2,2],[3,2],[4,2],
+  [0,3],[1,3],[2,3],[3,3],[4,3],[5,3],
+  [0,4],[1,4],[2,4],[3,4],[4,4],[5,4],
+  [1,5],[2,5],[3,5],[4,5],
+  [2,6],[3,6],
+  [2,7],[3,7],
+];
+function flameSVG(){
+  const rects = FLAME_CELLS.map(([x,y]) => `<rect class="flame" x="${x}" y="${y}" width="1" height="1"/>`).join('');
+  return `<svg viewBox="0 0 6 8" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`;
+}
+function lockSVG(){
+  return `<svg class="lock" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">
+    <rect x="2" y="3" width="4" height="4" fill="var(--parchment)"/>
+    <rect x="3" y="1" width="2" height="2" fill="none" stroke="var(--parchment)" stroke-width="1"/>
+  </svg>`;
+}
+
+function beep(freq){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.09);
+  }catch(e){ /* audio not available, ignore */ }
+}
+
+function render(){
+  const path = document.getElementById('path');
+  path.innerHTML = '';
+  LEVELS.forEach((lvl, i) => {
+    const state = i < confirmedIndex ? 'done' : i === confirmedIndex ? 'current' : 'future';
+    const btn = document.createElement('button');
+    btn.className = `node node--${state}`;
+    btn.type = 'button';
+    btn.setAttribute('aria-label', `Nivel ${i+1}, ${lvl.n}, ${state==='current' ? 'actual' : state==='done' ? 'completado' : 'todavía no elegido'}${lvl.intense ? ', régimen intensivo' : ''}`);
+    btn.innerHTML = `
+      ${state==='current' ? '<span class="cursor" aria-hidden="true">▸</span>' : ''}
+      <span class="num">${String(i+1).padStart(2,'0')}</span>
+      <span class="icon-wrap">${flameSVG()}</span>
+      <span class="body">
+        <span class="name">${lvl.n}</span>
+        <span class="meta">${lvl.rate}</span>
+      </span>
+      ${state==='future' && lvl.intense ? lockSVG() : ''}
+      ${lvl.intense ? '<span class="tag">intensivo</span>' : ''}
+    `;
+    btn.addEventListener('click', () => { previewIndex = i; beep(state==='future' ? 330 : 520); updateDialogue(); });
+    path.appendChild(btn);
+  });
+}
+
+function updateDialogue(){
+  const lvl = LEVELS[previewIndex];
+  document.getElementById('d-name').textContent = lvl.n;
+  document.getElementById('d-desc').textContent = lvl.d;
+  document.getElementById('d-stat').textContent = lvl.rate;
+  const confirmBtn = document.getElementById('d-confirm');
+  confirmBtn.textContent = previewIndex === confirmedIndex ? 'nivel actual' : 'elegir este nivel →';
+}
+
+document.getElementById('d-confirm').addEventListener('click', () => {
+  confirmedIndex = previewIndex;
+  beep(700);
+  render();
+  updateDialogue();
+});
+
+render();
+updateDialogue();
+</script>
+
+</body>
+</html>

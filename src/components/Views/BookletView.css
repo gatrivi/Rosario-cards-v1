@@ -148,6 +148,10 @@
   color: #d4af37;
 }
 
+.booklet-mystery-pill__thumb {
+  display: inline-block;
+}
+
 .booklet-mystery-pill__thumb-img {
   width: 34px;
   height: 34px;

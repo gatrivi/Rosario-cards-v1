@@ -1,3 +1,16 @@
+:root {
+  --sacred-ink: #100c12;
+  --sacred-ink-glass: rgba(16, 12, 18, 0.94);
+  --sacred-ivory: #f4eddd;
+  --sacred-muted: #aaa092;
+  --sacred-gold: #d4af37;
+  --sacred-gold-soft: rgba(212, 175, 55, 0.18);
+  --sacred-oxblood: #3a1118;
+  --sacred-line: rgba(212, 175, 55, 0.34);
+  --sacred-radius-sm: 8px;
+  --sacred-radius-sheet: 18px;
+}
+
 body {
   background-color: #0A0A0A;
   margin: 0;
