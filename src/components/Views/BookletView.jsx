@@ -513,7 +513,7 @@ export default function BookletView({
 
   useEffect(() => {
     if (!soundEnabled || voiceMode === VOICE_MODES.OFF || isTransitioning) {
-      if (voiceMode === VOICE_MODES.OFF) {
+      if (voiceMode === VOICE_MODES.OFF || isTransitioning) {
         stopStepVoice();
         setVoicePlaying(false);
       }
@@ -533,10 +533,7 @@ export default function BookletView({
       setVoicePlaying(false);
       if (result.cancelled || !result.ended) return;
       const mode = voiceModeRef.current;
-      if (mode === VOICE_MODES.ONCE) {
-        setVoiceMode(VOICE_MODES.OFF);
-        return;
-      }
+      if (mode === VOICE_MODES.ONCE) return;
       if (mode === VOICE_MODES.AUTO) {
         if (canAdvanceVoiceRef.current) goNext();
         else setVoiceMode(VOICE_MODES.OFF);
@@ -553,13 +550,25 @@ export default function BookletView({
 
   const handleVoiceControlTap = useCallback(() => {
     if (!soundEnabled) return;
-    const next = nextVoiceMode(voiceModeRef.current, 'tap');
+    const mode = voiceModeRef.current;
+    if (voicePlaying) {
+      stopStepVoice();
+      setVoicePlaying(false);
+      setVoiceMode(VOICE_MODES.OFF);
+      return;
+    }
+    if (mode === VOICE_MODES.ONCE) {
+      setVoiceMode(VOICE_MODES.AUTO);
+      if (canAdvanceVoiceRef.current) goNext();
+      return;
+    }
+    const next = nextVoiceMode(mode, 'tap');
     if (next === VOICE_MODES.OFF) {
       stopStepVoice();
       setVoicePlaying(false);
     }
     setVoiceMode(next);
-  }, [soundEnabled]);
+  }, [soundEnabled, voicePlaying, goNext]);
 
   useEffect(() => {
     return () => stopStepVoice();

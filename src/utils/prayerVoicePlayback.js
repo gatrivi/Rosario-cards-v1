@@ -1,5 +1,5 @@
 /**
- * Play one prayer step: Tier S → bundled WAV → browser EN TTS (speakable text only).
+ * Play one prayer step: Tier S → bundled WAV → browser TTS (speakable text only).
  */
 
 import {
@@ -67,6 +67,17 @@ function playAudioUrl(url, revoke, gen) {
   });
 }
 
+function pickBrowserVoice(lang) {
+  if (typeof window === 'undefined' || !window.speechSynthesis?.getVoices) return null;
+  const prefix = (lang || 'es-ES').split('-')[0].toLowerCase();
+  const voices = window.speechSynthesis.getVoices();
+  return (
+    voices.find((v) => v.lang?.toLowerCase().startsWith(`${prefix}-`)) ||
+    voices.find((v) => v.lang?.toLowerCase().startsWith(prefix)) ||
+    null
+  );
+}
+
 function playBrowserTts(text, prefs, gen) {
   return new Promise((resolve) => {
     if (typeof window === 'undefined' || !window.speechSynthesis || !text) {
@@ -84,8 +95,10 @@ function playBrowserTts(text, prefs, gen) {
       return;
     }
     const utterance = new Utterance(text);
-    utterance.lang = prefs.ttsLang || 'en-US';
+    utterance.lang = prefs.ttsLang || 'es-ES';
     utterance.rate = prefs.ttsRate || 1;
+    const voice = pickBrowserVoice(utterance.lang);
+    if (voice) utterance.voice = voice;
     activeUtterance = utterance;
     const finish = (cancelled) => {
       if (gen !== playGeneration) {
@@ -151,13 +164,15 @@ export const VOICE_MODES = { OFF: 'off', ONCE: 'once', AUTO: 'auto' };
 /**
  * @param {'off'|'once'|'auto'} mode
  * @param {'tap'|'once_ended'|'auto_ended_advance'|'auto_ended_done'|'external_stop'} event
+ * @param {{ playing?: boolean }} [opts]
  */
-export function nextVoiceMode(mode, event) {
+export function nextVoiceMode(mode, event, { playing = false } = {}) {
   if (event === 'external_stop') return VOICE_MODES.OFF;
-  if (event === 'once_ended') return mode === VOICE_MODES.ONCE ? VOICE_MODES.OFF : mode;
+  if (event === 'once_ended') return mode;
   if (event === 'auto_ended_done') return VOICE_MODES.OFF;
   if (event === 'auto_ended_advance') return VOICE_MODES.AUTO;
   if (event === 'tap') {
+    if (playing) return VOICE_MODES.OFF;
     if (mode === VOICE_MODES.OFF) return VOICE_MODES.ONCE;
     if (mode === VOICE_MODES.ONCE) return VOICE_MODES.AUTO;
     return VOICE_MODES.OFF;

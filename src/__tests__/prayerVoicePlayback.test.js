@@ -7,14 +7,19 @@ import {
 import { getVoicePrefs, setVoicePrefs } from '../utils/voicePrefs';
 
 describe('nextVoiceMode FSM', () => {
-  test('tap cycles off → once → auto → off', () => {
+  test('tap cycles off → once → auto → off when idle', () => {
     expect(nextVoiceMode(VOICE_MODES.OFF, 'tap')).toBe(VOICE_MODES.ONCE);
     expect(nextVoiceMode(VOICE_MODES.ONCE, 'tap')).toBe(VOICE_MODES.AUTO);
     expect(nextVoiceMode(VOICE_MODES.AUTO, 'tap')).toBe(VOICE_MODES.OFF);
   });
 
-  test('once_ended returns to off; auto advance stays auto; done ends', () => {
-    expect(nextVoiceMode(VOICE_MODES.ONCE, 'once_ended')).toBe(VOICE_MODES.OFF);
+  test('tap while playing always stops', () => {
+    expect(nextVoiceMode(VOICE_MODES.ONCE, 'tap', { playing: true })).toBe(VOICE_MODES.OFF);
+    expect(nextVoiceMode(VOICE_MODES.AUTO, 'tap', { playing: true })).toBe(VOICE_MODES.OFF);
+  });
+
+  test('once_ended stays in mode; auto advance stays auto; done ends', () => {
+    expect(nextVoiceMode(VOICE_MODES.ONCE, 'once_ended')).toBe(VOICE_MODES.ONCE);
     expect(nextVoiceMode(VOICE_MODES.AUTO, 'auto_ended_advance')).toBe(VOICE_MODES.AUTO);
     expect(nextVoiceMode(VOICE_MODES.AUTO, 'auto_ended_done')).toBe(VOICE_MODES.OFF);
   });
@@ -25,11 +30,17 @@ describe('voicePrefs TTS', () => {
     localStorage.clear();
   });
 
-  test('defaults to en-US browser TTS', () => {
+  test('defaults to es-ES browser TTS', () => {
     const p = getVoicePrefs();
-    expect(p.ttsLang).toBe('en-US');
+    expect(p.ttsLang).toBe('es-ES');
     expect(p.useBrowserTts).toBe(true);
     expect(p.ttsRate).toBe(1);
+  });
+
+  test('migrates legacy en-US default to es-ES', () => {
+    localStorage.setItem('rosario_voice_tts_lang', 'en-US');
+    expect(getVoicePrefs().ttsLang).toBe('es-ES');
+    expect(localStorage.getItem('rosario_voice_tts_lang')).toBe('es-ES');
   });
 
   test('persists rate clamp', () => {
@@ -75,7 +86,7 @@ describe('playStepVoice browser TTS', () => {
     expect(speak).toHaveBeenCalled();
     const utter = speak.mock.calls[0][0];
     expect(utter.text).toBe('Hail Mary, full of grace');
-    expect(utter.lang).toBe('en-US');
+    expect(utter.lang).toBe('es-ES');
     expect(result.source).toBe('tts');
   });
 });
