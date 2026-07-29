@@ -105,6 +105,7 @@ const REGISTRY = {
   galleryMargaritaSacredHeart: { ...PUBLIC('/gallery-images/litany/modooscuro/SANTA MARGARITA MARIA DE ALACOQUE FRENTE AL SAGRADO CORAZON DE JESUS !!!.jpg'), name: 'Santa Margarita María — Sagrado Corazón', tags: ['sacred-heart', 'margarita-maria'] },
   galleryStMichael: { ...PUBLIC('/gallery-images/litany/modooscuro/Stained glass of St_ Michael the Archangel.jpg'), name: 'San Miguel Arcángel — vitral', tags: ['michael', 'archangel', 'stained-glass'] },
   gallerySanExpedito: { ...PUBLIC('/gallery-images/litany/modooscuro/san-expedito.jpg'), name: 'San Expedito — HODIE (Wellcome)', tags: ['expeditus', 'saint', 'hodie', 'martyr'] },
+  gallerySanExpeditoBalvanera: { ...PUBLIC('/api/san-expedito-art'), name: 'San Expedito — oración de Balvanera', tags: ['expeditus', 'saint', 'urgent-causes', 'balvanera', 'devotion'] },
   galleryCruzVsRoma: { ...PUBLIC('/gallery-images/misterios/modooscuro/cruz-vs-roma.jpg'), name: 'Triunfo de la Cruz sobre Roma', tags: ['cross', 'rome', 'expeditus', 'bg'] },
   galleryMaterImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/Mater immaculata.jpg'), name: 'Mater Immaculata', tags: ['mary', 'immaculate', 'stained-glass'] },
   galleryVirgoImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/virgo-inmaculata.jpg'), name: 'Virgo Immaculata', tags: ['mary', 'immaculate'] },

@@ -32,8 +32,14 @@ import {
   getSagradoCorazonAdoracionSequence,
   isSagradoCorazonAdoracionMode as isSagradoCorazonAdoracionDataMode,
 } from '../data/sagradoCorazonAdoracionData';
+import {
+  SAN_EXPEDITO_ID,
+  getSanExpeditoSequence,
+  isSanExpeditoMode as isSanExpeditoDataMode,
+} from '../data/sanExpeditoData';
 
 export { isSagradoCorazonAdoracionMode } from '../data/sagradoCorazonAdoracionData';
+export { isSanExpeditoMode } from '../data/sanExpeditoData';
 
 export const PRECIOUS_BLOOD_MODES = new Set([
   'sangrepreciosa_litany',
@@ -130,6 +136,7 @@ export const BOOKLET_MYSTERY_IDS = [
   'viacrucis',
   'vialucis',
   SAGRADO_CORAZON_ADORACION_ID,
+  SAN_EXPEDITO_ID,
 ];
 export const BOOKLET_MYSTERIES = new Set(BOOKLET_MYSTERY_IDS);
 
@@ -216,6 +223,9 @@ export function buildSequence(mysteryType, options = {}) {
   if (mysteryType === 'vialucis') return buildViaLucisSequence();
   if (isSagradoCorazonAdoracionDataMode(mysteryType)) {
     return getSagradoCorazonAdoracionSequence();
+  }
+  if (isSanExpeditoDataMode(mysteryType)) {
+    return getSanExpeditoSequence();
   }
 
   const keys = getSequenceKeys(mysteryType, includeMercyOpening);

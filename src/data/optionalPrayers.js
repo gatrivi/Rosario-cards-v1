@@ -8,9 +8,9 @@ const carmenImg = imagePath('theotokos');
 const carmenImgAlt = imagePath('galleryMaterImmaculata');
 const carmenImgAlt2 = imagePath('allMary17th');
 const carmenCandidates = [carmenImg, carmenImgAlt, carmenImgAlt2].filter(Boolean);
-const expeditoImg = imagePath('gallerySanExpedito');
-const expeditoImgAlt = imagePath('galleryCruzVsRoma');
-const expeditoImgAlt2 = imagePath('vitreauxCruz');
+const expeditoImg = imagePath('gallerySanExpeditoBalvanera');
+const expeditoImgAlt = imagePath('gallerySanExpedito');
+const expeditoImgAlt2 = imagePath('galleryCruzVsRoma');
 const expeditoCandidates = [expeditoImg, expeditoImgAlt, expeditoImgAlt2].filter(Boolean);
 
 export const OPTIONAL_PRAYERS = [
@@ -103,7 +103,7 @@ export const OPTIONAL_PRAYERS = [
         id: 'es',
         label: 'ES',
         text:
-          'Oh glorioso mártir San Expedito, soldado de Cristo, que con tu ejemplo nos enseñas a poner en Dios toda nuestra confianza: intercede por nosotros en esta causa urgente.\n\nConcédenos la gracia de no dejar para mañana lo que podemos hacer hoy, y de vivir cada día con fe y esperanza.\n\nSan Expedito, abogado de las causas justas y urgentes: hoy, no mañana. Amén.',
+          '¡Glorioso San Expedito!, que intercedes por las causas justas y urgentes, ayúdame en este momento de aflicción.\n\nIntercede por mi pedido ante nuestro Señor Jesucristo. Tú que eres el Santo de la fidelidad y el coraje, atiende mi pedido (nuestra necesidad), escúchame y protégeme de todo mal.\n\nTe pido por mi familia y que descienda la paz. Haz que me una cada día más a Jesús y a María, su Madre, para que convierta mi corazón y llegue a gozar un día de su presencia. Amén.\n\nSan Expedito, ¡ruega por nosotros!',
       },
       {
         id: 'en',

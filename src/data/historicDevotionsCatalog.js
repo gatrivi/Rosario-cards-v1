@@ -75,7 +75,7 @@ export const HISTORIC_DEVOTIONS = [
     label: 'San Expedito',
     note: 'causas urgentes · HODIE',
     status: 'have',
-    imgId: 'gallerySanExpedito',
+    imgId: 'gallerySanExpeditoBalvanera',
   },
   {
     id: 'immaculate_heart',
