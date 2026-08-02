@@ -1223,6 +1223,24 @@ export default function BookletView({
                 badge="B"
               />
             </ShelfItem>
+            <ShelfItem label="San Ignacio">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'ignacio'}
+                onClick={() => openOptionalPrayer('ignacio')}
+                title="San Ignacio de Loyola — Suscipe"
+                img={optionalPrayerThumbnail('ignacio')}
+                badge="SI"
+              />
+            </ShelfItem>
+            <ShelfItem label="San Patricio">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'patrick'}
+                onClick={() => openOptionalPrayer('patrick')}
+                title="Coraza de San Patricio"
+                img={optionalPrayerThumbnail('patrick')}
+                badge="SP"
+              />
+            </ShelfItem>
           </>
         }
         proximas={null}

@@ -78,6 +78,20 @@ export const HISTORIC_DEVOTIONS = [
     imgId: 'gallerySanExpedito',
   },
   {
+    id: 'st_ignatius',
+    label: 'San Ignacio',
+    note: 'Suscipe · s. XVI',
+    status: 'have',
+    imgId: 'sanIgnacio',
+  },
+  {
+    id: 'st_patrick',
+    label: 'Coraza de San Patricio',
+    note: 'lorica irlandesa',
+    status: 'have',
+    imgId: 'stPatricksCathedral',
+  },
+  {
     id: 'immaculate_heart',
     label: 'Inmaculado Corazón',
     note: 'Mateo · Fátima',

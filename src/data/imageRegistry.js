@@ -46,6 +46,7 @@ import misc96PsRGiE from './assets/img/96PsRGiE.jpg';
 import miscUgQlLjwl from './assets/img/uGQlLjwl.jpg';
 import faustinaDivinoCorazon from './assets/img/santafaustinadivinocorazon.jpg';
 import faustinaStainedGlass from './assets/img/santafaustinastainedglass.jpg';
+import stPatricksCathedral from "./assets/img/Arte-Sacro/ave/st patrick's cathedral.jpg";
 import { touchLocalArtConfig } from '../utils/artConfigSync';
 import { loadImageLibrary } from '../utils/imageLibraryStore';
 
@@ -76,6 +77,9 @@ const REGISTRY = {
   latinSanBenito: { path: latinSanBenito, name: 'San Benito (latín)', tags: ['saint', 'benedict', 'latin'], source: 'asset' },
   stAnthony: { path: stAnthony, name: 'San Antonio de Padua', tags: ['saint', 'anthony', 'icon'], source: 'asset' },
   franciscoDeAsis: { path: franciscoDeAsis, name: 'San Francisco de Asís', tags: ['saint', 'francis', 'assisi'], source: 'asset' },
+  // Temporary cross art until a San Ignacio image is supplied.
+  sanIgnacio: { path: vitreauxCruz, name: 'San Ignacio de Loyola — arte provisional', tags: ['saint', 'ignatius', 'jesuit', 'cross'], source: 'asset' },
+  stPatricksCathedral: { path: stPatricksCathedral, name: 'San Patricio — catedral', tags: ['saint', 'patrick', 'ireland', 'stained-glass'], source: 'asset' },
 
   // ── Divine Mercy / Faustina ──
   faustinaDivinoCorazon: { path: faustinaDivinoCorazon, name: 'Santa Faustina — Corazón Divino', tags: ['faustina', 'divine-mercy', 'sacred-heart'], source: 'asset' },

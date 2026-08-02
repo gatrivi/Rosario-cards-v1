@@ -47,4 +47,27 @@ describe('historic devoutions + San Miguel', () => {
     expect(e.variants.find((v) => v.id === 'la').text).toMatch(/hodie/i);
     expect(HISTORIC_DEVOTIONS.find((d) => d.id === 'st_expeditus')?.status).toBe('have');
   });
+
+  test('San Ignacio optional prayer ships Suscipe variants with art', () => {
+    const i = OPTIONAL_PRAYERS.find((p) => p.id === 'ignacio');
+    expect(i).toBeTruthy();
+    expect(i.title).toMatch(/Ignacio/i);
+    expect(i.img).toMatch(/sanIgnacio/);
+    expect(i.imgCandidates.length).toBeGreaterThan(0);
+    expect(i.variants.map((v) => v.id)).toEqual(expect.arrayContaining(['es', 'en', 'la']));
+    expect(i.variants[0].text).toMatch(/Toma, Señor/i);
+    expect(HISTORIC_DEVOTIONS.find((d) => d.id === 'st_ignatius')?.status).toBe('have');
+  });
+
+  test('St Patrick\'s Breastplate ships ES/EN with art', () => {
+    const p = OPTIONAL_PRAYERS.find((x) => x.id === 'patrick');
+    expect(p).toBeTruthy();
+    expect(p.title).toMatch(/Patricio/i);
+    expect(p.img).toMatch(/stPatricksCathedral/);
+    expect(p.imgCandidates.length).toBeGreaterThan(0);
+    expect(p.variants.map((v) => v.id)).toEqual(expect.arrayContaining(['es', 'en']));
+    expect(p.variants.find((v) => v.id === 'es').text).toMatch(/Me levanto hoy/i);
+    expect(p.variants.find((v) => v.id === 'en').text).toMatch(/I arise today/i);
+    expect(HISTORIC_DEVOTIONS.find((d) => d.id === 'st_patrick')?.status).toBe('have');
+  });
 });

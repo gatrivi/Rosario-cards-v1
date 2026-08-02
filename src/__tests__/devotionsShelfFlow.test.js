@@ -123,4 +123,26 @@ describe('devotions shelf flow', () => {
       'San Benito'
     );
   });
+
+  test.each([
+    [/san ignacio de loyola/i, 'San Ignacio de Loyola'],
+    [/coraza de san patricio/i, 'Coraza de San Patricio'],
+  ])('shelf opens %s as an optional prayer', (buttonName, tabName) => {
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={jest.fn()}
+        onMysteryChange={jest.fn()}
+      />
+    );
+
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+    fireEvent.click(screen.getByRole('button', { name: buttonName }));
+
+    expect(screen.getByRole('dialog', { name: /oración opcional/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog').querySelector('.optional-prayer-sheet__tab.active')).toHaveTextContent(
+      tabName
+    );
+  });
 });

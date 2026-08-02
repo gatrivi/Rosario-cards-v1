@@ -69,6 +69,8 @@ No auto month-switch in UI yet — shelf copy / titles mention Julio for Sangre;
 | `loreto` | Letanía de Loreto | cierres del Rosario | `galleryMaterImmaculata` | have |
 | `st_michael` | San Miguel | León XIII · 1886 | `galleryStMichael` | **have** (v0.3.59 breve) |
 | `st_expeditus` | San Expedito | causas urgentes · HODIE | `gallerySanExpedito` | **have** (v0.3.64 breve) |
+| `st_ignatius` | San Ignacio | Suscipe · s. XVI | `sanIgnacio` | **have** (v0.3.65 breve) |
+| `st_patrick` | Coraza de San Patricio | lorica irlandesa | `stPatricksCathedral` | **have** (v0.3.65 breve) |
 | `immaculate_heart` | Inmaculado Corazón | Fátima | `galleryMaterImmaculata` | soon |
 | `holy_spirit` | Espíritu Santo | Pentecostés | `galleryPentecost` | soon |
 | `scapular` | Escápulario | Carmen | `theotokos` | soon |
@@ -77,6 +79,13 @@ No auto month-switch in UI yet — shelf copy / titles mention Julio for Sangre;
 | `memorare` | Memorare | S. Bernardo | `reginaCaeli` | soon |
 
 Also on shelf but outside this table: Magnificat, Ángel Guarda, San Benito, Sangre (litany/corona/ofrendas), Via Lucis, Novena Misericordia.
+
+## San Ignacio y San Patricio (shipped v0.3.65)
+
+- **San Ignacio:** `optionalPrayers.js` → `id: 'ignacio'` (Suscipe ES / EN / LA).
+- **San Patricio:** `optionalPrayers.js` → `id: 'patrick'` (Coraza ES / EN).
+- **UI:** Oraciones breves → San Ignacio / San Patricio; ambos abren `OptionalPrayerSheet`.
+- **Art:** `sanIgnacio` usa cruz vitral provisional; `stPatricksCathedral` usa la catedral existente. Reemplazar desde `imageRegistry.js` cuando lleguen assets dedicados.
 
 ## San Expedito (shipped v0.3.64)
 
