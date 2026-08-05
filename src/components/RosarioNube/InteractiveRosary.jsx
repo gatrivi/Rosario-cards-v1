@@ -15,6 +15,7 @@ import {
   buildRosaryPhysicsIndices,
   getDecadeAveIndex,
 } from "../../utils/rosarySequenceUtils";
+import { hitTestBeadBodies } from "./utils/canvasPointer";
 
 const debug = () => {};
 
@@ -92,6 +93,7 @@ const InteractiveRosary = ({
   });
   const swipeStartRef = useRef(null);
   const draggedBeadBodyRef = useRef(null);
+  const beadPhysicsDragRef = useRef(false);
 
   // Use custom hooks for state management
   const { isVisible, developerMode, rosaryZoom } = useRosaryState();
@@ -114,7 +116,7 @@ const InteractiveRosary = ({
       // ignore (e.g. storage disabled)
     }
   }, []);
-  const clampZoom = (z) => Math.max(0.75, Math.min(1.5, z));
+  const clampZoom = (z) => Math.max(0.5, Math.min(2.5, z));
   const quantizeZoom = (z) => Math.round(z / 0.05) * 0.05;
 
   const {
@@ -231,10 +233,10 @@ const InteractiveRosary = ({
     const instance = matterInstance.current;
     const canvas = instance?.render?.canvas;
     if (!canvas || !instance.allBeads?.length) return false;
-    const rect = canvas.getBoundingClientRect();
-    const point = { x: clientX - rect.left, y: clientY - rect.top };
-    return Matter.Query.point(instance.allBeads, point).length > 0;
+    return hitTestBeadBodies(instance.allBeads, canvas, clientX, clientY, 28);
   }, []);
+
+  const isPanBlocked = useCallback(() => beadPhysicsDragRef.current, []);
 
   // Initialize physics world with current zoom
   const initializePhysics = useCallback(() => {
@@ -983,7 +985,10 @@ const InteractiveRosary = ({
     render.mouse = mouse;
 
     trackEvent(mouseConstraint, "mousedown", (event) => {
-      if (event.source.body) return;
+      if (event.source.body) {
+        beadPhysicsDragRef.current = true;
+        return;
+      }
       if (soundEnabledRef.current) {
         audioReadyRef.current = true;
         soundEffects.initAudioContext();
@@ -1174,6 +1179,8 @@ const InteractiveRosary = ({
     trackEvent(mouseConstraint, "mousedown", (event) => {
       let clickedBody = event.source.body;
       if (!clickedBody) return;
+
+      beadPhysicsDragRef.current = true;
 
       if (soundEnabledRef.current) {
         audioReadyRef.current = true;
@@ -1522,6 +1529,7 @@ const InteractiveRosary = ({
     });
 
     trackEvent(mouseConstraint, "mouseup", (event) => {
+      beadPhysicsDragRef.current = false;
       const cb = emptyCallbacksRef.current;
       if (!event.source.body) {
         cb.onEmptyPointerUp?.(event);
@@ -2431,6 +2439,35 @@ const InteractiveRosary = ({
     };
   }, [initializePhysics]);
 
+  // Desktop / trackpad: wheel zoom (mobile uses pinch below).
+  const rosaryZoomRef = useRef(rosaryZoom);
+  useEffect(() => {
+    rosaryZoomRef.current = rosaryZoom;
+  }, [rosaryZoom]);
+
+  useEffect(() => {
+    const el = sceneRef.current;
+    if (!el) return undefined;
+
+    let lastEmitAt = 0;
+    const onWheel = (e) => {
+      e.preventDefault();
+      const step = e.deltaY > 0 ? -0.05 : 0.05;
+      const nextZoom = quantizeZoom(clampZoom(rosaryZoomRef.current + step));
+      const now = Date.now();
+      if (
+        Math.abs(nextZoom - rosaryZoomRef.current) > 0.01 &&
+        now - lastEmitAt > 80
+      ) {
+        lastEmitAt = now;
+        setRosaryZoomValue(nextZoom);
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [setRosaryZoomValue]);
+
   // Use dragging hook for mouse and touch handlers
   const {
     handleRosaryMouseDown,
@@ -2447,7 +2484,8 @@ const InteractiveRosary = ({
     setIsDraggingRosary,
     dragStart,
     setDragStart,
-    isPointerOnBead
+    isPointerOnBead,
+    isPanBlocked
   );
 
   if (!isVisible) {
