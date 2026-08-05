@@ -296,7 +296,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
       <header className="rs-header">
         <h1 className="rs-title">Estudio de voz</h1>
         <p className="rs-sub">
-          Liber ▶: 1× oración · 2× auto ≫ hasta el final. Fallback: TTS del navegador (en-US). Tier S
+          Liber ▶: 1× oración · al terminar, otra vez = auto ≫. Fallback: TTS del navegador (es-ES). Tier S
           gana si hay grabación; T3 cuando haya WAV en /voice/en/.
         </p>
       </header>
@@ -324,7 +324,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
             checked={voicePrefs.useBrowserTts !== false}
             onChange={() => togglePref('useBrowserTts')}
           />
-          TTS navegador EN
+          TTS navegador ES
         </label>
       </div>
 
@@ -346,7 +346,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           <span>{Number(voicePrefs.ttsRate ?? 1).toFixed(2)}×</span>
         </label>
         <p className="rs-pref-legend">
-          Idioma guía: {voicePrefs.ttsLang || 'en-US'} (sin títulos de oración).
+          Idioma guía: {voicePrefs.ttsLang || 'es-ES'} (sin títulos de oración).
         </p>
       </div>
 

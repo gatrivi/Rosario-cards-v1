@@ -1,6 +1,6 @@
 /**
- * Voice source + EN browser-TTS prefs.
- * Tier S = user mic · Tier 3 = bundled EN WAV · browser TTS = speechSynthesis fallback.
+ * Voice source + browser-TTS prefs.
+ * Tier S = user mic · Tier 3 = bundled WAV · browser TTS = speechSynthesis fallback (es-ES).
  */
 
 const KEY_USER = 'rosario_voice_user';
@@ -13,7 +13,7 @@ const DEFAULTS = {
   useUserVoice: true,
   useBundledVoice: true,
   useBrowserTts: true,
-  ttsLang: 'en-US',
+  ttsLang: 'es-ES',
   ttsRate: 1,
 };
 
@@ -32,7 +32,16 @@ export function getVoicePrefs() {
     useUserVoice: localStorage.getItem(KEY_USER) !== 'false',
     useBundledVoice: localStorage.getItem(KEY_BUNDLED) !== 'false',
     useBrowserTts: localStorage.getItem(KEY_BROWSER_TTS) !== 'false',
-    ttsLang: localStorage.getItem(KEY_TTS_LANG) || DEFAULTS.ttsLang,
+    ttsLang: (() => {
+      const stored = localStorage.getItem(KEY_TTS_LANG);
+      if (!stored) return DEFAULTS.ttsLang;
+      // ponytail: v0.3.60 defaulted en-US for Spanish prayers — migrate once
+      if (stored === 'en-US') {
+        localStorage.setItem(KEY_TTS_LANG, 'es-ES');
+        return 'es-ES';
+      }
+      return stored;
+    })(),
     ttsRate: clampRate(rateRaw != null ? rateRaw : DEFAULTS.ttsRate),
   };
 }

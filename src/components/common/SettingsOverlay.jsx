@@ -360,7 +360,7 @@ export default function SettingsOverlay({
               />
             </label>
             <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
-              <span>Guía EN (TTS)</span>
+              <span>Guía T3 (WAV)</span>
               <input
                 type="checkbox"
                 checked={settings.useBundledVoice !== false}
@@ -368,7 +368,7 @@ export default function SettingsOverlay({
               />
             </label>
             <div style={{ color: '#666', fontSize: '0.7rem' }}>
-              Liber ▶: una vez = oración · otra = auto ≫. Ritmo TTS en Más → Voz.
+              Liber ▶: una vez = oración · al terminar, otra = auto ≫. ⏸ detiene. Ritmo TTS en Más → Voz.
             </div>
           </div>
 

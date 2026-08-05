@@ -18,7 +18,8 @@ function voiceControlIcon(voiceMode, voicePlaying) {
 
 function voiceControlLabel(voiceMode, voicePlaying) {
   if (voiceMode === VOICE_MODES.AUTO) return 'Detener auto-play';
-  if (voicePlaying) return 'Activar auto-play (o pausar)';
+  if (voicePlaying) return 'Detener reproducción';
+  if (voiceMode === VOICE_MODES.ONCE) return 'Activar auto-play ≫';
   return 'Reproducir oración';
 }
 
@@ -217,7 +218,7 @@ export default function PrayerRecorder({
         {simpleMode ? 'Graba tu voz' : 'Voz propia · suena al llegar a esta oración'}
       </p>
       <p className="prayer-recorder__hint">
-        ▶ una vez = esta oración · otra vez = auto ≫ hasta el final · /voz para ritmo EN TTS.
+        ▶ una vez = esta oración · al terminar, otra vez = auto ≫ · ⏸ detiene.
       </p>
       {bundledUrl && !hasClips && (
         <p className="prayer-recorder__hint">

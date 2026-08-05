@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.64',
-  name: 'San Expedito · HODIE',
+  version: '0.3.65',
+  name: 'Voz ES · pausa',
   CURRENT: [
-    'San Expedito en Oraciones breves (ES / EN / LA) · ?oracion=expedito',
-    'Virgen del Carmen en shelf (16 jul)',
+    'TTS del navegador en español (es-ES) — ya no lee en inglés',
+    '⏸ en Libro detiene la voz al instante; auto ≫ tras escuchar una vez',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',
