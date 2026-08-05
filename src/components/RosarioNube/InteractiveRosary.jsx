@@ -98,8 +98,7 @@ const InteractiveRosary = ({
   // Use custom hooks for state management
   const { isVisible, developerMode, rosaryZoom } = useRosaryState();
 
-  // ponytail: pinch-to-zoom by updating the existing `rosaryZoom` localStorage
-  // + emitting the `rosaryZoomChange` event. Matter physics re-inits on change.
+  // Viewport zoom (wheel / pinch / Ajustes presets) — CSS scale only, no physics re-init.
   const pinchZoomRef = useRef({
     active: false,
     startDist: 1,
@@ -250,7 +249,6 @@ const InteractiveRosary = ({
       width,
       height,
       currentMystery,
-      rosaryZoom,
     });
 
     // --- Cleanup previous instance if it exists ---
@@ -293,11 +291,11 @@ const InteractiveRosary = ({
 
     // --- Parameters ---
     const baseBeadSize = 8; // Base bead size
-    const beadSize = baseBeadSize * rosaryZoom; // Apply zoom to bead size
+    const beadSize = baseBeadSize;
     const baseCrossBeadSize = 10; // Base cross pieces
-    const crossBeadSize = baseCrossBeadSize * rosaryZoom; // Apply zoom to cross beads
+    const crossBeadSize = baseCrossBeadSize;
     const baseCenterBeadSize = 14; // Base heart bead
-    const centerBeadSize = baseCenterBeadSize * rosaryZoom; // Apply zoom to center bead
+    const centerBeadSize = baseCenterBeadSize;
 
     const allBeads = [];
     const constraints = [];
@@ -421,9 +419,9 @@ const InteractiveRosary = ({
     const centerX = width / 2;
     const centerY = height / 2;
     const baseRadius = Math.min(width, height) / 3.5;
-    const radius = baseRadius * rosaryZoom; // Apply zoom to radius
+    const radius = baseRadius;
     const baseChainSegmentLength = 15;
-    const chainSegmentLength = baseChainSegmentLength * rosaryZoom; // Apply zoom to chain length
+    const chainSegmentLength = baseChainSegmentLength;
 
     // --- Create Center Bead (Heart medal at top of loop) ---
     // This is decorative - holds image of Our Lady
@@ -2422,11 +2420,10 @@ const InteractiveRosary = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentMystery,
-    rosaryZoom,
     developerMode,
     rosaryFriction,
     getRosarySequence,
-    // Note: rosaryPosition uses CSS transform — do not re-init physics on drag
+    // rosaryZoom = CSS scale only; rosaryPosition = CSS translate — neither re-inits physics
   ]);
 
   // Main useEffect that calls initializePhysics
@@ -2504,7 +2501,8 @@ const InteractiveRosary = ({
         left: 0,
         pointerEvents: "all",
         cursor: isDraggingRosary ? "grabbing" : cursorStyle,
-        transform: `translate(${rosaryPosition.x}px, ${rosaryPosition.y}px)`,
+        transformOrigin: "center center",
+        transform: `translate(${rosaryPosition.x}px, ${rosaryPosition.y}px) scale(${rosaryZoom})`,
       }}
       onMouseDown={handleRosaryMouseDown}
       onMouseMove={handleRosaryMouseMove}
