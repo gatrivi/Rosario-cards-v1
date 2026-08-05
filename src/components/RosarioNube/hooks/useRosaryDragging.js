@@ -7,6 +7,8 @@ import { useState } from "react";
  * InteractiveRosary. When it returns true, the pointer landed on a bead body,
  * so container pan must NOT start — the bead/string physics owns the gesture
  * instead. Pan only starts for empty-space presses.
+ *
+ * isPanBlocked: optional () => boolean — true while Matter is dragging a bead.
  */
 export const useRosaryDragging = (
   sceneRef,
@@ -16,16 +18,20 @@ export const useRosaryDragging = (
   setIsDraggingRosary,
   dragStart,
   setDragStart,
-  isPointerOnBead
+  isPointerOnBead,
+  isPanBlocked
 ) => {
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
 
   // Mouse event handlers
+  const shouldSkipPan = (clientX, clientY) =>
+    isPanBlocked?.() || isPointerOnBead?.(clientX, clientY);
+
   const handleRosaryMouseDown = (e) => {
     if (!sceneRef.current?.contains(e.target)) return;
-    if (isPointerOnBead?.(e.clientX, e.clientY)) return;
+    if (shouldSkipPan(e.clientX, e.clientY)) return;
     setIsDraggingRosary(true);
     setDragStart({
       x: e.clientX - rosaryPosition.x,
@@ -35,6 +41,10 @@ export const useRosaryDragging = (
   };
 
   const handleRosaryMouseMove = (e) => {
+    if (isPanBlocked?.()) {
+      if (isDraggingRosary) setIsDraggingRosary(false);
+      return;
+    }
     if (isDraggingRosary) {
       const newX = e.clientX - dragStart.x;
       const newY = e.clientY - dragStart.y;
@@ -59,7 +69,7 @@ export const useRosaryDragging = (
   const handleRosaryTouchStart = (e) => {
     if (e.touches.length === 1 && sceneRef.current?.contains(e.target)) {
       const touch = e.touches[0];
-      if (isPointerOnBead?.(touch.clientX, touch.clientY)) return;
+      if (shouldSkipPan(touch.clientX, touch.clientY)) return;
       setIsDraggingRosary(true);
       setDragStart({
         x: touch.clientX - rosaryPosition.x,
@@ -73,6 +83,10 @@ export const useRosaryDragging = (
   };
 
   const handleRosaryTouchMove = (e) => {
+    if (isPanBlocked?.()) {
+      if (isDraggingRosary) setIsDraggingRosary(false);
+      return;
+    }
     if (isDraggingRosary && e.touches.length === 1) {
       const touch = e.touches[0];
       const newX = touch.clientX - dragStart.x;
