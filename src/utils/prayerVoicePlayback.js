@@ -70,7 +70,8 @@ function playAudioUrl(url, revoke, gen) {
 function playBrowserTts(text, prefs, gen) {
   return new Promise((resolve) => {
     if (typeof window === 'undefined' || !window.speechSynthesis || !text) {
-      resolve({ ended: false, cancelled: true, source: 'tts' });
+      // ponytail: nothing to speak — treat as ended so Liber auto can advance
+      resolve({ ended: true, cancelled: false, source: 'tts-skip' });
       return;
     }
     const Utterance =
@@ -80,14 +81,22 @@ function playBrowserTts(text, prefs, gen) {
           ? SpeechSynthesisUtterance
           : null;
     if (!Utterance) {
-      resolve({ ended: false, cancelled: true, source: 'tts' });
+      resolve({ ended: true, cancelled: false, source: 'tts-skip' });
       return;
     }
     const utterance = new Utterance(text);
     utterance.lang = prefs.ttsLang || 'en-US';
     utterance.rate = prefs.ttsRate || 1;
     activeUtterance = utterance;
+    let settled = false;
+    let keepAlive = null;
     const finish = (cancelled) => {
+      if (settled) return;
+      settled = true;
+      if (keepAlive) {
+        clearInterval(keepAlive);
+        keepAlive = null;
+      }
       if (gen !== playGeneration) {
         resolve({ ended: false, cancelled: true, source: 'tts' });
         return;
@@ -96,12 +105,35 @@ function playBrowserTts(text, prefs, gen) {
       resolve({ ended: !cancelled, cancelled: !!cancelled, source: 'tts' });
     };
     utterance.onend = () => finish(false);
-    utterance.onerror = () => finish(true);
+    utterance.onerror = (ev) => {
+      // interrupted/canceled = stopStepVoice or supersede; other errors = failed speak
+      const err = ev?.error;
+      const userStop = err === 'interrupted' || err === 'canceled';
+      if (userStop || gen !== playGeneration) {
+        finish(true);
+        return;
+      }
+      // ponytail: synthesis-failed / no voices — end so auto can advance
+      finish(false);
+    };
     try {
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
+      // Chrome often pauses TTS ~15s without resume ticks
+      keepAlive = setInterval(() => {
+        if (gen !== playGeneration) {
+          clearInterval(keepAlive);
+          keepAlive = null;
+          return;
+        }
+        try {
+          window.speechSynthesis.resume();
+        } catch (_) {
+          /* ignore */
+        }
+      }, 8000);
     } catch (_) {
-      finish(true);
+      finish(false);
     }
   });
 }
@@ -142,7 +174,9 @@ export async function playStepVoice({ text, prayerId, mystery, sequenceIndex }) 
     /* autoplay / missing — silent */
   }
 
-  return { ended: false, cancelled: true };
+  // No clip / TTS off / empty text — still "ended" so Liber auto can advance
+  if (gen !== playGeneration) return { ended: false, cancelled: true };
+  return { ended: true, cancelled: false, source: 'skip' };
 }
 
 /** Pure FSM for title ▶ control. */

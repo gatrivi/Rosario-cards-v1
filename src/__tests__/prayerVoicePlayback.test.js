@@ -61,6 +61,7 @@ describe('playStepVoice browser TTS', () => {
     window.speechSynthesis = {
       speak,
       cancel: jest.fn(),
+      resume: jest.fn(),
     };
     localStorage.clear();
     setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
@@ -77,5 +78,48 @@ describe('playStepVoice browser TTS', () => {
     expect(utter.text).toBe('Hail Mary, full of grace');
     expect(utter.lang).toBe('en-US');
     expect(result.source).toBe('tts');
+    expect(result.ended).toBe(true);
+    expect(result.cancelled).toBe(false);
+  });
+
+  test('synthesis-failed still ends so Liber auto can advance', async () => {
+    function FakeUtterance(text) {
+      this.text = text;
+      this.onend = null;
+      this.onerror = null;
+    }
+    window.SpeechSynthesisUtterance = FakeUtterance;
+    window.speechSynthesis = {
+      speak: jest.fn((u) => {
+        setTimeout(() => u.onerror?.({ error: 'synthesis-failed' }), 0);
+      }),
+      cancel: jest.fn(),
+      resume: jest.fn(),
+    };
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
+
+    const result = await playStepVoice({
+      text: 'Padre nuestro',
+      prayerId: 'P',
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+    });
+
+    expect(result.ended).toBe(true);
+    expect(result.cancelled).toBe(false);
+  });
+
+  test('skip path ends when TTS disabled and no clips', async () => {
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: false });
+    const result = await playStepVoice({
+      text: 'Amen',
+      prayerId: 'X',
+      mystery: 'gozosos',
+      sequenceIndex: 0,
+    });
+    expect(result.ended).toBe(true);
+    expect(result.source).toBe('skip');
   });
 });
