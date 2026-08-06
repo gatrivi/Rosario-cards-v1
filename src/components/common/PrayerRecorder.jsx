@@ -273,7 +273,9 @@ export default function PrayerRecorder({
   );
 
   if (isTitle) {
-    const useLifted = typeof onVoiceControlTap === 'function';
+    // Liber owns ▶ in thumb-zone FAB; title row keeps mic only (no legacy side play).
+    const showTitlePlay =
+      voiceControlEnabled && typeof onVoiceControlTap === 'function';
     return (
       <div
         className={`prayer-recorder prayer-recorder--title${expanded ? ' prayer-recorder--open' : ''}${disabled ? ' prayer-recorder--disabled' : ''}${
@@ -281,35 +283,17 @@ export default function PrayerRecorder({
         }`}
       >
         <div className={`prayer-recorder__title-row${isLeftHanded ? ' prayer-recorder__title-row--left' : ''}`}>
-          {showVoiceControl || useLifted ? (
+          {showTitlePlay ? (
             <button
               type="button"
               className={`prayer-recorder__side-btn${
                 voiceMode === VOICE_MODES.AUTO ? ' prayer-recorder__side-btn--auto' : ''
               }`}
-              onClick={useLifted ? onVoiceControlTap : togglePlayback}
-              aria-label={
-                useLifted
-                  ? voiceControlLabel(voiceMode, voicePlaying)
-                  : playing
-                    ? 'Pausar'
-                    : 'Reproducir voz'
-              }
-              title={
-                useLifted
-                  ? voiceControlLabel(voiceMode, voicePlaying)
-                  : playing
-                    ? 'Pausar'
-                    : hasClips
-                      ? 'Reproducir tu grabación'
-                      : 'Reproducir voz'
-              }
+              onClick={onVoiceControlTap}
+              aria-label={voiceControlLabel(voiceMode, voicePlaying)}
+              title={voiceControlLabel(voiceMode, voicePlaying)}
             >
-              {useLifted
-                ? voiceControlIcon(voiceMode, voicePlaying)
-                : playing
-                  ? '⏸'
-                  : '▶'}
+              {voiceControlIcon(voiceMode, voicePlaying)}
             </button>
           ) : (
             <span className="prayer-recorder__side-spacer" aria-hidden="true" />

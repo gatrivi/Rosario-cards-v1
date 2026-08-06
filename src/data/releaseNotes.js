@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.65',
+  version: '0.3.66',
   name: 'San Expedito · HODIE',
   CURRENT: [
-    'Liber ≫ auto: avanza tras TTS (también si falla) y encadena las 4 vías del rosario',
-    'San Expedito en Oraciones breves (ES / EN / LA) · ?oracion=expedito',
+    'Liber ▶ en zona del pulgar (arriba del nav) · voz independiente de efectos',
+    'Liber ≫ auto: avanza tras TTS y encadena las 4 vías del rosario',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',

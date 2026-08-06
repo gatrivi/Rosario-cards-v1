@@ -507,6 +507,57 @@
   font-size: 0.92rem;
 }
 
+/* Liber voice ▶/≫ — thumb reach above bottom nav (not title row) */
+.booklet-voice-fab {
+  align-items: center;
+  background: rgba(12, 10, 22, 0.82);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  border-radius: 50%;
+  bottom: calc(var(--app-above-nav, 70px) + 12px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  color: #d4af37;
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  height: 3.35rem;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  width: 3.35rem;
+  z-index: 46;
+}
+
+.booklet-voice-fab--left {
+  left: max(14px, env(safe-area-inset-left, 0px));
+  right: auto;
+}
+
+.booklet-voice-fab__icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  transform: translateX(1px);
+}
+
+.booklet-voice-fab--auto {
+  border-color: #d4af37;
+  box-shadow:
+    0 0 0 2px rgba(212, 175, 55, 0.35),
+    0 4px 18px rgba(0, 0, 0, 0.45);
+  color: #f0e6b8;
+}
+
+.booklet-voice-fab--playing:not(.booklet-voice-fab--auto) {
+  border-color: rgba(212, 175, 55, 0.85);
+}
+
+.booklet-voice-fab:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 3px;
+}
+
 .booklet-turn-ornament {
   color: rgba(212, 175, 55, 0.25);
   font-size: 0.55rem;

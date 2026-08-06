@@ -13,7 +13,8 @@ describe('booklet mobile layout CSS', () => {
 
   test('scroll panel reserves footer height via padding, not z-index stacking', () => {
     expect(bookletCss).toMatch(/\.booklet-glass-panel[\s\S]*padding:\s*0 0 var\(--booklet-footer-h\)/);
-    expect(bookletCss).not.toMatch(/\.booklet-glass-panel[\s\S]*z-index/);
+    const panelBlock = bookletCss.match(/\.booklet-glass-panel\s*\{[^}]*\}/);
+    expect(panelBlock?.[0] || '').not.toMatch(/z-index/);
   });
 
   test('booklet view reserves bottom nav space inside app shell', () => {
@@ -24,6 +25,15 @@ describe('booklet mobile layout CSS', () => {
 
   test('footer chrome removed — Devociones lives in bottom nav tooltip', () => {
     expect(bookletCss).toMatch(/--booklet-footer-h:\s*0px/);
-    expect(bookletCss).not.toMatch(/\.booklet-footer[\s\S]*z-index/);
+    // ponytail: don't scan past footer block — later rules (FAB) also use z-index
+    const footerBlock = bookletCss.match(/\.booklet-footer\s*\{[^}]*\}/);
+    expect(footerBlock?.[0] || '').not.toMatch(/z-index/);
+  });
+
+  test('voice FAB sits in thumb zone above bottom nav', () => {
+    expect(bookletCss).toMatch(
+      /\.booklet-voice-fab[\s\S]*bottom:\s*calc\(var\(--app-above-nav/
+    );
+    expect(bookletCss).toMatch(/\.booklet-voice-fab--left/);
   });
 });

@@ -368,7 +368,7 @@ export default function SettingsOverlay({
               />
             </label>
             <div style={{ color: '#666', fontSize: '0.7rem' }}>
-              Liber ▶: una vez = oración · otra = auto ≫. Ritmo TTS en Más → Voz.
+              Liber ▶ abajo (pulgar): una vez = oración · otra = auto ≫. Ritmo TTS en Más → Voz.
             </div>
           </div>
 

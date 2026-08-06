@@ -523,7 +523,7 @@ export default function BookletView({
   }, [misterioActual]);
 
   useEffect(() => {
-    if (!soundEnabled || voiceMode === VOICE_MODES.OFF || isTransitioning) {
+    if (voiceMode === VOICE_MODES.OFF || isTransitioning) {
       if (voiceMode === VOICE_MODES.OFF) {
         stopStepVoice();
         setVoicePlaying(false);
@@ -578,21 +578,34 @@ export default function BookletView({
     };
     // ponytail: voiceMode===off gates; once→auto must not restart mid-utterance
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voiceStepKey, voiceMode === VOICE_MODES.OFF, soundEnabled, isTransitioning, speakableText]);
+  }, [voiceStepKey, voiceMode === VOICE_MODES.OFF, isTransitioning, speakableText]);
 
   const handleVoiceControlTap = useCallback(() => {
-    if (!soundEnabled) return;
+    // Voice is independent of "Efectos de Sonido" (chimes only)
     const next = nextVoiceMode(voiceModeRef.current, 'tap');
     if (next === VOICE_MODES.OFF) {
       stopStepVoice();
       setVoicePlaying(false);
       autoRosaryStartRef.current = null;
     } else if (next === VOICE_MODES.AUTO && isValidRosaryMystery(misterioActual)) {
-      // Mark start via so auto stops after all four (wrap without repeating start)
       if (!autoRosaryStartRef.current) autoRosaryStartRef.current = misterioActual;
     }
+    try {
+      navigator.vibrate?.(12);
+    } catch (_) {
+      /* ignore */
+    }
     setVoiceMode(next);
-  }, [soundEnabled, misterioActual]);
+  }, [misterioActual]);
+
+  const voiceFabIcon =
+    voiceMode === VOICE_MODES.AUTO ? '≫' : voicePlaying ? '⏸' : '▶';
+  const voiceFabLabel =
+    voiceMode === VOICE_MODES.AUTO
+      ? 'Detener auto-play'
+      : voicePlaying
+        ? 'Activar auto-play'
+        : 'Reproducir oración';
 
   useEffect(() => {
     return () => stopStepVoice();
@@ -1039,10 +1052,6 @@ export default function BookletView({
             simpleMode={simpleMode}
             placement="title"
             isLeftHanded={isLeftHanded}
-            voiceControlEnabled
-            voiceMode={voiceMode}
-            voicePlaying={voicePlaying}
-            onVoiceControlTap={handleVoiceControlTap}
           >
             <h1
               className={`booklet-title${isAveMaria || isMercyPassion ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' || isMercyDecade ? ' booklet-title--mystery' : ''}`}
@@ -1089,6 +1098,23 @@ export default function BookletView({
         active={offeringLight}
         count={Math.max(loadPrayForIntentions().length, 1)}
       />
+
+      {/* Thumb-zone voice — above bottom nav; flips with left-handed */}
+      <button
+        type="button"
+        className={`booklet-voice-fab${
+          voiceMode === VOICE_MODES.AUTO ? ' booklet-voice-fab--auto' : ''
+        }${voicePlaying ? ' booklet-voice-fab--playing' : ''}${
+          isLeftHanded ? ' booklet-voice-fab--left' : ''
+        }`}
+        onClick={handleVoiceControlTap}
+        aria-label={voiceFabLabel}
+        title={voiceFabLabel}
+      >
+        <span className="booklet-voice-fab__icon" aria-hidden="true">
+          {voiceFabIcon}
+        </span>
+      </button>
 
       {optionalOpen && (
         <OptionalPrayerSheet
