@@ -209,7 +209,6 @@ export default function PrayerRecorder({
   const hasClips = clips.length > 0;
   const canPlayLegacy = hasClips || Boolean(bundledUrl);
   const isTitle = placement === 'title';
-  const showVoiceControl = voiceControlEnabled || canPlayLegacy;
 
   const panel = expanded && (
     <div className="prayer-recorder__panel">
