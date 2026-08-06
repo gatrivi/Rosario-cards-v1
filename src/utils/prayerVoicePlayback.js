@@ -67,6 +67,40 @@ function playAudioUrl(url, revoke, gen) {
   });
 }
 
+function getSpeechVoices() {
+  try {
+    return window.speechSynthesis?.getVoices?.() || [];
+  } catch (_) {
+    return [];
+  }
+}
+
+/** Chrome often returns [] until voiceschanged — wait briefly once. */
+function waitForSpeechVoices(maxMs = 400) {
+  const now = getSpeechVoices();
+  if (now.length > 0) return Promise.resolve(now);
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      try {
+        window.speechSynthesis.removeEventListener('voiceschanged', finish);
+      } catch (_) {
+        /* ignore */
+      }
+      clearTimeout(timer);
+      resolve(getSpeechVoices());
+    };
+    const timer = setTimeout(finish, maxMs);
+    try {
+      window.speechSynthesis.addEventListener('voiceschanged', finish);
+    } catch (_) {
+      finish();
+    }
+  });
+}
+
 function playBrowserTts(text, prefs, gen) {
   return new Promise((resolve) => {
     if (typeof window === 'undefined' || !window.speechSynthesis || !text) {
@@ -84,57 +118,79 @@ function playBrowserTts(text, prefs, gen) {
       resolve({ ended: true, cancelled: false, source: 'tts-skip' });
       return;
     }
-    const utterance = new Utterance(text);
-    utterance.lang = prefs.ttsLang || 'en-US';
-    utterance.rate = prefs.ttsRate || 1;
-    activeUtterance = utterance;
-    let settled = false;
-    let keepAlive = null;
-    const finish = (cancelled) => {
-      if (settled) return;
-      settled = true;
-      if (keepAlive) {
-        clearInterval(keepAlive);
-        keepAlive = null;
-      }
+
+    const run = (voices) => {
       if (gen !== playGeneration) {
         resolve({ ended: false, cancelled: true, source: 'tts' });
         return;
       }
-      if (activeUtterance === utterance) activeUtterance = null;
-      resolve({ ended: !cancelled, cancelled: !!cancelled, source: 'tts' });
-    };
-    utterance.onend = () => finish(false);
-    utterance.onerror = (ev) => {
-      // interrupted/canceled = stopStepVoice or supersede; other errors = failed speak
-      const err = ev?.error;
-      const userStop = err === 'interrupted' || err === 'canceled';
-      if (userStop || gen !== playGeneration) {
-        finish(true);
+      // No voices (headless / empty pack) — don't hang waiting for onend
+      if (!voices.length) {
+        resolve({ ended: true, cancelled: false, source: 'tts-no-voices' });
         return;
       }
-      // ponytail: synthesis-failed / no voices — end so auto can advance
-      finish(false);
-    };
-    try {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-      // Chrome often pauses TTS ~15s without resume ticks
-      keepAlive = setInterval(() => {
-        if (gen !== playGeneration) {
+
+      const utterance = new Utterance(text);
+      utterance.lang = prefs.ttsLang || 'en-US';
+      utterance.rate = prefs.ttsRate || 1;
+      activeUtterance = utterance;
+      let settled = false;
+      let keepAlive = null;
+      let watchdog = null;
+      const finish = (cancelled) => {
+        if (settled) return;
+        settled = true;
+        if (keepAlive) {
           clearInterval(keepAlive);
           keepAlive = null;
+        }
+        if (watchdog) {
+          clearTimeout(watchdog);
+          watchdog = null;
+        }
+        if (gen !== playGeneration) {
+          resolve({ ended: false, cancelled: true, source: 'tts' });
           return;
         }
-        try {
-          window.speechSynthesis.resume();
-        } catch (_) {
-          /* ignore */
+        if (activeUtterance === utterance) activeUtterance = null;
+        resolve({ ended: !cancelled, cancelled: !!cancelled, source: 'tts' });
+      };
+      utterance.onend = () => finish(false);
+      utterance.onerror = (ev) => {
+        const err = ev?.error;
+        const userStop = err === 'interrupted' || err === 'canceled';
+        if (userStop || gen !== playGeneration) {
+          finish(true);
+          return;
         }
-      }, 8000);
-    } catch (_) {
-      finish(false);
-    }
+        // ponytail: synthesis-failed — end so auto can advance
+        finish(false);
+      };
+      try {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+        // Chrome often pauses TTS ~15s without resume ticks
+        keepAlive = setInterval(() => {
+          if (gen !== playGeneration) {
+            clearInterval(keepAlive);
+            keepAlive = null;
+            return;
+          }
+          try {
+            window.speechSynthesis.resume();
+          } catch (_) {
+            /* ignore */
+          }
+        }, 8000);
+        // Safety: if neither onend nor onerror fires, don't stall Liber auto
+        const ms = Math.min(120000, Math.max(8000, String(text).length * 80));
+        watchdog = setTimeout(() => finish(false), ms);
+      } catch (_) {
+        finish(false);
+      }
+    };
+
+    waitForSpeechVoices(400).then(run);
   });
 }
 

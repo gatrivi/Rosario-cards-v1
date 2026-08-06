@@ -62,6 +62,7 @@ describe('playStepVoice browser TTS', () => {
       speak,
       cancel: jest.fn(),
       resume: jest.fn(),
+      getVoices: () => [{ lang: 'en-US', name: 'fake' }],
     };
     localStorage.clear();
     setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
@@ -90,6 +91,7 @@ describe('playStepVoice browser TTS', () => {
     }
     window.SpeechSynthesisUtterance = FakeUtterance;
     window.speechSynthesis = {
+      getVoices: () => [{ lang: 'en-US', name: 'fake' }],
       speak: jest.fn((u) => {
         setTimeout(() => u.onerror?.({ error: 'synthesis-failed' }), 0);
       }),
@@ -108,6 +110,33 @@ describe('playStepVoice browser TTS', () => {
 
     expect(result.ended).toBe(true);
     expect(result.cancelled).toBe(false);
+  });
+
+  test('no voices ends immediately (no hang)', async () => {
+    function FakeUtterance(text) {
+      this.text = text;
+    }
+    window.SpeechSynthesisUtterance = FakeUtterance;
+    window.speechSynthesis = {
+      getVoices: () => [],
+      speak: jest.fn(),
+      cancel: jest.fn(),
+      resume: jest.fn(),
+    };
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
+
+    const result = await playStepVoice({
+      text: 'Ave Maria',
+      prayerId: 'A',
+      mystery: 'gozosos',
+      sequenceIndex: 2,
+    });
+
+    expect(result.ended).toBe(true);
+    expect(result.cancelled).toBe(false);
+    expect(result.source).toBe('tts-no-voices');
+    expect(window.speechSynthesis.speak).not.toHaveBeenCalled();
   });
 
   test('skip path ends when TTS disabled and no clips', async () => {
