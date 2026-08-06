@@ -30,7 +30,7 @@ import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
-import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery } from '../../utils/bookletSequence';
+import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery, getNextRosaryMystery } from '../../utils/bookletSequence';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { imagePath as registryImage } from '../../data/imageRegistry';
 import {
@@ -221,6 +221,10 @@ export default function BookletView({
   const [voicePlaying, setVoicePlaying] = useState(false);
   const voiceModeRef = useRef(VOICE_MODES.OFF);
   const canAdvanceVoiceRef = useRef(false);
+  /** When auto chains to next via, keep ≫ instead of resetting on misterio change. */
+  const preserveAutoOnMysteryChangeRef = useRef(false);
+  /** Mystery where auto session started — stop after returning (four vias). */
+  const autoRosaryStartRef = useRef(null);
 
   // Always-on step autoplay removed — Liber ▶ owns once/auto (see prayerVoicePlayback).
 
@@ -505,10 +509,17 @@ export default function BookletView({
   const voiceStepKey = `${misterioActual}:${displayIndex}:${innerVerseIndex}:${activePrayer?.id || ''}`;
 
   useEffect(() => {
+    if (preserveAutoOnMysteryChangeRef.current) {
+      preserveAutoOnMysteryChangeRef.current = false;
+      stopStepVoice();
+      setVoicePlaying(false);
+      return;
+    }
     voiceModeRef.current = VOICE_MODES.OFF;
     setVoiceMode(VOICE_MODES.OFF);
     setVoicePlaying(false);
     stopStepVoice();
+    autoRosaryStartRef.current = null;
   }, [misterioActual]);
 
   useEffect(() => {
@@ -531,15 +542,33 @@ export default function BookletView({
       });
       if (cancelled) return;
       setVoicePlaying(false);
-      if (result.cancelled || !result.ended) return;
+      // User stop / supersede only — TTS fail still ends so auto can advance
+      if (result.cancelled) return;
       const mode = voiceModeRef.current;
       if (mode === VOICE_MODES.ONCE) {
         setVoiceMode(VOICE_MODES.OFF);
         return;
       }
       if (mode === VOICE_MODES.AUTO) {
-        if (canAdvanceVoiceRef.current) goNext();
-        else setVoiceMode(VOICE_MODES.OFF);
+        if (canAdvanceVoiceRef.current) {
+          goNext();
+          return;
+        }
+        // End of this devotion — chain next rosary via until four complete
+        const nextVia = getNextRosaryMystery(misterioActual);
+        const startVia = autoRosaryStartRef.current;
+        if (
+          nextVia &&
+          startVia &&
+          nextVia !== startVia &&
+          isValidRosaryMystery(misterioActual)
+        ) {
+          preserveAutoOnMysteryChangeRef.current = true;
+          onMysteryChange?.(nextVia);
+          return;
+        }
+        autoRosaryStartRef.current = null;
+        setVoiceMode(VOICE_MODES.OFF);
       }
     })();
 
@@ -557,9 +586,13 @@ export default function BookletView({
     if (next === VOICE_MODES.OFF) {
       stopStepVoice();
       setVoicePlaying(false);
+      autoRosaryStartRef.current = null;
+    } else if (next === VOICE_MODES.AUTO && isValidRosaryMystery(misterioActual)) {
+      // Mark start via so auto stops after all four (wrap without repeating start)
+      if (!autoRosaryStartRef.current) autoRosaryStartRef.current = misterioActual;
     }
     setVoiceMode(next);
-  }, [soundEnabled]);
+  }, [soundEnabled, misterioActual]);
 
   useEffect(() => {
     return () => stopStepVoice();

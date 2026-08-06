@@ -1,6 +1,6 @@
 # Libro voice autoplay (EN TTS)
 
-**v0.3.60+** · Control: Liber title ▶ beside prayer name (`PrayerRecorder` `placement="title"`).
+**v0.3.65+** · Control: Liber title ▶ beside prayer name (`PrayerRecorder` `placement="title"`).
 
 ## Modes
 
@@ -11,6 +11,10 @@
 | 3rd | `off` | ▶ | Stop TTS/audio |
 
 After `once` ends → `off`; tap again = play current again.
+
+**Rosary auto (four vias):** with ≫ on a classic mystery, finishing one via advances to the next (`gozosos → dolorosos → gloriosos → luminosos`) and keeps playing until all four complete (stops when the next via would be the one where auto started). Manual mystery pill change still resets to off.
+
+TTS/`synthesis-failed` (no voices) still counts as step end so auto does not stall.
 
 ## Voice priority
 
@@ -23,6 +27,7 @@ After `once` ends → `off`; tap again = play current again.
 | Concern | Path |
 |---------|------|
 | Playback + FSM | `src/utils/prayerVoicePlayback.js` |
+| Next via helper | `getNextRosaryMystery` in `bookletSequence.js` |
 | Prefs (rate, lang, sources) | `src/utils/voicePrefs.js` — UI on `/voz` |
 | Libro owner | `BookletView.jsx` (`voiceMode` lifted) |
 | Control chrome | `PrayerRecorder.jsx` |

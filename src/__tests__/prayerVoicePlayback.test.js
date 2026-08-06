@@ -61,6 +61,8 @@ describe('playStepVoice browser TTS', () => {
     window.speechSynthesis = {
       speak,
       cancel: jest.fn(),
+      resume: jest.fn(),
+      getVoices: () => [{ lang: 'en-US', name: 'fake' }],
     };
     localStorage.clear();
     setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
@@ -77,5 +79,76 @@ describe('playStepVoice browser TTS', () => {
     expect(utter.text).toBe('Hail Mary, full of grace');
     expect(utter.lang).toBe('en-US');
     expect(result.source).toBe('tts');
+    expect(result.ended).toBe(true);
+    expect(result.cancelled).toBe(false);
+  });
+
+  test('synthesis-failed still ends so Liber auto can advance', async () => {
+    function FakeUtterance(text) {
+      this.text = text;
+      this.onend = null;
+      this.onerror = null;
+    }
+    window.SpeechSynthesisUtterance = FakeUtterance;
+    window.speechSynthesis = {
+      getVoices: () => [{ lang: 'en-US', name: 'fake' }],
+      speak: jest.fn((u) => {
+        setTimeout(() => u.onerror?.({ error: 'synthesis-failed' }), 0);
+      }),
+      cancel: jest.fn(),
+      resume: jest.fn(),
+    };
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
+
+    const result = await playStepVoice({
+      text: 'Padre nuestro',
+      prayerId: 'P',
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+    });
+
+    expect(result.ended).toBe(true);
+    expect(result.cancelled).toBe(false);
+  });
+
+  test('no voices ends immediately (no hang)', async () => {
+    function FakeUtterance(text) {
+      this.text = text;
+    }
+    window.SpeechSynthesisUtterance = FakeUtterance;
+    window.speechSynthesis = {
+      getVoices: () => [],
+      speak: jest.fn(),
+      cancel: jest.fn(),
+      resume: jest.fn(),
+    };
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
+
+    const result = await playStepVoice({
+      text: 'Ave Maria',
+      prayerId: 'A',
+      mystery: 'gozosos',
+      sequenceIndex: 2,
+    });
+
+    expect(result.ended).toBe(true);
+    expect(result.cancelled).toBe(false);
+    expect(result.source).toBe('tts-no-voices');
+    expect(window.speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+
+  test('skip path ends when TTS disabled and no clips', async () => {
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: false });
+    const result = await playStepVoice({
+      text: 'Amen',
+      prayerId: 'X',
+      mystery: 'gozosos',
+      sequenceIndex: 0,
+    });
+    expect(result.ended).toBe(true);
+    expect(result.source).toBe('skip');
   });
 });

@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.64',
+  version: '0.3.65',
   name: 'San Expedito · HODIE',
   CURRENT: [
+    'Liber ≫ auto: avanza tras TTS (también si falla) y encadena las 4 vías del rosario',
     'San Expedito en Oraciones breves (ES / EN / LA) · ?oracion=expedito',
-    'Virgen del Carmen en shelf (16 jul)',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',

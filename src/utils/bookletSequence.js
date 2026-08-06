@@ -141,6 +141,13 @@ export function isValidRosaryMystery(id) {
   return ROSARY_MYSTERIES.has(id);
 }
 
+/** Next via in gozosos → dolorosos → gloriosos → luminosos → gozosos. */
+export function getNextRosaryMystery(id) {
+  const i = ROSARY_MYSTERY_IDS.indexOf(id);
+  if (i < 0) return null;
+  return ROSARY_MYSTERY_IDS[(i + 1) % ROSARY_MYSTERY_IDS.length];
+}
+
 const SEQ_MAP = {
   gozosos: 'RGo',
   dolorosos: 'RDo',
