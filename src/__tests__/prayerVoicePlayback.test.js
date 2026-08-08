@@ -175,9 +175,38 @@ describe('playStepVoice browser TTS', () => {
       mystery: 'magnificat',
       sequenceIndex: 0,
       lang: 'es',
+      preferBundled: true,
     });
     expect(window.Audio).toHaveBeenCalledWith('/voice/es/MAG_1.wav');
     expect(result.source).toBe('audio');
+    expect(result.ended).toBe(true);
+  });
+
+  test('EN lang falls back to ES pack when EN empty', async () => {
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: true, useBundledVoice: true, useBrowserTts: false, voiceLang: 'en' });
+    window.Audio = jest.fn().mockImplementation((url) => {
+      const a = {
+        src: url,
+        onended: null,
+        onerror: null,
+        play: jest.fn(() => {
+          setTimeout(() => a.onended?.(), 0);
+          return Promise.resolve();
+        }),
+        pause: jest.fn(),
+      };
+      return a;
+    });
+    const result = await playStepVoice({
+      text: '',
+      prayerId: 'P',
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+      lang: 'en',
+      preferBundled: true,
+    });
+    expect(window.Audio).toHaveBeenCalledWith('/voice/es/P.wav');
     expect(result.ended).toBe(true);
   });
 });

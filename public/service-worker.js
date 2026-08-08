@@ -1,5 +1,5 @@
 // PWA service worker — bump CACHE_NAME on each release so stale bundles are purged.
-const CACHE_NAME = 'rosario-cards-v0.3.70';
+const CACHE_NAME = 'rosario-cards-v0.3.71';
 
 const SHELL_URLS = [
   '/',

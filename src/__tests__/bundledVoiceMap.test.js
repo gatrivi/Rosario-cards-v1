@@ -17,15 +17,16 @@ describe('bundledVoiceMap langs', () => {
     expect(normalizeVoiceLang('es')).toBe('es');
   });
 
-  test('EN pack maps core + Ángelus aliases', () => {
-    expect(listBundledVoiceKeys('en').length).toBeGreaterThan(100);
-    expect(resolveBundledVoiceUrl('P', 'en')).toBe('/voice/en/P.wav');
-    expect(resolveBundledVoiceUrl('A_3', 'en')).toBe('/voice/en/A.wav');
-    expect(resolveBundledVoiceUrl('ANG_AVE_1', 'en')).toBe('/voice/en/A.wav');
-    expect(resolveBundledVoiceClip('PBO_3', 'en')).toEqual({
-      url: '/voice/en/PBO_3.wav',
+  test('EN pack empty until wavs committed — falls back to ES', () => {
+    expect(listBundledVoiceKeys('en').length).toBe(0);
+    expect(resolveBundledVoiceUrl('P', 'en')).toBe('/voice/es/P.wav');
+    expect(resolveBundledVoiceUrl('A_3', 'en')).toBe('/voice/es/A.wav');
+    expect(resolveBundledVoiceUrl('ANG_AVE_1', 'en')).toBe('/voice/es/A.wav');
+    expect(resolveBundledVoiceUrl('MAG_1', 'en')).toBe('/voice/es/MAG_1.wav');
+    expect(resolveBundledVoiceClip('P', 'en')).toEqual({
+      url: '/voice/es/P.wav',
       tier: 3,
-      pack: 'en',
+      pack: 'es',
     });
   });
 

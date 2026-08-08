@@ -201,51 +201,55 @@ function playBrowserTts(text, prefs, gen) {
 }
 
 /**
- * @param {{ text: string, prayerId: string, mystery: string, sequenceIndex: number, lang?: string }} opts
+ * @param {{ text: string, prayerId: string, mystery: string, sequenceIndex: number, lang?: string, preferBundled?: boolean }} opts
  * @returns {Promise<{ ended: boolean, cancelled: boolean, source?: string }>}
  */
-export async function playStepVoice({ text, prayerId, mystery, sequenceIndex, lang }) {
+export async function playStepVoice({
+  text,
+  prayerId,
+  mystery,
+  sequenceIndex,
+  lang,
+  preferBundled = false,
+}) {
   stopStepVoice();
   const gen = playGeneration;
   const prefs = getVoicePrefs();
   const speakable = typeof text === 'string' ? text.trim() : '';
   const packLang = lang || prefs.voiceLang || 'es';
 
-  // Start bundled WAV synchronously (before any await) so ▶ stays inside the user gesture.
-  let bundledPromise = null;
-  if (prefs.useBundledVoice && prayerId) {
+  // Liber ▶: guide pack first (sync, keeps user gesture). Ignore bundled-off pref for Liber.
+  if (prayerId && preferBundled) {
     const url = resolveBundledVoiceUrl(prayerId, packLang);
-    if (url) bundledPromise = playAudioUrl(url, false, gen);
+    if (url) return playAudioUrl(url, false, gen);
   }
 
   try {
-    if (prefs.useUserVoice && mystery != null && sequenceIndex != null && prayerId) {
+    if (!preferBundled && prefs.useUserVoice && mystery != null && sequenceIndex != null && prayerId) {
       const rec = await pickRecordingForSlot(mystery, sequenceIndex, prayerId);
       if (gen !== playGeneration) return { ended: false, cancelled: true };
       if (rec?.blob) {
         const url = blobToObjectUrl(rec);
-        if (url) {
-          stopStepVoice();
-          const userGen = playGeneration;
-          return playAudioUrl(url, true, userGen);
-        }
+        if (url) return playAudioUrl(url, true, gen);
       }
     }
 
-    if (bundledPromise) {
-      if (gen !== playGeneration) return { ended: false, cancelled: true };
-      return bundledPromise;
+    if (prefs.useBundledVoice && prayerId) {
+      const url = resolveBundledVoiceUrl(prayerId, packLang);
+      if (url) {
+        if (gen !== playGeneration) return { ended: false, cancelled: true };
+        return playAudioUrl(url, false, gen);
+      }
     }
 
     if (prefs.useBrowserTts !== false && speakable) {
       if (gen !== playGeneration) return { ended: false, cancelled: true };
       return playBrowserTts(speakable, prefs, gen);
     }
-  } catch (_) {
-    /* autoplay / missing — silent */
+  } catch (err) {
+    console.error('[voice] playStepVoice', err);
   }
 
-  // No clip / TTS off / empty text — still "ended" so Liber auto can advance
   if (gen !== playGeneration) return { ended: false, cancelled: true };
   return { ended: true, cancelled: false, source: 'skip' };
 }

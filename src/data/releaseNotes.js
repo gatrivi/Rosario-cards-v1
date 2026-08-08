@@ -1,19 +1,19 @@
 /**
- * Shipped vs upcoming ? keep short. Agents update this when bumping APP_VERSION.
- * Shown in update banner, version-badge tap, and Ajustes ? Novedades.
+ * Shipped vs upcoming â€” keep short. Agents update this when bumping APP_VERSION.
+ * Shown in update banner, version-badge tap, and Ajustes â†’ Novedades.
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.70',
-  name: 'Guía que suena',
+  version: '0.3.71',
+  name: 'â–¶ que suena de verdad',
   CURRENT: [
-    'Liber ?: play inicia en el toque (gesto) ? clips ES de devoción',
-    'Ajustes ? Copiar errores (pegar en el chat)',
-    'Tipografía de título/paso de devoción (Georgia small-caps)',
+    'Liber â–¶: guÃ­a ES real (EN vacÃ­o ya no apunta a HTML)',
+    'â–¶ ignora mic/efectos â€” pack Fish primero',
+    'Ajustes â†’ Copiar errores',
   ],
   UPCOMING: [
-    'Clips guía EN Liber (Fish bake en curso)',
-    'Confirmación al borrar una toma de voz',
+    'Clips guÃ­a EN Liber (cuando se suban los wav)',
+    'ConfirmaciÃ³n al borrar una toma de voz',
   ],
 };
 
@@ -24,6 +24,6 @@ export function getReleaseNotes() {
 /** One-line summary for the update toast. */
 export function getUpdateSummaryLine() {
   const { CURRENT } = RELEASE_NOTES;
-  if (!CURRENT?.length) return 'Nueva versión lista.';
-  return CURRENT.slice(0, 2).join(' · ');
+  if (!CURRENT?.length) return 'Nueva versiÃ³n lista.';
+  return CURRENT.slice(0, 2).join(' Â· ');
 }

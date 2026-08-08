@@ -562,7 +562,8 @@ export default function BookletView({
   );
 
   const playCurrentVoiceStep = useCallback(async () => {
-    if (!soundEnabled || isTransitioning) return;
+    // Guide clips are independent of “Efectos de Sonido” (organ/chimes).
+    if (isTransitioning) return;
     setVoicePlaying(true);
     const result = await playStepVoice({
       text: speakableText,
@@ -570,10 +571,10 @@ export default function BookletView({
       mystery: misterioActual,
       sequenceIndex: displayIndex,
       lang: voiceLangPref,
+      preferBundled: true,
     });
     finishVoiceResult(result);
   }, [
-    soundEnabled,
     isTransitioning,
     speakableText,
     activePrayer?.id,
@@ -583,17 +584,9 @@ export default function BookletView({
     finishVoiceResult,
   ]);
 
-  // Stop only when mode is off (tap stop / once ended). Do not tie play to this.
-  useEffect(() => {
-    if (voiceMode === VOICE_MODES.OFF) {
-      stopStepVoice();
-      setVoicePlaying(false);
-    }
-  }, [voiceMode]);
-
   // Step change while once/auto — not used for OFF→ONCE (that plays from tap / gesture).
   useEffect(() => {
-    if (!soundEnabled || isTransitioning) return undefined;
+    if (isTransitioning) return undefined;
     if (voiceModeRef.current === VOICE_MODES.OFF) return undefined;
 
     let cancelled = false;
@@ -605,6 +598,7 @@ export default function BookletView({
         mystery: misterioActual,
         sequenceIndex: displayIndex,
         lang: voiceLangPref,
+        preferBundled: true,
       });
       if (cancelled) return;
       finishVoiceResult(result);
@@ -614,10 +608,9 @@ export default function BookletView({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voiceStepKey, soundEnabled, isTransitioning]);
+  }, [voiceStepKey, isTransitioning]);
 
   const handleVoiceControlTap = useCallback(() => {
-    if (!soundEnabled) return;
     const prev = voiceModeRef.current;
     const next = nextVoiceMode(prev, 'tap');
     if (next === VOICE_MODES.OFF) {
@@ -637,7 +630,7 @@ export default function BookletView({
     if (prev === VOICE_MODES.OFF) {
       void playCurrentVoiceStep();
     }
-  }, [soundEnabled, misterioActual, playCurrentVoiceStep]);
+  }, [misterioActual, playCurrentVoiceStep]);
 
   useEffect(() => {
     return () => stopStepVoice();
