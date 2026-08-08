@@ -195,14 +195,15 @@ function playBrowserTts(text, prefs, gen) {
 }
 
 /**
- * @param {{ text: string, prayerId: string, mystery: string, sequenceIndex: number }} opts
+ * @param {{ text: string, prayerId: string, mystery: string, sequenceIndex: number, lang?: string }} opts
  * @returns {Promise<{ ended: boolean, cancelled: boolean, source?: string }>}
  */
-export async function playStepVoice({ text, prayerId, mystery, sequenceIndex }) {
+export async function playStepVoice({ text, prayerId, mystery, sequenceIndex, lang }) {
   stopStepVoice();
   const gen = playGeneration;
   const prefs = getVoicePrefs();
   const speakable = typeof text === 'string' ? text.trim() : '';
+  const packLang = lang || prefs.voiceLang || 'es';
 
   try {
     if (prefs.useUserVoice && mystery != null && sequenceIndex != null && prayerId) {
@@ -215,7 +216,7 @@ export async function playStepVoice({ text, prayerId, mystery, sequenceIndex }) 
     }
 
     if (prefs.useBundledVoice && prayerId) {
-      const url = resolveBundledVoiceUrl(prayerId);
+      const url = resolveBundledVoiceUrl(prayerId, packLang);
       if (url) {
         if (gen !== playGeneration) return { ended: false, cancelled: true };
         return playAudioUrl(url, false, gen);

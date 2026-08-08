@@ -365,7 +365,7 @@ export default function BookletView({
     try {
       if (next) localStorage.setItem(getVariantStorageKey(activePrayer.id), next);
     } catch (_) { /* ignore */ }
-  }, [activePrayer?.id, activePrayer?.variants, voiceLangPref]);
+  }, [activePrayer, voiceLangPref]);
 
   const displayText = useMemo(() => {
     if (isPerVersePrayer) {

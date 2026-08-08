@@ -1,20 +1,18 @@
 /**
- * Shipped vs upcoming â€” keep short. Agents update this when bumping APP_VERSION.
- * Shown in update banner, version-badge tap, and Ajustes â†’ Novedades.
+ * Shipped vs upcoming ? keep short. Agents update this when bumping APP_VERSION.
+ * Shown in update banner, version-badge tap, and Ajustes ? Novedades.
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.68',
-  name: 'Liber chrome corto',
+  version: '0.3.69',
+  name: 'Devoción en vivo',
   CURRENT: [
-    'Liber: Recorrido + Compartir en una sola fila (mÃ¡s espacio al texto)',
-    'Ajustes â†’ Idioma del Liber (ES / EN / LA): texto + audio',
-    'Voz guÃ­a ES Fish (Voz 4) en las devociones del Liber',
+    'Deploy: voz guía ES Fish en Magnificat / Ángelus / Sangre / Vías / Misericordia',
+    'Liber: Idioma ES/EN/LA + chrome corto',
   ],
   UPCOMING: [
-    'Clips guÃ­a EN Liber (Fish bake en curso)',
-    'Idioma en Liber sin romper UI',
-    'ConfirmaciÃ³n al borrar una toma de voz',
+    'Clips guía EN Liber (Fish bake en curso)',
+    'Confirmación al borrar una toma de voz',
   ],
 };
 
@@ -25,6 +23,6 @@ export function getReleaseNotes() {
 /** One-line summary for the update toast. */
 export function getUpdateSummaryLine() {
   const { CURRENT } = RELEASE_NOTES;
-  if (!CURRENT?.length) return 'Nueva versiÃ³n lista.';
-  return CURRENT.slice(0, 2).join(' Â· ');
+  if (!CURRENT?.length) return 'Nueva versión lista.';
+  return CURRENT.slice(0, 2).join(' · ');
 }

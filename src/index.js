@@ -8,7 +8,7 @@ import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
 import { installNovenaAutoProgress } from './utils/novenaAutoProgress';
 
-const APP_VERSION = '0.3.68';
+const APP_VERSION = '0.3.69';
 
 installNovenaAutoProgress();
 

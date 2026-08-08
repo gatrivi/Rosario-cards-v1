@@ -7,8 +7,8 @@ import {
 import { getVoicePrefs, setVoicePrefs } from '../utils/voicePrefs';
 
 describe('nextVoiceMode FSM', () => {
-  test('tap starts auto-play and a second tap stops it', () => {
-    expect(nextVoiceMode(VOICE_MODES.OFF, 'tap')).toBe(VOICE_MODES.AUTO);
+  test('tap cycles off → once → auto → off', () => {
+    expect(nextVoiceMode(VOICE_MODES.OFF, 'tap')).toBe(VOICE_MODES.ONCE);
     expect(nextVoiceMode(VOICE_MODES.ONCE, 'tap')).toBe(VOICE_MODES.AUTO);
     expect(nextVoiceMode(VOICE_MODES.AUTO, 'tap')).toBe(VOICE_MODES.OFF);
   });
@@ -151,5 +151,33 @@ describe('playStepVoice browser TTS', () => {
     });
     expect(result.ended).toBe(true);
     expect(result.source).toBe('skip');
+  });
+
+  test('bundled devotion clip uses opts.lang pack', async () => {
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: true, useBrowserTts: false, voiceLang: 'en' });
+    window.Audio = jest.fn().mockImplementation((url) => {
+      const a = {
+        src: url,
+        onended: null,
+        onerror: null,
+        play: jest.fn(() => {
+          setTimeout(() => a.onended?.(), 0);
+          return Promise.resolve();
+        }),
+        pause: jest.fn(),
+      };
+      return a;
+    });
+    const result = await playStepVoice({
+      text: '',
+      prayerId: 'MAG_1',
+      mystery: 'magnificat',
+      sequenceIndex: 0,
+      lang: 'es',
+    });
+    expect(window.Audio).toHaveBeenCalledWith('/voice/es/MAG_1.wav');
+    expect(result.source).toBe('audio');
+    expect(result.ended).toBe(true);
   });
 });
