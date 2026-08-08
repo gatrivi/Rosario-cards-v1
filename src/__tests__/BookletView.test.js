@@ -203,7 +203,7 @@ describe('BookletView', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /Vía Dolorosa/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Dolorosos/i }));
     expect(onMysteryChange).toHaveBeenCalledWith('dolorosos');
   });
 

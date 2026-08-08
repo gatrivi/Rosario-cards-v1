@@ -4,17 +4,16 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.67',
-  name: 'Liber ES · Fish Voz 4',
+  version: '0.3.68',
+  name: 'Liber chrome corto',
   CURRENT: [
-    'Voz guía ES Fish (Voz 4) en todas las devociones del Liber',
-    'Ángelus, Magnificat, Sangre, Vías, Misericordia, Sagrado Corazón',
-    'Liber ≫ auto: avanza tras clip y encadena las 4 vías',
-    'San Expedito en Oraciones breves · ?oracion=expedito',
+    'Liber: Recorrido + Compartir en una sola fila (más espacio al texto)',
+    'Ajustes → Idioma del Liber (ES / EN / LA): texto + audio',
+    'Voz guía ES Fish (Voz 4) en las devociones del Liber',
   ],
   UPCOMING: [
-    'Clips guía EN en /voice/en/',
-    'Corazón Inmaculado / Escápulario como recorridos',
+    'Clips guía EN Liber (Fish bake en curso)',
+    'Idioma en Liber sin romper UI',
     'Confirmación al borrar una toma de voz',
   ],
 };

@@ -926,117 +926,102 @@ export default function BookletView({
               ))}
             </div>
           )}
-          <div className="booklet-share-actions">
+          {!shelfOpen && (
+          <div className={`booklet-meta-row${isMercy ? ' booklet-meta-row--mercy' : ''}`}>
+            {showRosaryPills && (
+              <button
+                type="button"
+                className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
+                onClick={() => openOptionalPrayer('guardian')}
+                title="Oraciones opcionales: Ángel de la Guarda y San Benito"
+                aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
+              >
+                <span className="booklet-optional-btn__star" aria-hidden>✦</span>
+                <span className="booklet-optional-btn__label">Ángel · Benito</span>
+              </button>
+            )}
             <button
               type="button"
-              className="booklet-share-btn"
+              className="booklet-meta-row__outline"
               onClick={() => setOutlineOpen(true)}
               disabled={isTransitioning || total < 2}
               title="Ver recorrido de la devoción"
-              aria-label="Ver recorrido de la devoción"
+              aria-label={`${devotionChrome.title}, paso ${displayIndex + 1} de ${total}. Ver recorrido`}
+              data-testid="booklet-progress"
             >
-              Recorrido
+              <span className="booklet-meta-row__devotion" aria-live="polite">
+                <span className="booklet-devotion__title">{devotionChrome.title}</span>
+                {devotionChrome.subtitle && (
+                  <span className="booklet-devotion__subtitle">{devotionChrome.subtitle}</span>
+                )}
+              </span>
+              <span className="booklet-meta-row__step">
+                {isOptionalMercyStep && (
+                  <span className="booklet-mercy-info" title="Oración opcional de apertura" aria-hidden>
+                    ⓘ{' '}
+                  </span>
+                )}
+                {isSagradoCorazon
+                  ? `Paso ${displayIndex + 1} de ${total}`
+                  : `${displayIndex + 1} / ${total}`}
+                {misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION' && (
+                  <span className="booklet-ave-count"> · Día {novenaDay} de 9</span>
+                )}
+                {isLitany && litanyVerseTotal > 0 && (
+                  <span className="booklet-ave-count">
+                    {' '}
+                    · letanía {litanyVerseIndex + 1} / {litanyVerseTotal}
+                  </span>
+                )}
+                {isPerVersePrayer && prayerVerseTotal > 0 && (
+                  <span className="booklet-ave-count">
+                    {' '}
+                    · verso {prayerVerseIndex + 1} / {prayerVerseTotal}
+                  </span>
+                )}
+                {isAveMaria && (
+                  <span className="booklet-ave-count">
+                    {' '}
+                    · {aveRunInfo.position} de {aveRunInfo.total}
+                  </span>
+                )}
+                {isMercyPassion && (
+                  <span className="booklet-ave-count">
+                    {' '}
+                    · {mercyRunInfo.position} de {mercyRunInfo.total}
+                  </span>
+                )}
+                {isHolyGod && (
+                  <span className="booklet-ave-count">
+                    {' '}
+                    · {tripletRunInfo.position} de {tripletRunInfo.total}
+                  </span>
+                )}
+                {stepContext.kind === 'mystery' && stepContext.mysteryDecade && (
+                  <span className="booklet-ave-count">
+                    {' '}
+                    · misterio {stepContext.mysteryDecade} de 5
+                  </span>
+                )}
+                {isMercyDecade && stepContext.mysteryDecade && (
+                  <span className="booklet-ave-count">
+                    {' '}
+                    · década {stepContext.mysteryDecade} de 5
+                  </span>
+                )}
+              </span>
             </button>
             <button
               type="button"
-              className="booklet-share-btn booklet-share-btn--primary"
+              className="booklet-meta-row__share"
               onClick={handleSharePrayer}
               disabled={isTransitioning || isSharing}
               title="Compartir esta oración"
               aria-label="Compartir esta oración"
             >
-              {isSharing ? '…' : 'Compartir'}
+              {isSharing ? '…' : '↗'}
             </button>
           </div>
-          <p className="booklet-progress" data-testid="booklet-progress">
-            {showRosaryPills && (
-              <>
-                <button
-                  type="button"
-                  className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
-                  onClick={() => openOptionalPrayer('guardian')}
-                  title="Oraciones opcionales: Ángel de la Guarda y San Benito"
-                  aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
-                >
-                  <span className="booklet-optional-btn__star" aria-hidden>✦</span>
-                  <span className="booklet-optional-btn__label">Ángel · Benito</span>
-                </button>
-                {' '}
-              </>
-            )}
-            {isOptionalMercyStep && (
-              <button
-                type="button"
-                className="booklet-mercy-info"
-                title="Oración opcional de apertura. Puedes omitirla en Ajustes."
-                aria-label="Oración opcional de apertura. Puedes omitirla en Ajustes."
-              >
-                ⓘ
-              </button>
-            )}
-            {isOptionalMercyStep && ' '}
-            {isSagradoCorazon
-              ? `Paso ${displayIndex + 1} de ${total}`
-              : `${displayIndex + 1} / ${total}`}
-            {misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION' && (
-              <span className="booklet-ave-count">
-                {' '}
-                · Día {novenaDay} de 9
-              </span>
-            )}
-            {isLitany && litanyVerseTotal > 0 && (
-              <span className="booklet-ave-count">
-                {' '}
-                · letanía {litanyVerseIndex + 1} / {litanyVerseTotal}
-              </span>
-            )}
-            {isPerVersePrayer && prayerVerseTotal > 0 && (
-              <span className="booklet-ave-count">
-                {' '}
-                · verso {prayerVerseIndex + 1} / {prayerVerseTotal}
-              </span>
-            )}
-            {isAveMaria && (
-              <span className="booklet-ave-count">
-                {' '}
-                · {aveRunInfo.position} de {aveRunInfo.total}
-              </span>
-            )}
-            {isMercyPassion && (
-              <span className="booklet-ave-count">
-                {' '}
-                · {mercyRunInfo.position} de {mercyRunInfo.total}
-              </span>
-            )}
-            {isHolyGod && (
-              <span className="booklet-ave-count">
-                {' '}
-                · {tripletRunInfo.position} de {tripletRunInfo.total}
-              </span>
-            )}
-            {stepContext.kind === 'mystery' && stepContext.mysteryDecade && (
-              <span className="booklet-ave-count">
-                {' '}
-                · misterio {stepContext.mysteryDecade} de 5
-              </span>
-            )}
-            {isMercyDecade && stepContext.mysteryDecade && (
-              <span className="booklet-ave-count">
-                {' '}
-                · década {stepContext.mysteryDecade} de 5
-              </span>
-            )}
-          </p>
-          {!shelfOpen && (
-          <p
-            className={`booklet-devotion${isMercy ? ' booklet-devotion--mercy' : ''}`}
-            aria-live="polite"
-          >
-            <span className="booklet-devotion__title">{devotionChrome.title}</span>
-            {devotionChrome.subtitle && (
-              <span className="booklet-devotion__subtitle">{devotionChrome.subtitle}</span>
-            )}
-          </p>
           )}
           <PrayerRecorder
             prayerId={activePrayer.id}
