@@ -70,6 +70,44 @@ describe('devotions shelf flow', () => {
     expect(onMysteryChange).toHaveBeenCalledWith(ANGELUS_ID);
   });
 
+  test('shelf opens and picking Magnificat calls onMysteryChange', () => {
+    const onMysteryChange = jest.fn();
+    render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={jest.fn()}
+        onMysteryChange={onMysteryChange}
+      />
+    );
+
+    fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
+    fireEvent.click(screen.getByRole('button', { name: /^magnificat$/i }));
+
+    expect(onMysteryChange).toHaveBeenCalledWith(MAGNIFICAT_ID);
+  });
+
+  test('Ángelus Liber shows devotion chrome after pick', () => {
+    const { rerender } = render(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual="gozosos"
+        onUpdateProgreso={jest.fn()}
+        onMysteryChange={jest.fn()}
+      />
+    );
+    rerender(
+      <BookletView
+        currentPrayerIndex={0}
+        misterioActual={ANGELUS_ID}
+        onUpdateProgreso={jest.fn()}
+        onMysteryChange={jest.fn()}
+      />
+    );
+    expect(screen.getByText('Ángelus')).toBeInTheDocument();
+    expect(screen.getByText(/Señal de la Cruz/i)).toBeInTheDocument();
+  });
+
   test('Faustina sub-menu picks Corona', () => {
     const onMysteryChange = jest.fn();
     render(

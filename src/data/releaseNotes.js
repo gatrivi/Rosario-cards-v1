@@ -4,12 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.74',
-  name: 'Arte sin clones',
+  version: '0.3.76',
+  name: 'Ángelus al frente',
   CURRENT: [
-    'Fondos únicos por familia (Carmen ? Ángelus; SCA/Vías sin repetir)',
-    'Registro: arte Mary/nuns/monk + dump used/unused',
-    'Fix: Liber ya no rota el fondo con el índice del paso',
+    'Ángelus/Magníficat en Devociones (no enterrados en breves)',
+    'Estante controlado: toggle ? fiable',
+    'Zoom Matter estable (0.3.75)',
   ],
   UPCOMING: [
     'Revamp light/dark (imglight / imgmo)',

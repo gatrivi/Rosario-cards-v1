@@ -44,19 +44,22 @@ export default function DevotionsShelf({
 
   const setShelfOpen = useCallback(
     (next) => {
-      const apply = (current) => {
-        const value = typeof next === 'function' ? next(current) : next;
-        devLog('shelf-toggle', { open: value, misterio: misterioActual });
-        onOpenChange?.(value);
-        return value;
-      };
-      if (!controlled) {
-        setOpenInternal((prev) => apply(prev));
+      // Controlled: always derive from latest prop via functional updater on parent.
+      if (controlled) {
+        if (typeof next === 'function') {
+          onOpenChange?.((prev) => next(prev));
+        } else {
+          onOpenChange?.(next);
+        }
         return;
       }
-      apply(open);
+      setOpenInternal((prev) => {
+        const value = typeof next === 'function' ? next(prev) : next;
+        onOpenChange?.(value);
+        return value;
+      });
     },
-    [controlled, misterioActual, onOpenChange, open]
+    [controlled, onOpenChange]
   );
   const rootRef = useRef(null);
   const panelRef = useRef(null);

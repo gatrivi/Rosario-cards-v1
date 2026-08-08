@@ -1264,7 +1264,7 @@ export default function BookletView({
                 active={misterioActual === 'sangrepreciosa_chaplet'}
                 onClick={(e) => onShelfDevotionClick(e, 'sangrepreciosa_chaplet', 'Corona Sangre')}
                 title="Corona de la Preciosísima Sangre"
-                img={registryImage('crux')}
+                img={registryImage('lamb')}
                 badge="C"
               />
             </ShelfItem>
@@ -1292,10 +1292,6 @@ export default function BookletView({
                 onMysteryChange={onMysteryChange}
               />
             </ShelfItem>
-          </>
-        }
-        breves={
-          <>
             <ShelfItem label="Ángelus">
               <MercyWindowThumb
                 active={misterioActual === ANGELUS_ID}
@@ -1314,6 +1310,10 @@ export default function BookletView({
                 badge="M"
               />
             </ShelfItem>
+          </>
+        }
+        breves={
+          <>
             <ShelfItem label="Virgen del Carmen">
               <MercyWindowThumb
                 active={optionalOpen && optionalPrayerId === 'carmen'}
