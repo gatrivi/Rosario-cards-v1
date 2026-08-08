@@ -7,8 +7,8 @@ import {
 import { getVoicePrefs, setVoicePrefs } from '../utils/voicePrefs';
 
 describe('nextVoiceMode FSM', () => {
-  test('tap cycles off → once → auto → off', () => {
-    expect(nextVoiceMode(VOICE_MODES.OFF, 'tap')).toBe(VOICE_MODES.ONCE);
+  test('tap starts auto-play and a second tap stops it', () => {
+    expect(nextVoiceMode(VOICE_MODES.OFF, 'tap')).toBe(VOICE_MODES.AUTO);
     expect(nextVoiceMode(VOICE_MODES.ONCE, 'tap')).toBe(VOICE_MODES.AUTO);
     expect(nextVoiceMode(VOICE_MODES.AUTO, 'tap')).toBe(VOICE_MODES.OFF);
   });
@@ -25,10 +25,11 @@ describe('voicePrefs TTS', () => {
     localStorage.clear();
   });
 
-  test('defaults to en-US browser TTS', () => {
+  test('defaults to es voice pack + es-ES TTS tag', () => {
     const p = getVoicePrefs();
-    expect(p.ttsLang).toBe('en-US');
-    expect(p.useBrowserTts).toBe(true);
+    expect(p.voiceLang).toBe('es');
+    expect(p.ttsLang).toBe('es-ES');
+    expect(p.useBrowserTts).toBe(false);
     expect(p.ttsRate).toBe(1);
   });
 
@@ -65,7 +66,7 @@ describe('playStepVoice browser TTS', () => {
       getVoices: () => [{ lang: 'en-US', name: 'fake' }],
     };
     localStorage.clear();
-    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true });
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: false, useBrowserTts: true, voiceLang: 'en' });
 
     const result = await playStepVoice({
       text: 'Hail Mary, full of grace',

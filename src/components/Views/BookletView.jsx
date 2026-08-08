@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom';
 import {
   getVariantStorageKey,
 } from '../../data/prayerVariants';
+import { applyVariantToVoiceLang, getVoicePrefs } from '../../utils/voicePrefs';
 import PrayerRecorder from '../common/PrayerRecorder';
+
 import OptionalPrayerSheet from '../common/OptionalPrayerSheet';
 import OfferingLight from '../common/OfferingLight';
 import { loadPrayForIntentions } from '../../utils/prayForStore';
@@ -48,7 +50,7 @@ import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
-import { resolveDisplayText } from '../../utils/bookletDisplayText';
+import { loadSavedVariantId, resolveDisplayText } from '../../utils/bookletDisplayText';
 import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import {
@@ -189,14 +191,12 @@ export default function BookletView({
   const isTransitioning = transitionPhase !== TRANSITION_PHASE.READY;
 
   const variants = activePrayer?.variants;
-  const [variantId, setVariantId] = useState(() => {
-    if (!activePrayer?.variants?.length) return null;
-    try {
-      const saved = localStorage.getItem(getVariantStorageKey(activePrayer.id));
-      if (saved && activePrayer.variants.some((v) => v.id === saved)) return saved;
-    } catch (_) { /* ignore */ }
-    return activePrayer.variants[0].id;
-  });
+  const [voiceLangPref, setVoiceLangPref] = useState(
+    () => getVoicePrefs().voiceLang || 'es'
+  );
+  const [variantId, setVariantId] = useState(() =>
+    loadSavedVariantId(activePrayer, getVoicePrefs().voiceLang || 'es')
+  );
   const [stepGlow, setStepGlow] = useState(false);
   const [offeringLight, setOfferingLight] = useState(false);
   const [optionalOpen, setOptionalOpen] = useState(false);
@@ -348,19 +348,24 @@ export default function BookletView({
   }, []);
 
   useEffect(() => {
+    const onPrefs = (e) => {
+      if (e?.detail?.voiceLang) setVoiceLangPref(e.detail.voiceLang);
+    };
+    window.addEventListener('rosario-voice-prefs', onPrefs);
+    return () => window.removeEventListener('rosario-voice-prefs', onPrefs);
+  }, []);
+
+  useEffect(() => {
     if (!activePrayer?.variants?.length) {
       setVariantId(null);
       return;
     }
+    const next = loadSavedVariantId(activePrayer, voiceLangPref);
+    setVariantId(next);
     try {
-      const saved = localStorage.getItem(getVariantStorageKey(activePrayer.id));
-      if (saved && activePrayer.variants.some((v) => v.id === saved)) {
-        setVariantId(saved);
-        return;
-      }
+      if (next) localStorage.setItem(getVariantStorageKey(activePrayer.id), next);
     } catch (_) { /* ignore */ }
-    setVariantId(activePrayer.variants[0].id);
-  }, [activePrayer?.id, activePrayer?.variants]);
+  }, [activePrayer?.id, activePrayer?.variants, voiceLangPref]);
 
   const displayText = useMemo(() => {
     if (isPerVersePrayer) {
@@ -392,6 +397,7 @@ export default function BookletView({
     const idx = variants.findIndex((v) => v.id === variantId);
     const next = variants[(idx + 1) % variants.length];
     setVariantId(next.id);
+    applyVariantToVoiceLang(next.id);
     try {
       localStorage.setItem(getVariantStorageKey(activePrayer.id), next.id);
     } catch (_) { /* ignore */ }
@@ -506,7 +512,7 @@ export default function BookletView({
     return getSpeakablePrayerText(activePrayer);
   }, [isLitany, litanyVerse, isPerVersePrayer, activePrayer, prayerVerseIndex]);
 
-  const voiceStepKey = `${misterioActual}:${displayIndex}:${innerVerseIndex}:${activePrayer?.id || ''}`;
+  const voiceStepKey = `${misterioActual}:${displayIndex}:${innerVerseIndex}:${activePrayer?.id || ''}:${voiceLangPref}`;
 
   useEffect(() => {
     if (preserveAutoOnMysteryChangeRef.current) {
@@ -539,6 +545,7 @@ export default function BookletView({
         prayerId: activePrayer?.id,
         mystery: misterioActual,
         sequenceIndex: displayIndex,
+        lang: voiceLangPref,
       });
       if (cancelled) return;
       setVoicePlaying(false);
@@ -1039,6 +1046,7 @@ export default function BookletView({
             simpleMode={simpleMode}
             placement="title"
             isLeftHanded={isLeftHanded}
+            voiceLang={voiceLangPref}
             voiceControlEnabled
             voiceMode={voiceMode}
             voicePlaying={voicePlaying}

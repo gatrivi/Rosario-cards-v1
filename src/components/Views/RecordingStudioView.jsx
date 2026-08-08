@@ -13,23 +13,34 @@ import { getSpeechProviderLabel } from '../../utils/speechProvider';
 import { getVoicePrefs, setVoicePrefs } from '../../utils/voicePrefs';
 import './RecordingStudioView.css';
 
+const MAX_AUDIO_UPLOAD_BYTES = 50 * 1024 * 1024;
+
 export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   const [mode, setMode] = useState('map');
   const [coverage, setCoverage] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [coverageError, setCoverageError] = useState('');
   const [voicePrefs, setVoicePrefsState] = useState(getVoicePrefs);
 
   const [sessionIndex, setSessionIndex] = useState(0);
   const [sessionOnlyMissing, setSessionOnlyMissing] = useState(true);
-  const [speechOn, setSpeechOn] = useState(true);
+  const [speechOn, setSpeechOn] = useState(false);
   const [toast, setToast] = useState('');
   const [error, setError] = useState('');
   const [recording, setRecording] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [deletingClipId, setDeletingClipId] = useState(null);
   const [clips, setClips] = useState([]);
 
   const audioRef = useRef(null);
-  const autoStartedRef = useRef(null);
+  const startingRef = useRef(false);
+  const coverageRequestRef = useRef(0);
+  const clipsRequestRef = useRef(0);
+
+  const savingRef = useRef(false);
   const fileInputRef = useRef(null);
   const uploadTargetRef = useRef(null);
 
@@ -59,26 +70,62 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   }, [sequence, coverage, sessionOnlyMissing]);
 
   const current = sessionQueue[sessionIndex] ?? null;
+  const voiceLang = voicePrefs.voiceLang || 'es';
+  const busy = recording || saving || starting || uploading;
+  const stopClipPlayback = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.onended = null;
+    audio.onerror = null;
+    const src = audio.src;
+    audioRef.current = null;
+    if (src?.startsWith('blob:')) URL.revokeObjectURL(src);
+  }, []);
+
+  useEffect(() => {
+    const onPrefs = (event) => {
+      if (event?.detail) setVoicePrefsState((prev) => ({ ...prev, ...event.detail }));
+    };
+    window.addEventListener('rosario-voice-prefs', onPrefs);
+    return () => window.removeEventListener('rosario-voice-prefs', onPrefs);
+  }, []);
 
   const { start, stopAndSave, cancel, isRecording } = usePrayerMediaRecorder();
 
   const refreshCoverage = useCallback(async () => {
+    const requestId = ++coverageRequestRef.current;
     setLoading(true);
+    setCoverageError('');
     try {
-      setCoverage(await getVoiceCoverageMap(mysteryType));
+      const nextCoverage = await getVoiceCoverageMap(mysteryType, { lang: voiceLang });
+      if (requestId !== coverageRequestRef.current) return;
+      setCoverage(nextCoverage);
     } catch (e) {
+      if (requestId !== coverageRequestRef.current) return;
+      setCoverage([]);
+      setCoverageError('No se pudo cargar la cobertura. Pulsa Reintentar.');
       console.warn('[RecordingStudio] coverage', e);
     } finally {
-      setLoading(false);
+      if (requestId === coverageRequestRef.current) setLoading(false);
     }
-  }, [mysteryType]);
+  }, [mysteryType, voiceLang]);
 
   const refreshClips = useCallback(async () => {
-    if (!current) return;
+    const requestId = ++clipsRequestRef.current;
+    if (!current) {
+      setClips([]);
+      return;
+    }
+    const slotIndex = current.slotIndex;
+    setClips([]);
     try {
-      const list = await listRecordingsForSlot(mysteryType, current.slotIndex);
+      const list = await listRecordingsForSlot(mysteryType, slotIndex);
+      if (requestId !== clipsRequestRef.current) return;
       setClips(list.sort((a, b) => a.createdAt - b.createdAt));
     } catch (e) {
+      if (requestId !== clipsRequestRef.current) return;
+      setError('No se pudieron cargar las tomas.');
       console.warn('[RecordingStudio] clips', e);
     }
   }, [mysteryType, current]);
@@ -93,13 +140,11 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
 
   useEffect(
     () => () => {
+      startingRef.current = false;
       cancel();
-      if (audioRef.current) {
-        audioRef.current.pause();
-        URL.revokeObjectURL(audioRef.current.src);
-      }
+      stopClipPlayback();
     },
-    [cancel]
+    [cancel, stopClipPlayback]
   );
 
   const stats = useMemo(() => {
@@ -132,7 +177,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   const advanceSession = useCallback(() => {
     if (sessionIndex < sessionQueue.length - 1) {
       setSessionIndex((i) => i + 1);
-      autoStartedRef.current = null;
+
     } else {
       showToast('Sesión completa. ¡Bendiciones!');
       refreshCoverage();
@@ -140,64 +185,102 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   }, [sessionIndex, sessionQueue.length, refreshCoverage]);
 
   const beginRecording = useCallback(async () => {
-    if (!current) return;
+    if (!current || savingRef.current || startingRef.current || recording) return;
+    startingRef.current = true;
+    setStarting(true);
     setError('');
     try {
       await start();
+      if (!startingRef.current) {
+        cancel();
+        return;
+      }
       setRecording(true);
     } catch (e) {
-      setError('Micrófono no disponible');
+      const name = e?.name;
+      if (name === 'NotAllowedError' || name === 'SecurityError') {
+        setError('Micrófono bloqueado. Permite el micrófono en el navegador y reintenta.');
+      } else if (name === 'NotFoundError') {
+        setError('No se encontró un micrófono disponible.');
+      } else if (name === 'NotSupportedError') {
+        setError('Este navegador no permite grabar audio.');
+      } else {
+        setError('No se pudo iniciar el micrófono. Revisa el permiso y reintenta.');
+      }
       console.warn(e);
+    } finally {
+      startingRef.current = false;
+      setStarting(false);
     }
-  }, [current, start]);
+  }, [current, start, cancel, recording]);
 
   const finishAndSave = useCallback(async () => {
-    if (!current) return;
+    if (!current || savingRef.current || startingRef.current || !recording) return;
+    savingRef.current = true;
+    setSaving(true);
     setError('');
     try {
-      if (isRecording()) {
-        const variantIndex = clips.filter((c) => c.prayerId === current.prayerId).length;
-        const saved = await stopAndSave({
-          mystery: mysteryType,
-          sequenceIndex: current.slotIndex,
-          prayerId: current.prayerId,
-          variantIndex,
-          label: `${current.title} toma ${variantIndex + 1}`,
-        });
-        if (saved) showToast('Guardado (Tier S)');
+      if (!isRecording()) {
+        setRecording(false);
+        return;
       }
+      const variantIndex = clips.filter((c) => c.prayerId === current.prayerId).length;
+      const saved = await stopAndSave({
+        mystery: mysteryType,
+        sequenceIndex: current.slotIndex,
+        prayerId: current.prayerId,
+        variantIndex,
+        voiceLang,
+        label: `${current.title} toma ${variantIndex + 1}`,
+      });
       setRecording(false);
+      if (!saved) {
+        setError('La toma fue demasiado corta; no se avanzó.');
+        return;
+      }
+      showToast('Guardado (Tier S)');
       await refreshClips();
       await refreshCoverage();
       advanceSession();
     } catch (e) {
       setError('No se pudo guardar');
       console.warn(e);
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   }, [
     current,
     clips,
+    recording,
     isRecording,
     stopAndSave,
     mysteryType,
+    voiceLang,
     refreshClips,
     refreshCoverage,
     advanceSession,
   ]);
-
   const startSession = (onlyMissing) => {
+    if (busy || loading || coverageError || coverage.length !== sequence.length) {
+      showToast(busy ? 'Hay una operación en curso.' : coverageError ? 'No hay cobertura disponible; reintenta.' : 'Esperando cobertura de audio…');
+      return;
+    }
     cancel();
     setRecording(false);
+    setError('');
+    setToast('');
     setSessionOnlyMissing(onlyMissing);
     setSessionIndex(0);
-    autoStartedRef.current = null;
+
     setMode('session');
   };
 
   const jumpToSlot = (slotIndex) => {
+    if (busy) return;
     setSessionOnlyMissing(false);
     setSessionIndex(slotIndex);
-    autoStartedRef.current = null;
+
     setMode('session');
   };
 
@@ -209,37 +292,109 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     enabled: mode === 'session' && speechOn && !!current?.text,
     expectedText: current?.text ?? '',
     onComplete: handleSpeechComplete,
+    lang: voiceLang === 'en' ? 'en-US' : 'es-ES',
   });
-
-  const playClip = (clip) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      URL.revokeObjectURL(audioRef.current.src);
+  const handleExitSession = useCallback(() => {
+    if (saving || starting || uploading) return;
+    if (
+      recording &&
+      typeof window !== 'undefined' &&
+      typeof window.confirm === 'function' &&
+      !window.confirm('Hay una toma activa. ¿Salir y descartarla?')
+    ) {
+      return;
     }
+    cancel();
+    setRecording(false);
+    setError('');
+    setMode('map');
+    refreshCoverage();
+  }, [cancel, refreshCoverage, recording, saving, starting, uploading]);
+
+  const playClip = useCallback((clip) => {
+    if (busy) return;
+    stopClipPlayback();
     const url = blobToObjectUrl(clip);
-    if (!url) return;
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    audio.onended = () => URL.revokeObjectURL(url);
-    audio.play();
-  };
+    if (!url) {
+      setError('No se pudo abrir esta toma.');
+      return;
+    }
 
-  const handleDeleteClip = async (id) => {
-    await deleteRecording(id);
-    await refreshClips();
-    await refreshCoverage();
-  };
+    try {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      const cleanup = () => {
+        if (audioRef.current === audio) audioRef.current = null;
+        audio.onended = null;
+        audio.onerror = null;
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+      };
+      audio.onended = cleanup;
+      audio.onerror = () => {
+        cleanup();
+        setError('No se pudo reproducir esta toma.');
+      };
+      const playPromise = audio.play();
+      playPromise?.catch(() => {
+        cleanup();
+        setError('El navegador bloqueó la reproducción de esta toma.');
+      });
+    } catch (error) {
+      if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+      setError('No se pudo reproducir esta toma.');
+      console.warn('[RecordingStudio] playback', error);
+    }
+  }, [busy, stopClipPlayback]);
+  const handleDeleteClip = useCallback(async (id) => {
+    if (busy || deletingClipId) return;
+    const clip = clips.find((item) => item.id === id);
+    const label = clip?.label || 'esta toma';
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.confirm === 'function' &&
+      !window.confirm('¿Eliminar ' + label + '? Esta acción no se puede deshacer.')
+    ) {
+      return;
+    }
 
+    setDeletingClipId(id);
+    setError('');
+    try {
+      await deleteRecording(id);
+      await refreshClips();
+      await refreshCoverage();
+    } catch (error) {
+      setError('No se pudo eliminar la toma.');
+      console.warn('[RecordingStudio] delete', error);
+    } finally {
+      setDeletingClipId(null);
+    }
+  }, [busy, deletingClipId, clips, refreshClips, refreshCoverage]);
   const openUpload = (row) => {
+    if (busy || loading || coverageError) return;
     uploadTargetRef.current = row;
     fileInputRef.current?.click();
   };
-
   const onFilePicked = async (e) => {
     const file = e.target.files?.[0];
     const row = uploadTargetRef.current;
+    uploadTargetRef.current = null;
     e.target.value = '';
     if (!file || !row) return;
+
+    const extensionOk = /\.(wav|mp3|ogg|webm|m4a)$/i.test(file.name || '');
+    const audioTypeOk = !file.type || file.type.startsWith('audio/') || extensionOk;
+    if (!audioTypeOk) {
+      setError('Elegí un archivo de audio WAV, MP3, OGG, WEBM o M4A.');
+      return;
+    }
+    if (!file.size || file.size > MAX_AUDIO_UPLOAD_BYTES) {
+      setError('El audio debe pesar entre 1 byte y 50 MB.');
+      return;
+    }
+
+    setError('');
+    setUploading(true);
     try {
       await saveRecording({
         mystery: mysteryType,
@@ -248,17 +403,20 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         variantIndex: row.takeCount || 0,
         blob: file,
         mimeType: file.type || 'audio/wav',
-        label: `Import · ${file.name}`,
+        voiceLang,
+        label: 'Import · ' + file.name,
       });
       showToast('Audio importado (Tier S)');
       await refreshCoverage();
     } catch (err) {
-      setError('No se pudo importar');
-      console.warn(err);
+      setError('No se pudo importar el audio.');
+      console.warn('[RecordingStudio] import', err);
+    } finally {
+      setUploading(false);
     }
   };
-
   const togglePref = (key) => {
+    if (busy) return;
     const next = setVoicePrefs({ [key]: !voicePrefs[key] });
     setVoicePrefsState(next);
   };
@@ -275,20 +433,10 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     return () => stopSpeech();
   }, [mode, recording, speechOn, current?.slotIndex, startSpeech, stopSpeech]);
 
-  useEffect(() => {
-    if (mode !== 'session' || !current) return undefined;
-    const key = `${mysteryType}-${current.slotIndex}`;
-    if (autoStartedRef.current === key) return undefined;
-    autoStartedRef.current = key;
-    const t = setTimeout(() => {
-      beginRecording();
-    }, 500);
-    return () => clearTimeout(t);
-  }, [mode, current, mysteryType, beginRecording]);
 
   useEffect(() => {
     setSessionIndex(0);
-    autoStartedRef.current = null;
+
   }, [sessionOnlyMissing, mysteryType]);
 
   return (
@@ -296,8 +444,8 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
       <header className="rs-header">
         <h1 className="rs-title">Estudio de voz</h1>
         <p className="rs-sub">
-          Liber ▶: 1× oración · 2× auto ≫ hasta el final. Fallback: TTS del navegador (en-US). Tier S
-          gana si hay grabación; T3 cuando haya WAV en /voice/en/.
+          Liber ▶: 1× oración · 2× auto ≫. Pack = idioma ES|EN|LA. Tier S
+          gana si hay grabación; T3 = /voice/{voicePrefs.voiceLang}/.
         </p>
       </header>
 
@@ -306,6 +454,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           <input
             type="checkbox"
             checked={voicePrefs.useUserVoice}
+            disabled={busy}
             onChange={() => togglePref('useUserVoice')}
           />
           Usar tu voz (S)
@@ -314,17 +463,35 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           <input
             type="checkbox"
             checked={voicePrefs.useBundledVoice}
+            disabled={busy}
             onChange={() => togglePref('useBundledVoice')}
           />
-          Guía T3 (EN)
+          Guía T3 ({voiceLang.toUpperCase()})
         </label>
         <label className="rs-pref">
           <input
             type="checkbox"
             checked={voicePrefs.useBrowserTts !== false}
+            disabled={busy}
             onChange={() => togglePref('useBrowserTts')}
           />
-          TTS navegador EN
+          TTS navegador {voiceLang.toUpperCase()}
+        </label>
+        <label className="rs-pref" htmlFor="rs-voice-lang">
+          Idioma de la toma
+          <select
+            id="rs-voice-lang"
+            value={voiceLang}
+            disabled={busy}
+            onChange={(e) => {
+              const next = setVoicePrefs({ voiceLang: e.target.value });
+              setVoicePrefsState(next);
+            }}
+          >
+            <option value="es">ES</option>
+            <option value="en">EN</option>
+            <option value="la">LA</option>
+          </select>
         </label>
       </div>
 
@@ -338,6 +505,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
             max="1.5"
             step="0.05"
             value={voicePrefs.ttsRate ?? 1}
+            disabled={busy}
             onChange={(e) => {
               const next = setVoicePrefs({ ttsRate: parseFloat(e.target.value) });
               setVoicePrefsState(next);
@@ -355,6 +523,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         <select
           id="rs-mystery"
           value={VOICE_STUDIO_OPTIONS.some((o) => o.id === mysteryType) ? mysteryType : 'angelus'}
+          disabled={busy}
           onChange={(e) => onMysteryChange?.(e.target.value)}
         >
           {VOICE_STUDIO_OPTIONS.map((m) => (
@@ -369,7 +538,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         <div className="rs-stat-main">
           <span className="rs-stat-num">{stats.done}</span>
           <span className="rs-stat-den">/ {stats.total}</span>
-          <span className="rs-stat-label">con tu voz (Tier S)</span>
+          <span className="rs-stat-label">con tu voz ({voiceLang.toUpperCase()}) (Tier S)</span>
         </div>
         <div className="rs-progress-bar">
           <div className="rs-progress-fill" style={{ width: `${stats.pct}%` }} />
@@ -379,6 +548,14 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         </p>
       </div>
 
+       {coverageError && (
+         <div className="rs-coverage-error" role="alert">
+           <span>{coverageError}</span>
+           <button type="button" className="rs-ghost" onClick={refreshCoverage} disabled={loading}>
+             Reintentar
+           </button>
+         </div>
+       )}
       <input
         ref={fileInputRef}
         type="file"
@@ -391,6 +568,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         <button
           type="button"
           className={`rs-tab ${mode === 'map' ? 'active' : ''}`}
+          disabled={busy}
           onClick={() => {
             cancel();
             setRecording(false);
@@ -403,6 +581,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         <button
           type="button"
           className={`rs-tab ${mode === 'session' ? 'active' : ''}`}
+          disabled={busy}
           onClick={() => startSession(true)}
         >
           Rezar y grabar
@@ -464,7 +643,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                           row.hasUser
                             ? 'Tu voz (Tier S)'
                             : row.hasBundled
-                              ? 'Guía T3 (EN)'
+                              ? `Guía T3 ${voiceLang.toUpperCase()}`
                               : 'Sin audio'
                         }
                       >
@@ -480,6 +659,8 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                         type="button"
                         className="rs-upload-btn"
                         title="Subir audio (Tier S)"
+                        aria-label={'Subir audio para ' + row.title}
+                        disabled={busy || loading || !!coverageError}
                         onClick={() => openUpload(row)}
                       >
                         ↑
@@ -491,10 +672,20 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           )}
 
           <div className="rs-map-actions">
-            <button type="button" className="rs-primary" onClick={() => startSession(true)}>
-              Grabar sin tu voz ({stats.missing})
+            <button
+              type="button"
+              className="rs-primary"
+              disabled={busy || loading || !!coverageError || stats.missing === 0}
+              onClick={() => startSession(true)}
+            >
+              Grabar faltantes ({stats.missing})
             </button>
-            <button type="button" className="rs-secondary" onClick={() => startSession(false)}>
+            <button
+              type="button"
+              className="rs-secondary"
+              disabled={busy || loading || !!coverageError}
+              onClick={() => startSession(false)}
+            >
               Grabar todo
             </button>
           </div>
@@ -530,8 +721,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                 <h2 className="rs-prayer-title">{current.title}</h2>
                 <p className="rs-prayer-text">{current.text}</p>
                 <p className="rs-session-hint">
-                  Reza en voz alta. La grabación empieza sola. Di «Amén» al terminar o pulsa
-                  Terminé. Queda como Tier S.
+                  Cuando estés listo, pulsa «Empezar grabación». Reza en voz alta y pulsa «Terminé» para guardar esta toma como Tier S.
                 </p>
 
                 <div className={`rs-rec-indicator ${recording ? 'live' : ''}`}>
@@ -547,28 +737,24 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                     checked={speechOn}
                     onChange={(e) => setSpeechOn(e.target.checked)}
                   />
-                  Avance por voz ({getSpeechProviderLabel()})
+                  Avance automático por voz (opcional) · {getSpeechProviderLabel()}
                 </label>
 
                 <div className="rs-session-controls">
                   {recording ? (
-                    <button type="button" className="rs-primary" onClick={finishAndSave}>
-                      Terminé — guardar y siguiente
+                    <button type="button" className="rs-primary" disabled={busy} onClick={finishAndSave}>
+                      {saving ? 'Guardando…' : 'Terminé — guardar y siguiente'}
                     </button>
                   ) : (
-                    <button type="button" className="rs-secondary" onClick={beginRecording}>
-                      Volver a grabar
+                    <button type="button" className="rs-secondary" disabled={busy} onClick={beginRecording}>
+                      {clips.length > 0 ? 'Grabar otra toma' : 'Empezar grabación'}
                     </button>
                   )}
                   <button
                     type="button"
+                    disabled={saving || starting || uploading}
                     className="rs-ghost"
-                    onClick={() => {
-                      cancel();
-                      setRecording(false);
-                      setMode('map');
-                      refreshCoverage();
-                    }}
+                    onClick={handleExitSession}
                   >
                     Salir sesión
                   </button>
@@ -578,10 +764,10 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                   <ul className="rs-clip-list">
                     {clips.map((clip) => (
                       <li key={clip.id}>
-                        <button type="button" onClick={() => playClip(clip)}>
+                        <button type="button" disabled={busy} onClick={() => playClip(clip)}>
                           ▶ {clip.label || 'toma'}
                         </button>
-                        <button type="button" onClick={() => handleDeleteClip(clip.id)}>
+                        <button type="button" disabled={busy || deletingClipId === clip.id} onClick={() => handleDeleteClip(clip.id)}>
                           ×
                         </button>
                       </li>

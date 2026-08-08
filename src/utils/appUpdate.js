@@ -55,54 +55,134 @@ export function clearUpdateReminder() {
   }
 }
 
-export function applyPendingUpdate() {
-  if (!('serviceWorker' in navigator)) {
-    window.location.reload();
-    return;
-  }
+const UPDATE_WAIT_TIMEOUT_MS = 4000;
 
-  navigator.serviceWorker.getRegistration().then((registration) => {
-    if (registration?.waiting) {
-      registration.waiting.postMessage('skipWaiting');
-    }
-    registration?.update().finally(() => {
-      window.location.reload();
-    });
+function waitForWaitingWorker(registration) {
+  if (registration?.waiting) return Promise.resolve(registration.waiting);
+
+  return new Promise((resolve) => {
+    let installing = null;
+    let timer = null;
+
+    const cleanup = () => {
+      registration?.removeEventListener?.('updatefound', inspect);
+      installing?.removeEventListener?.('statechange', onStateChange);
+      if (timer) clearTimeout(timer);
+    };
+    const finish = () => {
+      cleanup();
+      resolve(registration?.waiting || null);
+    };
+    const onStateChange = () => {
+      if (installing?.state === 'installed') {
+        setTimeout(finish, 0);
+      }
+    };
+    const inspect = () => {
+      if (registration?.waiting) {
+        finish();
+        return;
+      }
+      const next = registration?.installing;
+      if (next && next !== installing) {
+        installing?.removeEventListener?.('statechange', onStateChange);
+        installing = next;
+        installing.addEventListener('statechange', onStateChange);
+      }
+    };
+
+    registration?.addEventListener?.('updatefound', inspect);
+    inspect();
+    timer = setTimeout(finish, UPDATE_WAIT_TIMEOUT_MS);
   });
 }
 
-export function subscribeToAppUpdates(onUpdateAvailable) {
-  if (!('serviceWorker' in navigator)) return () => {};
+function activateWaitingWorker(worker) {
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      try {
+        window.location.reload();
+      } finally {
+        resolve(true);
+      }
+    };
+    const onControllerChange = () => finish();
 
-  const notifyIfWaiting = (registration) => {
-    if (registration?.waiting) {
-      onUpdateAvailable();
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+    worker.postMessage('skipWaiting');
+    setTimeout(finish, 8000);
+  });
+}
+
+/** Activate the waiting worker, then reload after Android has taken control. */
+export async function applyPendingUpdate() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  if (!('serviceWorker' in navigator)) {
+    window.location.reload();
+    return false;
+  }
+
+  const registration = await navigator.serviceWorker.getRegistration?.();
+  if (!registration) {
+    window.location.reload();
+    return false;
+  }
+
+  let waiting = registration.waiting;
+  if (!waiting) {
+    const waitingPromise = waitForWaitingWorker(registration);
+    try {
+      await registration.update();
+    } catch (_) {
+      return false;
+    }
+    waiting = await waitingPromise;
+  }
+
+  if (!waiting) return false;
+  return activateWaitingWorker(waiting);
+}
+
+export function subscribeToAppUpdates(onUpdateAvailable) {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return () => {};
+
+  let disposed = false;
+  let registration = null;
+  let installing = null;
+  let onStateChange = null;
+
+  const notifyIfWaiting = () => {
+    if (!disposed && registration?.waiting && navigator.serviceWorker.controller) {
+      onUpdateAvailable?.();
     }
   };
-
-  const handleControllerChange = () => {
-    onUpdateAvailable();
+  const watchInstalling = () => {
+    const next = registration?.installing;
+    if (!next || next === installing) return;
+    installing = next;
+    onStateChange = () => {
+      if (installing?.state === 'installed') notifyIfWaiting();
+    };
+    installing.addEventListener('statechange', onStateChange);
   };
+  const handleUpdateFound = () => watchInstalling();
 
-  navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-
-  navigator.serviceWorker.ready.then((registration) => {
-    notifyIfWaiting(registration);
-
-    registration.addEventListener('updatefound', () => {
-      const installing = registration.installing;
-      if (!installing) return;
-      installing.addEventListener('statechange', () => {
-        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-          onUpdateAvailable();
-        }
-      });
-    });
-
-    registration.update();
-  });
+  navigator.serviceWorker.ready.then((readyRegistration) => {
+    if (disposed) return;
+    registration = readyRegistration;
+    registration.addEventListener('updatefound', handleUpdateFound);
+    notifyIfWaiting();
+    watchInstalling();
+    registration.update().catch(() => {});
+  }).catch(() => {});
 
   return () => {
-    navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+    disposed = true;
+    registration?.removeEventListener?.('updatefound', handleUpdateFound);
+    installing?.removeEventListener?.('statechange', onStateChange);
   };
 }

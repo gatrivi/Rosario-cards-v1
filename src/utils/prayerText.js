@@ -24,9 +24,10 @@ export function renderVerseLines(text) {
       return <div key={`sp-${i}`} className="booklet-verse-spacer" aria-hidden="true" />;
     }
     return (
-      <p key={`ln-${i}`} className="booklet-verse">
-        {item.text}
-      </p>
+      <React.Fragment key={`ln-${i}`}>
+        <p className="booklet-verse">{item.text}</p>
+        <br className="booklet-verse-break" aria-hidden="true" />
+      </React.Fragment>
     );
   });
 }

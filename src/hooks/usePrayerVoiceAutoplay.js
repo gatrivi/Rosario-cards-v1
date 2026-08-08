@@ -57,7 +57,7 @@ export function usePrayerVoiceAutoplay({
           }
         }
         if (!url && prefs.useBundledVoice) {
-          const clip = resolveBundledVoiceClip(prayerId);
+          const clip = resolveBundledVoiceClip(prayerId, prefs.voiceLang);
           if (clip?.url) url = clip.url;
         }
         if (!url || cancelled) return;

@@ -1,4 +1,4 @@
-import { getAssignedPath } from './imageAssignments';
+import { getAssignedPath, getAssignedPrayerPath } from './imageAssignments';
 
 const FALLBACK = '/gallery-images/cathedral-painting.jpg';
 const MODO = '/gallery-images/misterios/modooscuro/';
@@ -76,6 +76,7 @@ export function getLitanyVerseImageCandidates(verse, prayerFallback = null, vers
   }
 
   pushAssignment(candidates, prayerId, verseIndex, push);
+  pushImage(candidates, getAssignedPrayerPath(prayerId), push);
 
   if (PREFER_MODOOSCURO) {
     if (verse.imgmo) push(verse.imgmo);
@@ -101,6 +102,8 @@ export function getPrayerImageCandidates(prayer, mysteryType) {
 
   const candidates = [];
   const push = (url) => pushImage(candidates, url, (u) => candidates.push(u));
+
+  pushImage(candidates, getAssignedPrayerPath(prayer.id), push);
 
   if (prayer.id?.startsWith('MD') && MODOOSCURO_DOLOR[prayer.id]) {
     push(MODOOSCURO_DOLOR[prayer.id]);

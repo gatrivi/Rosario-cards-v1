@@ -1,6 +1,7 @@
 {
   "short_name": "Rosario_Nube",
   "name": "Rosario en la Nube",
+  "id": "/",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,8 +19,11 @@
       "type": "image/png"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "es-AR",
   "theme_color": "#000000",
   "background_color": "#ffffff"
 }

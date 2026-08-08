@@ -4,7 +4,7 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.66',
+  version: '0.3.67',
   name: 'Liber ES · Fish Voz 4',
   CURRENT: [
     'Voz guía ES Fish (Voz 4) en todas las devociones del Liber',

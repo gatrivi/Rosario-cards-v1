@@ -7,7 +7,8 @@ import {
   blobToObjectUrl,
 } from '../../utils/prayerRecordingStore';
 import { resolveBundledVoiceUrl } from '../../data/bundledVoiceMap';
-import { VOICE_MODES } from '../../utils/prayerVoicePlayback';
+import { stopStepVoice, VOICE_MODES } from '../../utils/prayerVoicePlayback';
+import { getVoicePrefs } from '../../utils/voicePrefs';
 import './PrayerRecorder.css';
 
 function voiceControlIcon(voiceMode, voicePlaying) {
@@ -18,8 +19,8 @@ function voiceControlIcon(voiceMode, voicePlaying) {
 
 function voiceControlLabel(voiceMode, voicePlaying) {
   if (voiceMode === VOICE_MODES.AUTO) return 'Detener auto-play';
-  if (voicePlaying) return 'Activar auto-play (o pausar)';
-  return 'Reproducir oración';
+  if (voicePlaying) return 'Detener auto-play';
+  return 'Iniciar auto-play';
 }
 
 export default function PrayerRecorder({
@@ -32,13 +33,16 @@ export default function PrayerRecorder({
   isLeftHanded = false,
   children,
   /** Lifted Libro voice FSM */
+  voiceLang,
   voiceMode = VOICE_MODES.OFF,
   voicePlaying = false,
   onVoiceControlTap,
   voiceControlEnabled = false,
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [micAvailable, setMicAvailable] = useState(null);
+  const [micAvailable, setMicAvailable] = useState(() =>
+    typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia)
+  );
   const [recording, setRecording] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [clips, setClips] = useState([]);
@@ -47,7 +51,8 @@ export default function PrayerRecorder({
   const chunksRef = useRef([]);
   const streamRef = useRef(null);
   const audioRef = useRef(null);
-  const bundledUrl = resolveBundledVoiceUrl(prayerId);
+  const activeVoiceLang = voiceLang || getVoicePrefs().voiceLang;
+  const bundledUrl = resolveBundledVoiceUrl(prayerId, activeVoiceLang);
 
   const refreshClips = useCallback(async () => {
     try {
@@ -131,6 +136,7 @@ export default function PrayerRecorder({
           blob,
           mimeType,
           label,
+          voiceLang: activeVoiceLang,
         });
         setStatus('Guardado ✓');
         await refreshClips();
@@ -162,6 +168,7 @@ export default function PrayerRecorder({
   };
 
   const playUrl = (url, revoke = false) => {
+    stopStepVoice();
     if (audioRef.current) {
       audioRef.current.pause();
       if (audioRef.current.src?.startsWith('blob:')) {
@@ -333,7 +340,7 @@ export default function PrayerRecorder({
   }
 
   const handleToggle = () => {
-    if (disabled && !canPlayLegacy) return;
+    if (disabled) return;
     if (canPlayLegacy && placement === 'footer-inline') {
       togglePlayback();
       return;
@@ -350,9 +357,9 @@ export default function PrayerRecorder({
         className="prayer-recorder__toggle"
         onClick={handleToggle}
         aria-expanded={expanded}
-        disabled={disabled && !canPlayLegacy}
+        disabled={disabled}
         title={
-          disabled && !canPlayLegacy
+          disabled
             ? 'Micrófono no disponible en este dispositivo'
             : canPlayLegacy && placement === 'footer-inline'
               ? playing

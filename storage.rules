@@ -5,5 +5,9 @@ service firebase.storage {
     match /art/{allPaths=**} {
       allow read, write: if true;
     }
+    // TEMP open for shared prayer voice (Estudio de voz → Liber ▶).
+    match /voice/{allPaths=**} {
+      allow read, write: if true;
+    }
   }
 }

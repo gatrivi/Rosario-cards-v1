@@ -47,6 +47,7 @@ export async function saveRecording({
   blob,
   mimeType,
   label = '',
+  voiceLang = null,
 }) {
   const db = await openDb();
   const entry = {
@@ -59,6 +60,7 @@ export async function saveRecording({
     blob,
     mimeType: mimeType || blob.type || 'audio/webm',
     label,
+    voiceLang: voiceLang || null,
     createdAt: Date.now(),
   };
 
@@ -154,12 +156,17 @@ export async function getCoverageMap(mysteryType) {
 }
 
 /** Pick a variant for playback (future auto mode). Prefers slot, then random prayer variant. */
-export async function pickRecordingForSlot(mystery, sequenceIndex, prayerId) {
-  const slotClips = await listRecordingsForSlot(mystery, sequenceIndex);
+export async function pickRecordingForSlot(mystery, sequenceIndex, prayerId, voiceLang = null) {
+  const matchesLanguage = (recording) => {
+    if (!voiceLang) return true;
+    // Legacy takes had no language metadata; keep them usable as Spanish defaults.
+    return recording.voiceLang ? recording.voiceLang === voiceLang : voiceLang === 'es';
+  };
+  const slotClips = (await listRecordingsForSlot(mystery, sequenceIndex)).filter(matchesLanguage);
   if (slotClips.length > 0) {
     return slotClips[slotClips.length - 1];
   }
-  const prayerClips = await listRecordingsForPrayer(prayerId);
+  const prayerClips = (await listRecordingsForPrayer(prayerId)).filter(matchesLanguage);
   if (prayerClips.length === 0) return null;
   const idx = Math.floor(Math.random() * prayerClips.length);
   return prayerClips[idx];

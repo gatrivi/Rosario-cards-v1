@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { OPTIONAL_PRAYERS } from '../../data/optionalPrayers';
+import { applyVariantToVoiceLang } from '../../utils/voicePrefs';
 import './OptionalPrayerSheet.css';
 
 export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
@@ -12,11 +13,18 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
   const variant =
     prayer.variants.find((v) => v.id === variantId) || prayer.variants[0];
 
+  const pickLang = (id) => {
+    setVariantId(id);
+    applyVariantToVoiceLang(id);
+  };
+
   const pickPrayer = (id) => {
     setPrayerId(id);
     const p = OPTIONAL_PRAYERS.find((x) => x.id === id);
     if (p && !p.variants.some((v) => v.id === variantId)) {
-      setVariantId(p.variants[0].id);
+      const next = p.variants[0].id;
+      setVariantId(next);
+      applyVariantToVoiceLang(next);
     }
   };
 
@@ -59,7 +67,7 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
               key={v.id}
               type="button"
               className={`optional-prayer-sheet__lang${v.id === variant.id ? ' active' : ''}`}
-              onClick={() => setVariantId(v.id)}
+              onClick={() => pickLang(v.id)}
             >
               {v.label}
             </button>

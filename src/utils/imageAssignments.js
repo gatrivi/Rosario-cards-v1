@@ -13,8 +13,14 @@ export function loadAssignments() {
   }
 }
 
+export const PRAYER_BASE_ASSIGNMENT = 'default';
+
 export function assignmentKey(prayerId, verseIndex) {
   return `${prayerId}:${verseIndex}`;
+}
+
+export function prayerAssignmentKey(prayerId) {
+  return assignmentKey(prayerId, PRAYER_BASE_ASSIGNMENT);
 }
 
 export function saveAssignment(prayerId, verseIndex, value) {
@@ -32,9 +38,21 @@ export function clearAssignment(prayerId, verseIndex) {
   saveAssignment(prayerId, verseIndex, null);
 }
 
+export function savePrayerAssignment(prayerId, value) {
+  saveAssignment(prayerId, PRAYER_BASE_ASSIGNMENT, value);
+}
+
+export function clearPrayerAssignment(prayerId) {
+  savePrayerAssignment(prayerId, null);
+}
+
+export function getPrayerAssignmentValue(prayerId) {
+  return loadAssignments()[prayerAssignmentKey(prayerId)] || null;
+}
+
 /** Resolve stored value (registry id or raw path) to a usable img src. */
 export function resolveAssignmentValue(value) {
-  if (!value) return null;
+  if (!value || typeof value !== 'string') return null;
   if (value.startsWith('/') || value.startsWith('http')) return value;
   return imagePath(value) || null;
 }
@@ -46,6 +64,10 @@ export function getAssignedPath(prayerId, verseIndex) {
 
 export function getAssignedRegistryId(prayerId, verseIndex) {
   const raw = loadAssignments()[assignmentKey(prayerId, verseIndex)];
-  if (!raw || raw.startsWith('/') || raw.startsWith('http')) return null;
+  if (!raw || typeof raw !== 'string' || raw.startsWith('/') || raw.startsWith('http')) return null;
   return raw;
+}
+
+export function getAssignedPrayerPath(prayerId) {
+  return resolveAssignmentValue(getPrayerAssignmentValue(prayerId));
 }

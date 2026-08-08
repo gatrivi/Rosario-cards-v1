@@ -1,4 +1,5 @@
-import { getVariantStorageKey } from '../data/prayerVariants';
+import { getVariantStorageKey, pickVariantIdForLang } from '../data/prayerVariants';
+import { getVoicePrefs } from './voicePrefs';
 
 export function resolveDisplayText(activePrayer, variantId) {
   if (!activePrayer) return '';
@@ -10,8 +11,12 @@ export function resolveDisplayText(activePrayer, variantId) {
   return activePrayer.text || '';
 }
 
-export function loadSavedVariantId(activePrayer) {
+/** Prefer Ajustes idioma (voiceLang); fall back to per-prayer ◇ save. */
+export function loadSavedVariantId(activePrayer, voiceLang) {
   if (!activePrayer?.variants?.length) return null;
+  const lang = voiceLang || getVoicePrefs().voiceLang || 'es';
+  const byLang = pickVariantIdForLang(activePrayer.variants, lang);
+  if (byLang && activePrayer.variants.some((v) => v.id === byLang)) return byLang;
   try {
     const saved = localStorage.getItem(getVariantStorageKey(activePrayer.id));
     if (saved && activePrayer.variants.some((v) => v.id === saved)) return saved;

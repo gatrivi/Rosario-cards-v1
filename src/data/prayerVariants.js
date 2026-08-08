@@ -20,6 +20,11 @@ export const PRAYER_VARIANTS = {
       text: 'En el nombre del Padre,\ny del Hijo,\ny del Espíritu Santo.\nAmén.',
     },
     {
+      id: 'en',
+      label: 'English',
+      text: 'In the name of the Father, and of the Son, and of the Holy Spirit. Amen.',
+    },
+    {
       id: 'latin',
       label: 'Latín',
       text: 'In nomine Patris, et Filii, et Spiritus Sancti.\nAmen.',
@@ -34,6 +39,14 @@ export const PRAYER_VARIANTS = {
         'venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. ' +
         'Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros ' +
         'perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.',
+    },
+    {
+      id: 'en',
+      label: 'English',
+      text:
+        'Our Father, who art in heaven, hallowed be Thy name; Thy kingdom come; Thy will be done ' +
+        'on earth as it is in heaven. Give us this day our daily bread; and forgive us our trespasses, ' +
+        'as we forgive those who trespass against us; and lead us not into temptation, but deliver us from evil. Amen.',
     },
     {
       id: 'latin',
@@ -61,6 +74,14 @@ export const PRAYER_VARIANTS = {
         'ahora y en la hora de nuestra muerte.\nAmén.',
     },
     {
+      id: 'en',
+      label: 'English',
+      text:
+        'Hail Mary, full of grace, the Lord is with thee; blessed art thou among women, ' +
+        'and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, ' +
+        'now and at the hour of our death. Amen.',
+    },
+    {
       id: 'latin',
       label: 'Latín',
       text: AVE_LATIN,
@@ -73,6 +94,13 @@ export const PRAYER_VARIANTS = {
       text:
         'Gloria al Padre, y al Hijo, y al Espíritu Santo.\n' +
         'Como era en el principio, ahora y siempre,\npor los siglos de los siglos. Amén.',
+    },
+    {
+      id: 'en',
+      label: 'English',
+      text:
+        'Glory be to the Father, and to the Son, and to the Holy Spirit, as it was in the beginning, ' +
+        'is now, and ever shall be, world without end. Amen.',
     },
     {
       id: 'latin',
@@ -180,4 +208,22 @@ export function getPrayerVariants(prayerId) {
 
 export function getVariantStorageKey(prayerId) {
   return `bookletVariant_${prayerId}`;
+}
+
+/** Map voice pack (es|en|la) → prayerVariants id (latin for LA). */
+export function variantIdForVoiceLang(voiceLang) {
+  const lang = String(voiceLang || 'es').toLowerCase();
+  if (lang === 'la' || lang === 'latin' || lang === 'lat') return 'latin';
+  if (lang === 'en' || lang.startsWith('en')) return 'en';
+  return 'es';
+}
+
+/** Pick matching ES/EN/LA variant when present; else first. */
+export function pickVariantIdForLang(variants, voiceLang) {
+  if (!variants?.length) return null;
+  const want = variantIdForVoiceLang(voiceLang);
+  const aliases =
+    want === 'latin' ? ['latin', 'la', 'lat'] : want === 'en' ? ['en', 'en-us', 'english'] : ['es', 'español', 'espanol'];
+  const hit = variants.find((v) => aliases.includes(String(v.id || '').toLowerCase()));
+  return hit?.id || variants[0].id;
 }

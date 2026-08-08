@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getVoicePrefs, setVoicePrefs } from '../../utils/voicePrefs';
 
 const SHARE_URL = typeof window !== 'undefined'
   ? `${window.location.origin}${window.location.pathname}`
@@ -45,14 +46,24 @@ export default function SettingsOverlay({
   onClose,
   appVersion = '',
   onCheckForUpdate,
+  updateChecking = false,
   onStartAmbientAudio,
   onOpenAssetStudio,
+  onOpenVoiceStudio,
   onOpenReleaseNotes,
   onOpenSync,
   onOpenFeedback,
   syncStatus,
 }) {
   const [rosaryZoom, setRosaryZoomState] = React.useState(readRosaryZoom);
+  const [voiceLang, setVoiceLang] = useState(() => getVoicePrefs().voiceLang || 'es');
+  useEffect(() => {
+    const onPrefs = (e) => {
+      if (e?.detail?.voiceLang) setVoiceLang(e.detail.voiceLang);
+    };
+    window.addEventListener('rosario-voice-prefs', onPrefs);
+    return () => window.removeEventListener('rosario-voice-prefs', onPrefs);
+  }, []);
   const activeZoomPreset = ROSARY_ZOOM_PRESETS.find((p) => p.zoom === rosaryZoom)?.id
     ?? ROSARY_ZOOM_PRESETS.reduce((best, p) =>
       Math.abs(p.zoom - rosaryZoom) < Math.abs(best.zoom - rosaryZoom) ? p : best
@@ -93,6 +104,48 @@ export default function SettingsOverlay({
           <p style={{ color: '#888', fontSize: '0.78rem', margin: '-8px 0 0', lineHeight: 1.4 }}>
             Libro = texto · Rosario = cuentas · Rosa = meditación. Diario y Rosedal están tu compromiso del día.
           </p>
+
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: '#fff', fontSize: '1rem' }}>Idioma del Liber</div>
+            <div style={{ color: '#666', fontSize: '0.75rem' }}>
+              Texto (si hay versión) + audio guía
+            </div>
+            <div style={{ display: 'flex', gap: 6 }} role="group" aria-label="Idioma del Liber">
+              {[
+                { id: 'es', label: 'ES', title: 'Español' },
+                { id: 'en', label: 'EN', title: 'English' },
+                { id: 'la', label: 'LA', title: 'Latín' },
+              ].map((opt) => {
+                const active = voiceLang === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    title={opt.title}
+                    aria-pressed={active}
+                    onClick={() => {
+                      const next = setVoicePrefs({ voiceLang: opt.id });
+                      setVoiceLang(next.voiceLang);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '10px 0',
+                      borderRadius: 8,
+                      border: active ? '1px solid #D4AF37' : '1px solid rgba(255,255,255,0.12)',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      fontSize: '0.95rem',
+                      background: active ? '#D4AF37' : 'rgba(255,255,255,0.06)',
+                      color: active ? '#000' : '#ccc',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Sound Toggle (Mirroring global state) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -360,7 +413,7 @@ export default function SettingsOverlay({
               />
             </label>
             <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ccc', fontSize: '0.9rem' }}>
-              <span>Guía EN (TTS)</span>
+              <span>Guía (audio)</span>
               <input
                 type="checkbox"
                 checked={settings.useBundledVoice !== false}
@@ -368,7 +421,7 @@ export default function SettingsOverlay({
               />
             </label>
             <div style={{ color: '#666', fontSize: '0.7rem' }}>
-              Liber ▶: una vez = oración · otra = auto ≫. Ritmo TTS en Más → Voz.
+              Pack de audio: /voice/{'{es|en|la}'}. Cambia idioma arriba.
             </div>
           </div>
 
@@ -415,6 +468,7 @@ export default function SettingsOverlay({
           <button
             type="button"
             onClick={onCheckForUpdate}
+            disabled={updateChecking}
             style={{
               width: '100%', marginTop: onOpenSync || onOpenFeedback ? '10px' : '16px', padding: '14px',
               background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)',
@@ -422,7 +476,7 @@ export default function SettingsOverlay({
               fontSize: '0.95rem', fontWeight: 'bold'
             }}
           >
-            🔄 Buscar actualización
+            {updateChecking ? 'Actualizando…' : '🔄 Buscar actualización'}
           </button>
         )}
 
@@ -443,6 +497,27 @@ export default function SettingsOverlay({
             🖼️ Estudio de imágenes
             <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
               Renombrar, etiquetar y asignar versos
+            </span>
+          </button>
+        )}
+
+        {onOpenVoiceStudio && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose?.();
+              onOpenVoiceStudio();
+            }}
+            style={{
+              width: '100%', marginTop: '10px', padding: '14px',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+              fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+            }}
+          >
+            🎙️ Estudio de voz
+            <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
+              Grabar y completar faltantes por idioma
             </span>
           </button>
         )}

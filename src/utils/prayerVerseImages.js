@@ -1,6 +1,6 @@
 import { imagePath } from '../data/imageRegistry';
 import { getPrayerVerseCatalog } from '../data/prayerVerseCatalog';
-import { getAssignedPath } from './imageAssignments';
+import { getAssignedPath, getAssignedPrayerPath } from './imageAssignments';
 import { getPrayerImageCandidates } from './prayerImages';
 
 export function getPrayerVerseCount(prayerId) {
@@ -22,6 +22,8 @@ export function getPrayerVerseImageCandidates(prayerId, verseIndex, prayerFallba
 
   const assigned = getAssignedPath(prayerId, verseIndex);
   if (assigned) push(assigned);
+  const baseAssigned = getAssignedPrayerPath(prayerId);
+  if (baseAssigned) push(baseAssigned);
 
   const catalog = getPrayerVerseCatalog(prayerId);
   const entry = catalog?.[verseIndex];
