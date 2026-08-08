@@ -5,6 +5,7 @@ export const VIEW_ROUTES = {
   rose: '/rosa',
   rosary: '/rosario',
   voz: '/voz',
+  playlist: '/cola',
   monk: '/monk',
   macetones: '/macetones',
   jardin: '/jardin',

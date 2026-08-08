@@ -57,9 +57,10 @@ const MAS_DESTINATIONS = [
   { id: 'camino', texto: 'Camino', hint: 'Peregrinación' },
   { id: 'rose', texto: 'Rosa', hint: 'Meditación (mantener)' },
   { id: 'voz', texto: 'Voz', hint: 'Estudio de grabación' },
+  { id: 'playlist', texto: 'Cola', hint: 'Cola de devociones' },
 ];
 
-const MAS_ACTIVE = new Set(['tracker', 'macetones', 'camino', 'rose', 'voz', 'jardin', 'monk']);
+const MAS_ACTIVE = new Set(['tracker', 'macetones', 'camino', 'rose', 'voz', 'playlist', 'jardin', 'monk']);
 
 export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   const navigate = useNavigate();
@@ -189,7 +190,7 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
           ariaExpanded={masOpen}
           onClick={() => setMasOpen((o) => !o)}
           simpleMode={simpleMode}
-          dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Rosa, Voz' }}
+          dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Rosa, Voz, Cola' }}
         />
         {devotionsBtn}
         {bookletMode && (isLeftHanded ? stepPrev : stepNext)}

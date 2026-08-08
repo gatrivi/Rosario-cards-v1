@@ -17,6 +17,7 @@ import JardinDeRosasView from '../Views/JardinDeRosasView';
 import PeregrinacionView from '../Views/PeregrinacionView';
 import MonkView from '../Views/MonkView';
 import RecordingStudioView from '../Views/RecordingStudioView';
+import DevotionPlaylistView from '../Views/DevotionPlaylistView';
 import AssetStudio from '../Views/AssetStudio';
 import BottomNav from '../Navigation/BottomNav';
 import SyncManager from '../common/SyncManager';
@@ -51,6 +52,11 @@ import {
   isValidRosaryMystery,
   buildSequence,
 } from '../../utils/bookletSequence';
+import {
+  ensurePlaylistRunnerListening,
+  EVT_START,
+  EVT_SET_AUTO,
+} from '../../utils/devotionPlaylistRunner';
 import { getBookletStepContext } from '../../utils/bookletProgress';
 import {
   saveCompromiso,
@@ -64,7 +70,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.72';
+const APP_VERSION = '0.3.73';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -443,6 +449,21 @@ export default function AppShell() {
     syncToCloud({ bookletMystery: mystery, bookletIndex: 0, todayDate: new Date().toDateString() });
   }, [syncToCloud, misterioActual, vistaActiva]);
 
+  useEffect(() => {
+    ensurePlaylistRunnerListening();
+    const onStart = (e) => {
+      const id = e?.detail?.mysteryId;
+      if (!id || !isValidBookletMystery(id)) return;
+      handleMysteryChange(id);
+      // Liber remount / mystery paint — then enter AUTO
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent(EVT_SET_AUTO, { detail: { mysteryId: id } }));
+      }, 60);
+    };
+    window.addEventListener(EVT_START, onStart);
+    return () => window.removeEventListener(EVT_START, onStart);
+  }, [handleMysteryChange]);
+
   const startLibroHoy = React.useCallback((mystery) => {
     const m = mystery || getDefaultMystery();
     setMisterioActual(m);
@@ -510,6 +531,8 @@ export default function AppShell() {
             onMysteryChange={handleMysteryChange}
           />
         );
+      case 'playlist':
+        return <DevotionPlaylistView />;
       case 'camino': return (
         <PeregrinacionView
           onSelectLevel={() => navigate(getPathForView('tracker'))}

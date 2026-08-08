@@ -4,12 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.72',
-  name: 'Fish EN + fondos limpios',
+  version: '0.3.73',
+  name: 'Cola de devociones',
   CURRENT: [
-    'Liber EN: Fish guide (117 clips) ? no Spanish under English',
-    '? Fish-only por idioma; manuscritos fuera del vitral',
-    'Estudio: asignar a varios + Texto-pesado',
+    'Más ? Cola: playlist Liber AUTO (corta?larga)',
+    'Repeticiones, orden y calor de reproducciones',
+    'Liber EN Fish + fondos limpios (0.3.72)',
   ],
   UPCOMING: [
     'Clips Vía Crucis / Lucis EN restantes',

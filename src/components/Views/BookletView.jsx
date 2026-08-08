@@ -52,6 +52,7 @@ import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { loadSavedVariantId, resolveDisplayText } from '../../utils/bookletDisplayText';
 import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
+import { isPlaylistActive } from '../../utils/devotionPlaylistRunner';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import {
   playStepVoice,
@@ -225,6 +226,9 @@ export default function BookletView({
   const preserveAutoOnMysteryChangeRef = useRef(false);
   /** Mystery where auto session started — stop after returning (four vias). */
   const autoRosaryStartRef = useRef(null);
+  const misterioActualRef = useRef(misterioActual);
+  misterioActualRef.current = misterioActual;
+  const playCurrentVoiceStepRef = useRef(null);
 
   // Always-on step autoplay removed — Liber ▶ owns once/auto (see prayerVoicePlayback).
 
@@ -548,7 +552,10 @@ export default function BookletView({
         }
         const nextVia = getNextRosaryMystery(misterioActual);
         const startVia = autoRosaryStartRef.current;
+        // Playlist mode: end this devotion and hand off (skip rosary via-chain).
+        const playlistActive = isPlaylistActive();
         if (
+          !playlistActive &&
           nextVia &&
           startVia &&
           nextVia !== startVia &&
@@ -560,6 +567,13 @@ export default function BookletView({
         }
         autoRosaryStartRef.current = null;
         setVoiceMode(VOICE_MODES.OFF);
+        if (playlistActive) {
+          window.dispatchEvent(
+            new CustomEvent('rosario-playlist-devotion-done', {
+              detail: { mysteryId: misterioActual },
+            })
+          );
+        }
       }
     },
     [goNext, misterioActual, onMysteryChange]
@@ -587,6 +601,7 @@ export default function BookletView({
     voiceLangPref,
     finishVoiceResult,
   ]);
+  playCurrentVoiceStepRef.current = playCurrentVoiceStep;
 
   // Step change while once/auto — not used for OFF→ONCE (that plays from tap / gesture).
   useEffect(() => {
@@ -650,6 +665,37 @@ export default function BookletView({
     };
     window.addEventListener('rosario-voice-external-stop', onExternalStop);
     return () => window.removeEventListener('rosario-voice-external-stop', onExternalStop);
+  }, []);
+
+  // Cola → Liber: enter AUTO once after mystery is applied.
+  useEffect(() => {
+    const onSetAuto = (e) => {
+      const want = e?.detail?.mysteryId;
+      const attempt = Number(e?.detail?.attempt) || 0;
+      if (want && want !== misterioActualRef.current) {
+        if (attempt >= 10) return;
+        window.setTimeout(() => {
+          window.dispatchEvent(
+            new CustomEvent('rosario-playlist-set-auto', {
+              detail: { mysteryId: want, attempt: attempt + 1 },
+            })
+          );
+        }, 50);
+        return;
+      }
+      const m = misterioActualRef.current;
+      if (isValidRosaryMystery(m)) {
+        if (!autoRosaryStartRef.current) autoRosaryStartRef.current = m;
+      } else {
+        autoRosaryStartRef.current = null;
+      }
+      preserveAutoOnMysteryChangeRef.current = true;
+      voiceModeRef.current = VOICE_MODES.AUTO;
+      setVoiceMode(VOICE_MODES.AUTO);
+      void playCurrentVoiceStepRef.current?.();
+    };
+    window.addEventListener('rosario-playlist-set-auto', onSetAuto);
+    return () => window.removeEventListener('rosario-playlist-set-auto', onSetAuto);
   }, []);
 
   useEffect(() => {

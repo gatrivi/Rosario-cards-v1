@@ -1,0 +1,177 @@
+.cola-view {
+  padding: 16px 14px 96px;
+  max-width: 560px;
+  margin: 0 auto;
+  color: #e8e4dc;
+}
+
+.cola-header {
+  margin-bottom: 14px;
+}
+
+.cola-title {
+  margin: 0;
+  font-family: "Cormorant Garamond", "Palatino Linotype", Palatino, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #f3efe6;
+}
+
+.cola-sub {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.cola-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cola-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ddd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cola-btn--primary {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: rgba(212, 175, 55, 0.35);
+  color: #e8d5a3;
+}
+
+.cola-btn--ghost {
+  opacity: 0.75;
+}
+
+.cola-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cola-row {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  gap: 8px 10px;
+  align-items: start;
+  padding: 10px 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cola-heat {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.cola-heat--low {
+  background: #6b8f71;
+}
+
+.cola-heat--mid {
+  background: #c4a35a;
+}
+
+.cola-heat--high {
+  background: #c45a5a;
+}
+
+.cola-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cola-row-label {
+  font-size: 0.95rem;
+  color: #f0ece4;
+}
+
+.cola-row-meta {
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
+.cola-row-controls {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.cola-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  color: #ddd;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cola-icon:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.cola-icon--danger {
+  color: #e8a0a0;
+}
+
+.cola-repeats {
+  min-width: 1.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+.cola-catalog {
+  margin-top: 18px;
+}
+
+.cola-catalog-label {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cola-catalog-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cola-add {
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: #cfc8ba;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
