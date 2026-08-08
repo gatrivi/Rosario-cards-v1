@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BOOKLET_MYSTERY_IDS } from '../../utils/bookletSequence';
 import {
@@ -10,9 +10,17 @@ import {
   playHeat,
   stepCountFor,
   devotionVoiceLabel,
+  devotionPlaylistThumbnail,
   MAX_REPEATS,
 } from '../../utils/devotionPlaylist';
-import { startPlaylist, stopPlaylist, isPlaylistActive } from '../../utils/devotionPlaylistRunner';
+import {
+  startPlaylist,
+  stopPlaylist,
+  isPlaylistActive,
+  loadRun,
+  EVT_IDLE,
+  EVT_START,
+} from '../../utils/devotionPlaylistRunner';
 import './DevotionPlaylistView.css';
 
 export default function DevotionPlaylistView() {
@@ -20,6 +28,36 @@ export default function DevotionPlaylistView() {
   const [items, setItems] = useState(() => loadPlaylist());
   const [stats, setStats] = useState(() => loadPlayStats());
   const [playing, setPlaying] = useState(() => isPlaylistActive());
+  const [runCursor, setRunCursor] = useState(() => {
+    const run = loadRun();
+    return run && run.cursor < run.runs.length ? run.cursor : -1;
+  });
+  const [runId, setRunId] = useState(() => {
+    const run = loadRun();
+    return run && run.cursor < run.runs.length ? run.runs[run.cursor] : null;
+  });
+
+  const syncRun = useCallback(() => {
+    const run = loadRun();
+    const active = Boolean(run && run.cursor < run.runs.length);
+    setPlaying(active);
+    setRunCursor(active ? run.cursor : -1);
+    setRunId(active ? run.runs[run.cursor] : null);
+  }, []);
+
+  useEffect(() => {
+    const onRunChange = () => syncRun();
+    window.addEventListener(EVT_IDLE, onRunChange);
+    window.addEventListener(EVT_START, onRunChange);
+    return () => {
+      window.removeEventListener(EVT_IDLE, onRunChange);
+      window.removeEventListener(EVT_START, onRunChange);
+    };
+  }, [syncRun]);
+
+  useEffect(() => {
+    syncRun();
+  }, [items, syncRun]);
 
   const persist = useCallback((next) => {
     const saved = savePlaylist(next);
@@ -68,7 +106,7 @@ export default function DevotionPlaylistView() {
 
   const clearAll = () => {
     stopPlaylist();
-    setPlaying(false);
+    syncRun();
     persist([]);
   };
 
@@ -76,8 +114,8 @@ export default function DevotionPlaylistView() {
     const queue = items.length ? items : getDefaultPlaylist();
     if (!items.length) persist(queue);
     setStats(loadPlayStats());
-    setPlaying(true);
     startPlaylist(queue, navigate);
+    syncRun();
   };
 
   const refreshStats = () => setStats(loadPlayStats());
@@ -105,9 +143,25 @@ export default function DevotionPlaylistView() {
         {items.map((row, index) => {
           const st = stats[row.id] || { count: 0, lastAt: 0 };
           const heat = playHeat(st.count);
+          const thumb = devotionPlaylistThumbnail(row.id);
+          const isNowPlaying = playing && runId === row.id && runCursor >= 0;
           return (
-            <li key={row.id} className="cola-row">
+            <li
+              key={row.id}
+              className={`cola-row${isNowPlaying ? ' cola-row--active' : ''}`}
+            >
               <span className={`cola-heat cola-heat--${heat}`} title={`${st.count} veces`} aria-hidden />
+              {thumb ? (
+                <img
+                  className="cola-thumb"
+                  src={thumb}
+                  alt=""
+                  loading="lazy"
+                  draggable={false}
+                />
+              ) : (
+                <span className="cola-thumb cola-thumb--empty" aria-hidden />
+              )}
               <div className="cola-row-main">
                 <span className="cola-row-label">{devotionVoiceLabel(row.id)}</span>
                 <span className="cola-row-meta">
@@ -141,11 +195,17 @@ export default function DevotionPlaylistView() {
         <div className="cola-catalog">
           <p className="cola-catalog-label">Añadir</p>
           <div className="cola-catalog-strip">
-            {missingIds.map((id) => (
-              <button key={id} type="button" className="cola-add" onClick={() => addId(id)}>
-                + {devotionVoiceLabel(id)}
-              </button>
-            ))}
+            {missingIds.map((id) => {
+              const thumb = devotionPlaylistThumbnail(id);
+              return (
+                <button key={id} type="button" className="cola-add" onClick={() => addId(id)}>
+                  {thumb ? (
+                    <img className="cola-add-thumb" src={thumb} alt="" loading="lazy" draggable={false} />
+                  ) : null}
+                  <span>+ {devotionVoiceLabel(id)}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       ) : null}

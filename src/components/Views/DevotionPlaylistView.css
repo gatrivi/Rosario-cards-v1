@@ -63,13 +63,32 @@
 
 .cola-row {
   display: grid;
-  grid-template-columns: 10px 1fr;
+  grid-template-columns: 10px 44px 1fr;
   gap: 8px 10px;
   align-items: start;
   padding: 10px 10px 8px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.02);
+}
+
+.cola-row--active {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.06);
+}
+
+.cola-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  grid-row: span 2;
+}
+
+.cola-thumb--empty {
+  display: block;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .cola-heat {
@@ -165,6 +184,9 @@
 }
 
 .cola-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-align: left;
   padding: 8px 10px;
   border-radius: 8px;
@@ -174,4 +196,13 @@
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+.cola-add-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

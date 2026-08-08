@@ -7,7 +7,9 @@ import {
   normalizePlaylist,
   playHeat,
   formatLastPlayed,
+  devotionPlaylistThumbnail,
 } from '../utils/devotionPlaylist';
+import { BOOKLET_MYSTERY_IDS } from '../utils/bookletSequence';
 import { listDevotionVoiceLadder } from '../utils/voiceCoverage';
 
 describe('devotionPlaylist', () => {
@@ -55,5 +57,11 @@ describe('devotionPlaylist', () => {
 
   test('formatLastPlayed never', () => {
     expect(formatLastPlayed(0)).toBe('nunca');
+  });
+
+  test('every booklet devotion has a playlist thumbnail', () => {
+    for (const id of BOOKLET_MYSTERY_IDS) {
+      expect(devotionPlaylistThumbnail(id)).toBeTruthy();
+    }
   });
 });

@@ -5,6 +5,36 @@
 
 import { BOOKLET_MYSTERY_IDS } from './bookletSequence';
 import { listDevotionVoiceLadder, devotionVoiceLabel } from './voiceCoverage';
+import { imagePath } from '../data/imageRegistry';
+import { angelusThumbnail, magnificatThumbnail } from '../data/marianDevotionsData';
+import { faustinaThumb, novenaThumbnail } from '../data/divineMercyData';
+import {
+  SAGRADO_CORAZON_ADORACION_ID,
+  sagradoCorazonAdoracionThumbnail,
+} from '../data/sagradoCorazonAdoracionData';
+
+/** Vitral thumbs for Cola rows — mirrors Libro shelf / mystery pills. */
+const DEVOTION_THUMBS = {
+  gozosos: '/gallery-images/misterios/modooscuro/misteriogozo0.webp',
+  dolorosos: '/gallery-images/misterios/modooscuro/misteriodolor0.jpg',
+  gloriosos: '/gallery-images/misterios/modooscuro/misteriogloria0.jpg',
+  luminosos: '/gallery-images/misterios/modooscuro/misterioLUZ0.webp',
+  divinamisericordia: faustinaThumb,
+  divinamisericordia_novena: novenaThumbnail,
+  angelus: angelusThumbnail,
+  magnificat: magnificatThumbnail,
+  sangrepreciosa_litany: imagePath('vitreauxCruz'),
+  sangrepreciosa_chaplet: imagePath('crux'),
+  sangrepreciosa_ofrendas: imagePath('lamb'),
+  viacrucis: '/gallery-images/misterios/modooscuro/misteriodolor0.jpg',
+  vialucis: '/gallery-images/misterios/modooscuro/misterioLUZ0.webp',
+  [SAGRADO_CORAZON_ADORACION_ID]: sagradoCorazonAdoracionThumbnail,
+};
+
+/** @param {string} id */
+export function devotionPlaylistThumbnail(id) {
+  return DEVOTION_THUMBS[id] || null;
+}
 
 export const PLAYLIST_KEY = 'rosario_devotion_playlist';
 export const PLAY_STATS_KEY = 'rosario_devotion_play_stats';

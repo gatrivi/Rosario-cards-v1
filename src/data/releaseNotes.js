@@ -4,12 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.73',
-  name: 'Cola de devociones',
+  version: '0.3.74',
+  name: 'Cola vitrales + AUTO',
   CURRENT: [
-    'Más ? Cola: playlist Liber AUTO (corta?larga)',
-    'Repeticiones, orden y calor de reproducciones',
-    'Liber EN Fish + fondos limpios (0.3.72)',
+    'Más ? Cola: vitrales por devoción y fila activa',
+    'Cola AUTO: ? sigue entre devociones sin cortar',
+    'Cola de devociones Liber AUTO (0.3.73)',
   ],
   UPCOMING: [
     'Clips Vía Crucis / Lucis EN restantes',

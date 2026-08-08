@@ -52,7 +52,7 @@ import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { loadSavedVariantId, resolveDisplayText } from '../../utils/bookletDisplayText';
 import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
-import { isPlaylistActive } from '../../utils/devotionPlaylistRunner';
+import { isPlaylistActive, EVT_IDLE } from '../../utils/devotionPlaylistRunner';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import {
   playStepVoice,
@@ -529,6 +529,12 @@ export default function BookletView({
       setVoicePlaying(false);
       return;
     }
+    // Cola handoff: keep ≫ AUTO so voiceStepKey effect plays the next devotion.
+    if (isPlaylistActive()) {
+      stopStepVoice();
+      setVoicePlaying(false);
+      return;
+    }
     voiceModeRef.current = VOICE_MODES.OFF;
     setVoiceMode(VOICE_MODES.OFF);
     setVoicePlaying(false);
@@ -566,14 +572,22 @@ export default function BookletView({
           return;
         }
         autoRosaryStartRef.current = null;
-        setVoiceMode(VOICE_MODES.OFF);
         if (playlistActive) {
           window.dispatchEvent(
             new CustomEvent('rosario-playlist-devotion-done', {
               detail: { mysteryId: misterioActual },
             })
           );
+          // Runner may clear the session on the last item — exit AUTO then.
+          queueMicrotask(() => {
+            if (!isPlaylistActive()) {
+              voiceModeRef.current = VOICE_MODES.OFF;
+              setVoiceMode(VOICE_MODES.OFF);
+            }
+          });
+          return;
         }
+        setVoiceMode(VOICE_MODES.OFF);
       }
     },
     [goNext, misterioActual, onMysteryChange]
@@ -665,6 +679,18 @@ export default function BookletView({
     };
     window.addEventListener('rosario-voice-external-stop', onExternalStop);
     return () => window.removeEventListener('rosario-voice-external-stop', onExternalStop);
+  }, []);
+
+  useEffect(() => {
+    const onPlaylistIdle = () => {
+      stopStepVoice();
+      voiceModeRef.current = VOICE_MODES.OFF;
+      setVoiceMode(VOICE_MODES.OFF);
+      setVoicePlaying(false);
+      autoRosaryStartRef.current = null;
+    };
+    window.addEventListener(EVT_IDLE, onPlaylistIdle);
+    return () => window.removeEventListener(EVT_IDLE, onPlaylistIdle);
   }, []);
 
   // Cola → Liber: enter AUTO once after mystery is applied.
