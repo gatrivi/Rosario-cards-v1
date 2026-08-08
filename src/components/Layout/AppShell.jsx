@@ -64,7 +64,7 @@ import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
 
-const APP_VERSION = '0.3.65';
+const APP_VERSION = '0.3.66';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
@@ -89,6 +89,7 @@ export default function AppShell() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [pendingSyncId, setPendingSyncId] = useState(null);
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateApplying, setUpdateApplying] = useState(false);
   const [openOptionalId, setOpenOptionalId] = useState(null);
   const compromisoUrlHandled = useRef(false);
   const oracionUrlHandled = useRef(false);
@@ -96,10 +97,10 @@ export default function AppShell() {
   useEffect(() => {
     const handleUpdate = () => {
       setUpdateAvailable(true);
-      playUpdateAvailableSound();
+      playUpdateAvailableSound().catch(() => {});
       scheduleUpdateReminder(() => {
         setUpdateAvailable((still) => {
-          if (still) playUpdateAvailableSound();
+          if (still) playUpdateAvailableSound().catch(() => {});
           return still;
         });
       });
@@ -609,6 +610,18 @@ export default function AppShell() {
     }
   };
 
+  const handleApplyPendingUpdate = async () => {
+    if (updateApplying) return;
+    setUpdateApplying(true);
+    try {
+      await applyPendingUpdate();
+    } catch (_) {
+      // Keep the current build usable if the browser rejects the update check.
+    } finally {
+      setUpdateApplying(false);
+    }
+  };
+
   return (
     <div style={{
       height: '100dvh', 
@@ -650,14 +663,16 @@ export default function AppShell() {
             </div>
             <button
               type="button"
-              onClick={applyPendingUpdate}
+              onClick={handleApplyPendingUpdate}
+              disabled={updateApplying}
               style={{
                 background: '#D4AF37', color: '#000', border: 'none',
                 borderRadius: '8px', padding: '8px 14px', fontWeight: 'bold',
-                cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0
+                cursor: updateApplying ? 'wait' : 'pointer', fontSize: '0.85rem', flexShrink: 0,
+                opacity: updateApplying ? 0.7 : 1,
               }}
             >
-              Actualizar
+              {updateApplying ? 'Actualizando…' : 'Actualizar'}
             </button>
           </div>
           <button
@@ -725,9 +740,10 @@ export default function AppShell() {
           onUpdateSettings={setSettings} 
           onClose={() => setShowSettings(false)}
           appVersion={APP_VERSION}
-          onCheckForUpdate={applyPendingUpdate}
+          onCheckForUpdate={handleApplyPendingUpdate}
           onStartAmbientAudio={handleStartAmbientAudio}
           onOpenAssetStudio={() => navigate(getPathForView('assets'))}
+          onOpenVoiceStudio={() => navigate(getPathForView('voz'))}
           onOpenReleaseNotes={() => {
             setShowSettings(false);
             setShowReleaseNotes(true);

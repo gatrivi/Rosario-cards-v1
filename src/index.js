@@ -8,6 +8,8 @@ import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
 import { installNovenaAutoProgress } from './utils/novenaAutoProgress';
 
+const APP_VERSION = '0.3.66';
+
 installNovenaAutoProgress();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -25,11 +27,13 @@ reportWebVitals();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register(`/service-worker.js?v=${APP_VERSION}`, { updateViaCache: 'none' })
       .then((registration) => {
         console.log('SW registered:', registration.scope);
 
-        setInterval(() => registration.update(), 5 * 60 * 1000);
+        setInterval(() => {
+          registration.update().catch(() => {});
+        }, 5 * 60 * 1000);
 
         subscribeToAppUpdates(() => {
           window.dispatchEvent(new CustomEvent('appUpdateAvailable'));

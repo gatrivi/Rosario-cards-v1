@@ -1,3 +1,5 @@
+🔥🔥🔥 IMPORTANT: EVERY VERSE MUST END WITH A LINE BREAK (\n). 🔥🔥🔥
+
 # Rosario Cards — Documentation Index
 
 **Start here.** Canonical context for agents and humans. Model-efficient: tables, paths, invariants.
@@ -20,6 +22,7 @@
   libro/
     historic-devotions.md             ← popular devoutions catalog + San Miguel / Próximas
     voice-autoplay.md                 ← Liber ▶ once / auto ≫ EN TTS
+  voice/fish-es-lock.md               ← Fish ES Voz 4 lock (seed 77) — do not re-pick
   virtual-rosary/
     rosary-ux-recovery-jun-2026.md    ← Jun 2026 session: 3 bugs fixed, stack
     interaction-rules.md              ← bead/chain selection MUSTS
@@ -32,7 +35,7 @@
     cosmic-modulator.md
     sacred-edition-overview.md
   roadmap/
-    future-features.md
+    future-features.md`r`n    native-android-kotlin-budget.md  ← presupuesto futuro de app Android nativa
   litany/
     index.md                          ← Letanía Lauretana roadmap + sound-engine handoff
     data-model.md
@@ -66,7 +69,7 @@
 | **Litany sound engine** | [litany/audio-integration.md](./litany/audio-integration.md) |
 | **Visual assets policy** | [visual-modes.md](./visual/visual-modes.md) |
 | **Cosmic / Sacred Edition** | [sacred-cosmic/](./sacred-cosmic/) |
-| **Future work** | [future-features.md](./roadmap/future-features.md) |
+| **Future work** | [future-features.md](./roadmap/future-features.md) |`r`n| **Android nativo futuro** | [native-android-kotlin-budget.md](./roadmap/native-android-kotlin-budget.md) |
 | **Open issues (verify source)** | [known-issues.md](./litany/known-issues.md) |
 | **Jul 2026 session (art/Firebase/Vía)** | [session-report-2026-07-03-night.md](./dev-notes/session-report-2026-07-03-night.md) |
 

@@ -4,11 +4,13 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.65',
-  name: 'San Expedito · HODIE',
+  version: '0.3.66',
+  name: 'Liber ES · Fish Voz 4',
   CURRENT: [
-    'Liber ≫ auto: avanza tras TTS (también si falla) y encadena las 4 vías del rosario',
-    'San Expedito en Oraciones breves (ES / EN / LA) · ?oracion=expedito',
+    'Voz guía ES Fish (Voz 4) en todas las devociones del Liber',
+    'Ángelus, Magnificat, Sangre, Vías, Misericordia, Sagrado Corazón',
+    'Liber ≫ auto: avanza tras clip y encadena las 4 vías',
+    'San Expedito en Oraciones breves · ?oracion=expedito',
   ],
   UPCOMING: [
     'Clips guía EN en /voice/en/',

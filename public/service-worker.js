@@ -1,5 +1,5 @@
 // PWA service worker — bump CACHE_NAME on each release so stale bundles are purged.
-const CACHE_NAME = 'rosario-cards-v0.3.64';
+const CACHE_NAME = 'rosario-cards-v0.3.66';
 
 const SHELL_URLS = [
   '/',
@@ -16,7 +16,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(SHELL_URLS))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -38,6 +37,10 @@ function isStaticAsset(url) {
   return url.includes('/static/js/') || url.includes('/static/css/');
 }
 
+function isVoiceAsset(url) {
+  return url.includes('/voice/');
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -56,8 +59,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Hashed JS/CSS bundles: network first so updates reach installed PWAs
-  if (isStaticAsset(request.url)) {
+  // Bundles and voice clips: network first so updates reach installed PWAs.
+  if (isStaticAsset(request.url) || isVoiceAsset(request.url)) {
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -88,7 +91,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
+  if (event.data === 'skipWaiting' || (event.data && event.data.type === 'SKIP_WAITING')) {
     self.skipWaiting();
   }
 });

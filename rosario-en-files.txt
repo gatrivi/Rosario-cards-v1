@@ -1,0 +1,31 @@
+
+  Fuente Fish (nueva, EN listo / ES Voz 4 lock):
+  • E:\zengatrivi-drive-e\catts\static\fish\rosary\en\
+  • E:\zengatrivi-drive-e\catts\static\fish\rosary\es\
+  • espejo: E:\Audiobooks\Rosary_Fish\
+
+  Destino Rosario Cards:
+  • C:\zengatrivi\REACTJS\rosario-cards-v1\public\voice\en\
+  • C:\zengatrivi\REACTJS\rosario-cards-v1\public\voice\es\
+
+  === FISH ES VOICE LOCK (picked 2026-08-07) — DO NOT RE-PICK ===
+  • Id: Voz 4 (fes.html)
+  • Seed: 77
+  • Sample: E:\zengatrivi-drive-e\catts\static\fish\es\v4.wav
+  • Lock:  E:\zengatrivi-drive-e\catts\data\voices\fish_es_lock\lock.wav
+  • Meta:  E:\zengatrivi-drive-e\catts\data\voices\fish_es_lock\lock.json
+  • Docs:  .docs/voice/fish-es-lock.md
+  • Rule: always pass this ref_audio + seed 77. No Fausto/Gaston. No empty refs.
+  ================================================================
+
+  Pack viejo (Supertonic, completo offline ya):
+  • EN: E:\zengatrivi-drive-e\catts\static\st\
+  • ES: E:\zengatrivi-drive-e\catts\static\es\
+
+  Sync con renombres (am→A.wav, etc.):
+
+  powershell -File
+  E:\zengatrivi-drive-e\catts\scripts\sync_rosario_supertonic.ps1
+
+  (ese script usa st/es, no Fish todavía). Fish ES lock = Voz 4; bake
+  missing Libro clips → public/voice/es → node scripts/genBundledVoiceMap.js.
