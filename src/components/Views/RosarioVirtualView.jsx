@@ -11,6 +11,7 @@ import {
   resolveLitanyVerseImage,
   getPrayerImageCandidates,
 } from '../../utils/prayerImages';
+import { isTextHeavyImagePath } from '../../data/imageRegistry';
 import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
 import {
   getPrayerVerseCount,
@@ -106,31 +107,39 @@ export default function RosarioVirtualView({
 
   const vitralCandidates = useMemo(() => {
     if (!activePrayer) return ['/gallery-images/cathedral.jpg'];
+    const scrub = (list) => (list || []).filter((u) => u && !isTextHeavyImagePath(u));
     if (isLitany && litanyVerse) {
-      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer, litanyVerseIndex);
-      const picked = resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex);
-      return [picked, ...all.filter((u) => u !== picked)];
+      const all = scrub(getLitanyVerseImageCandidates(litanyVerse, activePrayer, litanyVerseIndex));
+      const picked = scrub([resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex)])[0]
+        || all[0];
+      return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
     }
     if (isPerVersePrayer) {
-      const all = getPrayerVerseImageCandidates(
-        activePrayer.id,
-        prayerVerseIndex,
-        activePrayer,
-        misterioActual
+      const all = scrub(
+        getPrayerVerseImageCandidates(
+          activePrayer.id,
+          prayerVerseIndex,
+          activePrayer,
+          misterioActual
+        )
       );
-      const picked = resolvePrayerVerseImage(
-        activePrayer.id,
-        prayerVerseIndex,
-        activePrayer,
-        misterioActual
-      );
-      return [picked, ...all.filter((u) => u !== picked)];
+      const picked = scrub([
+        resolvePrayerVerseImage(
+          activePrayer.id,
+          prayerVerseIndex,
+          activePrayer,
+          misterioActual
+        ),
+      ])[0] || all[0];
+      return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
     }
-    const all = activePrayer.imgCandidates?.length
+    const raw = activePrayer.imgCandidates?.length
       ? activePrayer.imgCandidates
       : getPrayerImageCandidates(activePrayer, misterioActual);
-    const picked = pickPrayerImage(all, safeIndex);
-    return [picked, ...all.filter((u) => u !== picked)];
+    const all = scrub(raw);
+    const safe = all.length ? all : getPrayerImageCandidates(activePrayer, misterioActual);
+    const picked = pickPrayerImage(safe, safeIndex);
+    return [picked, ...safe.filter((u) => u !== picked)].filter(Boolean);
   }, [
     activePrayer,
     safeIndex,

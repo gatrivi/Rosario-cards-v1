@@ -20,15 +20,15 @@ function step(id, title, text, imageId, extraImageIds = []) {
 }
 
 export const angelusSequence = [
-  step('ANG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'allMary17th', ['latinAngelus']),
+  step('ANG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'allMary17th', ['theotokos']),
   step(
     'ANG_ANNUNCIATION',
     'El Ángel del Señor',
     'El Ángel del Señor anunció a María.\nY concibió por obra y gracia del Espíritu Santo.',
     'allMary17th',
-    ['latinAngelus', 'theotokos']
+    ['theotokos', 'galleryMaterImmaculata']
   ),
-  step('ANG_AVE_1', 'Ave María', AVE_MARIA_TEXT, 'latinAveMaria', ['avemariaLat']),
+  step('ANG_AVE_1', 'Ave María', AVE_MARIA_TEXT, 'theotokos', ['allMary17th']),
   step(
     'ANG_FIAT',
     'He aquí la esclava',
@@ -36,21 +36,21 @@ export const angelusSequence = [
     'theotokos',
     ['allMary17th']
   ),
-  step('ANG_AVE_2', 'Ave María', AVE_MARIA_TEXT, 'avemariaLat', ['latinAveMaria']),
+  step('ANG_AVE_2', 'Ave María', AVE_MARIA_TEXT, 'allMary17th', ['theotokos']),
   step(
     'ANG_INCARNATION',
     'El Verbo se hizo carne',
     'Y el Verbo se hizo carne.\nY habitó entre nosotros.',
-    'reginaCaeli',
+    'byzantineArt',
     ['theotokos']
   ),
-  step('ANG_AVE_3', 'Ave María', AVE_MARIA_TEXT, 'reginaCaeli', ['latinAveMaria']),
+  step('ANG_AVE_3', 'Ave María', AVE_MARIA_TEXT, 'galleryMaterImmaculata', ['allMary17th']),
   step(
     'ANG_FINAL',
     'Oración final',
     'Ruega por nosotros, Santa Madre de Dios.\nPara que seamos dignos de alcanzar las promesas de Nuestro Señor Jesucristo.\n\nOremos: Infunde, Señor, tu gracia en nuestros corazones, para que quienes hemos conocido, por el anuncio del ángel, la encarnación de tu Hijo Jesucristo, por su pasión y cruz seamos llevados a la gloria de su resurrección. Por el mismo Jesucristo, nuestro Señor. Amén.',
     'stainedGlass',
-    ['latinAngelus', 'allMary17th']
+    ['allMary17th', 'theotokos']
   ),
 ];
 
@@ -61,7 +61,7 @@ export const magnificatSequence = [
     'Magnificat',
     'Proclama mi alma la grandeza del Señor,\nse alegra mi espíritu en Dios, mi salvador;',
     'magnificatVisitation',
-    ['reginaCaeli']
+    ['theotokos']
   ),
   step(
     'MAG_2',
@@ -95,8 +95,8 @@ export const magnificatSequence = [
     'MAG_6',
     'Colma de bienes',
     'A los hambrientos los colma de bienes\ny a los ricos los despide vacíos.',
-    'reginaCaeli',
-    ['allMary17th']
+    'allMary17th',
+    ['theotokos']
   ),
   step(
     'MAG_7',
@@ -109,8 +109,8 @@ export const magnificatSequence = [
     'MAG_DOX',
     'Gloria al Padre',
     'Gloria al Padre, y al Hijo, y al Espíritu Santo.\nComo era en el principio, ahora y siempre,\npor los siglos de los siglos. Amén.',
-    'latinGloria',
-    ['stainedGlass']
+    'stainedGlass',
+    ['byzantineArt']
   ),
 ];
 

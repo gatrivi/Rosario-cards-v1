@@ -77,6 +77,6 @@ export const divineMercyNovenaDays = [
     intentionTitle: 'Las almas tibias',
     intentionText: '“Hoy, tráeme a las almas tibias y sumérgelas en el abismo de mi misericordia. Estas almas son las que más dolorosamente hieren mi Corazón. Mi alma sintió la mayor repugnancia en el Huerto de los Olivos a causa de las almas tibias.”',
     closingInstruction: 'Rezar la Corona de la Divina Misericordia',
-    img: imagePath('crux'),
+    img: imagePath('vitreauxCruz'),
   },
 ];

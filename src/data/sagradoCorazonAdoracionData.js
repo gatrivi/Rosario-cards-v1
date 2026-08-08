@@ -45,8 +45,8 @@ const IMAGE_POOLS = {
   corazonTraspasado: [
     imagePath('faustinaDivinoCorazon'),
     imagePath('gallerySagradoCorazon'),
-    imagePath('crux'),
     imagePath('vitreauxCruz'),
+    imagePath('stainedGlass'),
   ],
   buenPastor: [
     imagePath('galleryPastor'),

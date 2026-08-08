@@ -107,11 +107,6 @@
   pointer-events: none;
 }
 
-.devotions-shelf__panel .faustina-mercy-menu {
-  bottom: calc(100% + 6px);
-  top: auto;
-}
-
 .devotions-shelf--footer .devotions-shelf__toggle {
   font-size: 0.62rem;
   letter-spacing: 0.05em;

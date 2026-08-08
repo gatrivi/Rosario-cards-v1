@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import BookletView from '../components/Views/BookletView';
 import { buildSequence } from '../utils/bookletSequence';
@@ -118,9 +118,9 @@ describe('devotions shelf flow', () => {
     fireEvent.click(screen.getByRole('button', { name: /^san benito$/i }));
 
     expect(onMysteryChange).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: /oración opcional/i })).toBeInTheDocument();
-    expect(screen.getByRole('dialog').querySelector('.optional-prayer-sheet__tab.active')).toHaveTextContent(
-      'San Benito'
-    );
+    const dialog = screen.getByRole('dialog', { name: /oración opcional/i });
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /reproducir guía/i })).toBeInTheDocument();
+    expect(dialog.querySelector('.optional-prayer-sheet__tab.active')).toHaveTextContent('San Benito');
   });
 });

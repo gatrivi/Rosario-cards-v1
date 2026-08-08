@@ -1,0 +1,1368 @@
+{
+  "generated": "2026-08-08T07:01:28.679Z",
+  "count": 112,
+  "skipped_no_en_text": 41,
+  "skipped_sample": [
+    {
+      "id": "LL",
+      "mystery": "gozosos"
+    },
+    {
+      "id": "LL",
+      "mystery": "dolorosos"
+    },
+    {
+      "id": "LL",
+      "mystery": "gloriosos"
+    },
+    {
+      "id": "LL",
+      "mystery": "luminosos"
+    },
+    {
+      "id": "VC_OPEN",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_1",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_2",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_3",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_5",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_6",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_7",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_8",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_9",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_10",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_11",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_12",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_13",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VC_14",
+      "mystery": "viacrucis"
+    },
+    {
+      "id": "VL_OPEN",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_1",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_2",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_3",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_4",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_5",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_6",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_7",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_8",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_9",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "VL_10",
+      "mystery": "vialucis"
+    },
+    {
+      "id": "SCA_EXPO",
+      "mystery": "sagrado_corazon_adoracion"
+    }
+  ],
+  "voice": {
+    "lock": "catts/data/voices/fish_default_lock/lock.wav",
+    "lock_text": "In the desert of Scete, the abbot Moses spoke of the end of the monk.",
+    "seed": 42,
+    "lang": "en",
+    "note": "Same EN Fish lock as static/fish/rosary/en (not ES Voz 4)"
+  },
+  "clips": [
+    {
+      "id": "A",
+      "prayerId": "A",
+      "mystery": "gozosos",
+      "chars": 210,
+      "text": "Hail Mary, full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "AC",
+      "prayerId": "AC",
+      "mystery": "gozosos",
+      "chars": 316,
+      "text": "O my God, I am heartily sorry for having offended Thee, and I detest all my sins because of Thy just punishments, but most of all because they offend Thee, my God, who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to sin no more and to avoid the near occasion of sin. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_ANNUNCIATION",
+      "prayerId": "ANG_ANNUNCIATION",
+      "mystery": "angelus",
+      "chars": 79,
+      "text": "The Angel of the Lord declared unto Mary. And she conceived of the Holy Spirit.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_AVE_1",
+      "prayerId": "ANG_AVE_1",
+      "mystery": "angelus",
+      "chars": 210,
+      "text": "Hail Mary, full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_AVE_2",
+      "prayerId": "ANG_AVE_2",
+      "mystery": "angelus",
+      "chars": 210,
+      "text": "Hail Mary, full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_AVE_3",
+      "prayerId": "ANG_AVE_3",
+      "mystery": "angelus",
+      "chars": 210,
+      "text": "Hail Mary, full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_FIAT",
+      "prayerId": "ANG_FIAT",
+      "mystery": "angelus",
+      "chars": 74,
+      "text": "Behold the handmaid of the Lord. Be it done unto me according to thy word.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_FINAL",
+      "prayerId": "ANG_FINAL",
+      "mystery": "angelus",
+      "chars": 373,
+      "text": "Pray for us, O holy Mother of God. That we may be made worthy of the promises of Christ. Let us pray. Pour forth, we beseech Thee, O Lord, Thy grace into our hearts, that we, to whom the Incarnation of Christ Thy Son was made known by the message of an angel, may by His Passion and Cross be brought to the glory of His Resurrection. Through the same Christ our Lord. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_INCARNATION",
+      "prayerId": "ANG_INCARNATION",
+      "mystery": "angelus",
+      "chars": 48,
+      "text": "And the Word was made flesh. And dwelt among us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ANG_SC",
+      "prayerId": "ANG_SC",
+      "mystery": "angelus",
+      "chars": 72,
+      "text": "In the name of the Father, and of the Son, and of the Holy Spirit. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "C",
+      "prayerId": "C",
+      "mystery": "gozosos",
+      "chars": 619,
+      "text": "I believe in God, the Father almighty, Creator of heaven and earth, and in Jesus Christ, His only Son, our Lord, who was conceived by the Holy Spirit, born of the Virgin Mary, suffered under Pontius Pilate, was crucified, died and was buried; He descended into hell; on the third day He rose again from the dead; He ascended into heaven, and is seated at the right hand of God the Father almighty; from there He will come to judge the living and the dead. I believe in the Holy Spirit, the holy catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and life everlasting. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "DMO1",
+      "prayerId": "DMO1",
+      "mystery": "divinamisericordia",
+      "chars": 220,
+      "text": "You expired, Jesus, but the source of life gushed forth for souls, and the ocean of mercy opened up for the whole world. O Fount of Life, unfathomable Divine Mercy, envelop the whole world and empty Yourself out upon us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "DMO2",
+      "prayerId": "DMO2",
+      "mystery": "divinamisericordia",
+      "chars": 105,
+      "text": "O Blood and Water, which gushed forth from the Heart of Jesus as a fount of mercy for us, I trust in You!",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "EF",
+      "prayerId": "EF",
+      "mystery": "divinamisericordia",
+      "chars": 172,
+      "text": "Eternal Father, I offer You the Body and Blood, Soul and Divinity of Your dearly beloved Son, our Lord Jesus Christ, in atonement for our sins and those of the whole world.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "F",
+      "prayerId": "F",
+      "mystery": "gozosos",
+      "chars": 134,
+      "text": "O my Jesus, forgive us our sins, save us from the fires of hell, lead all souls to heaven, especially those most in need of Thy mercy.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "G",
+      "prayerId": "G",
+      "mystery": "gozosos",
+      "chars": 143,
+      "text": "Glory be to the Father, and to the Son, and to the Holy Spirit, as it was in the beginning, is now, and ever shall be, world without end. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "HG",
+      "prayerId": "HG",
+      "mystery": "divinamisericordia",
+      "chars": 86,
+      "text": "Holy God, Holy Mighty One, Holy Immortal One, have mercy on us and on the whole world.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_1",
+      "prayerId": "LPB_1",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 16,
+      "text": "Lord, have mercy",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_2",
+      "prayerId": "LPB_2",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 18,
+      "text": "Christ, have mercy",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_3",
+      "prayerId": "LPB_3",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 16,
+      "text": "Lord, have mercy",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_4",
+      "prayerId": "LPB_4",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 15,
+      "text": "Christ, hear us",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_5",
+      "prayerId": "LPB_5",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 26,
+      "text": "Christ, graciously hear us",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_6",
+      "prayerId": "LPB_6",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 43,
+      "text": "God the Father of heaven. Have mercy on us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_7",
+      "prayerId": "LPB_7",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 53,
+      "text": "God the Son, Redeemer of the world. Have mercy on us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_8",
+      "prayerId": "LPB_8",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 38,
+      "text": "God the Holy Spirit. Have mercy on us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_9",
+      "prayerId": "LPB_9",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 40,
+      "text": "Holy Trinity, one God. Have mercy on us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_10",
+      "prayerId": "LPB_10",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 66,
+      "text": "Blood of Christ, only-begotten Son of the Eternal Father. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_11",
+      "prayerId": "LPB_11",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 48,
+      "text": "Blood of Christ, Word of God Incarnate. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_12",
+      "prayerId": "LPB_12",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 58,
+      "text": "Blood of Christ, of the New and Eternal Covenant. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_13",
+      "prayerId": "LPB_13",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 59,
+      "text": "Blood of Christ, shed upon the earth in the Agony. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_14",
+      "prayerId": "LPB_14",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 62,
+      "text": "Blood of Christ, flowing abundantly in the Scourging. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_15",
+      "prayerId": "LPB_15",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 68,
+      "text": "Blood of Christ, gushing forth in the Crowning with Thorns. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_16",
+      "prayerId": "LPB_16",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 55,
+      "text": "Blood of Christ, shed on the way of the Cross. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_17",
+      "prayerId": "LPB_17",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 73,
+      "text": "Blood of Christ, most precious in the Nailing of hands and feet. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_18",
+      "prayerId": "LPB_18",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 44,
+      "text": "Blood of Christ, fountain of mercy. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_19",
+      "prayerId": "LPB_19",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 50,
+      "text": "Blood of Christ, price of our redemption. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_20",
+      "prayerId": "LPB_20",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 62,
+      "text": "Blood of Christ, without which there is no salvation. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_21",
+      "prayerId": "LPB_21",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 77,
+      "text": "Blood of Christ, drink of the Eucharistic Chalice and bath of souls. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_22",
+      "prayerId": "LPB_22",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 69,
+      "text": "Blood of Christ, torrent washing away the sins of the world. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_23",
+      "prayerId": "LPB_23",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 61,
+      "text": "Blood of Christ, victorious over the demons of hell. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_24",
+      "prayerId": "LPB_24",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 46,
+      "text": "Blood of Christ, strength of martyrs. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_25",
+      "prayerId": "LPB_25",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 47,
+      "text": "Blood of Christ, virtue of confessors. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_26",
+      "prayerId": "LPB_26",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 49,
+      "text": "Blood of Christ, bringing forth virgins. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_27",
+      "prayerId": "LPB_27",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 50,
+      "text": "Blood of Christ, help of those in danger. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_28",
+      "prayerId": "LPB_28",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 53,
+      "text": "Blood of Christ, relief of those who suffer. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_29",
+      "prayerId": "LPB_29",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 64,
+      "text": "Blood of Christ, consolation of the souls in Purgatory. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_30",
+      "prayerId": "LPB_30",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 42,
+      "text": "Blood of Christ, hope of sinners. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_31",
+      "prayerId": "LPB_31",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 51,
+      "text": "Blood of Christ, freedom of the oppressed. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_32",
+      "prayerId": "LPB_32",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 44,
+      "text": "Blood of Christ, help of the dying. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_33",
+      "prayerId": "LPB_33",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 56,
+      "text": "Blood of Christ, peace and sweetness of hearts. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_34",
+      "prayerId": "LPB_34",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 49,
+      "text": "Blood of Christ, pledge of eternal life. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_35",
+      "prayerId": "LPB_35",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 78,
+      "text": "Blood of Christ, delivering us from darkness and leading us to light. Save us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_36",
+      "prayerId": "LPB_36",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 34,
+      "text": "From all evil. Deliver us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_37",
+      "prayerId": "LPB_37",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 33,
+      "text": "From all sin. Deliver us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_38",
+      "prayerId": "LPB_38",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 54,
+      "text": "From the temptations of the devil. Deliver us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_39",
+      "prayerId": "LPB_39",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 47,
+      "text": "From everlasting damnation. Deliver us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_40",
+      "prayerId": "LPB_40",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 50,
+      "text": "Through Your holy Incarnation. Deliver us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_41",
+      "prayerId": "LPB_41",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 51,
+      "text": "Through Your Passion and Cross. Deliver us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_42",
+      "prayerId": "LPB_42",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 67,
+      "text": "Lamb of God, who take away the sins of the world. Spare us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_43",
+      "prayerId": "LPB_43",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 77,
+      "text": "Lamb of God, who take away the sins of the world. Graciously hear us, O Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_44",
+      "prayerId": "LPB_44",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 67,
+      "text": "Lamb of God, who take away the sins of the world. Have mercy on us.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "LPB_Close",
+      "prayerId": "LPB_Close",
+      "mystery": "sangrepreciosa_litany",
+      "chars": 342,
+      "text": "Almighty and eternal God, who appointed Your only-begotten Son the Redeemer of the world and willed to be appeased by His Blood: grant us, we beseech You, so to venerate the price of our salvation, and by its power to be defended from the evils of this life, that we may rejoice in its fruits forever in heaven. Through Christ our Lord. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_1",
+      "prayerId": "MAG_1",
+      "mystery": "magnificat",
+      "chars": 81,
+      "text": "My soul proclaims the greatness of the Lord; my spirit rejoices in God my Savior.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_2",
+      "prayerId": "MAG_2",
+      "mystery": "magnificat",
+      "chars": 102,
+      "text": "For He has looked with favor on His lowly servant. From this day all generations will call me blessed.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_3",
+      "prayerId": "MAG_3",
+      "mystery": "magnificat",
+      "chars": 64,
+      "text": "The Almighty has done great things for me, and holy is His name.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_4",
+      "prayerId": "MAG_4",
+      "mystery": "magnificat",
+      "chars": 55,
+      "text": "He has mercy on those who fear Him in every generation.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_5",
+      "prayerId": "MAG_5",
+      "mystery": "magnificat",
+      "chars": 158,
+      "text": "He has shown the strength of His arm; He has scattered the proud in their conceit. He has cast down the mighty from their thrones and has lifted up the lowly.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_6",
+      "prayerId": "MAG_6",
+      "mystery": "magnificat",
+      "chars": 79,
+      "text": "He has filled the hungry with good things, and the rich He has sent away empty.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_7",
+      "prayerId": "MAG_7",
+      "mystery": "magnificat",
+      "chars": 163,
+      "text": "He has come to the help of His servant Israel, for He has remembered His promise of mercy, the promise He made to our fathers, to Abraham and his children forever.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_DOX",
+      "prayerId": "MAG_DOX",
+      "mystery": "magnificat",
+      "chars": 143,
+      "text": "Glory be to the Father, and to the Son, and to the Holy Spirit, as it was in the beginning, is now, and ever shall be, world without end. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MAG_SC",
+      "prayerId": "MAG_SC",
+      "mystery": "magnificat",
+      "chars": 72,
+      "text": "In the name of the Father, and of the Son, and of the Holy Spirit. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MD1",
+      "prayerId": "MD1",
+      "mystery": "dolorosos",
+      "chars": 102,
+      "text": "The Agony in the Garden. Jesus prays in Gethsemane in great anguish, sweating blood before His arrest.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MD2",
+      "prayerId": "MD2",
+      "mystery": "dolorosos",
+      "chars": 89,
+      "text": "The Scourging at the Pillar. Jesus is scourged by order of Pilate before His crucifixion.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MD3",
+      "prayerId": "MD3",
+      "mystery": "dolorosos",
+      "chars": 96,
+      "text": "The Crowning with Thorns. The soldiers crown Jesus with thorns and mock Him as King of the Jews.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MD4",
+      "prayerId": "MD4",
+      "mystery": "dolorosos",
+      "chars": 89,
+      "text": "The Carrying of the Cross. Jesus carries the cross to Calvary, helped by Simon of Cyrene.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MD5",
+      "prayerId": "MD5",
+      "mystery": "dolorosos",
+      "chars": 113,
+      "text": "The Crucifixion. Jesus is crucified and dies on the cross, forgiving His executioners and yielding up His spirit.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MG1",
+      "prayerId": "MG1",
+      "mystery": "gozosos",
+      "chars": 96,
+      "text": "The Annunciation. The angel Gabriel announces to Mary that she will be the Mother of the Savior.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MG2",
+      "prayerId": "MG2",
+      "mystery": "gozosos",
+      "chars": 95,
+      "text": "The Visitation. Mary visits her cousin Elizabeth, who recognizes her as the Mother of the Lord.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MG3",
+      "prayerId": "MG3",
+      "mystery": "gozosos",
+      "chars": 81,
+      "text": "The Nativity. The Word becomes flesh and is born of the Virgin Mary in Bethlehem.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MG4",
+      "prayerId": "MG4",
+      "mystery": "gozosos",
+      "chars": 109,
+      "text": "The Presentation. Mary and Joseph present the Child Jesus in the Temple, where Simeon and Anna recognize Him.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MG5",
+      "prayerId": "MG5",
+      "mystery": "gozosos",
+      "chars": 95,
+      "text": "The Finding in the Temple. At twelve years old, Jesus stays in the Temple teaching the doctors.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ML1",
+      "prayerId": "ML1",
+      "mystery": "luminosos",
+      "chars": 86,
+      "text": "The Baptism in the Jordan. Jesus is baptized; the Father declares Him His beloved Son.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ML2",
+      "prayerId": "ML2",
+      "mystery": "luminosos",
+      "chars": 93,
+      "text": "The Wedding at Cana. At Cana, Mary says: do whatever He tells you; Jesus manifests His glory.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ML3",
+      "prayerId": "ML3",
+      "mystery": "luminosos",
+      "chars": 111,
+      "text": "The Proclamation of the Kingdom. Jesus announces: the kingdom of God is at hand; repent and believe the gospel.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ML4",
+      "prayerId": "ML4",
+      "mystery": "luminosos",
+      "chars": 115,
+      "text": "The Transfiguration. Jesus is transfigured on the mountain; the Father says: this is my beloved Son; listen to Him.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "ML5",
+      "prayerId": "ML5",
+      "mystery": "luminosos",
+      "chars": 124,
+      "text": "The Institution of the Eucharist. Jesus institutes the Eucharist: this is my body; this cup is the new covenant in my blood.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "MP",
+      "prayerId": "MP",
+      "mystery": "divinamisericordia",
+      "chars": 79,
+      "text": "For the sake of His sorrowful Passion, have mercy on us and on the whole world.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "NOVENA_DAY_INTENTION",
+      "prayerId": "NOVENA_DAY_INTENTION",
+      "mystery": "divinamisericordia_novena",
+      "chars": 97,
+      "text": "Today bring to Me all mankind, especially all sinners, and immerse them in the ocean of My mercy.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "P",
+      "prayerId": "P",
+      "mystery": "gozosos",
+      "chars": 290,
+      "text": "Our Father, who art in heaven, hallowed be Thy name; Thy kingdom come; Thy will be done on earth as it is in heaven. Give us this day our daily bread; and forgive us our trespasses as we forgive those who trespass against us; and lead us not into temptation, but deliver us from evil. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PB",
+      "prayerId": "PB_3",
+      "mystery": "sangrepreciosa_chaplet",
+      "chars": 76,
+      "text": "O Precious Blood of Jesus, wash me, save me, and save the whole world. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PB_G",
+      "prayerId": "PB_G_8",
+      "mystery": "sangrepreciosa_chaplet",
+      "chars": 143,
+      "text": "Glory be to the Father, and to the Son, and to the Holy Spirit, as it was in the beginning, is now, and ever shall be, world without end. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PB_P",
+      "prayerId": "PB_P_2",
+      "mystery": "sangrepreciosa_chaplet",
+      "chars": 290,
+      "text": "Our Father, who art in heaven, hallowed be Thy name; Thy kingdom come; Thy will be done on earth as it is in heaven. Give us this day our daily bread; and forgive us our trespasses as we forgive those who trespass against us; and lead us not into temptation, but deliver us from evil. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBClosing",
+      "prayerId": "PBClosing_51",
+      "mystery": "sangrepreciosa_chaplet",
+      "chars": 288,
+      "text": "O Precious Blood of my beloved Jesus, I beg You by the merits of Your seven sheddings to be the balm of my soul, the shield of my life, and the pledge of my eternal salvation. Eternal Father, accept the offering of the Blood of Your Son for my salvation and that of the whole world. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBContrition",
+      "prayerId": "PBContrition_1",
+      "mystery": "sangrepreciosa_chaplet",
+      "chars": 316,
+      "text": "O my God, I am heartily sorry for having offended Thee, and I detest all my sins because of Thy just punishments, but most of all because they offend Thee, my God, who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to sin no more and to avoid the near occasion of sin. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBO_1",
+      "prayerId": "PBO_1",
+      "mystery": "sangrepreciosa_ofrendas",
+      "chars": 188,
+      "text": "Eternal Father, I offer You the Precious Blood of Your Divine Son Jesus, in union with all the Masses said today throughout the world, for all souls, especially the most obstinate sinners.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBO_2",
+      "prayerId": "PBO_2",
+      "mystery": "sangrepreciosa_ofrendas",
+      "chars": 196,
+      "text": "Eternal Father, I offer You the Precious Blood of Your Divine Son Jesus, in union with all the Masses of today, for the souls of priests and religious, that they may be faithful to their vocation.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBO_3",
+      "prayerId": "PBO_3",
+      "mystery": "sangrepreciosa_ofrendas",
+      "chars": 183,
+      "text": "Eternal Father, I offer You the Precious Blood of Your Divine Son Jesus, in reparation for my sins and those of the whole world, and for offenses against the Hearts of Jesus and Mary.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBO_4",
+      "prayerId": "PBO_4",
+      "mystery": "sangrepreciosa_ofrendas",
+      "chars": 176,
+      "text": "Eternal Father, I offer You the Precious Blood of Your Divine Son Jesus, for the dying of this day, that they may be assisted by the grace of conversion and final perseverance.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBO_5",
+      "prayerId": "PBO_5",
+      "mystery": "sangrepreciosa_ofrendas",
+      "chars": 171,
+      "text": "Eternal Father, I offer You the Precious Blood of Your Divine Son Jesus, for the souls in Purgatory, especially the most abandoned, that they may soon enter eternal glory.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBO_6",
+      "prayerId": "PBO_6",
+      "mystery": "sangrepreciosa_ofrendas",
+      "chars": 186,
+      "text": "Eternal Father, I offer You the Precious Blood of Your Divine Son Jesus, for Holy Church, the Supreme Pontiff, and all pastors, that they may be light of the world and salt of the earth.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "PBO_7",
+      "prayerId": "PBO_7",
+      "mystery": "sangrepreciosa_ofrendas",
+      "chars": 179,
+      "text": "Eternal Father, I offer You the Precious Blood of Your Divine Son Jesus, for the conversion of sinners and true peace among nations, according to the promises of His Sacred Heart.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "S",
+      "prayerId": "S",
+      "mystery": "gozosos",
+      "chars": 480,
+      "text": "Hail, Holy Queen, Mother of Mercy, our life, our sweetness and our hope. To thee do we cry, poor banished children of Eve. To thee do we send up our sighs, mourning and weeping in this valley of tears. Turn then, most gracious advocate, thine eyes of mercy toward us, and after this our exile show unto us the blessed fruit of thy womb, Jesus. O clement, O loving, O sweet Virgin Mary. Pray for us, O holy Mother of God, that we may be made worthy of the promises of Christ. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "SC",
+      "prayerId": "SC",
+      "mystery": "gozosos",
+      "chars": 72,
+      "text": "In the name of the Father, and of the Son, and of the Holy Spirit. Amen.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "SCA_ACLAMACIONES",
+      "prayerId": "SCA_ACLAMACIONES",
+      "mystery": "sagrado_corazon_adoracion",
+      "chars": 744,
+      "text": "R. Bendito sea el Sagrado Corazón. Bendito sea el Corazón que nos revela el amor de Dios. Bendito sea el Corazón que tanto amó al Padre. Bendito sea el Corazón que tanto amó a los hombres. Bendito sea el Corazón que proclama las Bienaventuranzas. Bendito sea el Corazón suave y humilde que aligera nuestra carga. Bendito sea el Corazón que ofrece el perdón a los pecadores. Bendito sea el Corazón que recibió tanta ingratitud a cambio de su amor. Bendito sea el Corazón abierto por la lanza. Bendito sea el Corazón de donde surgió el agua del bautismo. Bendito sea el Corazón de donde surgió la sangre de la nueva alianza. Bendito sea el Corazón de donde nació la Iglesia, la nueva Eva. Bendito sea el Corazón que nos ha dado a María por madre.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "SCA_HYMN_CANTEMOS",
+      "prayerId": "SCA_HYMN_CANTEMOS",
+      "mystery": "sagrado_corazon_adoracion",
+      "chars": 156,
+      "text": "[Canto: Cantemos al Amor de los amores — letra pendiente por derechos] Del Valle – Sagastizábal, 1911. Cante la asamblea según la costumbre de la parroquia.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "SCA_HYMN_LAUDATE",
+      "prayerId": "SCA_HYMN_LAUDATE",
+      "mystery": "sagrado_corazon_adoracion",
+      "chars": 121,
+      "text": "[Canto: Laudate omnes gentes — letra pendiente por derechos] Taizé. Cante la asamblea según la costumbre de la parroquia.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "SCA_TANTUM_ERGO",
+      "prayerId": "SCA_TANTUM_ERGO",
+      "mystery": "sagrado_corazon_adoracion",
+      "chars": 546,
+      "text": "Tantum ergo Sacramentum veneremur cernui: Et antiquum documentum novo cedat ritui: Praestet fides supplementum sensuum defectui. Genitori, genitoque laus et jubilatio, Salus, honor, virtus quoque sit et benedictio. Procedenti ab utroque comparsit laudatio. Tan augusto Sacramento veneremos en verdad: que los ritos ya pasados den al nuevo su lugar: que la fe preste a los ojos la visión con qué mirar. Al Padre y al Hijo, demos gloria y júbilo, salud, honor, virtud y también la bendición. Y a Quien de ambos procede llegue también esta alabanza.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "VC_4",
+      "prayerId": "VC_4",
+      "mystery": "viacrucis",
+      "chars": 270,
+      "text": "María encuentra a su Hijo en el camino del dolor. Sus miradas se unen en un mismo amor y una misma ofrenda. Santa María, enséñanos a permanecer junto a los que sufren, sin huir del dolor. Te adoramos, Cristo, y te bendecimos, porque por tu Santa Cruz redimiste al mundo.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "VL_11",
+      "prayerId": "VL_11",
+      "mystery": "vialucis",
+      "chars": 213,
+      "text": "En el Cenáculo, unidos en oración con María, esperan el don prometido. Santa María, enséñanos a esperar al Espíritu con fe perseverante. Alabado seas, Cristo resucitado, que nos conduces a la vida eterna. Aleluya.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "VL_12",
+      "prayerId": "VL_12",
+      "mystery": "vialucis",
+      "chars": 212,
+      "text": "Lenguas de fuego y un viento impetuoso: la Iglesia nace misionera y valiente. Espíritu Santo, enciende en nosotros el fuego de tu amor. Alabado seas, Cristo resucitado, que nos conduces a la vida eterna. Aleluya.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "VL_13",
+      "prayerId": "VL_13",
+      "mystery": "vialucis",
+      "chars": 251,
+      "text": "María es llevada en cuerpo y alma a la gloria. Donde está la Madre, esperamos llegar. Santa María, asunta al cielo, intercede para que vivamos en esperanza de la vida eterna. Alabado seas, Cristo resucitado, que nos conduces a la vida eterna. Aleluya.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    },
+    {
+      "id": "VL_14",
+      "prayerId": "VL_14",
+      "mystery": "vialucis",
+      "chars": 239,
+      "text": "María es coronada Reina. Su reinado es servicio, ternura y cercanía a los hijos de Dios. Reina del cielo, ruega por nosotros ahora y en la hora de nuestra muerte. Alabado seas, Cristo resucitado, que nos conduces a la vida eterna. Aleluya.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": true
+    }
+  ]
+}

@@ -182,7 +182,7 @@ describe('playStepVoice browser TTS', () => {
     expect(result.ended).toBe(true);
   });
 
-  test('EN lang falls back to ES pack when EN empty', async () => {
+  test('EN lang uses EN Fish pack (no Spanish fallback)', async () => {
     localStorage.clear();
     setVoicePrefs({ useUserVoice: true, useBundledVoice: true, useBrowserTts: false, voiceLang: 'en' });
     window.Audio = jest.fn().mockImplementation((url) => {
@@ -206,7 +206,34 @@ describe('playStepVoice browser TTS', () => {
       lang: 'en',
       preferBundled: true,
     });
-    expect(window.Audio).toHaveBeenCalledWith('/voice/es/P.wav');
+    expect(window.Audio).toHaveBeenCalledWith('/voice/en/P.wav');
+    expect(result.source).toBe('audio');
     expect(result.ended).toBe(true);
+  });
+
+  test('Liber preferBundled skips TTS when Fish clip missing', async () => {
+    localStorage.clear();
+    setVoicePrefs({ useUserVoice: true, useBundledVoice: true, useBrowserTts: true, voiceLang: 'en' });
+    window.Audio = jest.fn();
+    const speak = jest.fn();
+    window.speechSynthesis = {
+      speak,
+      cancel: jest.fn(),
+      getVoices: () => [{ lang: 'en-US', name: 'Test' }],
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      resume: jest.fn(),
+    };
+    const result = await playStepVoice({
+      text: 'Hello prayer',
+      prayerId: '__no_such_clip__',
+      mystery: 'gozosos',
+      sequenceIndex: 0,
+      lang: 'en',
+      preferBundled: true,
+    });
+    expect(window.Audio).not.toHaveBeenCalled();
+    expect(speak).not.toHaveBeenCalled();
+    expect(result.source).toBe('fish-miss');
   });
 });

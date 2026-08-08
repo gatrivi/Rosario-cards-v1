@@ -15,10 +15,9 @@
 .booklet-view .booklet-vitral__shade {
   background: linear-gradient(
     180deg,
-    rgba(13, 10, 26, 0.14) 0%,
-    rgba(13, 10, 26, 0.2) 42%,
-    rgba(13, 10, 26, 0.32) 78%,
-    rgba(13, 10, 26, 0.38) 100%
+    rgba(13, 10, 26, 0.18) 0%,
+    rgba(13, 10, 26, 0.28) 45%,
+    rgba(13, 10, 26, 0.42) 100%
   );
 }
 
@@ -492,6 +491,7 @@
   overflow-y: auto;
   padding: 0 0 var(--booklet-footer-h);
   position: relative;
+  z-index: 2;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -499,6 +499,7 @@
   margin: 0 auto;
   max-width: min(20rem, 92vw);
   padding: 0.7rem 0.85rem 0.85rem;
+  width: fit-content;
   transition: box-shadow 0.55s ease-out, border-color 0.45s ease-out;
 }
 

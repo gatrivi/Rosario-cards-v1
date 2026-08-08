@@ -18,7 +18,14 @@ const TTS_BY_VOICE_LANG = {
   la: 'la',
 };
 
-const SPANISH_VARIANT_IDS = new Set(['versos', 'niceno', 'breve']);
+const SPANISH_VARIANT_IDS = new Set([
+  'versos',
+  'niceno',
+  'breve',
+  'es',
+  'es_dulce',
+  'es_corta',
+]);
 
 const DEFAULTS = {
   useUserVoice: true,

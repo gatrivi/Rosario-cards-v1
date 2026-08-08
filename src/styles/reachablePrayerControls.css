@@ -1,30 +1,16 @@
-/* Optional Ángel/Benito sheet — tall-phone sheet placement only.
-   Do NOT fixed-position the trigger: it covered Devociones in the footer. */
+/* Tall-phone reachability — keep Liber-style fullscreen, larger taps only. */
 @media (pointer: coarse) and (min-height: 760px) {
-  .optional-prayer-backdrop {
-    align-items: flex-end;
-    padding: 1rem 1rem calc(var(--booklet-footer-h, 3.25rem) + var(--app-above-nav, 70px) + 1rem);
-  }
-
-  .optional-prayer-sheet {
-    max-height: min(68vh, 34rem);
-    max-width: min(24rem, 94vw);
-    overflow: hidden;
+  .optional-prayer-sheet__tab,
+  .optional-prayer-sheet__lang,
+  .optional-prayer-sheet__close,
+  .optional-prayer-sheet__play,
+  .optional-prayer-sheet__dismiss {
+    min-height: 44px;
+    touch-action: manipulation;
   }
 
   .optional-prayer-sheet__tabs,
   .optional-prayer-sheet__langs {
     flex-wrap: wrap;
-  }
-
-  .optional-prayer-sheet__tab,
-  .optional-prayer-sheet__lang,
-  .optional-prayer-sheet__close {
-    min-height: 44px;
-    touch-action: manipulation;
-  }
-
-  .optional-prayer-sheet__text {
-    max-height: min(42vh, 19rem);
   }
 }

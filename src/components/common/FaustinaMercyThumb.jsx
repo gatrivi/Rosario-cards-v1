@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import MercyWindowThumb from './MercyWindowThumb';
 import { faustinaThumb, DIVINE_MERCY_ID, DIVINE_MERCY_NOVENA_ID } from '../../data/divineMercyData';
+import { placeThumbMenu } from '../../utils/placeThumbMenu';
 import { devLog } from '../../utils/devotionsDebug';
 import './FaustinaMercyThumb.css';
 
@@ -13,19 +14,34 @@ export default function FaustinaMercyThumb({
   disabled = false,
 }) {
   const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState(null);
   const rootRef = useRef(null);
   const isCorona = misterioActual === DIVINE_MERCY_ID;
   const isNovena = misterioActual === DIVINE_MERCY_NOVENA_ID;
   const active = isCorona || isNovena;
 
+  const relocate = useCallback(() => {
+    setMenuStyle(placeThumbMenu(rootRef.current));
+  }, []);
+
   useEffect(() => {
-    if (!open) return undefined;
+    if (!open) {
+      setMenuStyle(null);
+      return undefined;
+    }
+    relocate();
     const close = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener('pointerdown', close);
-    return () => document.removeEventListener('pointerdown', close);
-  }, [open]);
+    window.addEventListener('resize', relocate);
+    window.addEventListener('scroll', relocate, true);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      window.removeEventListener('resize', relocate);
+      window.removeEventListener('scroll', relocate, true);
+    };
+  }, [open, relocate]);
 
   const pick = (mode) => {
     devLog('faustina-pick', { mode, from: misterioActual });
@@ -43,8 +59,8 @@ export default function FaustinaMercyThumb({
         badge={isNovena ? '9' : null}
         onClick={() => setOpen((o) => !o)}
       />
-      {open && (
-        <div className="faustina-mercy-menu" role="menu">
+      {open && menuStyle && (
+        <div className="faustina-mercy-menu" role="menu" style={menuStyle}>
           <button
             type="button"
             role="menuitem"

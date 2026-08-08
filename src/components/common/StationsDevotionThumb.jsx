@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import MercyWindowThumb from './MercyWindowThumb';
+import { placeThumbMenu } from '../../utils/placeThumbMenu';
 import { devLog } from '../../utils/devotionsDebug';
 import './FaustinaMercyThumb.css';
 
@@ -14,22 +15,35 @@ export default function StationsDevotionThumb({
   disabled = false,
 }) {
   const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState(null);
   const rootRef = useRef(null);
   const isCrucis = misterioActual === 'viacrucis';
   const isLucis = misterioActual === 'vialucis';
   const active = isCrucis || isLucis;
-  const img = isLucis
-    ? STATIONS_THUMB_LUCIS
-    : STATIONS_THUMB;
+  const img = isLucis ? STATIONS_THUMB_LUCIS : STATIONS_THUMB;
+
+  const relocate = useCallback(() => {
+    setMenuStyle(placeThumbMenu(rootRef.current));
+  }, []);
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (!open) {
+      setMenuStyle(null);
+      return undefined;
+    }
+    relocate();
     const close = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener('pointerdown', close);
-    return () => document.removeEventListener('pointerdown', close);
-  }, [open]);
+    window.addEventListener('resize', relocate);
+    window.addEventListener('scroll', relocate, true);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      window.removeEventListener('resize', relocate);
+      window.removeEventListener('scroll', relocate, true);
+    };
+  }, [open, relocate]);
 
   const pick = (mode) => {
     devLog('stations-pick', { mode, from: misterioActual });
@@ -47,8 +61,8 @@ export default function StationsDevotionThumb({
         badge={isLucis ? '☀' : '✝'}
         onClick={() => setOpen((o) => !o)}
       />
-      {open && (
-        <div className="faustina-mercy-menu" role="menu">
+      {open && menuStyle && (
+        <div className="faustina-mercy-menu" role="menu" style={menuStyle}>
           <button
             type="button"
             role="menuitem"

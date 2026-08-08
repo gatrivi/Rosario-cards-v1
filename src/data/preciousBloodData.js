@@ -18,7 +18,6 @@ export const PRECIOUS_BLOOD_MONTH = 6; // 0-indexed: July
 
 const bloodImg = (seed) => {
   const pool = [
-    imagePath('crux'),
     imagePath('vitreauxCruz'),
     imagePath('lamb'),
     imagePath('earlyChristian'),
@@ -37,7 +36,7 @@ export const preciousBloodLitanyMeta = {
   id: 'LPB',
   title: 'Letanía de la Preciosísima Sangre de Cristo',
   img: imagePath('vitreauxCruz'),
-  imgmo: imagePath('crux'),
+  imgmo: imagePath('vitreauxCruz'),
 };
 
 export const preciousBloodLitanySections = [
@@ -121,14 +120,14 @@ export const preciousBloodChapletPrayers = [
   {
     id: 'PBContrition',
     title: 'Acto de Contrición',
-    img: imagePath('crux'),
+    img: imagePath('vitreauxCruz'),
     text:
       'Señor mío Jesucristo, Dios y hombre verdadero, Creador, Padre y Redentor mío; por ser Vos quien sois, bondad infinita, y porque os amo sobre todas las cosas, me pesa de haberos ofendido. Propongo firmemente nunca más pecar, confesarme y cumplir la penitencia que me fuere impuesta. Amén.',
   },
   {
     id: 'PB_P',
     title: 'Padre Nuestro — Misterio de la Sangre',
-    img: imagePath('latinPaterNoster'),
+    img: imagePath('encountersCathedral'),
     text: 'Padre nuestro, que estás en los cielos, santificado sea tu nombre; venga a nosotros tu reino; hágase tu voluntad así en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.',
   },
   {
@@ -140,7 +139,7 @@ export const preciousBloodChapletPrayers = [
   {
     id: 'PB_G',
     title: 'Gloria',
-    img: imagePath('latinGloria'),
+    img: imagePath('stainedGlass'),
     text: 'Gloria al Padre, y al Hijo, y al Espíritu Santo. Como era en el principio, ahora y siempre, por los siglos de los siglos. Amén.',
   },
   {

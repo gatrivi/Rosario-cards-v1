@@ -34,7 +34,7 @@ import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
 import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery, getNextRosaryMystery } from '../../utils/bookletSequence';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
-import { imagePath as registryImage } from '../../data/imageRegistry';
+import { imagePath as registryImage, isTextHeavyImagePath } from '../../data/imageRegistry';
 import {
   ANGELUS_ID,
   MAGNIFICAT_ID,
@@ -509,8 +509,12 @@ export default function BookletView({
     if (isPerVersePrayer) {
       return getPrayerVerseText(activePrayer?.id, prayerVerseIndex) || '';
     }
-    return getSpeakablePrayerText(activePrayer);
-  }, [isLitany, litanyVerse, isPerVersePrayer, activePrayer, prayerVerseIndex]);
+    // Match on-screen variant lang (EN Fish / TTS), not default Spanish body.
+    return getSpeakablePrayerText({
+      ...activePrayer,
+      text: displayText || activePrayer?.text,
+    });
+  }, [isLitany, litanyVerse, isPerVersePrayer, activePrayer, prayerVerseIndex, displayText]);
 
   const voiceStepKey = `${misterioActual}:${displayIndex}:${innerVerseIndex}:${activePrayer?.id || ''}:${voiceLangPref}`;
 
@@ -637,6 +641,18 @@ export default function BookletView({
   }, []);
 
   useEffect(() => {
+    const onExternalStop = () => {
+      stopStepVoice();
+      voiceModeRef.current = VOICE_MODES.OFF;
+      setVoiceMode(VOICE_MODES.OFF);
+      setVoicePlaying(false);
+      autoRosaryStartRef.current = null;
+    };
+    window.addEventListener('rosario-voice-external-stop', onExternalStop);
+    return () => window.removeEventListener('rosario-voice-external-stop', onExternalStop);
+  }, []);
+
+  useEffect(() => {
     const handleKey = (event) => {
       if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
         event.preventDefault();
@@ -700,31 +716,39 @@ export default function BookletView({
 
   const vitralCandidates = useMemo(() => {
     if (!activePrayer) return [];
+    const scrub = (list) => (list || []).filter((u) => u && !isTextHeavyImagePath(u));
     if (isLitany && litanyVerse) {
-      const all = getLitanyVerseImageCandidates(litanyVerse, activePrayer, litanyVerseIndex);
-      const picked = resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex);
-      return [picked, ...all.filter((u) => u !== picked)];
+      const all = scrub(getLitanyVerseImageCandidates(litanyVerse, activePrayer, litanyVerseIndex));
+      const picked = scrub([resolveLitanyVerseImage(litanyVerse, activePrayer, litanyVerseIndex)])[0]
+        || all[0];
+      return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
     }
     if (isPerVersePrayer) {
-      const all = getPrayerVerseImageCandidates(
-        activePrayer.id,
-        prayerVerseIndex,
-        activePrayer,
-        misterioActual
+      const all = scrub(
+        getPrayerVerseImageCandidates(
+          activePrayer.id,
+          prayerVerseIndex,
+          activePrayer,
+          misterioActual
+        )
       );
-      const picked = resolvePrayerVerseImage(
-        activePrayer.id,
-        prayerVerseIndex,
-        activePrayer,
-        misterioActual
-      );
-      return [picked, ...all.filter((u) => u !== picked)];
+      const picked = scrub([
+        resolvePrayerVerseImage(
+          activePrayer.id,
+          prayerVerseIndex,
+          activePrayer,
+          misterioActual
+        ),
+      ])[0] || all[0];
+      return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
     }
-    const all = activePrayer.imgCandidates?.length
+    const raw = activePrayer.imgCandidates?.length
       ? activePrayer.imgCandidates
       : getPrayerImageCandidates(activePrayer, misterioActual);
-    const picked = pickPrayerImage(all, safeIndex);
-    return [picked, ...all.filter((u) => u !== picked)];
+    const all = scrub(raw);
+    const safe = all.length ? all : getPrayerImageCandidates(activePrayer, misterioActual);
+    const picked = pickPrayerImage(safe, safeIndex);
+    return [picked, ...safe.filter((u) => u !== picked)].filter(Boolean);
   }, [
     activePrayer,
     safeIndex,
@@ -1116,6 +1140,7 @@ export default function BookletView({
 
       {optionalOpen && (
         <OptionalPrayerSheet
+          key={optionalPrayerId}
           initialPrayerId={optionalPrayerId}
           onClose={() => setOptionalOpen(false)}
         />

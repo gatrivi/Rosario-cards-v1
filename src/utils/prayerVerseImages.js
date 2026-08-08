@@ -1,4 +1,4 @@
-import { imagePath } from '../data/imageRegistry';
+import { imagePath, isTextHeavyImagePath } from '../data/imageRegistry';
 import { getPrayerVerseCatalog } from '../data/prayerVerseCatalog';
 import { getAssignedPath, getAssignedPrayerPath } from './imageAssignments';
 import { getPrayerImageCandidates } from './prayerImages';
@@ -17,7 +17,7 @@ export function getPrayerVerseText(prayerId, verseIndex) {
 export function getPrayerVerseImageCandidates(prayerId, verseIndex, prayerFallback, mysteryType) {
   const candidates = [];
   const push = (url) => {
-    if (url && !candidates.includes(url)) candidates.push(url);
+    if (url && !isTextHeavyImagePath(url) && !candidates.includes(url)) candidates.push(url);
   };
 
   const assigned = getAssignedPath(prayerId, verseIndex);

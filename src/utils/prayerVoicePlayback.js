@@ -107,7 +107,7 @@ function waitForSpeechVoices(maxMs = 400) {
   });
 }
 
-function playBrowserTts(text, prefs, gen) {
+function playBrowserTts(text, prefs, gen, langOverride) {
   return new Promise((resolve) => {
     if (typeof window === 'undefined' || !window.speechSynthesis || !text) {
       // ponytail: nothing to speak — treat as ended so Liber auto can advance
@@ -125,6 +125,10 @@ function playBrowserTts(text, prefs, gen) {
       return;
     }
 
+    const ttsLangByPack = { es: 'es-ES', en: 'en-US', la: 'la' };
+    const pack = langOverride || prefs.voiceLang;
+    const ttsLang = ttsLangByPack[pack] || prefs.ttsLang || 'es-ES';
+
     const run = (voices) => {
       if (gen !== playGeneration) {
         resolve({ ended: false, cancelled: true, source: 'tts' });
@@ -137,8 +141,13 @@ function playBrowserTts(text, prefs, gen) {
       }
 
       const utterance = new Utterance(text);
-      utterance.lang = prefs.ttsLang || 'en-US';
+      utterance.lang = ttsLang;
       utterance.rate = prefs.ttsRate || 1;
+      const prefix = String(ttsLang).slice(0, 2).toLowerCase();
+      const match =
+        voices.find((v) => (v.lang || '').toLowerCase().startsWith(prefix)) ||
+        voices.find((v) => (v.lang || '').toLowerCase().includes(prefix));
+      if (match) utterance.voice = match;
       activeUtterance = utterance;
       let settled = false;
       let keepAlive = null;
@@ -201,7 +210,7 @@ function playBrowserTts(text, prefs, gen) {
 }
 
 /**
- * @param {{ text: string, prayerId: string, mystery: string, sequenceIndex: number, lang?: string, preferBundled?: boolean }} opts
+ * @param {{ text: string, prayerId: string, mystery: string, sequenceIndex: number, lang?: string, preferBundled?: boolean, forceTts?: boolean }} opts
  * @returns {Promise<{ ended: boolean, cancelled: boolean, source?: string }>}
  */
 export async function playStepVoice({
@@ -211,6 +220,7 @@ export async function playStepVoice({
   sequenceIndex,
   lang,
   preferBundled = false,
+  forceTts = false,
 }) {
   stopStepVoice();
   const gen = playGeneration;
@@ -218,10 +228,13 @@ export async function playStepVoice({
   const speakable = typeof text === 'string' ? text.trim() : '';
   const packLang = lang || prefs.voiceLang || 'es';
 
-  // Liber ▶: guide pack first (sync, keeps user gesture). Ignore bundled-off pref for Liber.
+  // Liber ▶: Fish guide pack only for this lang (no ES under EN, no TTS unless forceTts).
   if (prayerId && preferBundled) {
     const url = resolveBundledVoiceUrl(prayerId, packLang);
     if (url) return playAudioUrl(url, false, gen);
+    if (!forceTts) {
+      return { ended: true, cancelled: false, source: 'fish-miss' };
+    }
   }
 
   try {
@@ -242,9 +255,9 @@ export async function playStepVoice({
       }
     }
 
-    if (prefs.useBrowserTts !== false && speakable) {
+    if ((prefs.useBrowserTts !== false || forceTts) && speakable) {
       if (gen !== playGeneration) return { ended: false, cancelled: true };
-      return playBrowserTts(speakable, prefs, gen);
+      return playBrowserTts(speakable, prefs, gen, packLang);
     }
   } catch (err) {
     console.error('[voice] playStepVoice', err);

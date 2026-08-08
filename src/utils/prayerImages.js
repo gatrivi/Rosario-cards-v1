@@ -1,4 +1,5 @@
 import { getAssignedPath, getAssignedPrayerPath } from './imageAssignments';
+import { isTextHeavyImagePath } from '../data/imageRegistry';
 
 const FALLBACK = '/gallery-images/cathedral-painting.jpg';
 const MODO = '/gallery-images/misterios/modooscuro/';
@@ -54,7 +55,8 @@ export function pickPrayerImage(candidates, seed = 0) {
 }
 
 function pushImage(candidates, url, push) {
-  if (url && !BROKEN_EXT.test(url) && !candidates.includes(url)) push(url);
+  if (!url || BROKEN_EXT.test(url) || isTextHeavyImagePath(url)) return;
+  if (!candidates.includes(url)) push(url);
 }
 
 function pushAssignment(candidates, prayerId, verseIndex, push) {

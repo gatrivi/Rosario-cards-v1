@@ -61,8 +61,18 @@ const ES_ALIASES = {
 const EN_ALIASES = { ...SHARED_ALIASES };
 
 function listWavIds(lang) {
-  // Prefer git-tracked wavs so local untracked bakes don't poison the shipped map
-  // (EN stubs → SPA HTML → ▶ silent fail on live).
+  const dir = path.join(voiceRoot, lang);
+  const fromFs = () => {
+    if (!fs.existsSync(dir)) return [];
+    return fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith('.wav'))
+      .map((f) => f.replace(/\.wav$/, ''))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  };
+
+  // Prefer git-tracked wavs for ES (shipped). For EN/LA, also accept local Fish bakes
+  // that are not committed yet — otherwise en:0 after overnight bake.
   try {
     const { execSync } = require('child_process');
     const out = execSync(`git ls-files -- "public/voice/${lang}/*.wav"`, {
@@ -73,19 +83,16 @@ function listWavIds(lang) {
       .split(/\r?\n/)
       .filter(Boolean)
       .map((f) => path.basename(f, '.wav'));
-    if (tracked.length || lang !== 'es') {
+    if (lang === 'es' && tracked.length) {
       return tracked.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     }
+    const disk = fromFs();
+    if (disk.length >= tracked.length) return disk;
+    return tracked.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   } catch (_) {
     /* fall through to fs */
   }
-  const dir = path.join(voiceRoot, lang);
-  if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith('.wav'))
-    .map((f) => f.replace(/\.wav$/, ''))
-    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  return fromFs();
 }
 
 const packs = {};
@@ -172,16 +179,7 @@ export function resolveBundledVoiceUrl(prayerId, lang = 'es') {
   for (const key of clipCandidates(prayerId, pack)) {
     if (files.has(key)) return \`/voice/\${packLang}/\${key}.wav\`;
   }
-  // Missing pack (EN/LA not shipped yet) → ES Fish guide
-  if (packLang !== 'es') {
-    const esPack = VOICE_PACK_INDEX.es;
-    const esFiles = FILE_SET.es;
-    if (esPack && esFiles) {
-      for (const key of clipCandidates(prayerId, esPack)) {
-        if (esFiles.has(key)) return \`/voice/es/\${key}.wav\`;
-      }
-    }
-  }
+  // Never cross-lang (EN→ES Spanish Fish under English UI). Missing = null.
   return null;
 }
 

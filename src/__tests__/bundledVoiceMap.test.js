@@ -17,17 +17,21 @@ describe('bundledVoiceMap langs', () => {
     expect(normalizeVoiceLang('es')).toBe('es');
   });
 
-  test('EN pack empty until wavs committed — falls back to ES', () => {
-    expect(listBundledVoiceKeys('en').length).toBe(0);
-    expect(resolveBundledVoiceUrl('P', 'en')).toBe('/voice/es/P.wav');
-    expect(resolveBundledVoiceUrl('A_3', 'en')).toBe('/voice/es/A.wav');
-    expect(resolveBundledVoiceUrl('ANG_AVE_1', 'en')).toBe('/voice/es/A.wav');
-    expect(resolveBundledVoiceUrl('MAG_1', 'en')).toBe('/voice/es/MAG_1.wav');
+  test('EN Fish pack resolves in-lang (no ES fallback)', () => {
+    expect(listBundledVoiceKeys('en').length).toBeGreaterThan(100);
+    expect(resolveBundledVoiceUrl('P', 'en')).toBe('/voice/en/P.wav');
+    expect(resolveBundledVoiceUrl('A_3', 'en')).toBe('/voice/en/A.wav');
+    expect(resolveBundledVoiceUrl('ANG_AVE_1', 'en')).toBe('/voice/en/ANG_AVE_1.wav');
+    expect(resolveBundledVoiceUrl('MAG_1', 'en')).toBe('/voice/en/MAG_1.wav');
     expect(resolveBundledVoiceClip('P', 'en')).toEqual({
-      url: '/voice/es/P.wav',
+      url: '/voice/en/P.wav',
       tier: 3,
-      pack: 'es',
+      pack: 'en',
     });
+  });
+
+  test('missing EN clip does not borrow Spanish Fish', () => {
+    expect(resolveBundledVoiceUrl('__no_such_clip__', 'en')).toBeNull();
   });
 
   test('ES pack maps mysteries via m1–m20 aliases', () => {

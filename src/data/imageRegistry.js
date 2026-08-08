@@ -54,22 +54,23 @@ const PUBLIC = (path) => ({ path, source: 'public' });
 
 const REGISTRY = {
   // ── Cross / Passion / Precious Blood themes ──
-  crux: { path: crux, name: 'Cruz — relieve', tags: ['cross', 'passion', 'precious-blood', 'lent'], source: 'asset' },
+  // crux lives under Prayer-text-handwritten — tag text-heavy (not Liber vitral BG).
+  crux: { path: crux, name: 'Cruz — relieve / manuscrito', tags: ['cross', 'passion', 'precious-blood', 'lent', 'text-heavy'], source: 'asset' },
   vitreauxCruz: { path: vitreauxCruz, name: 'Vitral de la Cruz', tags: ['cross', 'stained-glass', 'passion'], source: 'asset' },
   lamb: { path: lamb, name: 'Cordero de Dios', tags: ['lamb', 'agnus-dei', 'eucharist', 'precious-blood'], source: 'asset' },
 
   // ── Mary / Theotokos ──
   theotokos: { path: theotokos, name: 'Theotokos — Madre de Dios', tags: ['mary', 'theotokos', 'byzantine'], source: 'asset' },
   allMary17th: { path: allMary17th, name: 'Virgen — litografía s. XVII', tags: ['mary', 'lithograph'], source: 'asset' },
-  reginaCaeli: { path: reginaCaeli, name: 'Regina Caeli', tags: ['mary', 'regina-caeli', 'prayer'], source: 'asset' },
+  reginaCaeli: { path: reginaCaeli, name: 'Regina Caeli (manuscrito)', tags: ['mary', 'regina-caeli', 'prayer', 'text-heavy', 'manuscript'], source: 'asset' },
   magnificatVisitation: { ...PUBLIC('/gallery-images/misterios/modooscuro/misteriogozo2.webp'), name: 'La Visitación — Magnificat', tags: ['mary', 'visitation', 'magnificat', 'prayer'] },
 
-  // ── Latin prayer texts ──
-  latinPaterNoster: { path: latinPaterNoster, name: 'Pater Noster (latín)', tags: ['latin', 'pater-noster', 'prayer'], source: 'asset' },
-  latinAveMaria: { path: latinAveMaria, name: 'Ave María (latín)', tags: ['latin', 'ave-maria', 'prayer'], source: 'asset' },
-  avemariaLat: { path: avemariaLat, name: 'Ave María — manuscrito', tags: ['latin', 'ave-maria', 'manuscript'], source: 'asset' },
-  latinGloria: { path: latinGloria, name: 'Gloria (latín)', tags: ['latin', 'gloria', 'prayer'], source: 'asset' },
-  latinAngelus: { path: latinAngelus, name: 'Angelus (latín)', tags: ['latin', 'angelus', 'prayer'], source: 'asset' },
+  // ── Latin prayer texts (handwritten — NEVER Liber vitral backgrounds) ──
+  latinPaterNoster: { path: latinPaterNoster, name: 'Pater Noster (latín)', tags: ['latin', 'pater-noster', 'prayer', 'text-heavy', 'manuscript'], source: 'asset' },
+  latinAveMaria: { path: latinAveMaria, name: 'Ave María (latín)', tags: ['latin', 'ave-maria', 'prayer', 'text-heavy', 'manuscript'], source: 'asset' },
+  avemariaLat: { path: avemariaLat, name: 'Ave María — manuscrito', tags: ['latin', 'ave-maria', 'manuscript', 'text-heavy'], source: 'asset' },
+  latinGloria: { path: latinGloria, name: 'Gloria (latín)', tags: ['latin', 'gloria', 'prayer', 'text-heavy', 'manuscript'], source: 'asset' },
+  latinAngelus: { path: latinAngelus, name: 'Angelus (latín)', tags: ['latin', 'angelus', 'prayer', 'text-heavy', 'manuscript'], source: 'asset' },
 
   // ── Saints ──
   sanctusBenedictus: { path: sanctusBenedictus, name: 'San Benito', tags: ['saint', 'benedict', 'latin'], source: 'asset' },
@@ -93,7 +94,7 @@ const REGISTRY = {
 
   // ── Public gallery-images (not bundled) ──
   galleryCathedralPraying: { ...PUBLIC('/gallery-images/cathedral praing.jpg'), name: 'Catedral — orando', tags: ['cathedral', 'prayer'] },
-  galleryLatinCredo: { ...PUBLIC('/gallery-images/latin-credo.jpeg'), name: 'Credo (latín)', tags: ['latin', 'creed', 'prayer'] },
+  galleryLatinCredo: { ...PUBLIC('/gallery-images/latin-credo.jpeg'), name: 'Credo (latín)', tags: ['latin', 'creed', 'prayer', 'text-heavy', 'manuscript'] },
   galleryLicensedImage: { ...PUBLIC('/gallery-images/licensed-image.jpg'), name: 'Imagen con licencia', tags: ['generic', 'unknown'] },
   gallerySagradoCorazon: { ...PUBLIC('/gallery-images/misterios/modooscuro/sagrado-corazon.jpg'), name: 'Sagrado Corazón de Jesús', tags: ['sacred-heart', 'eucharist', 'adoracion'] },
   gallerySagradoCorazon2: { ...PUBLIC('/gallery-images/misterios/modooscuro/sagrado-corazon-2.jpg'), name: 'Sagrado Corazón (alt.)', tags: ['sacred-heart', 'adoracion'] },
@@ -171,6 +172,27 @@ export function listImages() {
 /** Filter by tag. */
 export function imagesByTag(tag) {
   return listImages().filter((e) => e.tags.includes(tag));
+}
+
+const TEXT_HEAVY_PATH_RE =
+  /Prayer-text-handwritten|latin-(ave-maria|gloria|pater-noster|angelus|credo)|avemarialat|regina[\s_-]?caeli/i;
+
+/** Handwritten / text-plate art — must not sit under Liber prayer text. */
+export function isTextHeavyImageEntry(entry) {
+  if (!entry) return false;
+  const tags = entry.tags || [];
+  if (tags.includes('text-heavy') || tags.includes('manuscript')) return true;
+  return TEXT_HEAVY_PATH_RE.test(String(entry.path || ''));
+}
+
+export function isTextHeavyImageId(id) {
+  return isTextHeavyImageEntry(getImage(id));
+}
+
+export function isTextHeavyImagePath(path) {
+  if (!path || typeof path !== 'string') return false;
+  if (TEXT_HEAVY_PATH_RE.test(path)) return true;
+  return listImages().some((e) => e.path === path && isTextHeavyImageEntry(e));
 }
 
 /** Persist a name/tags edit for an id (Asset Studio uses this). */

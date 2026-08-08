@@ -39,7 +39,7 @@ export const HISTORIC_DEVOTIONS = [
     label: 'Ángelus',
     note: 'oración del día',
     status: 'have',
-    imgId: 'latinAngelus',
+    imgId: 'allMary17th',
   },
   {
     id: 'divine_mercy',
@@ -117,7 +117,7 @@ export const HISTORIC_DEVOTIONS = [
     label: 'Memorare',
     note: 'San Bernardo',
     status: 'soon',
-    imgId: 'reginaCaeli',
+    imgId: 'theotokos',
   },
 ];
 

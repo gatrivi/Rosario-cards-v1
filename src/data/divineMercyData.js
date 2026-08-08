@@ -35,14 +35,14 @@ const EF_DECADE_IMAGES = [
   imagePath('lamb'),
   imagePath('theotokos'),
   imagePath('earlyChristian'),
-  imagePath('reginaCaeli'),
+  imagePath('faustinaStainedGlass'),
   imagePath('faustinaDivinoCorazon'),
 ];
 
 /** One image per MP decade (5 × 10 beads). */
 const MP_DECADE_IMAGES = [
-  imagePath('crux'),
   imagePath('vitreauxCruz'),
+  imagePath('earlyChristian'),
   imagePath('lamb'),
   imagePath('faustinaDivinoCorazon'),
   imagePath('stainedGlass'),
@@ -58,9 +58,9 @@ const HG_TRIPLET_IMAGES = [
 /** Opening / shared prayers not stored in divineMercyPrayers. */
 const MERCY_OPENING_IMAGES = {
   SC: imagePath('encountersCathedral'),
-  P: imagePath('latinPaterNoster'),
-  A: imagePath('latinAveMaria'),
-  C: imagePath('galleryLatinCredo'),
+  P: imagePath('encountersCathedral'),
+  A: imagePath('theotokos'),
+  C: imagePath('earlyChristian'),
 };
 
 export const divineMercyPrayers = [
@@ -88,7 +88,7 @@ export const divineMercyPrayers = [
   {
     id: 'MP',
     title: 'Por su dolorosa Pasión',
-    img: imagePath('crux'),
+    img: imagePath('vitreauxCruz'),
     text:
       'Por su dolorosa Pasión, ten misericordia de nosotros y del mundo entero.',
   },
