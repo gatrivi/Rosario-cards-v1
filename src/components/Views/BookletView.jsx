@@ -163,6 +163,14 @@ export default function BookletView({
     },
     [misterioActual, onMysteryChange]
   );
+
+  const onShelfDevotionClick = useCallback(
+    (e, id, label) => {
+      e?.stopPropagation?.();
+      pickDevotion(id, label);
+    },
+    [pickDevotion]
+  );
   const secuencia = useMemo(
     () => buildSequence(misterioActual, { includeMercyOpening: mercyOptionalOpening, novenaDay }),
     [misterioActual, mercyOptionalOpening, novenaDay]
@@ -1245,7 +1253,7 @@ export default function BookletView({
             <ShelfItem label="Letanía Sangre">
               <MercyWindowThumb
                 active={misterioActual === 'sangrepreciosa_litany'}
-                onClick={() => pickDevotion('sangrepreciosa_litany', 'Letanía Sangre')}
+                onClick={(e) => onShelfDevotionClick(e, 'sangrepreciosa_litany', 'Letanía Sangre')}
                 title="Letanía de la Preciosísima Sangre (Julio)"
                 img={registryImage('vitreauxCruz')}
                 badge="L"
@@ -1254,7 +1262,7 @@ export default function BookletView({
             <ShelfItem label="Corona Sangre">
               <MercyWindowThumb
                 active={misterioActual === 'sangrepreciosa_chaplet'}
-                onClick={() => pickDevotion('sangrepreciosa_chaplet', 'Corona Sangre')}
+                onClick={(e) => onShelfDevotionClick(e, 'sangrepreciosa_chaplet', 'Corona Sangre')}
                 title="Corona de la Preciosísima Sangre"
                 img={registryImage('crux')}
                 badge="C"
@@ -1263,7 +1271,7 @@ export default function BookletView({
             <ShelfItem label="7 Ofrendas">
               <MercyWindowThumb
                 active={misterioActual === 'sangrepreciosa_ofrendas'}
-                onClick={() => pickDevotion('sangrepreciosa_ofrendas', '7 Ofrendas')}
+                onClick={(e) => onShelfDevotionClick(e, 'sangrepreciosa_ofrendas', '7 Ofrendas')}
                 title="Siete Ofrendas de la Sangre de Cristo"
                 img={registryImage('lamb')}
                 badge="7"
@@ -1272,7 +1280,7 @@ export default function BookletView({
             <ShelfItem label="Sagrado Corazón">
               <MercyWindowThumb
                 active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
-                onClick={() => pickDevotion(SAGRADO_CORAZON_ADORACION_ID, 'Sagrado Corazón')}
+                onClick={(e) => onShelfDevotionClick(e, SAGRADO_CORAZON_ADORACION_ID, 'Sagrado Corazón')}
                 title="Adoración Eucarística — Sagrado Corazón de Jesús"
                 img={sagradoCorazonAdoracionThumbnail}
                 badge="SC"
@@ -1291,7 +1299,7 @@ export default function BookletView({
             <ShelfItem label="Ángelus">
               <MercyWindowThumb
                 active={misterioActual === ANGELUS_ID}
-                onClick={() => pickDevotion(ANGELUS_ID, 'Ángelus')}
+                onClick={(e) => onShelfDevotionClick(e, ANGELUS_ID, 'Ángelus')}
                 title="Ángelus"
                 img={angelusThumbnail}
                 badge="A"
@@ -1300,7 +1308,7 @@ export default function BookletView({
             <ShelfItem label="Magnificat">
               <MercyWindowThumb
                 active={misterioActual === MAGNIFICAT_ID}
-                onClick={() => pickDevotion(MAGNIFICAT_ID, 'Magnificat')}
+                onClick={(e) => onShelfDevotionClick(e, MAGNIFICAT_ID, 'Magnificat')}
                 title="Magnificat"
                 img={magnificatThumbnail}
                 badge="M"

@@ -56,7 +56,10 @@ function VitralCrossfadeImage({ candidates, onReady, imgClassName = 'vitral-bg__
 
   useEffect(() => {
     readyNotifiedRef.current = false;
-    if (!targetSrc) return;
+    if (!targetSrc) {
+      notifyReady();
+      return;
+    }
 
     if (!mountedRef.current) {
       mountedRef.current = true;

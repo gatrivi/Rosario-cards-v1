@@ -134,14 +134,15 @@ export default function DevotionsShelf({
     if (!open) return undefined;
     let remove = () => {};
     const id = requestAnimationFrame(() => {
+      // Use click (not pointerdown) so thumb onClick can run before outside-close.
       const close = (e) => {
         const t = e.target;
         if (t?.closest?.('[data-devotions-toggle]')) return;
         if (rootRef.current?.contains(t) || panelRef.current?.contains(t)) return;
         setShelfOpen(false);
       };
-      document.addEventListener('pointerdown', close);
-      remove = () => document.removeEventListener('pointerdown', close);
+      document.addEventListener('click', close);
+      remove = () => document.removeEventListener('click', close);
     });
     return () => {
       cancelAnimationFrame(id);

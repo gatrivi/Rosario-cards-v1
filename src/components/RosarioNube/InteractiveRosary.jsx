@@ -98,8 +98,7 @@ const InteractiveRosary = ({
   // Use custom hooks for state management
   const { isVisible, developerMode, rosaryZoom } = useRosaryState();
 
-  // ponytail: pinch-to-zoom by updating the existing `rosaryZoom` localStorage
-  // + emitting the `rosaryZoomChange` event. Matter physics re-inits on change.
+  // ponytail: zoom via CSS scale — do NOT re-init Matter (was resetting beads on wheel).
   const pinchZoomRef = useRef({
     active: false,
     startDist: 1,
@@ -238,19 +237,21 @@ const InteractiveRosary = ({
 
   const isPanBlocked = useCallback(() => beadPhysicsDragRef.current, []);
 
-  // Initialize physics world with current zoom
+  // Initialize physics world (geometry at zoom 1; visual zoom is CSS scale below).
   const initializePhysics = useCallback(() => {
     if (!sceneRef.current) return;
 
     const container = sceneRef.current;
     const width = container.clientWidth;
     const height = container.clientHeight;
+    // Visual zoom is CSS — keep Matter bead sizes stable across wheel/pinch.
+    const physicsZoom = 1;
 
     debug("🎯 InteractiveRosary: Initializing...", {
       width,
       height,
       currentMystery,
-      rosaryZoom,
+      physicsZoom,
     });
 
     // --- Cleanup previous instance if it exists ---
@@ -293,11 +294,11 @@ const InteractiveRosary = ({
 
     // --- Parameters ---
     const baseBeadSize = 8; // Base bead size
-    const beadSize = baseBeadSize * rosaryZoom; // Apply zoom to bead size
+    const beadSize = baseBeadSize * physicsZoom; // Apply zoom to bead size
     const baseCrossBeadSize = 10; // Base cross pieces
-    const crossBeadSize = baseCrossBeadSize * rosaryZoom; // Apply zoom to cross beads
+    const crossBeadSize = baseCrossBeadSize * physicsZoom; // Apply zoom to cross beads
     const baseCenterBeadSize = 14; // Base heart bead
-    const centerBeadSize = baseCenterBeadSize * rosaryZoom; // Apply zoom to center bead
+    const centerBeadSize = baseCenterBeadSize * physicsZoom; // Apply zoom to center bead
 
     const allBeads = [];
     const constraints = [];
@@ -421,9 +422,9 @@ const InteractiveRosary = ({
     const centerX = width / 2;
     const centerY = height / 2;
     const baseRadius = Math.min(width, height) / 3.5;
-    const radius = baseRadius * rosaryZoom; // Apply zoom to radius
+    const radius = baseRadius * physicsZoom; // Apply zoom to radius
     const baseChainSegmentLength = 15;
-    const chainSegmentLength = baseChainSegmentLength * rosaryZoom; // Apply zoom to chain length
+    const chainSegmentLength = baseChainSegmentLength * physicsZoom; // Apply zoom to chain length
 
     // --- Create Center Bead (Heart medal at top of loop) ---
     // This is decorative - holds image of Our Lady
@@ -2422,11 +2423,11 @@ const InteractiveRosary = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentMystery,
-    rosaryZoom,
     developerMode,
     rosaryFriction,
     getRosarySequence,
-    // Note: rosaryPosition uses CSS transform — do not re-init physics on drag
+    // Zoom is CSS scale — do not re-init physics on wheel/pinch
+    // Position uses CSS translate — do not re-init on drag
   ]);
 
   // Main useEffect that calls initializePhysics
@@ -2504,7 +2505,8 @@ const InteractiveRosary = ({
         left: 0,
         pointerEvents: "all",
         cursor: isDraggingRosary ? "grabbing" : cursorStyle,
-        transform: `translate(${rosaryPosition.x}px, ${rosaryPosition.y}px)`,
+        transform: `translate(${rosaryPosition.x}px, ${rosaryPosition.y}px) scale(${rosaryZoom})`,
+        transformOrigin: "center center",
       }}
       onMouseDown={handleRosaryMouseDown}
       onMouseMove={handleRosaryMouseMove}
