@@ -62,8 +62,14 @@ function playAudioUrl(url, revoke, gen) {
       resolve({ ended: true, cancelled: false, source: 'audio' });
     };
     audio.onended = finish;
-    audio.onerror = finish;
-    audio.play().catch(() => finish());
+    audio.onerror = () => {
+      console.error('[voice] audio error', url);
+      finish();
+    };
+    audio.play().catch((err) => {
+      console.error('[voice] play blocked', err?.name || err, url);
+      finish();
+    });
   });
 }
 
@@ -205,22 +211,30 @@ export async function playStepVoice({ text, prayerId, mystery, sequenceIndex, la
   const speakable = typeof text === 'string' ? text.trim() : '';
   const packLang = lang || prefs.voiceLang || 'es';
 
+  // Start bundled WAV synchronously (before any await) so ▶ stays inside the user gesture.
+  let bundledPromise = null;
+  if (prefs.useBundledVoice && prayerId) {
+    const url = resolveBundledVoiceUrl(prayerId, packLang);
+    if (url) bundledPromise = playAudioUrl(url, false, gen);
+  }
+
   try {
     if (prefs.useUserVoice && mystery != null && sequenceIndex != null && prayerId) {
       const rec = await pickRecordingForSlot(mystery, sequenceIndex, prayerId);
       if (gen !== playGeneration) return { ended: false, cancelled: true };
       if (rec?.blob) {
         const url = blobToObjectUrl(rec);
-        if (url) return playAudioUrl(url, true, gen);
+        if (url) {
+          stopStepVoice();
+          const userGen = playGeneration;
+          return playAudioUrl(url, true, userGen);
+        }
       }
     }
 
-    if (prefs.useBundledVoice && prayerId) {
-      const url = resolveBundledVoiceUrl(prayerId, packLang);
-      if (url) {
-        if (gen !== playGeneration) return { ended: false, cancelled: true };
-        return playAudioUrl(url, false, gen);
-      }
+    if (bundledPromise) {
+      if (gen !== playGeneration) return { ended: false, cancelled: true };
+      return bundledPromise;
     }
 
     if (prefs.useBrowserTts !== false && speakable) {

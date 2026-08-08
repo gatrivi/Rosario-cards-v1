@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getVoicePrefs, setVoicePrefs } from '../../utils/voicePrefs';
+import { copyCapturedErrors } from '../../utils/errorCapture';
 
 const SHARE_URL = typeof window !== 'undefined'
   ? `${window.location.origin}${window.location.pathname}`
@@ -57,6 +58,7 @@ export default function SettingsOverlay({
 }) {
   const [rosaryZoom, setRosaryZoomState] = React.useState(readRosaryZoom);
   const [voiceLang, setVoiceLang] = useState(() => getVoicePrefs().voiceLang || 'es');
+  const [errorCopyStatus, setErrorCopyStatus] = useState('');
   useEffect(() => {
     const onPrefs = (e) => {
       if (e?.detail?.voiceLang) setVoiceLang(e.detail.voiceLang);
@@ -551,6 +553,35 @@ export default function SettingsOverlay({
           }}
         >
           📤 Compartir la app
+        </button>
+
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              const { ok, text } = await copyCapturedErrors();
+              if (ok) {
+                setErrorCopyStatus(`Copiado (${text.split('\n').length} líneas)`);
+              } else {
+                setErrorCopyStatus('No se pudo copiar — selecciona el texto abajo');
+                window.prompt('Copia estos errores:', text);
+              }
+            } catch (_) {
+              setErrorCopyStatus('Error al copiar');
+            }
+          }}
+          style={{
+            width: '100%', marginTop: '10px', padding: '14px',
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '12px', color: '#ccc', cursor: 'pointer',
+            fontSize: '0.95rem', fontWeight: 'bold', textAlign: 'left',
+          }}
+        >
+          📋 Copiar errores
+          <span style={{ display: 'block', fontSize: '0.7rem', color: '#666', fontWeight: 'normal', marginTop: '4px' }}>
+            Consola / fallos recientes → pegar en el chat
+            {errorCopyStatus ? ` · ${errorCopyStatus}` : ''}
+          </span>
         </button>
 
         <div style={{ marginTop: '24px', borderTop: '1px solid #222', paddingTop: '16px', textAlign: 'center' }}>

@@ -4,11 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.69',
-  name: 'Devoción en vivo',
+  version: '0.3.70',
+  name: 'Guía que suena',
   CURRENT: [
-    'Deploy: voz guía ES Fish en Magnificat / Ángelus / Sangre / Vías / Misericordia',
-    'Liber: Idioma ES/EN/LA + chrome corto',
+    'Liber ?: play inicia en el toque (gesto) ? clips ES de devoción',
+    'Ajustes ? Copiar errores (pegar en el chat)',
+    'Tipografía de título/paso de devoción (Georgia small-caps)',
   ],
   UPCOMING: [
     'Clips guía EN Liber (Fish bake en curso)',

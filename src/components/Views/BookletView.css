@@ -232,12 +232,14 @@
   color: rgba(212, 175, 55, 0.88);
   display: inline-flex;
   flex-wrap: wrap;
+  font-family: Georgia, 'Times New Roman', serif;
   font-size: 0.72rem;
   font-variant: small-caps;
   gap: 0.2rem;
   justify-content: center;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   line-height: 1.25;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
 }
 
 .booklet-meta-row--mercy .booklet-meta-row__devotion {
@@ -245,10 +247,11 @@
 }
 
 .booklet-meta-row__step {
-  color: rgba(212, 175, 55, 0.7);
-  font-size: 0.68rem;
+  color: rgba(212, 175, 55, 0.75);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.7rem;
   font-style: italic;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   line-height: 1.25;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
 }
@@ -374,13 +377,17 @@
 
 .booklet-meta-row__devotion .booklet-devotion__title {
   display: inline;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
 }
 
 .booklet-meta-row__devotion .booklet-devotion__subtitle {
+  color: rgba(248, 244, 230, 0.55);
   display: inline;
   font-size: 0.62rem;
+  font-style: italic;
+  font-variant: normal;
+  letter-spacing: 0.06em;
   margin-top: 0;
 }
 

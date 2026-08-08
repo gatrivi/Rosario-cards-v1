@@ -18,9 +18,9 @@ function voiceControlIcon(voiceMode, voicePlaying) {
 }
 
 function voiceControlLabel(voiceMode, voicePlaying) {
-  if (voiceMode === VOICE_MODES.AUTO) return 'Detener auto-play';
-  if (voicePlaying) return 'Detener auto-play';
-  return 'Iniciar auto-play';
+  if (voiceMode === VOICE_MODES.AUTO) return 'Detener guía automática';
+  if (voicePlaying) return 'Detener guía';
+  return 'Reproducir guía';
 }
 
 export default function PrayerRecorder({

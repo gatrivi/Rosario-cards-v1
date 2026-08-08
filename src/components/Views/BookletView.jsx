@@ -528,29 +528,10 @@ export default function BookletView({
     autoRosaryStartRef.current = null;
   }, [misterioActual]);
 
-  useEffect(() => {
-    if (!soundEnabled || voiceMode === VOICE_MODES.OFF || isTransitioning) {
-      if (voiceMode === VOICE_MODES.OFF) {
-        stopStepVoice();
-        setVoicePlaying(false);
-      }
-      return undefined;
-    }
-
-    let cancelled = false;
-    setVoicePlaying(true);
-    (async () => {
-      const result = await playStepVoice({
-        text: speakableText,
-        prayerId: activePrayer?.id,
-        mystery: misterioActual,
-        sequenceIndex: displayIndex,
-        lang: voiceLangPref,
-      });
-      if (cancelled) return;
+  const finishVoiceResult = useCallback(
+    (result) => {
       setVoicePlaying(false);
-      // User stop / supersede only — TTS fail still ends so auto can advance
-      if (result.cancelled) return;
+      if (result?.cancelled) return;
       const mode = voiceModeRef.current;
       if (mode === VOICE_MODES.ONCE) {
         setVoiceMode(VOICE_MODES.OFF);
@@ -561,7 +542,6 @@ export default function BookletView({
           goNext();
           return;
         }
-        // End of this devotion — chain next rosary via until four complete
         const nextVia = getNextRosaryMystery(misterioActual);
         const startVia = autoRosaryStartRef.current;
         if (
@@ -577,29 +557,87 @@ export default function BookletView({
         autoRosaryStartRef.current = null;
         setVoiceMode(VOICE_MODES.OFF);
       }
+    },
+    [goNext, misterioActual, onMysteryChange]
+  );
+
+  const playCurrentVoiceStep = useCallback(async () => {
+    if (!soundEnabled || isTransitioning) return;
+    setVoicePlaying(true);
+    const result = await playStepVoice({
+      text: speakableText,
+      prayerId: activePrayer?.id,
+      mystery: misterioActual,
+      sequenceIndex: displayIndex,
+      lang: voiceLangPref,
+    });
+    finishVoiceResult(result);
+  }, [
+    soundEnabled,
+    isTransitioning,
+    speakableText,
+    activePrayer?.id,
+    misterioActual,
+    displayIndex,
+    voiceLangPref,
+    finishVoiceResult,
+  ]);
+
+  // Stop only when mode is off (tap stop / once ended). Do not tie play to this.
+  useEffect(() => {
+    if (voiceMode === VOICE_MODES.OFF) {
+      stopStepVoice();
+      setVoicePlaying(false);
+    }
+  }, [voiceMode]);
+
+  // Step change while once/auto — not used for OFF→ONCE (that plays from tap / gesture).
+  useEffect(() => {
+    if (!soundEnabled || isTransitioning) return undefined;
+    if (voiceModeRef.current === VOICE_MODES.OFF) return undefined;
+
+    let cancelled = false;
+    setVoicePlaying(true);
+    (async () => {
+      const result = await playStepVoice({
+        text: speakableText,
+        prayerId: activePrayer?.id,
+        mystery: misterioActual,
+        sequenceIndex: displayIndex,
+        lang: voiceLangPref,
+      });
+      if (cancelled) return;
+      finishVoiceResult(result);
     })();
 
     return () => {
       cancelled = true;
-      stopStepVoice();
     };
-    // ponytail: voiceMode===off gates; once→auto must not restart mid-utterance
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voiceStepKey, voiceMode === VOICE_MODES.OFF, soundEnabled, isTransitioning, speakableText]);
+  }, [voiceStepKey, soundEnabled, isTransitioning]);
 
   const handleVoiceControlTap = useCallback(() => {
     if (!soundEnabled) return;
-    const next = nextVoiceMode(voiceModeRef.current, 'tap');
+    const prev = voiceModeRef.current;
+    const next = nextVoiceMode(prev, 'tap');
     if (next === VOICE_MODES.OFF) {
       stopStepVoice();
       setVoicePlaying(false);
       autoRosaryStartRef.current = null;
-    } else if (next === VOICE_MODES.AUTO && isValidRosaryMystery(misterioActual)) {
-      // Mark start via so auto stops after all four (wrap without repeating start)
+      voiceModeRef.current = next;
+      setVoiceMode(next);
+      return;
+    }
+    if (next === VOICE_MODES.AUTO && isValidRosaryMystery(misterioActual)) {
       if (!autoRosaryStartRef.current) autoRosaryStartRef.current = misterioActual;
     }
+    voiceModeRef.current = next;
     setVoiceMode(next);
-  }, [soundEnabled, misterioActual]);
+    // Start playback inside the user gesture (iOS/Chrome autoplay).
+    if (prev === VOICE_MODES.OFF) {
+      void playCurrentVoiceStep();
+    }
+  }, [soundEnabled, misterioActual, playCurrentVoiceStep]);
 
   useEffect(() => {
     return () => stopStepVoice();

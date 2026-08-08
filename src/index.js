@@ -7,10 +7,12 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
 import { installNovenaAutoProgress } from './utils/novenaAutoProgress';
+import { installErrorCapture } from './utils/errorCapture';
 
-const APP_VERSION = '0.3.69';
+const APP_VERSION = '0.3.70';
 
 installNovenaAutoProgress();
+installErrorCapture();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
