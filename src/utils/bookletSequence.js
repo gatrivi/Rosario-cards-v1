@@ -234,16 +234,18 @@ export function buildSequence(mysteryType, options = {}) {
 
   return partial
     .map((data, idx) => {
-      const img = isMercy
-        ? resolveMercyStepImage(data.id, {
-          sequenceIndex: idx,
-          sequence: partial,
-          novenaDay,
-        })
-        : resolvePrayerImage(data, mysteryType, idx);
       const imgCandidates = isMercy
-        ? [img]
+        ? [
+            resolveMercyStepImage(data.id, {
+              sequenceIndex: idx,
+              sequence: partial,
+              novenaDay,
+            }),
+          ].filter(Boolean)
         : getPrayerImageCandidates(data, mysteryType);
+      // Always prefer candidates[0] — never rotate primary by sequence index
+      // (that made P/LL/S land on the cathedral fallback).
+      const img = imgCandidates[0] || resolvePrayerImage(data, mysteryType, 0);
       return {
         id: data.id,
         title: data.title,

@@ -1,23 +1,45 @@
 /**
  * Vía Crucis (14 estaciones) y Vía Lucis (14 estaciones).
- * Imágenes provisionales: misterios dolorosos / luminosos + registry.
+ * Unique primary per station when possible (pool ≥ stations).
+ * Dark/light (modooscuro) dual pairing deferred — see .docs/libro/prayer-images.md.
  */
 import { imagePath } from './imageRegistry';
 
 const DOLOR = [
-  '/gallery-images/misterios/misteriodolor1.jpg',
-  '/gallery-images/misterios/misteriodolor2.jpg',
-  '/gallery-images/misterios/misteriodolor3.jpg',
-  '/gallery-images/misterios/misteriodolor4.jpg',
-  '/gallery-images/misterios/misteriodolor5.jpg',
-];
+  imagePath('monkDark'),
+  imagePath('artSacredHot'),
+  imagePath('lamb'),
+  imagePath('earlyChristian'),
+  imagePath('byzantineArt'),
+  imagePath('encountersCathedral'),
+  imagePath('stainedGlass'),
+  imagePath('rosaryBeads'),
+  imagePath('galleryCruzVsRoma'),
+  imagePath('franciscoDeAsis'),
+  imagePath('stAnthony'),
+  imagePath('sain'),
+  imagePath('cover'),
+  imagePath('miscJpg'),
+  imagePath('miscUgQlLjwl'),
+].filter(Boolean);
+
 const LUZ = [
-  '/gallery-images/misterios/misterioLUZ1.jpg',
-  '/gallery-images/misterios/misterioLUZ2.jpg',
-  '/gallery-images/misterios/misterioLUZ3.jpg',
-  '/gallery-images/misterios/misterioLUZ4.jpg',
-  '/gallery-images/misterios/misterioLUZ5.jpg',
-];
+  imagePath('galleryPentecost'),
+  imagePath('faustinaStainedGlass'),
+  imagePath('galleryPastor'),
+  imagePath('gallerySagradoCorazon2'),
+  imagePath('gallerySagradoCorazonEm'),
+  imagePath('galleryAdoracion6051780745909814'),
+  imagePath('galleryAdoracionAnteTuPresencia'),
+  imagePath('galleryAdoracionCandlelightSilence'),
+  imagePath('misc96PsRGiE'),
+  imagePath('nun04'),
+  imagePath('monk01'),
+  imagePath('earlyChristianAlt'),
+  imagePath('galleryLicensedImage'),
+  imagePath('angelDeLaGuarda'),
+  imagePath('rosaryBeads'),
+].filter(Boolean);
 
 function cycle(pool, i) {
   return pool[i % pool.length];
@@ -180,8 +202,16 @@ const SC_CRUCIS =
 const SC_LUCIS =
   'En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.\n\nCaminamos en la luz del Resucitado. Que cada estación renueve nuestra fe y nuestra alegría. Aleluya.';
 
-function buildStationSteps(stations, pool, prefix, opening) {
-  const crossImg = imagePath('vitreauxCruz') || imagePath('crux') || cycle(pool, 0);
+function buildStationSteps(stations, pool, prefix, opening, openPreferred = null) {
+  const claimed = new Set();
+  const take = (preferred) => {
+    const pick = preferred && !claimed.has(preferred)
+      ? preferred
+      : pool.find((u) => u && !claimed.has(u)) || preferred || pool[0];
+    if (pick) claimed.add(pick);
+    return pick;
+  };
+  const crossImg = take(openPreferred || pool[0]);
   const steps = [
     {
       id: `${prefix}_OPEN`,
@@ -192,7 +222,7 @@ function buildStationSteps(stations, pool, prefix, opening) {
     },
   ];
   stations.forEach((st, i) => {
-    const img = cycle(pool, i);
+    const img = take(cycle(pool, i));
     steps.push({
       id: `${prefix}_${st.n}`,
       title: `Estación ${st.n} — ${st.title}`,
@@ -206,15 +236,21 @@ function buildStationSteps(stations, pool, prefix, opening) {
 }
 
 export function buildViaCrucisSequence() {
-  return buildStationSteps(VIA_CRUCIS_STATIONS, DOLOR, 'VC', {
-    title: 'Vía Crucis',
-    text: SC_CRUCIS,
-  });
+  return buildStationSteps(
+    VIA_CRUCIS_STATIONS,
+    DOLOR,
+    'VC',
+    { title: 'Vía Crucis', text: SC_CRUCIS },
+    imagePath('vitreauxCruz')
+  );
 }
 
 export function buildViaLucisSequence() {
-  return buildStationSteps(VIA_LUCIS_STATIONS, LUZ, 'VL', {
-    title: 'Vía Lucis',
-    text: SC_LUCIS,
-  });
+  return buildStationSteps(
+    VIA_LUCIS_STATIONS,
+    LUZ,
+    'VL',
+    { title: 'Vía Lucis', text: SC_LUCIS },
+    imagePath('galleryPentecost')
+  );
 }

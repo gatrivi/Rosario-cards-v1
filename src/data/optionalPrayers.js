@@ -4,13 +4,13 @@ const angelImg = imagePath('angelDeLaGuarda');
 const benedictImg = imagePath('sanctusBenedictus');
 const benedictLatinImg = imagePath('latinSanBenito');
 const michaelImg = imagePath('galleryStMichael');
-const carmenImg = imagePath('theotokos');
-const carmenImgAlt = imagePath('galleryMaterImmaculata');
-const carmenImgAlt2 = imagePath('allMary17th');
+const carmenImg = imagePath('maryCarmen');
+const carmenImgAlt = imagePath('nun04');
+const carmenImgAlt2 = imagePath('nun05');
 const carmenCandidates = [carmenImg, carmenImgAlt, carmenImgAlt2].filter(Boolean);
 const expeditoImg = imagePath('gallerySanExpedito');
 const expeditoImgAlt = imagePath('galleryCruzVsRoma');
-const expeditoImgAlt2 = imagePath('vitreauxCruz');
+const expeditoImgAlt2 = imagePath('stAnthony');
 const expeditoCandidates = [expeditoImg, expeditoImgAlt, expeditoImgAlt2].filter(Boolean);
 
 export const OPTIONAL_PRAYERS = [

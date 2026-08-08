@@ -4,16 +4,16 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.73',
-  name: 'Cola de devociones',
+  version: '0.3.74',
+  name: 'Arte sin clones',
   CURRENT: [
-    'Más ? Cola: playlist Liber AUTO (corta?larga)',
-    'Repeticiones, orden y calor de reproducciones',
-    'Liber EN Fish + fondos limpios (0.3.72)',
+    'Fondos únicos por familia (Carmen ? Ángelus; SCA/Vías sin repetir)',
+    'Registro: arte Mary/nuns/monk + dump used/unused',
+    'Fix: Liber ya no rota el fondo con el índice del paso',
   ],
   UPCOMING: [
-    'Clips Vía Crucis / Lucis EN restantes',
-    'Confirmación al borrar una toma de voz',
+    'Revamp light/dark (imglight / imgmo)',
+    'Unicidad global de fondos cuando haya más pares',
   ],
 };
 

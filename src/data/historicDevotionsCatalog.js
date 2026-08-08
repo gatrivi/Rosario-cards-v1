@@ -96,7 +96,7 @@ export const HISTORIC_DEVOTIONS = [
     label: 'Escápulario',
     note: 'Carmen · s. XIII',
     status: 'soon',
-    imgId: 'theotokos',
+    imgId: 'maryCarmen',
   },
   {
     id: 'miraculous_medal',
@@ -117,7 +117,7 @@ export const HISTORIC_DEVOTIONS = [
     label: 'Memorare',
     note: 'San Bernardo',
     status: 'soon',
-    imgId: 'theotokos',
+    imgId: 'galleryVirgoImmaculata',
   },
 ];
 

@@ -4,7 +4,7 @@ export const ANGELUS_ID = 'angelus';
 export const MAGNIFICAT_ID = 'magnificat';
 export const MARIAN_DEVOTION_IDS = [ANGELUS_ID, MAGNIFICAT_ID];
 
-export const angelusThumbnail = imagePath('allMary17th') || imagePath('latinAngelus');
+export const angelusThumbnail = imagePath('angAnnunciationArt') || imagePath('allMary17th');
 export const magnificatThumbnail = imagePath('magnificatVisitation');
 
 const SIGN_OF_CROSS_TEXT =
@@ -19,98 +19,99 @@ function step(id, title, text, imageId, extraImageIds = []) {
   return { id, title, text, img, imgCandidates };
 }
 
+/** Each ANG_/MAG_ primary imageId is unique (no shared Liber faces). */
 export const angelusSequence = [
-  step('ANG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'allMary17th', ['theotokos']),
+  step('ANG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'allMary17th', ['mary01']),
   step(
     'ANG_ANNUNCIATION',
     'El Ángel del Señor',
     'El Ángel del Señor anunció a María.\nY concibió por obra y gracia del Espíritu Santo.',
-    'allMary17th',
-    ['theotokos', 'galleryMaterImmaculata']
+    'angAnnunciationArt',
+    ['theotokos']
   ),
-  step('ANG_AVE_1', 'Ave María', AVE_MARIA_TEXT, 'theotokos', ['allMary17th']),
+  step('ANG_AVE_1', 'Ave María', AVE_MARIA_TEXT, 'theotokos', ['mary02']),
   step(
     'ANG_FIAT',
     'He aquí la esclava',
     'He aquí la esclava del Señor.\nHágase en mí según tu palabra.',
-    'theotokos',
-    ['allMary17th']
+    'mary01',
+    ['galleryMaterImmaculata']
   ),
-  step('ANG_AVE_2', 'Ave María', AVE_MARIA_TEXT, 'allMary17th', ['theotokos']),
+  step('ANG_AVE_2', 'Ave María', AVE_MARIA_TEXT, 'galleryMaterImmaculata', ['mary03']),
   step(
     'ANG_INCARNATION',
     'El Verbo se hizo carne',
     'Y el Verbo se hizo carne.\nY habitó entre nosotros.',
     'byzantineArt',
-    ['theotokos']
+    ['mary04']
   ),
-  step('ANG_AVE_3', 'Ave María', AVE_MARIA_TEXT, 'galleryMaterImmaculata', ['allMary17th']),
+  step('ANG_AVE_3', 'Ave María', AVE_MARIA_TEXT, 'galleryVirgoImmaculata', ['mary05']),
   step(
     'ANG_FINAL',
     'Oración final',
     'Ruega por nosotros, Santa Madre de Dios.\nPara que seamos dignos de alcanzar las promesas de Nuestro Señor Jesucristo.\n\nOremos: Infunde, Señor, tu gracia en nuestros corazones, para que quienes hemos conocido, por el anuncio del ángel, la encarnación de tu Hijo Jesucristo, por su pasión y cruz seamos llevados a la gloria de su resurrección. Por el mismo Jesucristo, nuestro Señor. Amén.',
-    'stainedGlass',
-    ['allMary17th', 'theotokos']
+    'mary02',
+    ['stainedGlass']
   ),
 ];
 
 export const magnificatSequence = [
-  step('MAG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'magnificatVisitation'),
+  step('MAG_SC', 'Señal de la Cruz', SIGN_OF_CROSS_TEXT, 'nun05', ['magnificatVisitation']),
   step(
     'MAG_1',
     'Magnificat',
     'Proclama mi alma la grandeza del Señor,\nse alegra mi espíritu en Dios, mi salvador;',
     'magnificatVisitation',
-    ['theotokos']
+    ['mary03']
   ),
   step(
     'MAG_2',
     'Ha mirado a su esclava',
     'porque ha mirado la humildad de su esclava.\nDesde ahora me felicitarán todas las generaciones,',
-    'allMary17th',
-    ['theotokos']
+    'mary03',
+    ['nun01']
   ),
   step(
     'MAG_3',
     'El Poderoso hizo obras grandes',
     'porque el Poderoso ha hecho obras grandes por mí:\nsu nombre es santo,',
-    'theotokos',
-    ['byzantineArt']
+    'mary04',
+    ['earlyChristian']
   ),
   step(
     'MAG_4',
     'Su misericordia llega',
     'y su misericordia llega a sus fieles\nde generación en generación.',
-    'stainedGlass',
-    ['earlyChristian']
+    'mary05',
+    ['stainedGlass']
   ),
   step(
     'MAG_5',
     'Derriba y enaltece',
     'Él hace proezas con su brazo:\ndispersa a los soberbios de corazón,\nderriba del trono a los poderosos\ny enaltece a los humildes.',
-    'magnificatVisitation',
+    'mary06',
     ['lamb']
   ),
   step(
     'MAG_6',
     'Colma de bienes',
     'A los hambrientos los colma de bienes\ny a los ricos los despide vacíos.',
-    'allMary17th',
-    ['theotokos']
+    'nun01',
+    ['mary06']
   ),
   step(
     'MAG_7',
     'Auxilia a Israel',
     'Auxilia a Israel, su siervo,\nacordándose de la misericordia,\ncomo lo había prometido a nuestros padres,\nen favor de Abrahán y su descendencia por siempre.',
-    'earlyChristian',
-    ['magnificatVisitation']
+    'nun02',
+    ['earlyChristianAlt']
   ),
   step(
     'MAG_DOX',
     'Gloria al Padre',
     'Gloria al Padre, y al Hijo, y al Espíritu Santo.\nComo era en el principio, ahora y siempre,\npor los siglos de los siglos. Amén.',
-    'stainedGlass',
-    ['byzantineArt']
+    'nun03',
+    ['galleryPentecost']
   ),
 ];
 

@@ -46,6 +46,23 @@ import misc96PsRGiE from './assets/img/96PsRGiE.jpg';
 import miscUgQlLjwl from './assets/img/uGQlLjwl.jpg';
 import faustinaDivinoCorazon from './assets/img/santafaustinadivinocorazon.jpg';
 import faustinaStainedGlass from './assets/img/santafaustinastainedglass.jpg';
+import maryCarmen from './assets/img/mary/lady-of-sorrows.jpg';
+import mary01 from './assets/img/mary/HOPm6k_XgAA01Zq.jpg';
+import mary02 from './assets/img/mary/HOQsiV3XkAANF6a.jpg';
+import mary03 from './assets/img/mary/HOUCofpbsAA1Y7v.jpg';
+import mary04 from './assets/img/mary/HOUVqYlXUAA5DZa.jpg';
+import mary05 from './assets/img/mary/HOV4it8WAAAi39L.jpg';
+import mary06 from './assets/img/mary/HOVIuwUXYAA-esH.jpg';
+import angAnnunciation from './assets/img/ANG/HOSdpgPXgAAnxPi.jpg';
+import monk01 from './assets/img/monk/HOUQXFjXwAAW7yL.jpg';
+import monkDark from './assets/img/monk/modooscuro/HOVTvK2WYAAQgCD.jpg';
+import nun01 from './assets/img/nuns/HOT5zDBXoAAjA9-.jpg';
+import nun02 from './assets/img/nuns/HOUi_5EXEAAWo6H.jpg';
+import nun03 from './assets/img/nuns/HOWNTjcWIAIWqpV.png';
+import nun04 from './assets/img/nuns/HOWNqmdXMAAeHH7.png';
+import nun05 from './assets/img/nuns/HOWQmUpXoAAhQVg.jpg';
+import rosaryBeads from './assets/img/rosary/HOWtZOEXAAA3UhZ.jpg';
+import artSacredHot from './assets/img/HOTthgTWEAAHsZG.jpg';
 import { touchLocalArtConfig } from '../utils/artConfigSync';
 import { loadImageLibrary } from '../utils/imageLibraryStore';
 
@@ -110,6 +127,25 @@ const REGISTRY = {
   galleryMaterImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/Mater immaculata.jpg'), name: 'Mater Immaculata', tags: ['mary', 'immaculate', 'stained-glass'] },
   galleryVirgoImmaculata: { ...PUBLIC('/gallery-images/litany/modooscuro/virgo-inmaculata.jpg'), name: 'Virgo Immaculata', tags: ['mary', 'immaculate'] },
   galleryPentecost: { ...PUBLIC('/gallery-images/misterios/modooscuro/misteriogloria3.webp'), name: 'Pentecostés — Espíritu Santo', tags: ['holy-spirit', 'pentecost'] },
+
+  // ── Fresh batch (Mary / angel / contemplative) — Liber uniqueness ──
+  maryCarmen: { path: maryCarmen, name: 'Virgen — dolores / Carmen', tags: ['mary', 'carmen', 'sorrows', 'optional'], source: 'asset' },
+  mary01: { path: mary01, name: 'María — 01', tags: ['mary'], source: 'asset' },
+  mary02: { path: mary02, name: 'María — 02', tags: ['mary'], source: 'asset' },
+  mary03: { path: mary03, name: 'María — 03', tags: ['mary'], source: 'asset' },
+  mary04: { path: mary04, name: 'María — 04', tags: ['mary'], source: 'asset' },
+  mary05: { path: mary05, name: 'María — 05', tags: ['mary'], source: 'asset' },
+  mary06: { path: mary06, name: 'María — 06', tags: ['mary'], source: 'asset' },
+  angAnnunciationArt: { path: angAnnunciation, name: 'Anunciación — arte', tags: ['mary', 'angel', 'annunciation', 'angelus'], source: 'asset' },
+  monk01: { path: monk01, name: 'Monje contemplativo', tags: ['monk', 'contemplative'], source: 'asset' },
+  monkDark: { path: monkDark, name: 'Monje — modo oscuro', tags: ['monk', 'contemplative', 'dark'], source: 'asset' },
+  nun01: { path: nun01, name: 'Monja — 01', tags: ['nun', 'contemplative'], source: 'asset' },
+  nun02: { path: nun02, name: 'Monja — 02', tags: ['nun', 'contemplative'], source: 'asset' },
+  nun03: { path: nun03, name: 'Monja — 03', tags: ['nun', 'contemplative'], source: 'asset' },
+  nun04: { path: nun04, name: 'Monja — 04', tags: ['nun', 'contemplative'], source: 'asset' },
+  nun05: { path: nun05, name: 'Monja — 05', tags: ['nun', 'contemplative'], source: 'asset' },
+  rosaryBeads: { path: rosaryBeads, name: 'Rosario — cuentas', tags: ['rosary', 'beads'], source: 'asset' },
+  artSacredHot: { path: artSacredHot, name: 'Arte sacro', tags: ['sacred', 'art'], source: 'asset' },
 
   // ── Unidentified / to be named via Asset Studio ──
   misc96PsRGiE: { path: misc96PsRGiE, name: 'Altar — tabernáculo y adoración', tags: ['eucharist', 'adoration', 'altar', 'tabernacle', 'custodia', 'exposition'], source: 'asset' },

@@ -68,15 +68,24 @@ function uniqueUrls(urls) {
   return [...new Set(urls.filter(Boolean))];
 }
 
-function resolveStepImages(imageHint, stepIndex = 0) {
-  const poolKey = IMAGE_HINT_POOL[imageHint] || 'sagradoCorazon';
-  const imgCandidates = uniqueUrls(IMAGE_POOLS[poolKey]);
-  const img = imgCandidates[stepIndex % imgCandidates.length] || imgCandidates[0];
-  return { img, imgCandidates };
+function allPoolUrls() {
+  return uniqueUrls(Object.values(IMAGE_POOLS).flat());
 }
 
-function withStepImages(step, stepIndex) {
-  const { img, imgCandidates } = resolveStepImages(step.imageHint, stepIndex);
+function resolveStepImages(imageHint, claimed) {
+  const poolKey = IMAGE_HINT_POOL[imageHint] || 'sagradoCorazon';
+  const preferred = uniqueUrls(IMAGE_POOLS[poolKey]);
+  const pick =
+    preferred.find((u) => !claimed.has(u)) ||
+    allPoolUrls().find((u) => !claimed.has(u)) ||
+    preferred[0];
+  if (pick) claimed.add(pick);
+  const imgCandidates = uniqueUrls([pick, ...preferred]);
+  return { img: pick, imgCandidates };
+}
+
+function withStepImages(step, claimed) {
+  const { img, imgCandidates } = resolveStepImages(step.imageHint, claimed);
   return { ...step, img, imgCandidates };
 }
 /** 33 invocations — folleto OCR + verificación aciprensa.com/Oracion/letaniassc.htm */
@@ -455,10 +464,11 @@ export function isSagradoCorazonAdoracionMode(mysteryType) {
   return mysteryType === SAGRADO_CORAZON_ADORACION_ID;
 }
 
-/** Libro sequence — every step carries img + imgCandidates (see IMAGE_HINT_POOL). */
+/** Libro sequence — every step carries img + imgCandidates (unique primaries). */
 export function getSagradoCorazonAdoracionSequence() {
-  return SAGRADO_CORAZON_ADORACION_STEPS.map((step, stepIndex) => {
-    const withImages = withStepImages(step, stepIndex);
+  const claimed = new Set();
+  return SAGRADO_CORAZON_ADORACION_STEPS.map((step) => {
+    const withImages = withStepImages(step, claimed);
     const out = {
       id: withImages.id,
       title: withImages.title,

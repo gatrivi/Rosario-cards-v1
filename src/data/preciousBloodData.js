@@ -24,7 +24,25 @@ const bloodImg = (seed) => {
     imagePath('byzantineArt'),
     imagePath('stainedGlass'),
     imagePath('encountersCathedral'),
-  ];
+    imagePath('artSacredHot'),
+    imagePath('monkDark'),
+    imagePath('rosaryBeads'),
+    imagePath('galleryCruzVsRoma'),
+    imagePath('faustinaDivinoCorazon'),
+    imagePath('gallerySagradoCorazon2'),
+    imagePath('gallerySagradoCorazonEm'),
+    imagePath('galleryAdoracion6051780745909814'),
+    imagePath('misc96PsRGiE'),
+    imagePath('sain'),
+    imagePath('cover'),
+    imagePath('miscJpg'),
+    imagePath('miscUgQlLjwl'),
+    imagePath('franciscoDeAsis'),
+    imagePath('stAnthony'),
+    imagePath('galleryPastor'),
+    imagePath('earlyChristianAlt'),
+    imagePath('nun03'),
+  ].filter(Boolean);
   return pool[seed % pool.length];
 };
 
