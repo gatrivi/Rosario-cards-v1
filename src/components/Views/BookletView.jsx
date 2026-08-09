@@ -1374,12 +1374,7 @@ export default function BookletView({
                 onClick={() => openOptionalPrayer('cayetano')}
                 title="San Cayetano — pan y trabajo"
                 img={optionalPrayerThumbnail('cayetano')}
-                badge="C"
-              />
-            </ShelfItem>
-          </>
-        }
-        proximas={null}
+                badge="Ct"
         onReturnToRosary={
           !isValidRosaryMystery(misterioActual)
             ? () => onMysteryChange?.(getDefaultMystery())
