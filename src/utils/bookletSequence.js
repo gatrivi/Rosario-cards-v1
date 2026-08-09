@@ -26,7 +26,7 @@ import {
   preciousBloodSevenSheddings,
   preciousBloodSevenOfferings,
 } from '../data/preciousBloodData';
-import { buildViaCrucisSequence, buildViaLucisSequence } from '../data/viaCrucisData';
+import { buildViaCrucisSequence, buildViaLucisSequence, buildViaCrucisRosarioSequence } from '../data/viaCrucisData';
 import {
   SAGRADO_CORAZON_ADORACION_ID,
   getSagradoCorazonAdoracionSequence,
@@ -128,6 +128,7 @@ export const BOOKLET_MYSTERY_IDS = [
   ...MARIAN_DEVOTION_IDS,
   ...PRECIOUS_BLOOD_MODES,
   'viacrucis',
+  'viacrucis_rosario',
   'vialucis',
   SAGRADO_CORAZON_ADORACION_ID,
 ];
@@ -164,7 +165,11 @@ export function isDivineMercyMode(misterioActual) {
 }
 
 export function isStationsDevotion(misterioActual) {
-  return misterioActual === 'viacrucis' || misterioActual === 'vialucis';
+  return (
+    misterioActual === 'viacrucis' ||
+    misterioActual === 'viacrucis_rosario' ||
+    misterioActual === 'vialucis'
+  );
 }
 
 export function isMarianDevotionMode(misterioActual) {
@@ -220,6 +225,7 @@ export function buildSequence(mysteryType, options = {}) {
     return buildMarianDevotionSequence(mysteryType);
   }
   if (mysteryType === 'viacrucis') return buildViaCrucisSequence();
+  if (mysteryType === 'viacrucis_rosario') return buildViaCrucisRosarioSequence();
   if (mysteryType === 'vialucis') return buildViaLucisSequence();
   if (isSagradoCorazonAdoracionDataMode(mysteryType)) {
     return getSagradoCorazonAdoracionSequence();

@@ -18,8 +18,9 @@ export default function StationsDevotionThumb({
   const [menuStyle, setMenuStyle] = useState(null);
   const rootRef = useRef(null);
   const isCrucis = misterioActual === 'viacrucis';
+  const isCrucisRosario = misterioActual === 'viacrucis_rosario';
   const isLucis = misterioActual === 'vialucis';
-  const active = isCrucis || isLucis;
+  const active = isCrucis || isCrucisRosario || isLucis;
   const img = isLucis ? STATIONS_THUMB_LUCIS : STATIONS_THUMB;
 
   const relocate = useCallback(() => {
@@ -57,8 +58,8 @@ export default function StationsDevotionThumb({
         active={active}
         disabled={disabled}
         img={img}
-        title="Estaciones — Vía Crucis y Vía Lucis"
-        badge={isLucis ? '☀' : '✝'}
+        title="Estaciones — Vía Crucis, Rosario y Vía Lucis"
+        badge={isLucis ? '☀' : isCrucisRosario ? '📿' : '✝'}
         onClick={() => setOpen((o) => !o)}
       />
       {open && menuStyle && (
@@ -70,6 +71,14 @@ export default function StationsDevotionThumb({
             onClick={() => pick('viacrucis')}
           >
             Vía Crucis
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={`faustina-mercy-menu__item${isCrucisRosario ? ' faustina-mercy-menu__item--active' : ''}`}
+            onClick={() => pick('viacrucis_rosario')}
+          >
+            Vía Crucis · Rosario
           </button>
           <button
             type="button"

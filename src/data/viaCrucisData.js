@@ -1,9 +1,11 @@
 /**
  * Vía Crucis (14 estaciones) y Vía Lucis (14 estaciones).
+ * Also: Vía Crucis · Rosario (década de Ave Marías por estación).
  * Unique primary per station when possible (pool ≥ stations).
  * Dark/light (modooscuro) dual pairing deferred — see .docs/libro/prayer-images.md.
  */
 import { imagePath } from './imageRegistry';
+import RosarioPrayerBook from './RosarioPrayerBook';
 
 const DOLOR = [
   imagePath('monkDark'),
@@ -253,4 +255,101 @@ export function buildViaLucisSequence() {
     { title: 'Vía Lucis', text: SC_LUCIS },
     imagePath('galleryPentecost')
   );
+}
+
+function prayerFace(id) {
+  const from =
+    RosarioPrayerBook.apertura?.find((p) => p.id === id) ||
+    RosarioPrayerBook.decada?.find((p) => p.id === id);
+  if (!from) return null;
+  return {
+    id: from.id,
+    title: from.title,
+    text: from.text,
+    img: from.img,
+    imgCandidates: [from.img].filter(Boolean),
+  };
+}
+
+const SC_CRUCIS_ROSARIO =
+  'En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.\n\nVía Crucis en forma de Rosario: Credo, Padre Nuestro y tres Ave Marías al inicio; en cada estación, meditación y luego una década (Padre Nuestro, diez Ave Marías, Gloria y oración de Fátima).';
+
+/**
+ * Rosario de las Estaciones — 14× decade of Hail Marys (≈140 Ave Marías).
+ * Station faces unique; P/A/G/F reuse standard rosary faces (like Liber decades).
+ */
+export function buildViaCrucisRosarioSequence() {
+  const claimed = new Set();
+  const take = (preferred) => {
+    const pick = preferred && !claimed.has(preferred)
+      ? preferred
+      : DOLOR.find((u) => u && !claimed.has(u)) || preferred || DOLOR[0];
+    if (pick) claimed.add(pick);
+    return pick;
+  };
+
+  const steps = [];
+  const openImg = take(imagePath('vitreauxCruz'));
+  steps.push({
+    id: 'VCR_OPEN',
+    title: 'Vía Crucis · Rosario',
+    text: SC_CRUCIS_ROSARIO,
+    img: openImg,
+    imgCandidates: [openImg],
+  });
+
+  const credo = prayerFace('C');
+  const padre = prayerFace('P');
+  const ave = prayerFace('A');
+  const gloria = prayerFace('G');
+  const fatima = prayerFace('F');
+  if (credo) steps.push(credo);
+  if (padre) steps.push(padre);
+  if (ave) {
+    for (let i = 1; i <= 3; i += 1) {
+      steps.push({
+        ...ave,
+        title: `Ave María · inicio (${i}/3)`,
+      });
+    }
+  }
+
+  VIA_CRUCIS_STATIONS.forEach((st, i) => {
+    const img = take(cycle(DOLOR, i));
+    steps.push({
+      id: `VCR_${st.n}`,
+      title: `Estación ${st.n} — ${st.title}`,
+      text: st.text,
+      img,
+      imgCandidates: [img],
+    });
+    if (padre) {
+      steps.push({
+        ...padre,
+        title: `Padre Nuestro · Est. ${st.n}`,
+      });
+    }
+    if (ave) {
+      for (let k = 1; k <= 10; k += 1) {
+        steps.push({
+          ...ave,
+          title: `Ave María · Est. ${st.n} (${k}/10)`,
+        });
+      }
+    }
+    if (gloria) {
+      steps.push({
+        ...gloria,
+        title: `Gloria · Est. ${st.n}`,
+      });
+    }
+    if (fatima) {
+      steps.push({
+        ...fatima,
+        title: `Fátima · Est. ${st.n}`,
+      });
+    }
+  });
+
+  return steps;
 }

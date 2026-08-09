@@ -68,6 +68,14 @@ describe('prayer face image uniqueness (per family)', () => {
     assertUnique('vialucis', buildSequence('vialucis'));
   });
 
+  test('Vía Crucis Rosario station faces unique (decades may share A/P/G/F art)', () => {
+    const seq = buildSequence('viacrucis_rosario');
+    const stations = seq.filter((s) => /^VCR_\d+$/.test(s.id));
+    expect(stations).toHaveLength(14);
+    assertUnique('viacrucis_rosario_stations', stations);
+    expect(seq.filter((s) => s.id === 'A').length).toBe(3 + 14 * 10);
+  });
+
   test('base rosary faces unique among themselves', () => {
     const seq = buildSequence('gozosos');
     const base = seq.filter((s) => ['SC', 'AC', 'C', 'P', 'A', 'G', 'F', 'LL', 'S', 'Papa'].includes(s.id));

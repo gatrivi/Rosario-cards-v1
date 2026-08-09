@@ -12,6 +12,12 @@ const expeditoImg = imagePath('gallerySanExpedito');
 const expeditoImgAlt = imagePath('galleryCruzVsRoma');
 const expeditoImgAlt2 = imagePath('stAnthony');
 const expeditoCandidates = [expeditoImg, expeditoImgAlt, expeditoImgAlt2].filter(Boolean);
+const patrickImg = imagePath('stainedGlass');
+const patrickImgAlt = imagePath('earlyChristian');
+const patrickCandidates = [patrickImg, patrickImgAlt].filter(Boolean);
+const cayetanoImg = imagePath('galleryPastor');
+const cayetanoImgAlt = imagePath('stAnthony');
+const cayetanoCandidates = [cayetanoImg, cayetanoImgAlt].filter(Boolean);
 
 export const OPTIONAL_PRAYERS = [
   {
@@ -142,6 +148,52 @@ export const OPTIONAL_PRAYERS = [
         label: 'EN',
         text:
           'The cross of Holy Father Benedict be my light.\nLet not the dragon be my guide!\nBegone, Satan!\nNever tempt me with vanities!\nWhat you offer is evil.\nDrink the poison yourself!\nAmen.',
+      },
+    ],
+  },
+  {
+    id: 'patrick',
+    title: 'San Patricio — Coraza',
+    img: patrickImg,
+    imgCandidates: patrickCandidates.length ? patrickCandidates : [patrickImg].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'Me levanto hoy por una fuerza poderosa: la invocación de la Trinidad, la fe en la Trinidad, la confesión de la unidad del Creador.\n\nCristo conmigo, Cristo delante de mí, Cristo detrás de mí,\nCristo en mí, Cristo debajo de mí, Cristo encima de mí,\nCristo a mi derecha, Cristo a mi izquierda,\nCristo cuando me acuesto, Cristo cuando me siento, Cristo cuando me levanto,\nCristo en el corazón de todo el que piensa en mí,\nCristo en la boca de todo el que habla de mí,\nCristo en todo ojo que me mira,\nCristo en todo oído que me escucha.\n\nAmén.',
+      },
+      {
+        id: 'en',
+        label: 'EN',
+        text:
+          'I arise today through a mighty strength: the invocation of the Trinity, belief in the Threeness, confession of the Oneness of the Creator.\n\nChrist with me, Christ before me, Christ behind me,\nChrist in me, Christ beneath me, Christ above me,\nChrist on my right, Christ on my left,\nChrist when I lie down, Christ when I sit down, Christ when I arise,\nChrist in the heart of every man who thinks of me,\nChrist in the mouth of everyone who speaks of me,\nChrist in every eye that sees me,\nChrist in every ear that hears me.\n\nAmen.',
+      },
+    ],
+  },
+  {
+    id: 'cayetano',
+    title: 'San Cayetano',
+    img: cayetanoImg,
+    imgCandidates: cayetanoCandidates.length ? cayetanoCandidates : [cayetanoImg].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'Glorioso San Cayetano, padre de la Providencia, tú que socorres a los necesitados y das pan a los hambrientos: intercede por nosotros ante el Señor.\n\nConcédeme trabajo digno para ganar el pan de cada día, y la gracia de confiar siempre en la divina Providencia.\n\nSan Cayetano, abogado de los que buscan pan y trabajo, ruega por nosotros. Amén.',
+      },
+      {
+        id: 'es_corta',
+        label: 'ES breve',
+        text:
+          'San Cayetano, padre de la Providencia: dame trabajo digno, pan de cada día y confianza en Dios. Amén.',
+      },
+      {
+        id: 'en',
+        label: 'EN',
+        text:
+          'Glorious Saint Cajetan, father of Providence, who help the needy and give bread to the hungry: intercede for us before the Lord.\n\nGrant me honest work to earn our daily bread, and the grace to trust always in divine Providence.\n\nSaint Cajetan, advocate of those seeking bread and work, pray for us. Amen.',
       },
     ],
   },

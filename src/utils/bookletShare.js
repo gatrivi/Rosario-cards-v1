@@ -38,6 +38,9 @@ export function getBookletDevotionLabel(misterioActual) {
   if (misterioActual === 'viacrucis') {
     return { title: 'Vía Crucis', subtitle: '14 estaciones' };
   }
+  if (misterioActual === 'viacrucis_rosario') {
+    return { title: 'Vía Crucis · Rosario', subtitle: '14 décadas · ~140 Ave Marías' };
+  }
   if (misterioActual === 'vialucis') {
     return { title: 'Vía Lucis', subtitle: '14 estaciones' };
   }

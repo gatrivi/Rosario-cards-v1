@@ -1359,6 +1359,24 @@ export default function BookletView({
                 badge="B"
               />
             </ShelfItem>
+            <ShelfItem label="San Patricio">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'patrick'}
+                onClick={() => openOptionalPrayer('patrick')}
+                title="San Patricio — Coraza (Breastplate)"
+                img={optionalPrayerThumbnail('patrick')}
+                badge="P"
+              />
+            </ShelfItem>
+            <ShelfItem label="San Cayetano">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'cayetano'}
+                onClick={() => openOptionalPrayer('cayetano')}
+                title="San Cayetano — pan y trabajo"
+                img={optionalPrayerThumbnail('cayetano')}
+                badge="C"
+              />
+            </ShelfItem>
           </>
         }
         proximas={null}

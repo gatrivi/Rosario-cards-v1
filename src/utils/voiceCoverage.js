@@ -24,6 +24,7 @@ export const VOICE_STUDIO_OPTIONS = [
   { id: 'sangrepreciosa_chaplet', label: 'Corona Sangre' },
   { id: 'sangrepreciosa_litany', label: 'Letanía Sangre' },
   { id: 'viacrucis', label: 'Vía Crucis' },
+  { id: 'viacrucis_rosario', label: 'Vía Crucis · Rosario' },
   { id: 'vialucis', label: 'Vía Lucis' },
   { id: 'divinamisericordia', label: 'Divina Misericordia' },
   { id: 'divinamisericordia_novena', label: 'Novena Misericordia' },

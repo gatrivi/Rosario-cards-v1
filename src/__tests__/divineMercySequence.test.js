@@ -1,4 +1,4 @@
-import { buildSequence, isValidBookletMystery, isValidRosaryMystery } from '../utils/bookletSequence';
+import { buildSequence, isValidBookletMystery, isValidRosaryMystery, isStationsDevotion } from '../utils/bookletSequence';
 import { getBookletStepContext } from '../utils/bookletProgress';
 import { angelusThumbnail, magnificatThumbnail } from '../data/marianDevotionsData';
 
@@ -75,6 +75,7 @@ describe('divineMercySequence', () => {
     expect(isValidBookletMystery('divinamisericordia_novena')).toBe(true);
     expect(isValidBookletMystery('sangrepreciosa_litany')).toBe(true);
     expect(isValidBookletMystery('viacrucis')).toBe(true);
+    expect(isValidBookletMystery('viacrucis_rosario')).toBe(true);
     expect(isValidBookletMystery('vialucis')).toBe(true);
     expect(isValidBookletMystery('angelus')).toBe(true);
     expect(isValidBookletMystery('magnificat')).toBe(true);
@@ -109,6 +110,14 @@ describe('divineMercySequence', () => {
     expect(seq).toHaveLength(15);
     expect(seq[0].id).toBe('VC_OPEN');
     expect(seq[14].id).toBe('VC_14');
+  });
+
+  test('via crucis rosario expands decades of Hail Marys', () => {
+    const seq = buildSequence('viacrucis_rosario');
+    expect(seq[0].id).toBe('VCR_OPEN');
+    expect(seq.some((s) => s.id === 'VCR_1')).toBe(true);
+    expect(seq.filter((s) => s.id === 'A').length).toBe(143);
+    expect(isStationsDevotion('viacrucis_rosario')).toBe(true);
   });
 
   test('via stations have distinct meditations', () => {

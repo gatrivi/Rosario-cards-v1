@@ -47,4 +47,13 @@ describe('historic devoutions + San Miguel', () => {
     expect(e.variants.find((v) => v.id === 'la').text).toMatch(/hodie/i);
     expect(HISTORIC_DEVOTIONS.find((d) => d.id === 'st_expeditus')?.status).toBe('have');
   });
+
+  test('San Patricio breastplate and San Cayetano optional prayers', () => {
+    const p = OPTIONAL_PRAYERS.find((x) => x.id === 'patrick');
+    const c = OPTIONAL_PRAYERS.find((x) => x.id === 'cayetano');
+    expect(p?.img).toBeTruthy();
+    expect(p.variants.some((v) => /Cristo conmigo/i.test(v.text))).toBe(true);
+    expect(c?.img).toBeTruthy();
+    expect(c.variants[0].text).toMatch(/Cayetano|Providencia|trabajo/i);
+  });
 });

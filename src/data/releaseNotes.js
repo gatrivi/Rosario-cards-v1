@@ -4,12 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.76',
-  name: 'Ángelus al frente',
+  version: '0.3.77',
+  name: 'Coraza y décadas',
   CURRENT: [
-    'Ángelus/Magníficat en Devociones (no enterrados en breves)',
-    'Estante controlado: toggle ? fiable',
-    'Zoom Matter estable (0.3.75)',
+    'San Patricio (Coraza) y San Cayetano en Oraciones breves',
+    'Vía Crucis · Rosario: década de Ave Marías por estación',
+    'Ángelus al frente (0.3.76)',
   ],
   UPCOMING: [
     'Revamp light/dark (imglight / imgmo)',
