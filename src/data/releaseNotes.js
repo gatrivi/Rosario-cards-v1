@@ -4,12 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.77',
-  name: 'Coraza y décadas',
+  version: '0.3.78',
+  name: 'Autorezo fiable',
   CURRENT: [
-    'San Patricio (Coraza) y San Cayetano en Oraciones breves',
-    'Vía Crucis · Rosario: década de Ave Marías por estación',
-    'Ángelus al frente (0.3.76)',
+    'Autorezo (antes Cola): Empezar abre Liber con ? solo',
+    'Corrige carrera: AUTO no se perdía al salir de /cola',
+    'San Patricio / Cayetano / Vía Rosario (0.3.77)',
   ],
   UPCOMING: [
     'Revamp light/dark (imglight / imgmo)',

@@ -9,6 +9,13 @@ import {
   formatLastPlayed,
 } from '../utils/devotionPlaylist';
 import { listDevotionVoiceLadder } from '../utils/voiceCoverage';
+import {
+  startPlaylist,
+  peekPendingAutoMystery,
+  clearPendingAuto,
+  clearRun,
+  loadRun,
+} from '../utils/devotionPlaylistRunner';
 
 describe('devotionPlaylist', () => {
   test('default playlist is shortest → longest', () => {
@@ -55,5 +62,24 @@ describe('devotionPlaylist', () => {
 
   test('formatLastPlayed never', () => {
     expect(formatLastPlayed(0)).toBe('nunca');
+  });
+});
+
+describe('devotionPlaylistRunner pendingAuto', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    clearRun();
+  });
+
+  test('startPlaylist marks pendingAuto for Liber claim', () => {
+    jest.useFakeTimers();
+    const nav = jest.fn();
+    startPlaylist([{ id: 'angelus', repeats: 1 }], nav);
+    expect(nav).toHaveBeenCalledWith('/libro');
+    expect(peekPendingAutoMystery()).toBe('angelus');
+    expect(loadRun()?.pendingAuto).toBe(true);
+    clearPendingAuto();
+    expect(peekPendingAutoMystery()).toBe(null);
+    jest.useRealTimers();
   });
 });

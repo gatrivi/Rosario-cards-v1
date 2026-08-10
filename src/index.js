@@ -9,7 +9,7 @@ import { subscribeToAppUpdates } from './utils/appUpdate';
 import { installNovenaAutoProgress } from './utils/novenaAutoProgress';
 import { installErrorCapture } from './utils/errorCapture';
 
-const APP_VERSION = '0.3.77';
+const APP_VERSION = '0.3.78';
 
 installNovenaAutoProgress();
 installErrorCapture();

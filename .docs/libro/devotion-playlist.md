@@ -1,16 +1,18 @@
-# Cola — devotion playlist
+# Autorezo — devotion playlist
 
-**v0.3.73** · Route: `/cola` · Más → Cola
+**v0.3.78** · Route: `/cola` · Más → **Autorezo**
 
-Play drives **Liber AUTO** (no second player). Length = sequence step count (`listDevotionVoiceLadder().total`).
+**Empezar en Liber ≫** drives Liber AUTO (no second player). Length = sequence step count.
 
 ## Flow
 
 ```
-Cola [Reproducir] → expand repeats → session run
-  → /libro + mystery + AUTO
+Autorezo [Empezar] → expand repeats → session run (pendingAuto)
+  → /libro + mystery + Liber claims ≫
   → devotion end → next run item (or idle)
 ```
+
+`pendingAuto` survives the Cola→Liber mount race (AUTO event used to fire before Liber listeners existed).
 
 | Piece | Path |
 |-------|------|

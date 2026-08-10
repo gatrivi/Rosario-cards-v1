@@ -12,7 +12,7 @@ export const EVT_SET_AUTO = 'rosario-playlist-set-auto';
 export const EVT_DONE = 'rosario-playlist-devotion-done';
 export const EVT_IDLE = 'rosario-playlist-idle';
 
-/** @typedef {{ runs: string[], cursor: number }} PlaylistRun */
+/** @typedef {{ runs: string[], cursor: number, pendingAuto?: boolean }} PlaylistRun */
 
 /** @returns {PlaylistRun|null} */
 export function loadRun() {
@@ -22,7 +22,11 @@ export function loadRun() {
     const parsed = JSON.parse(raw);
     if (!parsed || !Array.isArray(parsed.runs) || !parsed.runs.length) return null;
     const cursor = Math.max(0, Number(parsed.cursor) || 0);
-    return { runs: parsed.runs.map(String), cursor };
+    return {
+      runs: parsed.runs.map(String),
+      cursor,
+      pendingAuto: Boolean(parsed.pendingAuto),
+    };
   } catch {
     return null;
   }
@@ -34,7 +38,14 @@ export function saveRun(run) {
     sessionStorage.removeItem(RUN_KEY);
     return;
   }
-  sessionStorage.setItem(RUN_KEY, JSON.stringify(run));
+  sessionStorage.setItem(
+    RUN_KEY,
+    JSON.stringify({
+      runs: run.runs,
+      cursor: run.cursor,
+      pendingAuto: Boolean(run.pendingAuto),
+    })
+  );
 }
 
 export function clearRun() {
@@ -46,6 +57,19 @@ export function isPlaylistActive() {
   return Boolean(run && run.cursor < run.runs.length);
 }
 
+/** Mystery id waiting for Liber to claim AUTO (mount-safe). */
+export function peekPendingAutoMystery() {
+  const run = loadRun();
+  if (!run?.pendingAuto || run.cursor >= run.runs.length) return null;
+  return run.runs[run.cursor] || null;
+}
+
+export function clearPendingAuto() {
+  const run = loadRun();
+  if (!run?.pendingAuto) return;
+  saveRun({ ...run, pendingAuto: false });
+}
+
 function dispatchStart(mysteryId) {
   window.dispatchEvent(
     new CustomEvent(EVT_START, { detail: { mysteryId, auto: true } })
@@ -53,7 +77,7 @@ function dispatchStart(mysteryId) {
 }
 
 /**
- * Expand items, store run, navigate to Liber, start first (or current) mystery.
+ * Expand items, store run, navigate to Liber, start first mystery.
  * @param {Array<{ id: string, repeats?: number }>} items
  * @param {(path: string) => void} navigate
  */
@@ -64,10 +88,11 @@ export function startPlaylist(items, navigate) {
     window.dispatchEvent(new CustomEvent(EVT_IDLE, { detail: { reason: 'empty' } }));
     return;
   }
-  saveRun({ runs, cursor: 0 });
+  // pendingAuto: Liber may miss EVT_SET_AUTO if not mounted yet (Cola → /libro).
+  saveRun({ runs, cursor: 0, pendingAuto: true });
   if (typeof navigate === 'function') navigate('/libro');
-  // Allow Libro mount / mystery apply before AUTO request.
-  queueMicrotask(() => dispatchStart(runs[0]));
+  // After paint — microtask is too early when leaving /cola.
+  window.setTimeout(() => dispatchStart(runs[0]), 80);
 }
 
 /** Advance after Liber finishes one devotion (AUTO end). */
@@ -85,7 +110,7 @@ export function advanceAfterDevotionDone(mysteryId) {
     window.dispatchEvent(new CustomEvent(EVT_IDLE, { detail: { reason: 'complete' } }));
     return;
   }
-  saveRun({ runs: run.runs, cursor: nextCursor });
+  saveRun({ runs: run.runs, cursor: nextCursor, pendingAuto: true });
   dispatchStart(run.runs[nextCursor]);
 }
 

@@ -52,7 +52,7 @@ import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { loadSavedVariantId, resolveDisplayText } from '../../utils/bookletDisplayText';
 import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
-import { isPlaylistActive } from '../../utils/devotionPlaylistRunner';
+import { isPlaylistActive, peekPendingAutoMystery, clearPendingAuto } from '../../utils/devotionPlaylistRunner';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import {
   playStepVoice,
@@ -677,20 +677,11 @@ export default function BookletView({
 
   // Cola → Liber: enter AUTO once after mystery is applied.
   useEffect(() => {
-    const onSetAuto = (e) => {
-      const want = e?.detail?.mysteryId;
-      const attempt = Number(e?.detail?.attempt) || 0;
-      if (want && want !== misterioActualRef.current) {
-        if (attempt >= 10) return;
-        window.setTimeout(() => {
-          window.dispatchEvent(
-            new CustomEvent('rosario-playlist-set-auto', {
-              detail: { mysteryId: want, attempt: attempt + 1 },
-            })
-          );
-        }, 50);
-        return;
-      }
+    const enterPlaylistAuto = (want) => {
+      if (want && want !== misterioActualRef.current) return false;
+      clearPendingAuto();
+      // Avoid double-start when event + mount-claim both fire.
+      if (voiceModeRef.current === VOICE_MODES.AUTO) return true;
       const m = misterioActualRef.current;
       if (isValidRosaryMystery(m)) {
         if (!autoRosaryStartRef.current) autoRosaryStartRef.current = m;
@@ -701,10 +692,52 @@ export default function BookletView({
       voiceModeRef.current = VOICE_MODES.AUTO;
       setVoiceMode(VOICE_MODES.AUTO);
       void playCurrentVoiceStepRef.current?.();
+      return true;
+    };
+
+    const onSetAuto = (e) => {
+      const want = e?.detail?.mysteryId;
+      const attempt = Number(e?.detail?.attempt) || 0;
+      if (want && want !== misterioActualRef.current) {
+        if (attempt >= 20) return;
+        window.setTimeout(() => {
+          window.dispatchEvent(
+            new CustomEvent('rosario-playlist-set-auto', {
+              detail: { mysteryId: want, attempt: attempt + 1 },
+            })
+          );
+        }, 50);
+        return;
+      }
+      enterPlaylistAuto(want);
     };
     window.addEventListener('rosario-playlist-set-auto', onSetAuto);
     return () => window.removeEventListener('rosario-playlist-set-auto', onSetAuto);
   }, []);
+
+  // Mount-safe claim: Cola navigates here before Liber has listeners.
+  useEffect(() => {
+    const want = peekPendingAutoMystery();
+    if (!want || want !== misterioActual) return undefined;
+    const t = window.setTimeout(() => {
+      if (peekPendingAutoMystery() !== misterioActualRef.current) return;
+      if (voiceModeRef.current === VOICE_MODES.AUTO) {
+        clearPendingAuto();
+        return;
+      }
+      clearPendingAuto();
+      if (isValidRosaryMystery(misterioActualRef.current)) {
+        if (!autoRosaryStartRef.current) autoRosaryStartRef.current = misterioActualRef.current;
+      } else {
+        autoRosaryStartRef.current = null;
+      }
+      preserveAutoOnMysteryChangeRef.current = true;
+      voiceModeRef.current = VOICE_MODES.AUTO;
+      setVoiceMode(VOICE_MODES.AUTO);
+      void playCurrentVoiceStepRef.current?.();
+    }, 100);
+    return () => window.clearTimeout(t);
+  }, [misterioActual]);
 
   useEffect(() => {
     const handleKey = (event) => {

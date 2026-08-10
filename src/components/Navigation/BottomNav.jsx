@@ -57,7 +57,7 @@ const MAS_DESTINATIONS = [
   { id: 'camino', texto: 'Camino', hint: 'Peregrinación' },
   { id: 'rose', texto: 'Rosa', hint: 'Meditación (mantener)' },
   { id: 'voz', texto: 'Voz', hint: 'Estudio de grabación' },
-  { id: 'playlist', texto: 'Cola', hint: 'Cola de devociones' },
+  { id: 'playlist', texto: 'Autorezo', hint: 'Cola → Liber con guía ≫' },
 ];
 
 const MAS_ACTIVE = new Set(['tracker', 'macetones', 'camino', 'rose', 'voz', 'playlist', 'jardin', 'monk']);

@@ -85,8 +85,8 @@ export default function DevotionPlaylistView() {
   return (
     <div className="cola-view" onFocus={refreshStats}>
       <header className="cola-header">
-        <h1 className="cola-title">Cola</h1>
-        <p className="cola-sub">Corta → larga por defecto · Liber AUTO</p>
+        <h1 className="cola-title">Autorezo</h1>
+        <p className="cola-sub">Empezar abre Liber y pone la guía en ≫ sola</p>
       </header>
 
       <div className="cola-actions">
@@ -94,7 +94,7 @@ export default function DevotionPlaylistView() {
           Restablecer corta→larga
         </button>
         <button type="button" className="cola-btn cola-btn--primary" onClick={play}>
-          {playing ? 'Reproducir de nuevo' : 'Reproducir'}
+          {playing ? 'Reiniciar en Liber ≫' : 'Empezar en Liber ≫'}
         </button>
         <button type="button" className="cola-btn cola-btn--ghost" onClick={clearAll}>
           Limpiar
