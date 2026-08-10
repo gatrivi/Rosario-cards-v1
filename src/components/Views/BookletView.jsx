@@ -50,7 +50,7 @@ import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
-import { loadSavedVariantId, resolveDisplayText } from '../../utils/bookletDisplayText';
+import { loadSavedVariantId, resolveDisplayText, resolveEnLiberDisplayText, resolveLiberTitle } from '../../utils/bookletDisplayText';
 import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
 import { isPlaylistActive, peekPendingAutoMystery, clearPendingAuto } from '../../utils/devotionPlaylistRunner';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
@@ -126,11 +126,8 @@ function getDevotionChrome(misterioActual) {
   return getBookletDevotionLabel(misterioActual);
 }
 
-function getBookletDisplayTitle(prayer) {
-  if (!prayer) return '';
-  if (prayer.id === 'DMO1') return 'Expiraste, Jesús';
-  if (prayer.id === 'DMO2') return 'Sangre y Agua';
-  return cleanPrayerDisplayTitle(prayer.title);
+function getBookletDisplayTitle(prayer, voiceLang, mystery) {
+  return resolveLiberTitle(prayer, voiceLang, mystery);
 }
 
 
@@ -380,11 +377,20 @@ export default function BookletView({
   }, [activePrayer, voiceLangPref]);
 
   const displayText = useMemo(() => {
+    const en = resolveEnLiberDisplayText(activePrayer, misterioActual);
+    if (String(voiceLangPref || 'es').toLowerCase().startsWith('en') && en) return en;
     if (isPerVersePrayer) {
       return getPrayerVerseText(activePrayer.id, prayerVerseIndex) || '';
     }
     return resolveDisplayText(activePrayer, variantId);
-  }, [activePrayer, variantId, isPerVersePrayer, prayerVerseIndex]);
+  }, [
+    activePrayer,
+    variantId,
+    isPerVersePrayer,
+    prayerVerseIndex,
+    voiceLangPref,
+    misterioActual,
+  ]);
 
   const bumpInnerVerse = useCallback((delta) => {
     if (isLitany) {
@@ -517,16 +523,28 @@ export default function BookletView({
     (hasInnerVerses && innerVerseIndex < innerVerseTotal - 1) || displayIndex < total - 1;
 
   const speakableText = useMemo(() => {
+    if (String(voiceLangPref || 'es').toLowerCase().startsWith('en')) {
+      const en = resolveEnLiberDisplayText(activePrayer, misterioActual);
+      if (en) return getSpeakablePrayerText({ ...activePrayer, text: en });
+    }
     if (isLitany && litanyVerse) return formatLitanyLine(litanyVerse);
     if (isPerVersePrayer) {
       return getPrayerVerseText(activePrayer?.id, prayerVerseIndex) || '';
     }
-    // Match on-screen variant lang (EN Fish / TTS), not default Spanish body.
     return getSpeakablePrayerText({
       ...activePrayer,
       text: displayText || activePrayer?.text,
     });
-  }, [isLitany, litanyVerse, isPerVersePrayer, activePrayer, prayerVerseIndex, displayText]);
+  }, [
+    isLitany,
+    litanyVerse,
+    isPerVersePrayer,
+    activePrayer,
+    prayerVerseIndex,
+    displayText,
+    voiceLangPref,
+    misterioActual,
+  ]);
 
   const voiceStepKey = `${misterioActual}:${displayIndex}:${innerVerseIndex}:${activePrayer?.id || ''}:${voiceLangPref}`;
 
@@ -789,7 +807,7 @@ export default function BookletView({
   const isHolyGod = activePrayer?.id === 'HG' && tripletRunInfo;
   const isOptionalMercyStep =
     isMercy && (activePrayer?.id === 'DMO1' || activePrayer?.id === 'DMO2');
-  const displayPrayerTitle = getBookletDisplayTitle(activePrayer);
+  const displayPrayerTitle = getBookletDisplayTitle(activePrayer, voiceLangPref, misterioActual);
 
   useEffect(() => {
     if (isFirstRenderRef.current) {

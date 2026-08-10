@@ -4,16 +4,15 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.78',
-  name: 'Autorezo fiable',
+  version: '0.3.79',
+  name: 'EN glass',
   CURRENT: [
-    'Autorezo (antes Cola): Empezar abre Liber con ? solo',
-    'Corrige carrera: AUTO no se perdía al salir de /cola',
-    'San Patricio / Cayetano / Vía Rosario (0.3.77)',
+    'Liber: idioma EN muestra texto EN (no ES + audio EN)',
+    'Autorezo fiable (0.3.78)',
   ],
   UPCOMING: [
     'Revamp light/dark (imglight / imgmo)',
-    'Unicidad global de fondos cuando haya más pares',
+    'Letanía Loreto EN verse-by-verse',
   ],
 };
 
