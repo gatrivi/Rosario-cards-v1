@@ -28,7 +28,7 @@ Autorezo [Empezar] → expand repeats → session run (pendingAuto)
 |-----|-------|-------|
 | `rosario_devotion_playlist` | localStorage | `{ id, repeats }[]` |
 | `rosario_devotion_play_stats` | localStorage | `{ [id]: { count, lastAt } }` |
-| `rosario_devotion_playlist_run` | sessionStorage | `{ runs: string[], cursor }` |
+| `rosario_devotion_playlist_run` | sessionStorage | `{ runs, cursor, pendingAuto }` |
 
 Default queue = all `BOOKLET_MYSTERY_IDS` sorted short→long, `repeats: 1`.
 
