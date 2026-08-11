@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { buildSequence } from '../../utils/bookletSequence';
+import { BOOKLET_MYSTERY_IDS, buildSequence } from '../../utils/bookletSequence';
 import {
   blobToObjectUrl,
   deleteRecording,
   listRecordingsForSlot,
   saveRecording,
 } from '../../utils/prayerRecordingStore';
-import { getVoiceCoverageMap, VOICE_STUDIO_OPTIONS } from '../../utils/voiceCoverage';
+import { devotionVoiceLabel, getVoiceCoverageMap } from '../../utils/voiceCoverage';
 import { usePrayerMediaRecorder } from '../../hooks/usePrayerMediaRecorder';
 import { useSpeechAdvance } from '../../hooks/useSpeechAdvance';
 import { getSpeechProviderLabel } from '../../utils/speechProvider';
@@ -14,6 +14,22 @@ import { getVoicePrefs, setVoicePrefs } from '../../utils/voicePrefs';
 import './RecordingStudioView.css';
 
 const MAX_AUDIO_UPLOAD_BYTES = 50 * 1024 * 1024;
+const REVIEW_KEY = 'rosario_voice_reviewed_steps';
+
+function loadReviewedVoiceSteps() {
+  try {
+    const raw = localStorage.getItem(REVIEW_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (_) {
+    return new Set();
+  }
+}
+
+function persistReviewedVoiceSteps(reviewed) {
+  try {
+    localStorage.setItem(REVIEW_KEY, JSON.stringify(Array.from(reviewed)));
+  } catch (_) { /* quota */ }
+}
 
 export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   const [mode, setMode] = useState('map');
@@ -34,6 +50,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
   const [uploading, setUploading] = useState(false);
   const [deletingClipId, setDeletingClipId] = useState(null);
   const [clips, setClips] = useState([]);
+  const [reviewedSteps, setReviewedSteps] = useState(loadReviewedVoiceSteps);
 
   const audioRef = useRef(null);
   const startingRef = useRef(false);
@@ -152,6 +169,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     const t3Only = coverage.filter((c) => !c.hasUser && c.hasBundled).length;
     const empty = coverage.filter((c) => !c.hasUser && !c.hasBundled).length;
     const total = sequence.length;
+    const reviewed = sequence.filter((item) => reviewedSteps.has(`${voiceLang}:${mysteryType}:${item.index}`)).length;
     return {
       done: userDone,
       total,
@@ -159,15 +177,18 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
       pct: total ? Math.round((userDone / total) * 100) : 0,
       t3Only,
       empty,
+      reviewed,
     };
-  }, [coverage, sequence]);
+  }, [coverage, sequence, reviewedSteps, voiceLang, mysteryType]);
 
   const filteredRows = useMemo(() => {
+    if (filter === 'reviewed') return coverage.filter((c) => reviewedSteps.has(`${voiceLang}:${mysteryType}:${c.slotIndex}`));
+    if (filter === 'unreviewed') return coverage.filter((c) => !reviewedSteps.has(`${voiceLang}:${mysteryType}:${c.slotIndex}`));
     if (filter === 'missing') return coverage.filter((c) => !c.hasUser);
     if (filter === 'empty') return coverage.filter((c) => !c.hasUser && !c.hasBundled);
     if (filter === 'done') return coverage.filter((c) => c.hasUser);
     return coverage;
-  }, [coverage, filter]);
+  }, [coverage, filter, reviewedSteps, voiceLang, mysteryType]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -239,6 +260,11 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         return;
       }
       showToast('Guardado (Tier S)');
+      setReviewedSteps((previous) => {
+        const next = new Set(previous).add(`${voiceLang}:${mysteryType}:${current.slotIndex}`);
+        persistReviewedVoiceSteps(next);
+        return next;
+      });
       await refreshClips();
       await refreshCoverage();
       advanceSession();
@@ -421,8 +447,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     setVoicePrefsState(next);
   };
 
-  const mysteryLabel =
-    VOICE_STUDIO_OPTIONS.find((m) => m.id === mysteryType)?.label ?? mysteryType;
+  const mysteryLabel = devotionVoiceLabel(mysteryType);
 
   useEffect(() => {
     if (mode !== 'session' || !recording || !speechOn) {
@@ -522,13 +547,13 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
         <label htmlFor="rs-mystery">Devoción</label>
         <select
           id="rs-mystery"
-          value={VOICE_STUDIO_OPTIONS.some((o) => o.id === mysteryType) ? mysteryType : 'angelus'}
+          value={BOOKLET_MYSTERY_IDS.includes(mysteryType) ? mysteryType : BOOKLET_MYSTERY_IDS[0]}
           disabled={busy}
           onChange={(e) => onMysteryChange?.(e.target.value)}
         >
-          {VOICE_STUDIO_OPTIONS.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.label}
+          {BOOKLET_MYSTERY_IDS.map((id) => (
+            <option key={id} value={id}>
+              {devotionVoiceLabel(id)}
             </option>
           ))}
         </select>
@@ -544,7 +569,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           <div className="rs-progress-fill" style={{ width: `${stats.pct}%` }} />
         </div>
         <p className="rs-stat-meta">
-          {stats.missing} sin tu voz · {stats.t3Only} solo T3 · {stats.empty} sin audio
+          {stats.missing} sin tu voz · {stats.t3Only} solo T3 · {stats.empty} sin audio Â· {stats.reviewed} revisados
         </p>
       </div>
 
@@ -597,6 +622,20 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
               onClick={() => setFilter('all')}
             >
               Todas ({stats.total})
+            </button>
+            <button
+              type="button"
+              className={filter === 'unreviewed' ? 'active' : ''}
+              onClick={() => setFilter('unreviewed')}
+            >
+              Sin revisar ({stats.total - stats.reviewed})
+            </button>
+            <button
+              type="button"
+              className={filter === 'reviewed' ? 'active' : ''}
+              onClick={() => setFilter('reviewed')}
+            >
+              Revisados ({stats.reviewed})
             </button>
             <button
               type="button"
@@ -678,7 +717,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
               disabled={busy || loading || !!coverageError || stats.missing === 0}
               onClick={() => startSession(true)}
             >
-              Grabar faltantes ({stats.missing})
+              Grabar faltantes ({stats.missing}) Â· {stats.reviewed} revisados
             </button>
             <button
               type="button"

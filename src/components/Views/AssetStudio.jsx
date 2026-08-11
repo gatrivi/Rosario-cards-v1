@@ -2,6 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { listImages, saveOverride, clearOverride } from '../../data/imageRegistry';
 import AssignmentMapper from './AssignmentMapper';
 import ClassifyImagesPanel from './ClassifyImagesPanel';
+import DevotionImageReviewPanel from './DevotionImageReviewPanel';
 import {
   pullImageLibraryFromFirestore,
   pushImageLibraryToFirestore,
@@ -249,6 +250,7 @@ export default function AssetStudio() {
             { id: 'registry', label: 'Registro' },
             { id: 'classify', label: 'Clasificar' },
             { id: 'assign', label: 'Asignar versos' },
+            { id: 'review', label: 'Revisar devociones' },
           ].map((t) => (
             <button
               key={t.id}
@@ -265,7 +267,9 @@ export default function AssetStudio() {
           ))}
         </div>
 
-        {tab === 'assign' ? (
+        {tab === 'review' ? (
+          <DevotionImageReviewPanel />
+        ) : tab === 'assign' ? (
           <AssignmentMapper />
         ) : tab === 'classify' ? (
           <ClassifyImagesPanel onChanged={() => setVersion((v) => v + 1)} />

@@ -51,7 +51,7 @@ import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
 import { loadSavedVariantId, resolveDisplayText, resolveEnLiberDisplayText, resolveLiberTitle } from '../../utils/bookletDisplayText';
-import { cleanPrayerDisplayTitle, getSpeakablePrayerText } from '../../utils/speakablePrayerText';
+import { getSpeakablePrayerText } from '../../utils/speakablePrayerText';
 import { isPlaylistActive, peekPendingAutoMystery, clearPendingAuto } from '../../utils/devotionPlaylistRunner';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
 import {
