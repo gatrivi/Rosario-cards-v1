@@ -13,19 +13,27 @@ function variantVoiceLang(variantId) {
   return 'es';
 }
 
+function getPreferredOptionalVariant(prayer) {
+  if (!prayer?.variants?.length) return null;
+  const spanish = prayer.variants.find((v) => String(v.id || '').toLowerCase().startsWith('es'));
+  return spanish || prayer.variants[0];
+}
+
 export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
   const start =
     OPTIONAL_PRAYERS.find((p) => p.id === initialPrayerId) || OPTIONAL_PRAYERS[0];
+  const startVariant = getPreferredOptionalVariant(start);
   const [prayerId, setPrayerId] = useState(start.id);
-  const [variantId, setVariantId] = useState(start.variants[0].id);
+  const [variantId, setVariantId] = useState(startVariant?.id);
   const [playing, setPlaying] = useState(false);
 
   // Shelf can reopen another breve while sheet stays mounted — sync prayer.
   useEffect(() => {
     const p = OPTIONAL_PRAYERS.find((x) => x.id === initialPrayerId) || OPTIONAL_PRAYERS[0];
+    const nextVariant = getPreferredOptionalVariant(p);
     setPrayerId(p.id);
-    setVariantId(p.variants[0].id);
-    applyVariantToVoiceLang(p.variants[0].id);
+    setVariantId(nextVariant?.id);
+    applyVariantToVoiceLang(nextVariant?.id);
     stopStepVoice();
     setPlaying(false);
   }, [initialPrayerId]);
@@ -58,10 +66,10 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
   const pickPrayer = (id) => {
     setPrayerId(id);
     const p = OPTIONAL_PRAYERS.find((x) => x.id === id);
-    if (p && !p.variants.some((v) => v.id === variantId)) {
-      const next = p.variants[0].id;
-      setVariantId(next);
-      applyVariantToVoiceLang(next);
+    const next = getPreferredOptionalVariant(p);
+    if (next?.id !== variantId) {
+      setVariantId(next?.id);
+      applyVariantToVoiceLang(next?.id);
     }
   };
 
@@ -81,12 +89,11 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
     const lang = variantVoiceLang(spokenVariant?.id || variant.id);
     const result = await playStepVoice({
       text,
-      prayerId: null,
+      prayerId: spoken?.id || prayerId,
       mystery: null,
       sequenceIndex: null,
       lang,
-      preferBundled: false,
-      forceTts: true,
+      preferBundled: true,
     });
     if (!result?.cancelled) setPlaying(false);
   };
