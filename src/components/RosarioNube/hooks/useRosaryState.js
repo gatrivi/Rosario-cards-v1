@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 
+const getDefaultRosaryZoom = () => {
+  if (typeof window === "undefined") return 1.2;
+
+  const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches;
+  const mobileViewport = window.innerWidth <= 768;
+  return coarsePointer || mobileViewport ? 1.6 : 1.2;
+};
+
 /**
  * Hook to manage rosary visibility, developer mode, and zoom state
  */
@@ -12,10 +20,13 @@ export const useRosaryState = () => {
   const [developerMode, setDeveloperMode] = useState(false);
   const [rosaryZoom, setRosaryZoom] = useState(() => {
     try {
-      return parseFloat(localStorage.getItem("rosaryZoom")) || 1.0;
+      const savedZoom = parseFloat(localStorage.getItem("rosaryZoom"));
+      return Number.isFinite(savedZoom) && savedZoom > 0
+        ? savedZoom
+        : getDefaultRosaryZoom();
     } catch (error) {
       console.warn("localStorage not available:", error);
-      return 1.0;
+      return getDefaultRosaryZoom();
     }
   });
 
