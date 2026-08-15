@@ -4,15 +4,15 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.79',
-  name: 'EN glass',
+  version: '0.3.80',
+  name: 'Luján share',
   CURRENT: [
-    'Liber: idioma EN muestra texto EN (no ES + audio EN)',
-    'Autorezo fiable (0.3.78)',
+    'Luján 2026: compartir Rosario desde Camino',
+    'Sostén voluntario listo para link de donación',
   ],
   UPCOMING: [
+    'QR de peregrinación + prueba móvil/offline',
     'Revamp light/dark (imglight / imgmo)',
-    'Letan�a Loreto EN verse-by-verse',
   ],
 };
 
@@ -23,6 +23,6 @@ export function getReleaseNotes() {
 /** One-line summary for the update toast. */
 export function getUpdateSummaryLine() {
   const { CURRENT } = RELEASE_NOTES;
-  if (!CURRENT?.length) return 'Nueva versi�n lista.';
-  return CURRENT.slice(0, 2).join(' � ');
+  if (!CURRENT?.length) return 'Nueva versión lista.';
+  return CURRENT.slice(0, 2).join(' · ');
 }
