@@ -10,6 +10,9 @@ import TutorialOverlay from '../common/TutorialOverlay';
 import santaMariaImg from '../../data/assets/img/Theotokos.jpg';
 import './PeregrinacionView.css';
 
+const ROSARIO_URL = 'https://rosario.gatrivi.com';
+const DONATION_URL = (process.env.REACT_APP_DONATION_URL || '').trim();
+
 function CaminoChurchIcon({ className = '' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -19,6 +22,23 @@ function CaminoChurchIcon({ className = '' }) {
       />
     </svg>
   );
+}
+
+async function copyRosarioUrl() {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(ROSARIO_URL);
+    return;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = ROSARIO_URL;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
 }
 
 export default function PeregrinacionView({
@@ -31,6 +51,7 @@ export default function PeregrinacionView({
   const { totalAveMarias } = useAveMariaStats();
   const { actual, next } = getPeregrinacionActual(totalAveMarias);
   const [selectedPin, setSelectedPin] = useState(null);
+  const [shareStatus, setShareStatus] = useState('');
   // ponytail: component already re-renders on totalAveMarias; no memo needed
   const compromiso = isCompromisoCampaignActive() ? getCompromisoProgress() : null;
 
@@ -55,6 +76,30 @@ export default function PeregrinacionView({
     };
   }, [next, selectedPin, totalAveMarias]);
 
+  const handleShareRosario = async () => {
+    setShareStatus('');
+    const shareData = {
+      title: 'Rosario',
+      text: 'Rezá el Rosario conmigo camino a Luján.',
+      url: ROSARIO_URL,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setShareStatus('Compartido.');
+        return;
+      }
+
+      await copyRosarioUrl();
+      setShareStatus('Enlace copiado.');
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        setShareStatus('No se pudo compartir.');
+      }
+    }
+  };
+
   return (
     <div className="camino-view camino-view--v2">
       <div className="camino-heading">
@@ -68,6 +113,38 @@ export default function PeregrinacionView({
 
         <h2 className="camino-title">El Camino</h2>
         <p className="camino-tagline">{totalAveMarias.toLocaleString()} rosas · destino: {next?.name || actual.name}</p>
+
+        <div className="camino-journey-card camino-compromiso-card">
+          <div className="camino-journey-row">
+            <div>
+              <div className="camino-journey-label">Luján 2026 · 3–4 octubre</div>
+              <div className="camino-journey-destination">Madre, en tu abrazo nos reconocemos hermanos</div>
+            </div>
+          </div>
+          <p className="camino-compromiso-hint">
+            Si estás peregrinando, Rosario es sin cargo. Compartilo con quien camina con vos.
+          </p>
+          <div className="camino-compromiso-actions">
+            <button type="button" className="camino-btn camino-btn--primary" onClick={handleShareRosario}>
+              Compartir Rosario
+            </button>
+            {DONATION_URL ? (
+              <a
+                className="camino-btn"
+                href={DONATION_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Ayudar a sostener Rosario
+              </a>
+            ) : null}
+          </div>
+          {shareStatus ? (
+            <p className="camino-compromiso-hint" role="status" aria-live="polite" style={{ marginTop: 10, marginBottom: 0 }}>
+              {shareStatus}
+            </p>
+          ) : null}
+        </div>
 
         {compromiso ? (
           <div className="camino-journey-card camino-compromiso-card">

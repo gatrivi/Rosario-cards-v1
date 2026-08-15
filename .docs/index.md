@@ -52,6 +52,7 @@
     view-prayers-todo.md
   product/
     overview.md
+    lujan-2026-launch.md              ← launch target, sharing, donation policy, mobile gate
 ```
 
 ## Quick links by topic
@@ -59,6 +60,7 @@
 | Topic | Doc |
 |-------|-----|
 | **What runs today** | [current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) |
+| **Luján 2026 launch** | [lujan-2026-launch.md](./product/lujan-2026-launch.md) |
 | **Libro devoutions / Próximas** | [historic-devotions.md](./libro/historic-devotions.md) |
 | **Liber voice autoplay** | [voice-autoplay.md](./libro/voice-autoplay.md) |
 | **Rosary recovery status** | [rosary-ux-recovery-jun-2026.md](./virtual-rosary/rosary-ux-recovery-jun-2026.md) |
