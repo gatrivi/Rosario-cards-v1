@@ -4,6 +4,36 @@ const BASE_URL = 'https://jsonblob.com/api/jsonBlob';
 const LOCAL_CACHE_KEY = 'rosario_cloud_cache';
 const ID_KEY = 'rosario_sync_id';
 const SYNC_TIMEOUT_MS = 6000;
+const CLASSIC_MYSTERIES = new Set(['gozosos', 'dolorosos', 'gloriosos', 'luminosos']);
+
+/**
+ * Libro, Rosario and Rosa intentionally share progress for the four classic
+ * mysteries. Older builds kept a second rosaryIndex, and RoseView still has
+ * its own cloud-sync consumer, so stale instances could re-introduce the old
+ * index and make Rosa jump backwards when opened.
+ *
+ * Keep the legacy rosary fields for non-classic booklet/devotion modes, but
+ * make classic cloud state canonical on bookletMystery/bookletIndex.
+ */
+export function normalizeSharedClassicCloudState(state = {}) {
+  if (!state || typeof state !== 'object') return {};
+  if (!CLASSIC_MYSTERIES.has(state.bookletMystery)) return state;
+
+  const normalized = { ...state, rosaryMystery: state.bookletMystery };
+  if (Number.isInteger(state.bookletIndex) && state.bookletIndex >= 0) {
+    normalized.rosaryIndex = state.bookletIndex;
+  }
+  return normalized;
+}
+
+function readCachedState() {
+  try {
+    const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+    return cached ? normalizeSharedClassicCloudState(JSON.parse(cached)) : {};
+  } catch {
+    return {};
+  }
+}
 
 export function useCloudSync() {
   const [syncId, setSyncId] = useState(() => localStorage.getItem(ID_KEY));
@@ -14,11 +44,12 @@ export function useCloudSync() {
   // --- 1. Inicialización de ID si no existe ---
   const initializeNewSync = useCallback(async (initialData = {}) => {
     setSyncStatus('loading');
+    const normalizedInitialData = normalizeSharedClassicCloudState(initialData);
     try {
       const res = await fetch(BASE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(initialData)
+        body: JSON.stringify(normalizedInitialData)
       });
       if (!res.ok) throw new Error('Failed to create cloud slot');
       
@@ -29,8 +60,9 @@ export function useCloudSync() {
       
       if (newId) {
         localStorage.setItem(ID_KEY, newId);
+        localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(normalizedInitialData));
         setSyncId(newId);
-        setCloudState(initialData);
+        setCloudState(normalizedInitialData);
         setSyncStatus('synced');
         return newId;
       }
@@ -47,8 +79,8 @@ export function useCloudSync() {
   useEffect(() => {
     if (!syncId) {
       // Si no hay ID, cargamos solo lo local
-      const cached = localStorage.getItem(LOCAL_CACHE_KEY);
-      if (cached) setCloudState(JSON.parse(cached));
+      const cached = readCachedState();
+      if (Object.keys(cached).length) setCloudState(cached);
       setSyncStatus('local');
       return;
     }
@@ -68,7 +100,7 @@ export function useCloudSync() {
         
         const data = await res.json();
         setCloudState(prev => {
-          const merged = { ...prev, ...data };
+          const merged = normalizeSharedClassicCloudState({ ...readCachedState(), ...prev, ...data });
           localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
           return merged;
         });
@@ -76,8 +108,8 @@ export function useCloudSync() {
       } catch (e) {
         clearTimeout(tId);
         console.warn('[CloudSync] Fetch failed, using local:', e.message);
-        const cached = localStorage.getItem(LOCAL_CACHE_KEY);
-        if (cached) setCloudState(JSON.parse(cached));
+        const cached = readCachedState();
+        if (Object.keys(cached).length) setCloudState(cached);
         setSyncStatus('local');
       }
     };
@@ -88,7 +120,14 @@ export function useCloudSync() {
   // --- 3. Sincronizar hacia la nube (Debounced) ---
   const syncToCloud = useCallback((partialData) => {
     setCloudState(prev => {
-      const merged = { ...prev, ...partialData };
+      // Multiple mounted consumers (AppShell, Rosa, etc.) can have a stale
+      // React snapshot. Merge the latest local cache first so one consumer
+      // cannot silently erase fields written by another.
+      const merged = normalizeSharedClassicCloudState({
+        ...readCachedState(),
+        ...prev,
+        ...partialData,
+      });
       localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(merged));
 
       if (syncId) {
@@ -115,9 +154,9 @@ export function useCloudSync() {
   useEffect(() => {
     const handleOnline = () => {
       if (syncId) {
-        const cached = localStorage.getItem(LOCAL_CACHE_KEY);
-        if (cached) {
-          syncToCloud(JSON.parse(cached));
+        const cached = readCachedState();
+        if (Object.keys(cached).length) {
+          syncToCloud(cached);
         }
       }
     };
