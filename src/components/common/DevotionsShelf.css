@@ -127,3 +127,166 @@
   font-weight: bold;
   cursor: pointer;
 }
+
+/* Libro: devotion picker is a real view, not a tooltip. */
+.devotions-shelf__panel--fullscreen {
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0 max(2px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(2px, env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(38, 28, 18, 0.32), transparent 28%), #09090c;
+  box-shadow: none;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.devotions-shelf__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 54px;
+  padding: max(6px, env(safe-area-inset-top)) 6px 6px;
+  background: linear-gradient(180deg, rgba(9, 9, 12, 0.98) 72%, rgba(9, 9, 12, 0.82));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.devotions-shelf__topbar-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  color: #f4edda;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.devotions-shelf__topbar-copy strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.devotions-shelf__topbar-copy span {
+  color: rgba(248, 244, 230, 0.55);
+  font-size: 0.65rem;
+}
+
+.devotions-shelf__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.devotions-shelf__close {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(248, 244, 230, 0.88);
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__heading {
+  margin: 0.5rem 2px 0.16rem;
+  font-size: 0.7rem;
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  width: 100%;
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__item {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 2 / 3;
+  display: block;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__item > .faustina-mercy-thumb,
+.devotions-shelf__panel--fullscreen .devotions-shelf__item > .mercy-window-thumb {
+  width: 100%;
+  height: 100%;
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__item .faustina-mercy-thumb {
+  width: 100%;
+  height: 100%;
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__item .mercy-window-thumb {
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  padding: 0;
+  border-radius: 2px;
+  background: #050507;
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__item .mercy-window-thumb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.devotions-shelf__panel--fullscreen .devotions-shelf__item-label {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 1.2rem 0.28rem 0.3rem;
+  color: rgba(255, 255, 255, 0.94);
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.82));
+  font-size: 0.64rem;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px #000;
+}
+
+.devotions-shelf__return--top {
+  width: auto;
+  min-height: 40px;
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 0.68rem;
+}
+
+@media (min-width: 600px) {
+  .devotions-shelf__panel--fullscreen .devotions-shelf__row {
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  }
+
+  .devotions-shelf__panel--fullscreen .devotions-shelf__item {
+    aspect-ratio: 3 / 4;
+  }
+}
