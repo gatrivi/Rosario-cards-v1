@@ -10,7 +10,6 @@ import {
   resolveAssignmentValue,
   savePrayerAssignment,
 } from '../../utils/imageAssignments';
-import { getPrayerImageCandidates } from '../../utils/prayerImages';
 import { upsertLibraryEntry } from '../../utils/imageLibraryStore';
 import {
   pushImageLibraryToFirestore,
@@ -44,13 +43,19 @@ function buildPrayerCatalog() {
 
     sequence.forEach((step) => {
       if (!step?.id) return;
-      const existing = byId.get(step.id);
+
+      // buildSequence/getPrayerImageCandidates intentionally put a saved
+      // prayer override first. The fixer needs a stable definition of "base",
+      // so strip the current override before keeping default candidates.
+      const assignedPath = resolveAssignmentValue(getPrayerAssignmentValue(step.id));
       const candidates = [
         ...(Array.isArray(step.imgCandidates) ? step.imgCandidates : []),
-        ...getPrayerImageCandidates(step, mysteryId),
         step.img,
-      ].filter(Boolean);
+      ]
+        .filter(Boolean)
+        .filter((path) => !assignedPath || String(path) !== String(assignedPath));
 
+      const existing = byId.get(step.id);
       if (!existing) {
         byId.set(step.id, {
           id: step.id,
@@ -120,13 +125,14 @@ export default function PrayerImageFixer({ onOpenLibrary }) {
   const rows = useMemo(() => catalog.map((item) => {
     const assignedId = getPrayerAssignmentValue(item.id);
     const assignedPath = resolveAssignmentValue(assignedId);
+    const defaultPreview = item.candidates[0] || null;
     return {
       ...item,
       assignedId,
-      defaultPreview: item.candidates[0] || null,
-      preview: assignedPath || item.candidates[0] || null,
+      defaultPreview,
+      preview: assignedPath || defaultPreview,
       isCore: CORE_SET.has(item.id),
-      isMissing: !assignedPath && !item.candidates[0],
+      isMissing: !assignedPath && !defaultPreview,
     };
   }), [catalog, version]);
 
@@ -207,7 +213,7 @@ export default function PrayerImageFixer({ onOpenLibrary }) {
   };
 
   const pickerData = useMemo(() => {
-    if (!pickerFor) return { suggestedIds: new Set(), entries: [] };
+    if (!pickerFor) return { suggestedIds: new Set(), currentImageId: null, entries: [] };
 
     const pathToId = new Map(images.map((entry) => [String(entry.path), entry.id]));
     const suggestedIds = new Set(
@@ -215,6 +221,8 @@ export default function PrayerImageFixer({ onOpenLibrary }) {
         .map((path) => pathToId.get(String(path)))
         .filter(Boolean)
     );
+    const currentPath = resolveAssignmentValue(pickerFor.assignedId) || pickerFor.defaultPreview;
+    const currentImageId = currentPath ? pathToId.get(String(currentPath)) || null : null;
     const q = normalizeText(pickerQuery.trim());
 
     const entries = images
@@ -227,13 +235,16 @@ export default function PrayerImageFixer({ onOpenLibrary }) {
         return haystack.includes(q);
       })
       .sort((a, b) => {
+        const aCurrent = a.id === currentImageId ? 1 : 0;
+        const bCurrent = b.id === currentImageId ? 1 : 0;
+        if (aCurrent !== bCurrent) return bCurrent - aCurrent;
         const aSuggested = suggestedIds.has(a.id) ? 1 : 0;
         const bSuggested = suggestedIds.has(b.id) ? 1 : 0;
         if (aSuggested !== bSuggested) return bSuggested - aSuggested;
         return (a.name || a.id).localeCompare(b.name || b.id, 'es');
       });
 
-    return { suggestedIds, entries };
+    return { suggestedIds, currentImageId, entries };
   }, [images, pickerFor, pickerQuery, showTextHeavy]);
 
   return (
@@ -402,7 +413,7 @@ export default function PrayerImageFixer({ onOpenLibrary }) {
             <div style={pickerGridStyle}>
               {pickerData.entries.map((entry) => {
                 const suggested = pickerData.suggestedIds.has(entry.id);
-                const current = pickerFor.assignedId === entry.id;
+                const current = pickerData.currentImageId === entry.id;
                 return (
                   <button
                     key={entry.id}
