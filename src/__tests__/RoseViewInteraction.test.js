@@ -24,8 +24,6 @@ jest.mock('../hooks/useCloudSync', () => ({
   }),
 }));
 
-jest.mock('../components/Views/SacredDust', () => () => null, { virtual: true });
-
 jest.mock('../components/common/SacredDust', () => () => null);
 jest.mock('../components/Views/SacredDrawing', () => () => <div data-testid="sacred-drawing" />);
 
@@ -159,8 +157,11 @@ describe('RoseView drag-to-pray interaction contract', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
+    jest.clearAllTimers();
     jest.useRealTimers();
+    delete HTMLElement.prototype.setPointerCapture;
+    delete HTMLElement.prototype.releasePointerCapture;
+    delete HTMLElement.prototype.hasPointerCapture;
   });
 
   test.each(['mouse', 'touch'])('%s drag reveals prayer text and grows the Ave Maria rose', (pointerType) => {
@@ -203,9 +204,5 @@ describe('RoseView drag-to-pray interaction contract', () => {
     expect(setPointerCapture).toHaveBeenCalledWith(7);
     expect(hasPointerCapture).toHaveBeenCalledWith(7);
     expect(releasePointerCapture).toHaveBeenCalledWith(7);
-
-    delete HTMLElement.prototype.setPointerCapture;
-    delete HTMLElement.prototype.releasePointerCapture;
-    delete HTMLElement.prototype.hasPointerCapture;
   });
 });
