@@ -20,11 +20,9 @@ export function ShelfItem({ label, children, soon = false }) {
 }
 
 /**
- * Collapses devotion thumbnails into one control + tooltip panel.
- * Panel is portaled to document.body so AppShell chrome cannot steal clicks.
- *
- * `externalToggle`: Libro bottom-nav owns the ✦ button; this host only
- * renders the floating tooltip and listens for `rosario-devotions-toggle`.
+ * Devotion picker. In Libro, the external bottom-nav toggle opens a full-screen
+ * gallery so devotional artwork remains the primary UI instead of tiny thumbs.
+ * The panel is portaled to document.body so AppShell chrome cannot steal clicks.
  */
 export default function DevotionsShelf({
   misterioActual,
@@ -102,12 +100,9 @@ export default function DevotionsShelf({
 
     const place = () => {
       if (externalToggle) {
-        // Smart tooltip above bottom nav (Libro).
         setPanelStyle({
           position: 'fixed',
-          left: '50%',
-          bottom: 'calc(var(--app-above-nav, 70px) + 10px)',
-          transform: 'translateX(-50%)',
+          inset: 0,
         });
         return;
       }
@@ -160,12 +155,47 @@ export default function DevotionsShelf({
   const panel = open && panelStyle && (
     <div
       ref={panelRef}
-      className="devotions-shelf__panel devotions-shelf__panel--portal"
-      role="menu"
+      className={`devotions-shelf__panel devotions-shelf__panel--portal${
+        externalToggle ? ' devotions-shelf__panel--fullscreen' : ''
+      }`}
+      role={externalToggle ? 'dialog' : 'menu'}
+      aria-modal={externalToggle ? 'true' : undefined}
       aria-label="Devociones y oraciones breves"
       style={panelStyle}
     >
-      <p className="devotions-shelf__heading">Devociones</p>
+      {externalToggle ? (
+        <div className="devotions-shelf__topbar">
+          <div className="devotions-shelf__topbar-copy">
+            <strong>Devociones</strong>
+            <span>Elegí una imagen para comenzar</span>
+          </div>
+          <div className="devotions-shelf__topbar-actions">
+            {onReturnToRosary ? (
+              <button
+                type="button"
+                className="devotions-shelf__return devotions-shelf__return--top"
+                onClick={() => {
+                  setShelfOpen(false);
+                  onReturnToRosary();
+                }}
+              >
+                Volver al Rosario
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="devotions-shelf__close"
+              onClick={() => setShelfOpen(false)}
+              aria-label="Cerrar devociones"
+              title="Cerrar"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <p className="devotions-shelf__heading">{externalToggle ? 'Recorridos' : 'Devociones'}</p>
       <div className="devotions-shelf__row">{recorridos}</div>
       <p className="devotions-shelf__heading">Oraciones breves</p>
       <div className="devotions-shelf__row">{breves}</div>
@@ -175,7 +205,7 @@ export default function DevotionsShelf({
           <div className="devotions-shelf__row">{proximas}</div>
         </>
       ) : null}
-      {onReturnToRosary ? (
+      {onReturnToRosary && !externalToggle ? (
         <button
           type="button"
           className="devotions-shelf__return"
