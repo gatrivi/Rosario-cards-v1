@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { NAV_ICONS } from './NavIcons';
 import { getViewIdFromPath, getPathForView } from '../../navigation/routes';
+import { getDefaultMystery } from '../utils/getDefaultMystery';
 import './BottomNav.css';
 
 function NavButton({
@@ -51,6 +52,12 @@ function emitDevotionsToggle() {
   window.dispatchEvent(new CustomEvent('rosario-devotions-toggle'));
 }
 
+function returnToBookletRosary() {
+  const mystery = getDefaultMystery();
+  const path = getPathForView('booklet');
+  window.location.assign(`${path}?misterio=${encodeURIComponent(mystery)}&paso=0`);
+}
+
 const MAS_DESTINATIONS = [
   { id: 'tracker', texto: 'Diario', hint: 'Compromiso diario / Rosedal' },
   { id: 'macetones', texto: 'Rosedal', hint: 'Macetones del día' },
@@ -90,8 +97,20 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   }, [vistaActiva]);
 
   const coreItems = [
-    { id: 'booklet', texto: 'Libro' },
-    { id: 'rosary', texto: 'Rosario' },
+    {
+      id: 'booklet',
+      texto: bookletMode && devotionsActive ? 'Volver' : 'Libro',
+      onClick: bookletMode && devotionsActive
+        ? returnToBookletRosary
+        : () => navigate(getPathForView('booklet')),
+      ariaLabel: bookletMode && devotionsActive ? 'Volver al Rosario' : undefined,
+      title: bookletMode && devotionsActive ? 'Volver al Rosario' : undefined,
+    },
+    {
+      id: 'rosary',
+      texto: 'Rosario',
+      onClick: () => navigate(getPathForView('rosary')),
+    },
   ];
   const orderedCore = isLeftHanded ? [...coreItems].reverse() : coreItems;
 
@@ -178,8 +197,12 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
             iconId={item.id}
             texto={item.texto}
             activo={vistaActiva === item.id}
-            onClick={() => navigate(getPathForView(item.id))}
+            onClick={item.onClick}
             simpleMode={simpleMode}
+            dataAttrs={{
+              ...(item.ariaLabel ? { 'aria-label': item.ariaLabel } : {}),
+              ...(item.title ? { title: item.title } : {}),
+            }}
           />
         ))}
         <NavButton
