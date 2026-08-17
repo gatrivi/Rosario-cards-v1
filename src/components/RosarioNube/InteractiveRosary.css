@@ -4,8 +4,10 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
   outline: none;
   touch-action: none;
+  overscroll-behavior: contain;
 }
 
 .interactive-rosary {
@@ -13,6 +15,14 @@
   height: 100%;
   position: relative;
   overflow: hidden;
+
+  /*
+   * The interaction viewport must stay put. InteractiveRosary historically
+   * translated/scaled this element inline, which made the touch surface move
+   * and shrink with the rosary. Keep the viewport fixed and transform only the
+   * Matter canvas below.
+   */
+  transform: none !important;
 }
 
 .rosary-container {
@@ -25,6 +35,14 @@
   width: 100% !important;
   height: 100% !important;
   cursor: grab;
+  transform: translate3d(
+      var(--rosary-pan-x, 0px),
+      var(--rosary-pan-y, 0px),
+      0
+    )
+    scale(var(--rosary-zoom, 1));
+  transform-origin: center center;
+  will-change: transform;
 }
 
 .interactive-rosary canvas:active {
@@ -49,6 +67,3 @@
 [data-theme="dark"] .prayer-content-overlay {
   background: rgba(0, 0, 0, 0.8);
 }
-
-
-

@@ -29,6 +29,25 @@ export const useRosaryDragging = (
   const shouldSkipPan = (clientX, clientY) =>
     isPanBlocked?.() || isPointerOnBead?.(clientX, clientY);
 
+  const getPanLimits = (container) => {
+    let zoom = 1;
+    try {
+      const savedZoom = parseFloat(localStorage.getItem("rosaryZoom"));
+      if (Number.isFinite(savedZoom) && savedZoom > 0) zoom = savedZoom;
+    } catch (_) {
+      // Keep the safe default when storage is unavailable.
+    }
+
+    // Preserve the previous freedom at 1x, but add the scaled overflow so the
+    // outer beads remain reachable after zooming in.
+    const extraX = Math.max(0, (container.clientWidth * (zoom - 1)) / 2);
+    const extraY = Math.max(0, (container.clientHeight * (zoom - 1)) / 2);
+    return {
+      maxX: container.clientWidth / 2 + extraX,
+      maxY: container.clientHeight / 2 + extraY,
+    };
+  };
+
   const handleRosaryMouseDown = (e) => {
     if (!sceneRef.current?.contains(e.target)) return;
     if (shouldSkipPan(e.clientX, e.clientY)) return;
@@ -51,8 +70,7 @@ export const useRosaryDragging = (
 
       const container = sceneRef.current;
       if (container) {
-        const maxX = container.clientWidth / 2;
-        const maxY = container.clientHeight / 2;
+        const { maxX, maxY } = getPanLimits(container);
         const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
         const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
 
@@ -102,8 +120,7 @@ export const useRosaryDragging = (
 
       const container = sceneRef.current;
       if (container) {
-        const maxX = container.clientWidth / 2;
-        const maxY = container.clientHeight / 2;
+        const { maxX, maxY } = getPanLimits(container);
         const constrainedX = Math.max(-maxX, Math.min(maxX, newX));
         const constrainedY = Math.max(-maxY, Math.min(maxY, newY));
 

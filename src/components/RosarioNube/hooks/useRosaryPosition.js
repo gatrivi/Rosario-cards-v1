@@ -17,13 +17,24 @@ export const useRosaryPosition = () => {
   const [isDraggingRosary, setIsDraggingRosary] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Save rosary position to localStorage
+  // Save rosary position to localStorage and expose it to the canvas transform.
+  // This keeps the full-size interaction viewport stationary while only the
+  // visible rosary moves.
   useEffect(() => {
     try {
       localStorage.setItem("rosaryPosition", JSON.stringify(rosaryPosition));
     } catch (error) {
       console.warn("Failed to save rosary position:", error);
     }
+
+    document.documentElement.style.setProperty(
+      "--rosary-pan-x",
+      `${rosaryPosition.x}px`
+    );
+    document.documentElement.style.setProperty(
+      "--rosary-pan-y",
+      `${rosaryPosition.y}px`
+    );
   }, [rosaryPosition]);
 
   // Listen for rosary position reset events

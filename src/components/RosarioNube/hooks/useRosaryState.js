@@ -30,6 +30,15 @@ export const useRosaryState = () => {
     }
   });
 
+  // Keep visual zoom on the Matter canvas. The outer interaction viewport must
+  // remain full-size so a pinch never falls through to browser/page zoom.
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--rosary-zoom",
+      String(rosaryZoom)
+    );
+  }, [rosaryZoom]);
+
   // Listen for visibility toggle events
   useEffect(() => {
     const handleVisibilityChange = (event) => {
