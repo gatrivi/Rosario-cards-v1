@@ -23,9 +23,16 @@ service cloud.firestore {
       allow write: if signedIn() && docId != 'voiceLibrary';
     }
 
-    // Canonical user profile.
+    // Canonical user profile. Security-sensitive role cannot be self-promoted.
     match /users/{uid} {
-      allow read, create, update, delete: if owns(uid);
+      allow read: if owns(uid);
+      allow create: if owns(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'user';
+      allow update: if owns(uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.role == resource.data.role;
+      allow delete: if owns(uid);
     }
 
     // User-owned application state.
