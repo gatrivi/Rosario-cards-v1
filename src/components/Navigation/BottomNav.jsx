@@ -3,7 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { NAV_ICONS } from './NavIcons';
 import { getViewIdFromPath, getPathForView } from '../../navigation/routes';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
+import { isValidRosaryMystery } from '../../utils/bookletSequence';
 import './BottomNav.css';
+
+const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
+const ROSARY_ONLY_MYSTERY_KEY = 'rosario_rosary_mystery';
 
 function NavButton({
   iconId,
@@ -52,10 +56,30 @@ function emitDevotionsToggle() {
   window.dispatchEvent(new CustomEvent('rosario-devotions-toggle'));
 }
 
+export function getRosaryReturnTarget(storage = typeof window !== 'undefined' ? window.localStorage : null) {
+  let mystery = getDefaultMystery();
+  let step = 0;
+
+  if (!storage) return { mystery, step };
+
+  try {
+    const savedMystery = storage.getItem(ROSARY_ONLY_MYSTERY_KEY);
+    const savedStep = Number.parseInt(storage.getItem(ROSARY_ONLY_INDEX_KEY) || '', 10);
+    if (savedMystery && isValidRosaryMystery(savedMystery)) mystery = savedMystery;
+    if (Number.isInteger(savedStep) && savedStep >= 0) step = savedStep;
+  } catch (_) {
+    // Storage can be unavailable in private/restricted browser modes.
+  }
+
+  return { mystery, step };
+}
+
 function returnToBookletRosary() {
-  const mystery = getDefaultMystery();
+  const { mystery, step } = getRosaryReturnTarget();
   const path = getPathForView('booklet');
-  window.location.assign(`${path}?misterio=${encodeURIComponent(mystery)}&paso=0`);
+  window.location.assign(
+    `${path}?misterio=${encodeURIComponent(mystery)}&paso=${encodeURIComponent(step)}`
+  );
 }
 
 const MAS_DESTINATIONS = [
