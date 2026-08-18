@@ -8,11 +8,18 @@ import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
 import { installNovenaAutoProgress } from './utils/novenaAutoProgress';
 import { installErrorCapture } from './utils/errorCapture';
+import {
+  installRosaPointerContract,
+  reconcileVisibleAppVersion,
+  ROSARIO_RUNTIME_VERSION,
+} from './utils/rosaRuntimeContract';
 
-const APP_VERSION = '0.3.80';
+const APP_VERSION = ROSARIO_RUNTIME_VERSION;
 
 installNovenaAutoProgress();
 installErrorCapture();
+installRosaPointerContract();
+reconcileVisibleAppVersion(APP_VERSION);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

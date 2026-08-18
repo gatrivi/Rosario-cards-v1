@@ -4,11 +4,12 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.80',
-  name: 'Luján share',
+  version: '0.3.81',
+  name: 'Rosa drag contract',
   CURRENT: [
-    'Luján 2026: compartir Rosario desde Camino',
-    'Sostén voluntario listo para link de donación',
+    'Rosa: mantener y arrastrar funciona igual con mouse y touch',
+    'La rosa SVG crece con el progreso real de la oración',
+    'PWA fuerza el bundle nuevo y purga el cache anterior',
   ],
   UPCOMING: [
     'QR de peregrinación + prueba móvil/offline',

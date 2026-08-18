@@ -27,7 +27,7 @@ jobs:
       - name: Verify Rosa interaction and drawing
         env:
           CI: true
-        run: npm test -- --watchAll=false --runInBand src/__tests__/RoseViewInteraction.test.js src/__tests__/RoseDrawingProgress.test.js src/__tests__/RoseView.test.js src/__tests__/cloudSyncSharedClassic.test.js
+        run: npm test -- --watchAll=false --runInBand src/__tests__/rosaRuntimeContract.test.js src/__tests__/RoseViewInteraction.test.js src/__tests__/RoseDrawingProgress.test.js src/__tests__/RoseView.test.js src/__tests__/cloudSyncSharedClassic.test.js
 
       - name: Production build
         env:
