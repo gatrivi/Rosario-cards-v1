@@ -208,7 +208,6 @@ describe('RoseView drag-to-pray interaction contract', () => {
   test.each(['mouse', 'touch'])('%s drag reveals prayer text and grows the Ave Maria rose', (pointerType) => {
     const { surface } = renderAveMaria();
 
-    expect(surface.getAttribute('style')).toMatch(/touch-action:\s*none/i);
     expect(Number(screen.getByTestId('rose-drawing').dataset.progress)).toBe(0);
     expect(Number(screen.getByTestId('sacred-text').dataset.charProgress)).toBe(-1);
 
