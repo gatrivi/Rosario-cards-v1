@@ -67,7 +67,7 @@ describe('DevotionsShelf', () => {
     expect(onOpenChange).toHaveBeenCalledWith(true);
   });
 
-  test('externalToggle opens via rosario-devotions-toggle event', () => {
+  test('externalToggle opens fullscreen via rosario-devotions-toggle event', () => {
     render(
       <DevotionsShelf
         externalToggle
@@ -86,6 +86,6 @@ describe('DevotionsShelf', () => {
     );
     expect(screen.queryByRole('button', { name: /devociones y oraciones breves/i })).not.toBeInTheDocument();
     fireEvent(window, new CustomEvent('rosario-devotions-toggle'));
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /devociones y oraciones breves/i })).toBeInTheDocument();
   });
 });
