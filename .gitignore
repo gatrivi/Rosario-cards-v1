@@ -18,6 +18,9 @@
 .env.test.local
 .env.production.local
 
+# local AI/provider configuration (may contain API keys)
+/.continue/agents/new-config.yaml
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
