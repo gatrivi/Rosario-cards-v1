@@ -17,7 +17,7 @@ export const CURATED_PRAYER_ART = {
   G: [MODO + 'gloria.webp', MODO + 'espiritu-santo-2.jpg'],
   F: [
     // Wikimedia Commons: Our Lady of Fatima, 1968 (public domain).
-    // Source page: commons.wikimedia.org/wiki/File:Our_Lady_of_Fatima_1968.jpg
+    // Source: commons.wikimedia.org/wiki/File:Our_Lady_of_Fatima_1968.jpg
     'https://upload.wikimedia.org/wikipedia/commons/9/95/Our_Lady_of_Fatima_1968.jpg',
     '/gallery-images/litany/modooscuro/Mater immaculata.jpg',
     MODO + 'sagrado-corazon-esus-maria.jpg',
