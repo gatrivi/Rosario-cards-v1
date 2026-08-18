@@ -12,6 +12,7 @@ import {
 
 export const PILGRIMAGE_OFFLINE_CACHE = 'rosario-pilgrimage-pack-v1';
 export const PILGRIMAGE_OFFLINE_STATUS_KEY = 'rosario_pilgrimage_offline_pack_v1';
+export const LUJAN_2026_MYSTERIES = ['gozosos', 'gloriosos'];
 
 const SHELL_URLS = [
   '/',
@@ -65,14 +66,8 @@ function addRuntimeShellAssets(set) {
   }
 }
 
-export function collectPilgrimageOfflineUrls({
-  mystery = 'gozosos',
-  voiceLang = 'es',
-  includeRuntimeAssets = true,
-} = {}) {
-  const urls = new Set(SHELL_URLS);
+function addSequenceAssets(urls, mystery, voiceLang) {
   let sequence = [];
-
   try {
     sequence = buildSequence(mystery) || [];
   } catch (_) {
@@ -97,6 +92,20 @@ export function collectPilgrimageOfflineUrls({
 
     addUrl(urls, resolveBundledVoiceUrl(step?.id, voiceLang));
   });
+}
+
+export function collectPilgrimageOfflineUrls({
+  mystery,
+  mysteries,
+  voiceLang = 'es',
+  includeRuntimeAssets = true,
+} = {}) {
+  const urls = new Set(SHELL_URLS);
+  const selectedMysteries = Array.isArray(mysteries) && mysteries.length
+    ? mysteries
+    : [mystery || 'gozosos'];
+
+  selectedMysteries.forEach((mysteryId) => addSequenceAssets(urls, mysteryId, voiceLang));
 
   if (includeRuntimeAssets) addRuntimeShellAssets(urls);
   return Array.from(urls);
@@ -140,7 +149,8 @@ async function cacheOne(cache, url) {
 }
 
 export async function preparePilgrimageOfflinePack({
-  mystery = getDefaultMystery(),
+  mystery,
+  mysteries,
   voiceLang = getVoicePrefs().voiceLang || 'es',
   onProgress,
 } = {}) {
@@ -148,7 +158,14 @@ export async function preparePilgrimageOfflinePack({
     throw new Error('Este navegador no ofrece almacenamiento offline.');
   }
 
-  const urls = collectPilgrimageOfflineUrls({ mystery, voiceLang, includeRuntimeAssets: true });
+  const selectedMysteries = Array.isArray(mysteries) && mysteries.length
+    ? mysteries
+    : [mystery || getDefaultMystery()];
+  const urls = collectPilgrimageOfflineUrls({
+    mysteries: selectedMysteries,
+    voiceLang,
+    includeRuntimeAssets: true,
+  });
   const cache = await caches.open(PILGRIMAGE_OFFLINE_CACHE);
   const failures = [];
   let completed = 0;
@@ -168,7 +185,7 @@ export async function preparePilgrimageOfflinePack({
 
   const status = {
     state: failures.length === 0 ? 'ready' : 'partial',
-    mystery,
+    mysteries: selectedMysteries,
     voiceLang,
     completed: urls.length - failures.length,
     total: urls.length,
