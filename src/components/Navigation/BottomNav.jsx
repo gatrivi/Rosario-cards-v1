@@ -12,12 +12,11 @@ function NavButton({
   onClick,
   disabled,
   simpleMode,
-  hideLabel,
   dataAttrs,
   ariaExpanded,
 }) {
   const Icon = NAV_ICONS[iconId];
-  const iconSize = simpleMode ? 28 : 22;
+  const iconSize = simpleMode ? 28 : 24;
 
   return (
     <button
@@ -25,21 +24,19 @@ function NavButton({
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       aria-expanded={ariaExpanded}
-      className={`bottom-nav__btn${activo ? ' bottom-nav__btn--active' : ''}${hideLabel ? ' bottom-nav__btn--icon-only' : ''}`}
+      className={`bottom-nav__btn${activo ? ' bottom-nav__btn--active' : ''}`}
       {...dataAttrs}
     >
       <span className="bottom-nav__icon">
         {Icon ? <Icon size={iconSize} /> : null}
       </span>
-      {!hideLabel && (
-        <span
-          className={`bottom-nav__label${
-            simpleMode ? ' bottom-nav__label--large' : ''
-          }${disabled ? ' bottom-nav__label--disabled' : ''}`}
-        >
-          {texto}
-        </span>
-      )}
+      <span
+        className={`bottom-nav__label${
+          simpleMode ? ' bottom-nav__label--large' : ''
+        }${disabled ? ' bottom-nav__label--disabled' : ''}`}
+      >
+        {texto}
+      </span>
     </button>
   );
 }
@@ -114,44 +111,36 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   ];
   const orderedCore = isLeftHanded ? [...coreItems].reverse() : coreItems;
 
-  const stepPrev = (
-    <NavButton
-      key="step-prev"
-      iconId="stepPrev"
-      texto="Anterior"
-      hideLabel
-      onClick={() => emitBookletStep(-1)}
-      simpleMode={simpleMode}
-    />
-  );
-  const stepNext = (
-    <NavButton
-      key="step-next"
-      iconId="stepNext"
-      texto="Siguiente"
-      hideLabel
-      onClick={() => emitBookletStep(1)}
-      simpleMode={simpleMode}
-    />
-  );
-  const devotionsBtn = bookletMode ? (
-    <NavButton
-      key="devociones"
-      iconId="devociones"
-      texto="Devoc."
-      activo={devotionsOpen || devotionsActive}
-      ariaExpanded={devotionsOpen}
-      onClick={emitDevotionsToggle}
-      simpleMode={simpleMode}
-      dataAttrs={{
-        'data-devotions-toggle': 'true',
-        'aria-label': 'Devociones y oraciones breves',
-        title: 'Devociones',
-      }}
-    />
-  ) : null;
-
   const masActivo = MAS_ACTIVE.has(vistaActiva);
+  const StepPrevIcon = NAV_ICONS.stepPrev;
+  const StepNextIcon = NAV_ICONS.stepNext;
+  const DevotionsIcon = NAV_ICONS.devociones;
+
+  const previousButton = (
+    <button
+      key="step-prev"
+      type="button"
+      className="booklet-toolbar__btn booklet-toolbar__btn--icon"
+      aria-label="Oración anterior"
+      title="Anterior"
+      onClick={() => emitBookletStep(-1)}
+    >
+      <StepPrevIcon size={24} />
+    </button>
+  );
+
+  const nextButton = (
+    <button
+      key="step-next"
+      type="button"
+      className="booklet-toolbar__btn booklet-toolbar__btn--icon"
+      aria-label="Oración siguiente"
+      title="Siguiente"
+      onClick={() => emitBookletStep(1)}
+    >
+      <StepNextIcon size={24} />
+    </button>
+  );
 
   return (
     <>
@@ -189,8 +178,27 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
         </div>
       ) : null}
 
+      {bookletMode ? (
+        <div className="booklet-toolbar" role="toolbar" aria-label="Controles de lectura">
+          {isLeftHanded ? nextButton : previousButton}
+          <button
+            type="button"
+            className={`booklet-toolbar__btn booklet-toolbar__btn--devotions${
+              devotionsOpen || devotionsActive ? ' booklet-toolbar__btn--active' : ''
+            }`}
+            aria-label="Devociones y oraciones breves"
+            aria-expanded={devotionsOpen}
+            title="Devociones"
+            onClick={emitDevotionsToggle}
+          >
+            <DevotionsIcon size={22} />
+            <span>Devociones</span>
+          </button>
+          {isLeftHanded ? previousButton : nextButton}
+        </div>
+      ) : null}
+
       <nav className="bottom-nav glass-footer" aria-label="Navegación principal">
-        {bookletMode && (isLeftHanded ? stepNext : stepPrev)}
         {orderedCore.map((item) => (
           <NavButton
             key={item.id}
@@ -213,10 +221,8 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
           ariaExpanded={masOpen}
           onClick={() => setMasOpen((o) => !o)}
           simpleMode={simpleMode}
-          dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Rosa, Voz, Cola' }}
+          dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Rosa, Voz, Autorezo' }}
         />
-        {devotionsBtn}
-        {bookletMode && (isLeftHanded ? stepPrev : stepNext)}
       </nav>
     </>
   );
