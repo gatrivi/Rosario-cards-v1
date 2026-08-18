@@ -9,29 +9,15 @@ const MODO = '/gallery-images/misterios/modooscuro/';
  */
 export const CURATED_PRAYER_ART = {
   // Core Rosary prayers
-  SC: [
-    MODO + '1954.15-The-Crucifixion-864x1536.jpg',
-  ],
-  AC: [
-    MODO + 'contricion.jpg',
-  ],
-  C: [
-    MODO + 'credo.webp',
-  ],
-  P: [
-    MODO + 'padre-nuestro.jpg',
-  ],
-  A: [
-    MODO + 'ave-maria.jpg',
-    MODO + 'MetMary-870x489.jpg',
-  ],
-  G: [
-    MODO + 'gloria.webp',
-    MODO + 'espiritu-santo-2.jpg',
-  ],
+  SC: [MODO + '1954.15-The-Crucifixion-864x1536.jpg'],
+  AC: [MODO + 'contricion.jpg'],
+  C: [MODO + 'credo.webp'],
+  P: [MODO + 'padre-nuestro.jpg'],
+  A: [MODO + 'ave-maria.jpg', MODO + 'MetMary-870x489.jpg'],
+  G: [MODO + 'gloria.webp', MODO + 'espiritu-santo-2.jpg'],
   F: [
     // Wikimedia Commons: Our Lady of Fatima, 1968 (public domain).
-    // https://commons.wikimedia.org/wiki/File:Our_Lady_of_Fatima_1968.jpg
+    // Source page: commons.wikimedia.org/wiki/File:Our_Lady_of_Fatima_1968.jpg
     'https://upload.wikimedia.org/wikipedia/commons/9/95/Our_Lady_of_Fatima_1968.jpg',
     '/gallery-images/litany/modooscuro/Mater immaculata.jpg',
     MODO + 'sagrado-corazon-esus-maria.jpg',
@@ -40,18 +26,14 @@ export const CURATED_PRAYER_ART = {
     '/gallery-images/litany/modooscuro/Mater immaculata.jpg',
     '/gallery-images/litany/modooscuro/virgo-inmaculata.jpg',
   ],
-  S: [
-    MODO + 'salve-regina.jpg',
-  ],
+  S: [MODO + 'salve-regina.jpg'],
 
   // Known duplicate/misleading legacy assets.
   'gozosos:MG3': [
     MODO + 'Georges_de_La_Tour_-_Newlyborn_infant_-_Musée_des_Beaux-Arts_de_Rennes-copy-870x717.jpg',
     MODO + 'maria-nino-esus4.jpg',
   ],
-  'luminosos:ML3': [
-    MODO + 'pastor.jpg',
-  ],
+  'luminosos:ML3': [MODO + 'pastor.jpg'],
 
   // Make the shared MG ids explicit by context. This prevents a future
   // generic MG3 rule from turning Pentecost into a Nativity (or vice versa).
