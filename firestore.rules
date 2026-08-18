@@ -1,12 +1,17 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TEMP open rules for art curation. Tighten with Auth later.
+    // Public clients may consume curated shared data, but may not mutate it.
+    // Canonical art/voice publication must go through a trusted backend/admin flow.
     match /shared/{docId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false;
     }
+
+    // Legacy sync-id metadata is intentionally closed until it is backed by Auth.
+    // Core prayer progress is persisted by the app's existing local/JSONBlob sync path.
     match /users/{syncId}/meta/{docId} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
