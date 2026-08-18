@@ -1,0 +1,44 @@
+name: Lujan launch contract
+
+on:
+  pull_request:
+  push:
+    branches:
+      - agent/lujan-launch-hardening
+
+jobs:
+  launch-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify prayer, mobile, voice and navigation contracts
+        env:
+          CI: true
+        run: >-
+          npm test -- --watchAll=false --runInBand
+          src/__tests__/BookletView.test.js
+          src/__tests__/DevotionsShelf.test.js
+          src/__tests__/PrayerRecorder.test.js
+          src/__tests__/VirtualRosaryPhysics.test.js
+          src/__tests__/RoseViewInteraction.test.js
+          src/__tests__/cloudSyncSharedClassic.test.js
+          src/__tests__/bottomNavReturn.test.js
+          src/__tests__/noNativeBrowserDialogs.test.js
+
+      - name: Production build
+        env:
+          CI: false
+        run: npm run build
