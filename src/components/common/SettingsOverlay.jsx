@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getVoicePrefs, setVoicePrefs } from '../../utils/voicePrefs';
 import { copyCapturedErrors } from '../../utils/errorCapture';
+import { appAlert, appPrompt } from '../../utils/appDialog';
 
 const SHARE_URL = typeof window !== 'undefined'
   ? `${window.location.origin}${window.location.pathname}`
@@ -37,7 +38,9 @@ async function shareApp() {
   }
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(SHARE_URL);
-    alert('Enlace copiado — compártelo con quien quieras.');
+    await appAlert('Enlace copiado — compartilo con quien quieras.', {
+      title: 'Compartir Rosario Cards',
+    });
   }
 }
 
@@ -563,8 +566,12 @@ export default function SettingsOverlay({
               if (ok) {
                 setErrorCopyStatus(`Copiado (${text.split('\n').length} líneas)`);
               } else {
-                setErrorCopyStatus('No se pudo copiar — selecciona el texto abajo');
-                window.prompt('Copia estos errores:', text);
+                setErrorCopyStatus('No se pudo copiar — seleccioná el texto abajo');
+                await appPrompt('Copiá estos errores:', text, {
+                  title: 'Errores recientes',
+                  confirmLabel: 'Listo',
+                  cancelLabel: 'Cerrar',
+                });
               }
             } catch (_) {
               setErrorCopyStatus('Error al copiar');
