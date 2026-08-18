@@ -29,9 +29,13 @@ export default function AppDialogHost() {
         event.preventDefault();
         settle(current.kind === 'confirm' ? false : current.kind === 'prompt' ? null : true);
       }
-      if (event.key === 'Enter' && current.kind !== 'alert' && (current.kind !== 'prompt' || !event.shiftKey)) {
+      if (
+        event.key === 'Enter' &&
+        current.kind !== 'alert' &&
+        current.kind !== 'prompt'
+      ) {
         event.preventDefault();
-        settle(current.kind === 'prompt' ? value : true);
+        settle(true);
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -56,6 +60,9 @@ export default function AppDialogHost() {
   );
   const confirmLabel = current.confirmLabel || (current.kind === 'alert' ? 'Aceptar' : 'Confirmar');
   const cancelLabel = current.cancelLabel || 'Cancelar';
+  const multilinePrompt = current.kind === 'prompt' && (
+    String(current.defaultValue ?? '').includes('\n') || String(current.defaultValue ?? '').length > 120
+  );
 
   return createPortal(
     <div
@@ -78,13 +85,23 @@ export default function AppDialogHost() {
         <p id={`app-dialog-message-${current.id}`} className="app-dialog__message">{current.message}</p>
 
         {current.kind === 'prompt' ? (
-          <input
-            ref={inputRef}
-            className="app-dialog__input"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            aria-label={title}
-          />
+          multilinePrompt ? (
+            <textarea
+              ref={inputRef}
+              className="app-dialog__input app-dialog__input--multiline"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              aria-label={title}
+            />
+          ) : (
+            <input
+              ref={inputRef}
+              className="app-dialog__input"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              aria-label={title}
+            />
+          )
         ) : null}
 
         <div className="app-dialog__actions">
