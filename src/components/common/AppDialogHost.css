@@ -46,6 +46,12 @@
   outline: none;
 }
 
+.app-dialog__input--multiline {
+  min-height: 180px;
+  resize: vertical;
+  white-space: pre-wrap;
+}
+
 .app-dialog__input:focus {
   border-color: #d4af37;
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
