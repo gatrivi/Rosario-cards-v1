@@ -20,6 +20,7 @@ import {
   pushArtConfigToFirestore,
 } from '../../services/firebaseArtConfig';
 import { isFirebaseConfigured } from '../../config/firebase';
+import { appPrompt } from '../../utils/appDialog';
 
 /**
  * AssetStudio — browse the image registry at /assets (also from Ajustes on mobile).
@@ -101,8 +102,11 @@ export default function AssetStudio() {
       setCopiedId(entry.id);
       setTimeout(() => setCopiedId(null), 1200);
     } catch (_) {
-      // clipboard may be blocked; fallback to prompt
-      window.prompt('Copia este snippet:', snippet);
+      await appPrompt('Copiá este snippet:', snippet, {
+        title: 'Snippet de imagen',
+        confirmLabel: 'Listo',
+        cancelLabel: 'Cerrar',
+      });
     }
   };
 
