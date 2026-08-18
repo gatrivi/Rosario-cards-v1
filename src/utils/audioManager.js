@@ -1,6 +1,8 @@
 /**
  * AudioManager.js
  * Provides a shared AudioContext and common sound utilities.
+ * Audio is opt-in: no AudioContext is created or resumed unless the user
+ * explicitly enabled sound in settings.
  */
 
 class AudioManager {
@@ -9,39 +11,35 @@ class AudioManager {
         this.isInitialized = false;
     }
 
+    isAudioEnabled() {
+        try {
+            return localStorage.getItem('rosario_sound_enabled') === 'true';
+        } catch (_) {
+            return false;
+        }
+    }
+
     init() {
+        if (!this.isAudioEnabled()) return null;
         if (this.isInitialized) return this.ctx;
-        
+
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return null;
-        
+
         this.ctx = new AC();
         this.isInitialized = true;
-        
-        // Resume on state change if needed
-        if (this.ctx.state === 'suspended') {
-            const resume = () => {
-                this.ctx.resume().then(() => {
-                    console.log('AudioContext resumed');
-                    window.removeEventListener('click', resume);
-                    window.removeEventListener('touchstart', resume);
-                    window.removeEventListener('keydown', resume);
-                });
-            };
-            window.addEventListener('click', resume);
-            window.addEventListener('touchstart', resume);
-            window.addEventListener('keydown', resume);
-        }
-        
         return this.ctx;
     }
 
     getContext() {
+        if (!this.isAudioEnabled()) return null;
         if (!this.isInitialized) return this.init();
         return this.ctx;
     }
 
     async resume() {
+        if (!this.isAudioEnabled()) return;
+        if (!this.ctx) this.init();
         if (this.ctx && this.ctx.state === 'suspended') {
             await this.ctx.resume();
         }

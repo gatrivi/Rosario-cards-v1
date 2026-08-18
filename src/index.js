@@ -16,6 +16,13 @@ import {
 
 const APP_VERSION = ROSARIO_RUNTIME_VERSION;
 
+// Sound is opt-in. Preserve an explicit user choice, but new installs/users start silent.
+try {
+  if (localStorage.getItem('rosario_sound_enabled') === null) {
+    localStorage.setItem('rosario_sound_enabled', 'false');
+  }
+} catch (_) { /* storage unavailable: AudioManager also fails closed */ }
+
 installNovenaAutoProgress();
 installErrorCapture();
 installRosaPointerContract();
