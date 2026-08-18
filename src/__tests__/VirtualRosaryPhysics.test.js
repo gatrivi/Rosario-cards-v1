@@ -15,7 +15,7 @@ describe('VirtualRosaryPhysics (core wiring)', () => {
     jest.clearAllMocks();
   });
 
-  test('passes areClosingPrayersUnlocked and bridges bead callbacks', () => {
+  test('passes closing state and commits bead actions only on a clean release', () => {
     const seq = buildSequence('gozosos');
     const llIdx = seq.findIndex((p) => p.id === 'LL');
     const lockedIndex = 0;
@@ -61,13 +61,25 @@ describe('VirtualRosaryPhysics (core wiring)', () => {
       isClosingPrayersUnlocked(seq, lockedIndex)
     );
 
-    // Bridge onBeadClick -> onNodeClick
+    // Chain-prayer click is only a candidate on pointer-down.
     passedLocked.onBeadClick(5, 'P');
+    expect(onNodeClick).not.toHaveBeenCalled();
+    passedLocked.onBeadHoldEnd();
     expect(onNodeClick).toHaveBeenCalledWith(5);
+    expect(onBeadHoldEnd).toHaveBeenCalledTimes(1);
 
-    // Bridge onBeadHoldStart -> onBeadHoldStart
+    // A regular bead hold follows the same clean-release gate.
     passedLocked.onBeadHoldStart(7, 'A');
+    expect(onBeadHoldStart).not.toHaveBeenCalled();
+    passedLocked.onBeadHoldEnd();
     expect(onBeadHoldStart).toHaveBeenCalledWith(7);
+    expect(onBeadHoldEnd).toHaveBeenCalledTimes(2);
+
+    // Dragging cancels a pending bead action instead of navigating by accident.
+    passedLocked.onBeadClick(9, 'A');
+    window.dispatchEvent(new CustomEvent('beadDragStart', { detail: { isDragging: true } }));
+    passedLocked.onBeadHoldEnd();
+    expect(onNodeClick).not.toHaveBeenCalledWith(9);
 
     rerender(
       <VirtualRosaryPhysics {...props} activePrayerIndex={unlockedIndex} />
@@ -80,4 +92,3 @@ describe('VirtualRosaryPhysics (core wiring)', () => {
     );
   });
 });
-
