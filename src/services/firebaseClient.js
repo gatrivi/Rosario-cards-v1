@@ -2,7 +2,7 @@ import { getFirebaseConfig, isFirebaseConfigured } from '../config/firebase';
 
 let appPromise = null;
 let authPromise = null;
-let initialUserPromise = null;
+let signInPromise = null;
 
 export async function getFirebaseApp() {
   if (!isFirebaseConfigured()) return null;
@@ -70,21 +70,22 @@ async function waitForInitialUser(auth) {
  * genuinely no signed-in user. Shared by UI and background upload services.
  */
 export async function ensureSignedInUser() {
-  if (!initialUserPromise) {
-    initialUserPromise = (async () => {
-      const auth = await getFirebaseAuth();
-      if (!auth) return null;
+  const auth = await getFirebaseAuth();
+  if (!auth) return null;
+  if (auth.currentUser) return auth.currentUser;
 
-      const persistedUser = auth.currentUser || (await waitForInitialUser(auth));
-      if (persistedUser) return persistedUser;
+  const persistedUser = await waitForInitialUser(auth);
+  if (persistedUser) return persistedUser;
 
+  if (!signInPromise) {
+    signInPromise = (async () => {
       const { signInAnonymously } = await import('firebase/auth');
       const credential = await signInAnonymously(auth);
       return credential.user;
-    })().catch((error) => {
-      initialUserPromise = null;
-      throw error;
+    })().finally(() => {
+      signInPromise = null;
     });
   }
-  return initialUserPromise;
+
+  return signInPromise;
 }
