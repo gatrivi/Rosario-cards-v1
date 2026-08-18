@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - agent/lujan-launch-hardening
+      - agent/lujan-launch-p1
 
 jobs:
   launch-contract:
@@ -24,7 +25,7 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Verify prayer, mobile, voice and navigation contracts
+      - name: Verify prayer, mobile, voice and launch contracts
         env:
           CI: true
         run: >-
@@ -37,6 +38,8 @@ jobs:
           src/__tests__/cloudSyncSharedClassic.test.js
           src/__tests__/bottomNavReturn.test.js
           src/__tests__/noNativeBrowserDialogs.test.js
+          src/__tests__/pilgrimageOfflinePack.test.js
+          src/__tests__/launchMetadata.test.js
 
       - name: Production build
         env:

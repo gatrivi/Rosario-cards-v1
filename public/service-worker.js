@@ -1,5 +1,6 @@
 // PWA service worker — bump CACHE_NAME on each release so stale bundles are purged.
 const CACHE_NAME = 'rosario-cards-v0.3.80';
+const PRESERVED_CACHE_PREFIXES = ['rosario-pilgrimage-pack-'];
 
 const SHELL_URLS = [
   '/',
@@ -25,7 +26,10 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) =>
         Promise.all(
           cacheNames
-            .filter((name) => name !== CACHE_NAME)
+            .filter((name) => (
+              name !== CACHE_NAME &&
+              !PRESERVED_CACHE_PREFIXES.some((prefix) => name.startsWith(prefix))
+            ))
             .map((name) => caches.delete(name))
         )
       )
