@@ -70,13 +70,12 @@ function pushAssignment(candidates, prayerId, verseIndex, push) {
 }
 
 function pushPrayerAssignment(candidates, prayerId, mysteryType, push) {
-  const scopedId = prayerArtAssignmentId(prayerId, mysteryType);
-  if (scopedId && scopedId !== prayerId) {
-    pushImage(candidates, getAssignedPrayerPath(scopedId), push);
-  }
-  // Preserve old global overrides as a compatibility fallback. New editors
-  // should write the scoped id for mystery-specific prayers.
-  pushImage(candidates, getAssignedPrayerPath(prayerId), push);
+  const assignmentId = prayerArtAssignmentId(prayerId, mysteryType);
+  pushImage(candidates, getAssignedPrayerPath(assignmentId), push);
+
+  // Deliberately do not fall back from scoped MG/MD/ML ids to a legacy global
+  // override. `MG3:default` is ambiguous because MG3 means Nativity in the
+  // Joyful mysteries and Pentecost in the Glorious mysteries.
 }
 
 /** Build ordered candidate URLs for a litany verse background. */
