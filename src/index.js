@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import AppShell from './components/Layout/AppShell';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { AuthProvider } from './auth/AuthProvider';
 import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
 import { installNovenaAutoProgress } from './utils/novenaAutoProgress';
@@ -18,9 +19,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
-        <AppShell />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppShell />
+        </BrowserRouter>
+      </AuthProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );
