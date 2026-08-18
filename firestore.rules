@@ -17,9 +17,10 @@ service cloud.firestore {
     }
 
     // Transitional: shared art tooling still writes from the authenticated app.
+    // Exclude voiceLibrary explicitly because overlapping Firestore matches OR together.
     match /shared/{docId} {
       allow read: if true;
-      allow write: if signedIn();
+      allow write: if signedIn() && docId != 'voiceLibrary';
     }
 
     // Canonical user profile.
