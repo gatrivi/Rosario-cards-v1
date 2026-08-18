@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { PEREGRINACIONES, getPeregrinacionActual } from '../../data/LevelConfig';
 import {
@@ -6,6 +6,11 @@ import {
   COMPROMISO_HEADLINE,
   isCompromisoCampaignActive,
 } from '../../utils/compromisoStore';
+import {
+  getPilgrimageOfflineStatus,
+  LUJAN_2026_MYSTERIES,
+  preparePilgrimageOfflinePack,
+} from '../../utils/pilgrimageOfflinePack';
 import TutorialOverlay from '../common/TutorialOverlay';
 import santaMariaImg from '../../data/assets/img/Theotokos.jpg';
 import './PeregrinacionView.css';
@@ -41,6 +46,11 @@ async function copyRosarioUrl() {
   document.body.removeChild(textarea);
 }
 
+function isLujanPackReady(status) {
+  if (status?.state !== 'ready' || !Array.isArray(status.mysteries)) return false;
+  return LUJAN_2026_MYSTERIES.every((id) => status.mysteries.includes(id));
+}
+
 export default function PeregrinacionView({
   onSelectLevel,
   onPray,
@@ -52,8 +62,16 @@ export default function PeregrinacionView({
   const { actual, next } = getPeregrinacionActual(totalAveMarias);
   const [selectedPin, setSelectedPin] = useState(null);
   const [shareStatus, setShareStatus] = useState('');
+  const [offlineStatus, setOfflineStatus] = useState(null);
+  const [offlineProgress, setOfflineProgress] = useState(null);
+  const [offlineBusy, setOfflineBusy] = useState(false);
+  const [offlineError, setOfflineError] = useState('');
   // ponytail: component already re-renders on totalAveMarias; no memo needed
   const compromiso = isCompromisoCampaignActive() ? getCompromisoProgress() : null;
+
+  useEffect(() => {
+    setOfflineStatus(getPilgrimageOfflineStatus());
+  }, []);
 
   const journeyProgressPct = useMemo(() => {
     if (!next) return 100;
@@ -64,6 +82,7 @@ export default function PeregrinacionView({
   }, [actual.reqAveMarias, next, totalAveMarias]);
 
   const remainingForNext = next ? Math.max(0, next.reqAveMarias - totalAveMarias) : 0;
+  const lujanPackReady = isLujanPackReady(offlineStatus);
 
   const selectedStatus = useMemo(() => {
     if (!selectedPin) return null;
@@ -100,6 +119,28 @@ export default function PeregrinacionView({
     }
   };
 
+  const handlePrepareOffline = async () => {
+    if (offlineBusy) return;
+    setOfflineBusy(true);
+    setOfflineError('');
+    setOfflineProgress({ completed: 0, total: 0 });
+
+    try {
+      const status = await preparePilgrimageOfflinePack({
+        mysteries: LUJAN_2026_MYSTERIES,
+        onProgress: ({ completed, total }) => setOfflineProgress({ completed, total }),
+      });
+      setOfflineStatus(status);
+      if (status.state !== 'ready') {
+        setOfflineError(`Quedaron ${status.failures} archivos sin guardar. Reintentá con señal.`);
+      }
+    } catch (error) {
+      setOfflineError(error?.message || 'No se pudo preparar el modo sin conexión.');
+    } finally {
+      setOfflineBusy(false);
+    }
+  };
+
   return (
     <div className="camino-view camino-view--v2">
       <div className="camino-heading">
@@ -128,6 +169,21 @@ export default function PeregrinacionView({
             <button type="button" className="camino-btn camino-btn--primary" onClick={handleShareRosario}>
               Compartir Rosario
             </button>
+            <button
+              type="button"
+              className="camino-btn"
+              onClick={handlePrepareOffline}
+              disabled={offlineBusy || lujanPackReady}
+              aria-busy={offlineBusy}
+            >
+              {offlineBusy
+                ? 'Guardando…'
+                : lujanPackReady
+                  ? '✓ Listo sin conexión'
+                  : offlineStatus?.state === 'partial'
+                    ? 'Reintentar pack offline'
+                    : 'Preparar para caminar'}
+            </button>
             {DONATION_URL ? (
               <a
                 className="camino-btn"
@@ -139,6 +195,19 @@ export default function PeregrinacionView({
               </a>
             ) : null}
           </div>
+          {offlineBusy && offlineProgress ? (
+            <p className="camino-compromiso-hint" role="status" aria-live="polite" style={{ marginTop: 10, marginBottom: 0 }}>
+              Preparando gozosos + gloriosos · {offlineProgress.completed}/{offlineProgress.total || '…'}
+            </p>
+          ) : lujanPackReady ? (
+            <p className="camino-compromiso-hint" role="status" style={{ marginTop: 10, marginBottom: 0 }}>
+              ✓ Pack Luján listo: texto, imágenes y guía disponible para los misterios del 3–4 de octubre.
+            </p>
+          ) : offlineError ? (
+            <p className="camino-compromiso-hint" role="status" style={{ marginTop: 10, marginBottom: 0 }}>
+              {offlineError}
+            </p>
+          ) : null}
           {shareStatus ? (
             <p className="camino-compromiso-hint" role="status" aria-live="polite" style={{ marginTop: 10, marginBottom: 0 }}>
               {shareStatus}
