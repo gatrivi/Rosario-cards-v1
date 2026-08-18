@@ -11,6 +11,7 @@ import { usePrayerMediaRecorder } from '../../hooks/usePrayerMediaRecorder';
 import { useSpeechAdvance } from '../../hooks/useSpeechAdvance';
 import { getSpeechProviderLabel } from '../../utils/speechProvider';
 import { getVoicePrefs, setVoicePrefs } from '../../utils/voicePrefs';
+import { appConfirm } from '../../utils/appDialog';
 import './RecordingStudioView.css';
 
 const MAX_AUDIO_UPLOAD_BYTES = 50 * 1024 * 1024;
@@ -320,15 +321,16 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     onComplete: handleSpeechComplete,
     lang: voiceLang === 'en' ? 'en-US' : 'es-ES',
   });
-  const handleExitSession = useCallback(() => {
+  const handleExitSession = useCallback(async () => {
     if (saving || starting || uploading) return;
-    if (
-      recording &&
-      typeof window !== 'undefined' &&
-      typeof window.confirm === 'function' &&
-      !window.confirm('Hay una toma activa. ¿Salir y descartarla?')
-    ) {
-      return;
+    if (recording) {
+      const confirmed = await appConfirm('Hay una toma activa. ¿Salir y descartarla?', {
+        title: 'Descartar toma',
+        confirmLabel: 'Descartar y salir',
+        cancelLabel: 'Seguir grabando',
+        destructive: true,
+      });
+      if (!confirmed) return;
     }
     cancel();
     setRecording(false);
@@ -375,13 +377,13 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     if (busy || deletingClipId) return;
     const clip = clips.find((item) => item.id === id);
     const label = clip?.label || 'esta toma';
-    if (
-      typeof window !== 'undefined' &&
-      typeof window.confirm === 'function' &&
-      !window.confirm('¿Eliminar ' + label + '? Esta acción no se puede deshacer.')
-    ) {
-      return;
-    }
+    const confirmed = await appConfirm(`¿Eliminar ${label}? Esta acción no se puede deshacer.`, {
+      title: 'Eliminar toma',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+    });
+    if (!confirmed) return;
 
     setDeletingClipId(id);
     setError('');
@@ -569,7 +571,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           <div className="rs-progress-fill" style={{ width: `${stats.pct}%` }} />
         </div>
         <p className="rs-stat-meta">
-          {stats.missing} sin tu voz · {stats.t3Only} solo T3 · {stats.empty} sin audio Â· {stats.reviewed} revisados
+          {stats.missing} sin tu voz · {stats.t3Only} solo T3 · {stats.empty} sin audio · {stats.reviewed} revisados
         </p>
       </div>
 
@@ -717,7 +719,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
               disabled={busy || loading || !!coverageError || stats.missing === 0}
               onClick={() => startSession(true)}
             >
-              Grabar faltantes ({stats.missing}) Â· {stats.reviewed} revisados
+              Grabar faltantes ({stats.missing}) · {stats.reviewed} revisados
             </button>
             <button
               type="button"

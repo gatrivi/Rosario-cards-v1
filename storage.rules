@@ -1,13 +1,18 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // TEMP open for art uploads from Estudio de imágenes.
+    // Curated public assets remain readable by prayer clients.
+    // Public clients cannot upload, replace, or delete canonical art.
     match /art/{allPaths=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false;
     }
-    // TEMP open for shared prayer voice (Estudio de voz → Liber ▶).
+
+    // Shared voice remains playable, but publication is closed until a trusted
+    // submission/moderation path exists. Local recording continues in IndexedDB.
     match /voice/{allPaths=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

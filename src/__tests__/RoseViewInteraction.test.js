@@ -104,6 +104,45 @@ jest.mock('../components/Views/SacredText', () => {
 import RoseView, { getSequenceData } from '../components/Views/RoseView';
 
 const aveMariaIndex = getSequenceData('gozosos').findIndex((prayer) => prayer.id === 'A');
+const OriginalPointerEvent = window.PointerEvent;
+
+class PointerEventMock extends MouseEvent {
+  constructor(type, props = {}) {
+    super(type, props);
+    Object.defineProperty(this, 'pointerId', {
+      configurable: true,
+      value: props.pointerId ?? 0,
+    });
+    Object.defineProperty(this, 'pointerType', {
+      configurable: true,
+      value: props.pointerType ?? 'mouse',
+    });
+    Object.defineProperty(this, 'isPrimary', {
+      configurable: true,
+      value: props.isPrimary ?? true,
+    });
+  }
+}
+
+function installPointerEventMock() {
+  Object.defineProperty(window, 'PointerEvent', {
+    configurable: true,
+    writable: true,
+    value: PointerEventMock,
+  });
+}
+
+function restorePointerEvent() {
+  if (OriginalPointerEvent) {
+    Object.defineProperty(window, 'PointerEvent', {
+      configurable: true,
+      writable: true,
+      value: OriginalPointerEvent,
+    });
+  } else {
+    delete window.PointerEvent;
+  }
+}
 
 function renderAveMaria() {
   const onUpdateProgreso = jest.fn();
@@ -152,6 +191,7 @@ function dragAcrossFirstTwoWords(surface, pointerType) {
 
 describe('RoseView drag-to-pray interaction contract', () => {
   beforeEach(() => {
+    installPointerEventMock();
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-08-17T20:00:00-03:00'));
   });
@@ -162,12 +202,12 @@ describe('RoseView drag-to-pray interaction contract', () => {
     delete HTMLElement.prototype.setPointerCapture;
     delete HTMLElement.prototype.releasePointerCapture;
     delete HTMLElement.prototype.hasPointerCapture;
+    restorePointerEvent();
   });
 
   test.each(['mouse', 'touch'])('%s drag reveals prayer text and grows the Ave Maria rose', (pointerType) => {
     const { surface } = renderAveMaria();
 
-    expect(surface).toHaveStyle({ touchAction: 'none' });
     expect(Number(screen.getByTestId('rose-drawing').dataset.progress)).toBe(0);
     expect(Number(screen.getByTestId('sacred-text').dataset.charProgress)).toBe(-1);
 

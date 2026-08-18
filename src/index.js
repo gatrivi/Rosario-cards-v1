@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import AppShell from './components/Layout/AppShell';
+import AppDialogHost from './components/common/AppDialogHost';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import reportWebVitals from './reportWebVitals';
 import { subscribeToAppUpdates } from './utils/appUpdate';
@@ -20,6 +21,7 @@ root.render(
     <ErrorBoundary>
       <BrowserRouter>
         <AppShell />
+        <AppDialogHost />
       </BrowserRouter>
     </ErrorBoundary>
   </React.StrictMode>

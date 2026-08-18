@@ -1,0 +1,25 @@
+# Safe example only. Copy to new-config.yaml locally and set your provider key there.
+# new-config.yaml is gitignored because it may contain credentials.
+
+name: DeepSeek Config
+version: 1.0.0
+schema: v1
+
+models:
+  - name: DeepSeek V4 Pro
+    provider: deepseek
+    model: deepseek-v4-pro
+    apiKey: YOUR_LOCAL_API_KEY
+  - name: DeepSeek V4 Flash
+    provider: deepseek
+    model: deepseek-v4-flash
+    apiKey: YOUR_LOCAL_API_KEY
+
+tabAutocompleteModel:
+  name: DeepSeek V4 Flash
+  provider: deepseek
+  model: deepseek-v4-flash
+  apiKey: YOUR_LOCAL_API_KEY
+
+mcpServers:
+  - uses: anthropic/memory-mcp

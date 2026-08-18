@@ -1,6 +1,5 @@
 import { useRef, useCallback } from 'react';
 import { saveRecording } from '../utils/prayerRecordingStore';
-import { publishVoiceClipSoft } from '../services/firebaseVoiceLibrary';
 
 function makeRecorderError(message, name = 'NotSupportedError') {
   const error = new Error(message);
@@ -129,15 +128,11 @@ export function usePrayerMediaRecorder() {
               label: clipLabel,
               voiceLang,
             });
-            void publishVoiceClipSoft({
-              prayerId,
-              blob,
-              mimeType,
-              label: clipLabel,
-            }).catch((cloudError) => {
-              console.warn('[voiceLibrary] deferred publish failed', cloudError);
-            });
-            resolve({ ...saved, cloudOk: null, cloudPending: true });
+
+            // Recording is private/local by default. A future explicit
+            // "Compartir mi voz" submission flow may publish a selected take
+            // after consent and moderation, but saving never publishes silently.
+            resolve({ ...saved, cloudOk: false, cloudPending: false, localOnly: true });
           } catch (error) {
             reject(error);
           }

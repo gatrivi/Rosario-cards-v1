@@ -30,6 +30,7 @@ import {
   resolveLitanyVerseImage,
 } from '../../utils/prayerImages';
 import { getPrayerVerseImageCandidates } from '../../utils/prayerVerseImages';
+import { appPrompt } from '../../utils/appDialog';
 
 const BASE_TARGET_ID = '__prayers__';
 
@@ -195,7 +196,7 @@ export default function AssignmentMapper() {
     bump();
   };
 
-  const exportSnippet = () => {
+  const exportSnippet = async () => {
     const entries = Object.entries(loadAssignments()).filter(([key]) =>
       isBaseTarget
         ? key.endsWith(':' + PRAYER_BASE_ASSIGNMENT)
@@ -212,9 +213,15 @@ export default function AssignmentMapper() {
       ? 'export const PRAYER_IMAGE_ASSIGNMENTS = {\n'
       : '// ' + targetMeta.label + '\n{\n';
     const snippet = prefix + body + '\n};';
-    navigator.clipboard?.writeText?.(snippet)?.catch(() => {
-      window.prompt('Copia:', snippet);
-    });
+    try {
+      await navigator.clipboard.writeText(snippet);
+    } catch (_) {
+      await appPrompt('Copiá estas asignaciones:', snippet, {
+        title: 'Exportar asignaciones',
+        confirmLabel: 'Listo',
+        cancelLabel: 'Cerrar',
+      });
+    }
   };
 
   const openPicker = (row) => {
