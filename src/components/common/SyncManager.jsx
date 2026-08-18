@@ -5,6 +5,7 @@ export default function SyncManager({ onClose }) {
   const { syncId, syncStatus, initializeNewSync, forceSetSyncId } = useCloudSync();
   const [inputKey, setInputKey] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [copyStatus, setCopyStatus] = useState('');
 
   // Generate Magic Link
   const currentUrl = window.location.origin + window.location.pathname;
@@ -32,9 +33,14 @@ export default function SyncManager({ onClose }) {
     window.location.reload(); // Hard reload to ensure all hooks reset
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    alert('¡Copiado con éxito!');
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyStatus('Llave copiada.');
+      window.setTimeout(() => setCopyStatus(''), 1800);
+    } catch (_) {
+      setCopyStatus('No se pudo copiar. Seleccioná la llave manualmente.');
+    }
   };
 
   const shareViaWhatsApp = () => {
@@ -118,6 +124,11 @@ export default function SyncManager({ onClose }) {
                   📋
                 </button>
               </div>
+              {copyStatus ? (
+                <div role="status" style={{ color: '#aaa', fontSize: '0.75rem', marginTop: '8px' }}>
+                  {copyStatus}
+                </div>
+              ) : null}
             </div>
 
             <button 
