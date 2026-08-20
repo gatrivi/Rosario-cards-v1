@@ -15,6 +15,8 @@
   button{font:inherit}
   .game{position:relative;width:100%;height:100%;min-height:560px;isolation:isolate;background:linear-gradient(#4a4056 0 44%,#7d6b62 44% 45%,#505039 45%);overflow:hidden}
   .game::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:90;background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0 1px,transparent 1px 4px);mix-blend-mode:multiply}
+
+  /* barrio */
   .moon{position:absolute;top:7%;right:9%;width:58px;height:58px;background:#d7c998;box-shadow:0 0 0 5px #81785f,0 0 24px #d7c99866}
   .houses{position:absolute;left:0;right:0;bottom:32%;height:24%}
   .house{position:absolute;bottom:0;width:18%;height:58%;background:#514752;border:4px solid #28232c}
@@ -28,6 +30,8 @@
   .window{position:absolute;left:54px;top:28px;width:42px;height:42px;background:#caa55e;border:4px solid #362f31;box-shadow:0 0 16px #d6b46f66}
   .road{position:absolute;left:-5%;right:-5%;bottom:0;height:33%;background:#454044;transform:skewY(-2deg);border-top:5px solid #29262a}
   .road::before{content:"";position:absolute;left:0;right:0;top:48%;height:5px;background:repeating-linear-gradient(90deg,#817968 0 60px,transparent 60px 110px);opacity:.65}
+
+  /* sprites */
   .actor{position:absolute;z-index:12;bottom:22%;width:72px;height:112px;image-rendering:pixelated;transition:left 2.8s steps(22),filter .45s,transform .3s}
   .nun{left:12%}
   .nun.walk{left:43%}
@@ -39,6 +43,7 @@
   .nun .arm{position:absolute;left:50px;top:55px;width:11px;height:45px;background:#222029;transform:rotate(-18deg);transform-origin:top}
   .nun.praying .arm{animation:prayArm .45s steps(3) 2}
   @keyframes prayArm{50%{transform:rotate(-48deg) translate(-4px,-4px)}}
+
   .man{left:72%;filter:saturate(.25) brightness(.64)}
   .man .hair{position:absolute;left:17px;top:4px;width:38px;height:18px;background:#211b1b;z-index:2}
   .man .head{background:#9b6d5d}
@@ -47,14 +52,23 @@
   .man.cleansing{filter:saturate(calc(.25 + var(--clean-level)*.75)) brightness(calc(.64 + var(--clean-level)*.36))}
   .man.free{animation:freeMan .8s steps(4)}
   @keyframes freeMan{50%{transform:translateY(-8px) rotate(2deg)}}
+
+  /* corruption */
   .corruption{position:absolute;left:calc(72% - 32px);bottom:20%;width:138px;height:210px;z-index:15;pointer-events:none;opacity:var(--corrupt,1);filter:blur(calc((1 - var(--corrupt,1))*2px));transition:opacity .55s,transform .55s}
   .smoke{position:absolute;border-radius:42% 58% 55% 45%;background:#121017;box-shadow:16px -8px #1d1720,-14px -28px #17131b,7px -55px #211827;animation:smoke 2.2s ease-in-out infinite alternate;opacity:.88}
   .s1{width:55px;height:90px;left:30px;top:0}.s2{width:72px;height:110px;left:54px;top:32px;animation-delay:-.8s}.s3{width:60px;height:95px;left:4px;top:58px;animation-delay:-1.4s}
   @keyframes smoke{to{transform:translate(-8px,-14px) scale(1.08) rotate(7deg);opacity:.55}}
   .sludge{position:absolute;left:15px;bottom:0;width:100px;height:95px;background:#19151b;clip-path:polygon(10% 0,35% 12%,53% 0,80% 18%,96% 8%,100% 100%,0 100%,0 15%);box-shadow:inset 0 0 0 4px #27202a}
   .sludge::after{content:"";position:absolute;left:18px;top:16px;width:10px;height:26px;background:#403144;box-shadow:36px 13px #39293d,58px -5px #493148}
+
+  /* intro text */
+  .start-screen{position:absolute;inset:0;z-index:100;display:grid;place-items:center;background:#111015dd;transition:opacity .25s}
+  .start-screen.hide{opacity:0;pointer-events:none}
+  .start-btn{padding:14px 18px;border:4px solid #5d5148;background:#d4bd81;color:#1b1719;font-weight:900;letter-spacing:.09em;box-shadow:7px 7px #09080a;cursor:pointer}
   .caption{position:absolute;left:50%;top:5%;transform:translateX(-50%);z-index:55;padding:8px 12px;background:#151118dd;border:3px solid #6a5b50;color:#d9c9a4;font-size:clamp(12px,2vw,16px);letter-spacing:.08em;text-align:center;max-width:90%;opacity:0;transition:opacity .3s}
   .caption.show{opacity:1}
+
+  /* manifestation */
   .manifest{position:absolute;inset:0;z-index:40;pointer-events:none;opacity:0;transition:opacity .1s}
   .manifest.show{opacity:1}
   .flash{position:absolute;inset:0;background:#efe0b8;opacity:0}.manifest.show .flash{animation:flash .48s steps(2)}
@@ -67,6 +81,8 @@
   .c1{top:32%;transform:rotate(14deg)}.c2{top:65%;transform:rotate(-12deg)}
   .manifest.show .c1{animation:chainIn .45s steps(7) .16s forwards}.manifest.show .c2{animation:chainIn2 .45s steps(7) .23s forwards}
   @keyframes chainIn{from{opacity:1;left:-150%}to{opacity:1;left:-20%}}@keyframes chainIn2{from{opacity:1;left:100%}to{opacity:1;left:-20%}}
+
+  /* battle */
   .battle-ui{position:absolute;inset:0;z-index:35;pointer-events:none;opacity:0;transition:opacity .35s}
   .battle-ui.show{opacity:1}
   .battle-ui.show .controls{pointer-events:auto}
@@ -88,10 +104,13 @@
   .hit{position:absolute;left:73%;bottom:43%;z-index:28;color:#e6d5a1;font-weight:bold;font-size:22px;opacity:0;text-shadow:3px 3px #181319;pointer-events:none}
   .hit.pop{animation:pop .72s steps(5)}
   @keyframes pop{0%{opacity:1;transform:translateY(0) scale(.7)}60%{opacity:1;transform:translateY(-34px) scale(1.2)}100%{opacity:0;transform:translateY(-52px)}}
+
+  /* end */
   .ending{position:absolute;inset:0;z-index:70;display:grid;place-items:center;background:#171319aa;opacity:0;pointer-events:none;transition:.8s}
   .ending.show{opacity:1;pointer-events:auto}
   .end-card{width:min(420px,86%);padding:20px;background:#dac69a;color:#1a1618;border:5px solid #55463c;box-shadow:10px 10px #0d0b0e;text-align:center}
   .end-card h1{font-size:24px;margin:0 0 8px}.end-card p{font-size:12px;line-height:1.5}.restart{padding:10px 14px;background:#221d22;color:#ead9b0;border:3px solid #65584e;cursor:pointer}
+
   .shake{animation:shake .35s steps(5)}@keyframes shake{20%{transform:translate(6px,-3px)}40%{transform:translate(-5px,4px)}60%{transform:translate(4px,3px)}80%{transform:translate(-3px,-2px)}}
   @media (max-width:680px){
     .parish{left:2%;transform:scale(.72);transform-origin:bottom left}.nun{left:10%;transform:scale(.82);transform-origin:bottom}.nun.walk{left:37%}.man{left:70%;transform:scale(.88);transform-origin:bottom}.corruption{left:calc(70% - 30px);transform:scale(.88);transform-origin:bottom}.holy-ring{left:calc(37% + 30px)}
@@ -101,39 +120,147 @@
 </head>
 <body>
 <main class="game" id="game" aria-label="Demo de Rosario Cards">
+  <div class="start-screen" id="startScreen"><button class="start-btn" id="startBtn">TOCAR PARA COMENZAR</button></div>
   <div class="moon"></div>
   <div class="houses"><div class="house h1"></div><div class="house h2"></div></div>
   <div class="parish"><div class="window"></div><div class="door"></div></div>
   <div class="road"></div>
+
   <div class="caption show" id="caption">PARROQUIA DEL BARRIO · 22:47</div>
-  <div class="actor nun" id="nun" aria-label="Monja"><div class="veil"></div><div class="face"></div><div class="habit"></div><div class="arm"></div></div>
-  <div class="actor man" id="man" aria-label="Hombre poseído"><div class="head"></div><div class="hair"></div><div class="body"></div><div class="leg l1"></div><div class="leg l2"></div></div>
-  <div class="corruption" id="corruption" aria-hidden="true"><div class="smoke s1"></div><div class="smoke s2"></div><div class="smoke s3"></div><div class="sludge"></div></div>
+
+  <div class="actor nun" id="nun" aria-label="Monja">
+    <div class="veil"></div><div class="face"></div><div class="habit"></div><div class="arm"></div>
+  </div>
+
+  <div class="actor man" id="man" aria-label="Hombre poseído">
+    <div class="head"></div><div class="hair"></div><div class="body"></div><div class="leg l1"></div><div class="leg l2"></div>
+  </div>
+
+  <div class="corruption" id="corruption" aria-hidden="true">
+    <div class="smoke s1"></div><div class="smoke s2"></div><div class="smoke s3"></div><div class="sludge"></div>
+  </div>
+
   <div class="holy-ring" id="ring"></div><div class="hit" id="hit">✦ ORACIÓN</div>
-  <div class="manifest" id="manifest" aria-hidden="true"><div class="flash"></div><div class="chain c1"></div><div class="chain c2"></div><div class="cross"></div></div>
+
+  <div class="manifest" id="manifest" aria-hidden="true">
+    <div class="flash"></div><div class="chain c1"></div><div class="chain c2"></div><div class="cross"></div>
+  </div>
+
   <section class="battle-ui" id="battleUI" aria-label="Combate espiritual">
-    <div class="boss"><div class="boss-row"><span>IMPUREZA</span><span id="pct">100%</span></div><div class="bar"><i></i></div></div>
+    <div class="boss">
+      <div class="boss-row"><span>IMPUREZA</span><span id="pct">100%</span></div>
+      <div class="bar"><i></i></div>
+    </div>
     <div class="rosary" id="rosary" aria-label="Progreso de oración"></div>
-    <div class="controls"><div class="prayer-line" id="prayerLine">La oración comienza.</div><button class="pray" id="prayBtn">Rezar Ave María</button><div class="hint">ESPACIO / TOCAR · 10 ORACIONES</div></div>
+    <div class="controls">
+      <div class="prayer-line" id="prayerLine">La oración comienza.</div>
+      <button class="pray" id="prayBtn">Rezar Ave María</button>
+      <div class="hint">ESPACIO / TOCAR · 10 ORACIONES</div>
+    </div>
   </section>
-  <section class="ending" id="ending"><div class="end-card"><h1>LIBERADO</h1><p>El humo se disipa. El hombre vuelve en sí.<br>La batalla termina donde empezó: en la oración.</p><button class="restart" id="restart">VOLVER A JUGAR</button></div></section>
+
+  <section class="ending" id="ending">
+    <div class="end-card">
+      <h1>LIBERADO</h1>
+      <p>El humo se disipa. El hombre vuelve en sí.<br>La batalla termina donde empezó: en la oración.</p>
+      <button class="restart" id="restart">VOLVER A JUGAR</button>
+    </div>
+  </section>
 </main>
 <script>
 (() => {
-  const game=document.querySelector('#game'),nun=document.querySelector('#nun'),man=document.querySelector('#man'),corruption=document.querySelector('#corruption'),caption=document.querySelector('#caption'),manifest=document.querySelector('#manifest'),battleUI=document.querySelector('#battleUI'),prayerLine=document.querySelector('#prayerLine'),prayBtn=document.querySelector('#prayBtn'),pct=document.querySelector('#pct'),ring=document.querySelector('#ring'),hit=document.querySelector('#hit'),ending=document.querySelector('#ending'),restart=document.querySelector('#restart'),rosary=document.querySelector('#rosary');
-  const prayers=['Dios te salve, María, llena eres de gracia…','El Señor es contigo…','Bendita tú eres entre todas las mujeres…','Y bendito es el fruto de tu vientre, Jesús…','Santa María, Madre de Dios…','Ruega por nosotros, pecadores…','Ahora y en la hora de nuestra muerte…','Bajo tu amparo nos acogemos…','Santa Madre de Dios, no deseches nuestras súplicas…','Amén.'];
-  let phase='intro',count=0,audio;
-  for(let i=0;i<10;i++){const b=document.createElement('i');b.className='bead';rosary.appendChild(b)}const beads=[...rosary.children];
-  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  function showCaption(text){caption.textContent=text;caption.classList.add('show')}function hideCaption(){caption.classList.remove('show')}
-  function ensureAudio(){if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();return audio}
-  function tone(freq=120,dur=.12,type='square',gain=.06,when=0){const a=ensureAudio(),o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(freq,a.currentTime+when);g.gain.setValueAtTime(gain,a.currentTime+when);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+when+dur);o.connect(g);g.connect(a.destination);o.start(a.currentTime+when);o.stop(a.currentTime+when+dur)}
-  function chainSfx(){[0,.07,.13,.21,.29].forEach((t,i)=>tone(190+i*31,.055,'square',.035,t));tone(54,.55,'sawtooth',.09,.12);tone(82,.4,'triangle',.055,.16)}
-  function prayerSfx(){tone(660,.18,'sine',.03);tone(880,.22,'sine',.018,.06)}
-  async function intro(){phase='intro';await sleep(900);showCaption('ALGUIEN NECESITA AYUDA');await sleep(950);nun.classList.add('walk');hideCaption();await sleep(2800);showCaption('EL AIRE SE VUELVE PESADO');corruption.style.setProperty('--corrupt','1');await sleep(1100);phase='manifest';chainSfx();game.classList.add('shake');manifest.classList.add('show');await sleep(800);game.classList.remove('shake');hideCaption();await sleep(400);manifest.classList.remove('show');phase='battle';battleUI.classList.add('show');prayerLine.textContent='No se lucha solo con fuerza. Rezá.'}
-  function pray(){if(phase!=='battle'||count>=10)return;ensureAudio();phase='hit';prayerSfx();nun.classList.remove('praying');void nun.offsetWidth;nun.classList.add('praying');ring.classList.remove('pulse');hit.classList.remove('pop');void ring.offsetWidth;ring.classList.add('pulse');hit.classList.add('pop');count++;const remaining=(10-count)/10;game.style.setProperty('--corrupt',String(remaining));corruption.style.setProperty('--corrupt',String(Math.max(0,remaining)));man.style.setProperty('--clean-level',String(count/10));man.classList.add('cleansing');pct.textContent=Math.round(remaining*100)+'%';beads[count-1].classList.add('done');prayerLine.textContent=prayers[count-1];game.classList.add('shake');setTimeout(()=>game.classList.remove('shake'),180);setTimeout(()=>{phase=count===10?'ending':'battle';if(count===10)finish()},380)}
-  async function finish(){prayBtn.disabled=true;corruption.style.opacity='0';man.classList.add('free');prayerLine.textContent='Amén.';tone(523,.35,'sine',.025);tone(659,.45,'sine',.02,.08);tone(784,.6,'sine',.018,.16);await sleep(950);battleUI.classList.remove('show');ending.classList.add('show')}
-  prayBtn.addEventListener('click',pray);document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(phase==='battle')pray();else ensureAudio()}});document.addEventListener('pointerdown',()=>ensureAudio(),{once:true});restart.addEventListener('click',()=>location.reload());intro();
+  const game = document.querySelector('#game');
+  const startScreen = document.querySelector('#startScreen');
+  const startBtn = document.querySelector('#startBtn');
+  const nun = document.querySelector('#nun');
+  const man = document.querySelector('#man');
+  const corruption = document.querySelector('#corruption');
+  const caption = document.querySelector('#caption');
+  const manifest = document.querySelector('#manifest');
+  const battleUI = document.querySelector('#battleUI');
+  const prayerLine = document.querySelector('#prayerLine');
+  const prayBtn = document.querySelector('#prayBtn');
+  const pct = document.querySelector('#pct');
+  const ring = document.querySelector('#ring');
+  const hit = document.querySelector('#hit');
+  const ending = document.querySelector('#ending');
+  const restart = document.querySelector('#restart');
+  const rosary = document.querySelector('#rosary');
+  const prayers = [
+    'Dios te salve, María, llena eres de gracia…',
+    'El Señor es contigo…',
+    'Bendita tú eres entre todas las mujeres…',
+    'Y bendito es el fruto de tu vientre, Jesús…',
+    'Santa María, Madre de Dios…',
+    'Ruega por nosotros, pecadores…',
+    'Ahora y en la hora de nuestra muerte…',
+    'Bajo tu amparo nos acogemos…',
+    'Santa Madre de Dios, no deseches nuestras súplicas…',
+    'Amén.'
+  ];
+  let phase = 'intro', count = 0, audio;
+
+  for (let i=0;i<10;i++) { const b=document.createElement('i'); b.className='bead'; rosary.appendChild(b); }
+  const beads=[...rosary.children];
+
+  function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+  function showCaption(text){caption.textContent=text;caption.classList.add('show');}
+  function hideCaption(){caption.classList.remove('show');}
+
+  function ensureAudio(){
+    if (!audio) audio = new (window.AudioContext||window.webkitAudioContext)();
+    if (audio.state==='suspended') audio.resume();
+    return audio;
+  }
+  function tone(freq=120,dur=.12,type='square',gain=.06,when=0){
+    const a=ensureAudio(), o=a.createOscillator(), g=a.createGain();
+    o.type=type;o.frequency.setValueAtTime(freq,a.currentTime+when);
+    g.gain.setValueAtTime(gain,a.currentTime+when);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+when+dur);
+    o.connect(g);g.connect(a.destination);o.start(a.currentTime+when);o.stop(a.currentTime+when+dur);
+  }
+  function chainSfx(){
+    [0,.07,.13,.21,.29].forEach((t,i)=>tone(190+i*31,.055,'square',.035,t));
+    tone(54,.55,'sawtooth',.09,.12); tone(82,.4,'triangle',.055,.16);
+  }
+  function prayerSfx(){ tone(660,.18,'sine',.03); tone(880,.22,'sine',.018,.06); }
+
+  async function intro(){
+    phase='intro'; await sleep(900); showCaption('ALGUIEN NECESITA AYUDA');
+    await sleep(950); nun.classList.add('walk'); hideCaption();
+    await sleep(2800); showCaption('EL AIRE SE VUELVE PESADO');
+    corruption.style.setProperty('--corrupt','1');
+    await sleep(1100); phase='manifest'; chainSfx(); game.classList.add('shake'); manifest.classList.add('show');
+    await sleep(800); game.classList.remove('shake'); hideCaption();
+    await sleep(400); manifest.classList.remove('show'); phase='battle'; battleUI.classList.add('show');
+    prayerLine.textContent='No se lucha solo con fuerza. Rezá.';
+  }
+
+  function pray(){
+    if (phase!=='battle' || count>=10) return;
+    ensureAudio(); phase='hit';
+    prayerSfx(); nun.classList.remove('praying'); void nun.offsetWidth; nun.classList.add('praying');
+    ring.classList.remove('pulse'); hit.classList.remove('pop'); void ring.offsetWidth; ring.classList.add('pulse'); hit.classList.add('pop');
+    count++;
+    const remaining=(10-count)/10;
+    game.style.setProperty('--corrupt',String(remaining));
+    corruption.style.setProperty('--corrupt',String(Math.max(0,remaining)));
+    man.style.setProperty('--clean-level',String(count/10)); man.classList.add('cleansing');
+    pct.textContent=Math.round(remaining*100)+'%'; beads[count-1].classList.add('done');
+    prayerLine.textContent=prayers[count-1];
+    game.classList.add('shake'); setTimeout(()=>game.classList.remove('shake'),180);
+    setTimeout(()=>{ phase=count===10?'ending':'battle'; if(count===10) finish(); },380);
+  }
+
+  async function finish(){
+    prayBtn.disabled=true; corruption.style.opacity='0'; man.classList.add('free');
+    prayerLine.textContent='Amén.'; tone(523,.35,'sine',.025); tone(659,.45,'sine',.02,.08); tone(784,.6,'sine',.018,.16);
+    await sleep(950); battleUI.classList.remove('show'); ending.classList.add('show');
+  }
+
+  prayBtn.addEventListener('click',pray);
+  document.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault(); if(phase==='battle') pray(); else ensureAudio();} });
+  startBtn.addEventListener('click',()=>{ ensureAudio(); startScreen.classList.add('hide'); setTimeout(()=>startScreen.remove(),300); intro(); },{once:true});
+  restart.addEventListener('click',()=>location.reload());
 })();
 </script>
 </body>
