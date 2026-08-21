@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { devLog } from '../../utils/devotionsDebug';
+import { CORE_OPTIONAL_PRAYERS } from '../../data/coreDevotions';
+import MercyWindowThumb from './MercyWindowThumb';
 import './DevotionsShelf.css';
 
 /** Captioned slot for a devotion thumb inside the shelf panel. */
@@ -59,6 +61,15 @@ export default function DevotionsShelf({
     },
     [controlled, onOpenChange]
   );
+
+  const openCorePrayer = useCallback(
+    (id) => {
+      setShelfOpen(false);
+      window.location.assign(`/libro?oracion=${encodeURIComponent(id)}`);
+    },
+    [setShelfOpen]
+  );
+
   const rootRef = useRef(null);
   const panelRef = useRef(null);
   const lastMysteryRef = useRef(misterioActual);
@@ -198,7 +209,19 @@ export default function DevotionsShelf({
       <p className="devotions-shelf__heading">{externalToggle ? 'Recorridos' : 'Devociones'}</p>
       <div className="devotions-shelf__row">{recorridos}</div>
       <p className="devotions-shelf__heading">Oraciones breves</p>
-      <div className="devotions-shelf__row">{breves}</div>
+      <div className="devotions-shelf__row">
+        {breves}
+        {CORE_OPTIONAL_PRAYERS.map((prayer) => (
+          <ShelfItem key={prayer.id} label={prayer.shelfLabel || prayer.title}>
+            <MercyWindowThumb
+              onClick={() => openCorePrayer(prayer.id)}
+              title={prayer.shelfTitle || prayer.title}
+              img={prayer.img}
+              badge={prayer.badge}
+            />
+          </ShelfItem>
+        ))}
+      </div>
       {proximas ? (
         <>
           <p className="devotions-shelf__heading">Próximas</p>
