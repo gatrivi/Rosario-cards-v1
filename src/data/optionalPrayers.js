@@ -1,4 +1,5 @@
 import { imagePath } from './imageRegistry';
+import { CORE_OPTIONAL_PRAYERS } from './coreDevotions';
 
 const angelImg = imagePath('angelDeLaGuarda');
 const benedictImg = imagePath('sanctusBenedictus');
@@ -20,6 +21,7 @@ const cayetanoImgAlt = imagePath('stAnthony');
 const cayetanoCandidates = [cayetanoImg, cayetanoImgAlt].filter(Boolean);
 
 export const OPTIONAL_PRAYERS = [
+  ...CORE_OPTIONAL_PRAYERS,
   {
     id: 'guardian',
     title: 'Ángel de la Guarda',
