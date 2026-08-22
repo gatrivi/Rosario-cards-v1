@@ -84,11 +84,12 @@ function listWavIds(lang) {
       .filter(Boolean)
       .map((f) => path.basename(f, '.wav'));
     if (lang === 'es' && tracked.length) {
-      return tracked.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      // Bundled truth = what ships in public/ (disk); union with tracked so
+      // fresh local bakes are visible before they are committed.
+      const disk = fromFs();
+      const all = new Set([...tracked, ...disk]);
+      return [...all].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     }
-    const disk = fromFs();
-    if (disk.length >= tracked.length) return disk;
-    return tracked.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   } catch (_) {
     /* fall through to fs */
   }

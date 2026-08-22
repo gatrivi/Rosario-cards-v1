@@ -7,6 +7,9 @@
 **Live (prod):** [https://rosario.gatrivi.com](https://rosario.gatrivi.com) — not `*.vercel.app` for share / deep links  
 **Live stack:** [architecture/current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) · version in `releaseNotes.js` / `AppShell` `APP_VERSION`  
 **Shipped / next bullets:** `releaseNotes.js` → Ajustes → Novedades · version badge tap
+**Work policy (2026-08-21):** NO commit gate — commit AND push freely; we dev in prod
+(no users yet, Vercel preview flow is friction). Branch `cloud-rosary-v2`.
+**Launch frame:** Luján 2026 (Oct 3–4) — see [product/lujan-2026-launch.md](./product/lujan-2026-launch.md).
 
 ## Tree
 
@@ -74,6 +77,8 @@
 | **Future work** | [future-features.md](./roadmap/future-features.md) |`r`n| **Android nativo futuro** | [native-android-kotlin-budget.md](./roadmap/native-android-kotlin-budget.md) |
 | **Open issues (verify source)** | [known-issues.md](./litany/known-issues.md) |
 | **Jul 2026 session (art/Firebase/Vía)** | [session-report-2026-07-03-night.md](./dev-notes/session-report-2026-07-03-night.md) |
+| **Commercial readiness (gaps/decisions)** | [product/commercial-readiness.md](./product/commercial-readiness.md) |
+| **Handoff 2026-08-21** | [handoff-2026-08-21.md](./handoff-2026-08-21.md) |
 
 ## Stack (one line)
 

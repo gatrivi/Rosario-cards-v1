@@ -46,3 +46,18 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   configurable: true,
   value: jest.fn(() => canvasContextMock),
 });
+
+// Old jsdom (CRA 5) has no PointerEvent, so fireEvent.pointerDown(...) events
+// carry no pointerType/pointerId — every pointer-interaction test silently
+// tests nothing. Polyfill with a MouseEvent subclass that honors the init dict.
+if (typeof window !== 'undefined' && typeof window.PointerEvent === 'undefined') {
+  class PointerEventPolyfill extends MouseEvent {
+    constructor(type, init = {}) {
+      super(type, init);
+      this.pointerId = init.pointerId ?? 1;
+      this.pointerType = init.pointerType ?? 'mouse';
+      this.isPrimary = init.isPrimary ?? true;
+    }
+  }
+  window.PointerEvent = PointerEventPolyfill;
+}

@@ -12,7 +12,7 @@ import { resolveBundledVoiceUrl } from '../data/bundledVoiceMap';
 function clipFileId(prayerId) {
   if (!prayerId || typeof prayerId !== 'string') return null;
   const m = prayerId.match(/^(.*)_\d+$/);
-  if (m && !/^(MAG|ANG|LPB|PBO|VC|VL|LL|SCA|DMO|MG|MD|MGl|ML)_/.test(prayerId)) {
+  if (m && !/^(MAG|ANG|LPB|PBO|VC|VL|VCR|LL|SCA|DMO|MG|MD|MGl|ML)_/.test(prayerId)) {
     // chaplet slot ids: PB_12 → PB, PBContrition_1 → PBContrition, SC_0 → SC
     return m[1];
   }

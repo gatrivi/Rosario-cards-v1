@@ -1,0 +1,1880 @@
+{
+  "generatedAt": "2026-08-22T03:29:15.312Z",
+  "prayerCount": 218,
+  "collisionCount": 26,
+  "unusedCount": 2,
+  "collisions": [
+    {
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz",
+      "prayerIds": [
+        "DMO2",
+        "MP",
+        "LPB_1",
+        "LPB_8",
+        "LPB_15",
+        "LPB_22",
+        "LPB_29",
+        "LPB_36",
+        "LPB_Close",
+        "PBContrition_1",
+        "PB_3",
+        "PB_4",
+        "PB_5",
+        "PB_6",
+        "PB_7",
+        "PB_10",
+        "PB_11",
+        "PB_12",
+        "PB_13",
+        "PB_14",
+        "PB_17",
+        "PB_18",
+        "PB_19",
+        "PB_20",
+        "PB_21",
+        "PB_24",
+        "PB_25",
+        "PB_26",
+        "PB_27",
+        "PB_28",
+        "PB_31",
+        "PB_32",
+        "PB_33",
+        "PB_34",
+        "PB_35",
+        "PB_38",
+        "PB_39",
+        "PB_40",
+        "PB_41",
+        "PB_42",
+        "PB_45",
+        "PB_46",
+        "PB_47",
+        "PB_48",
+        "PB_49",
+        "PBO_1",
+        "VC_OPEN",
+        "VCR_OPEN"
+      ]
+    },
+    {
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass",
+      "prayerIds": [
+        "HG",
+        "LPB_5",
+        "LPB_12",
+        "LPB_19",
+        "LPB_26",
+        "LPB_33",
+        "LPB_40",
+        "PB_G_8",
+        "PB_G_15",
+        "PB_G_22",
+        "PB_G_29",
+        "PB_G_36",
+        "PB_G_43",
+        "PB_G_50",
+        "PBO_5",
+        "VC_7",
+        "VCR_7",
+        "SCA_LECTURA",
+        "opt:patrick"
+      ]
+    },
+    {
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral",
+      "prayerIds": [
+        "LPB_6",
+        "LPB_13",
+        "LPB_20",
+        "LPB_27",
+        "LPB_34",
+        "LPB_41",
+        "PB_P_2",
+        "PB_P_9",
+        "PB_P_16",
+        "PB_P_23",
+        "PB_P_30",
+        "PB_P_37",
+        "PB_P_44",
+        "PBO_6",
+        "VC_6",
+        "VCR_6",
+        "SCA_HYMN_LAUDATE"
+      ]
+    },
+    {
+      "img": "lamb.jpg",
+      "registryId": "lamb",
+      "prayerIds": [
+        "EF",
+        "LPB_2",
+        "LPB_9",
+        "LPB_16",
+        "LPB_23",
+        "LPB_30",
+        "LPB_37",
+        "LPB_42",
+        "LPB_43",
+        "LPB_44",
+        "PBClosing_51",
+        "PBO_2",
+        "VC_3",
+        "VCR_3",
+        "SCA_HYMN_CANTEMOS"
+      ]
+    },
+    {
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt",
+      "prayerIds": [
+        "ANG_INCARNATION",
+        "LPB_4",
+        "LPB_11",
+        "LPB_18",
+        "LPB_25",
+        "LPB_32",
+        "LPB_39",
+        "PBO_4",
+        "VC_5",
+        "VCR_5"
+      ]
+    },
+    {
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian",
+      "prayerIds": [
+        "LPB_3",
+        "LPB_10",
+        "LPB_17",
+        "LPB_24",
+        "LPB_31",
+        "LPB_38",
+        "PBO_3",
+        "VC_4",
+        "VCR_4",
+        "SCA_ACLAMACIONES"
+      ]
+    },
+    {
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot",
+      "prayerIds": [
+        "LPB_7",
+        "LPB_14",
+        "LPB_21",
+        "LPB_28",
+        "LPB_35",
+        "PBO_7",
+        "VC_2",
+        "VCR_2"
+      ]
+    },
+    {
+      "img": "santafaustinastainedglass.jpg",
+      "registryId": "faustinaStainedGlass",
+      "prayerIds": [
+        "NOVENA_DAY_INTENTION",
+        "VL_1",
+        "SCA_ORACION_INICIAL"
+      ]
+    },
+    {
+      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "registryId": "rosaryBeads",
+      "prayerIds": [
+        "VC_8",
+        "VCR_8",
+        "VL_14"
+      ]
+    },
+    {
+      "img": "francisco_de_asis_2.jpg",
+      "registryId": "franciscoDeAsis",
+      "prayerIds": [
+        "VC_10",
+        "VCR_10",
+        "SCA_INV_IMITAR"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/pastor.jpg",
+      "registryId": "galleryPastor",
+      "prayerIds": [
+        "VL_2",
+        "SCA_INV_NOBLE",
+        "opt:cayetano"
+      ]
+    },
+    {
+      "img": "/gallery-images/cathedral praing.jpg",
+      "registryId": "galleryCathedralPraying",
+      "prayerIds": [
+        "SC",
+        "SCA_PETICIONES"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/misteriogozo2.webp",
+      "registryId": "magnificatVisitation",
+      "prayerIds": [
+        "MG2",
+        "MAG_1"
+      ]
+    },
+    {
+      "img": "santafaustinadivinocorazon.jpg",
+      "registryId": "faustinaDivinoCorazon",
+      "prayerIds": [
+        "DMO1",
+        "SCA_CONTRICION"
+      ]
+    },
+    {
+      "img": "HOVTvK2WYAAQgCD.jpg",
+      "registryId": "monkDark",
+      "prayerIds": [
+        "VC_1",
+        "VCR_1"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/cruz-vs-roma.jpg",
+      "registryId": "galleryCruzVsRoma",
+      "prayerIds": [
+        "VC_9",
+        "VCR_9"
+      ]
+    },
+    {
+      "img": "st-anthony-of-padua-icon-402.jpg",
+      "registryId": "stAnthony",
+      "prayerIds": [
+        "VC_11",
+        "VCR_11"
+      ]
+    },
+    {
+      "img": "sain.jpg",
+      "registryId": "sain",
+      "prayerIds": [
+        "VC_12",
+        "VCR_12"
+      ]
+    },
+    {
+      "img": "cover.jpg",
+      "registryId": "cover",
+      "prayerIds": [
+        "VC_13",
+        "VCR_13"
+      ]
+    },
+    {
+      "img": "jpg.jpg",
+      "registryId": "miscJpg",
+      "prayerIds": [
+        "VC_14",
+        "VCR_14"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-2.jpg",
+      "registryId": "gallerySagradoCorazon2",
+      "prayerIds": [
+        "VL_3",
+        "SCA_LITANY"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+      "registryId": "gallerySagradoCorazonEm",
+      "prayerIds": [
+        "VL_4",
+        "SCA_ORACION_TIEMPO"
+      ]
+    },
+    {
+      "img": "/gallery-images/adoracion/6051780745909814.jpg",
+      "registryId": "galleryAdoracion6051780745909814",
+      "prayerIds": [
+        "VL_5",
+        "SCA_TANTUM_ERGO"
+      ]
+    },
+    {
+      "img": "/gallery-images/adoracion/Ante tu presencia.jpg",
+      "registryId": "galleryAdoracionAnteTuPresencia",
+      "prayerIds": [
+        "VL_6",
+        "SCA_RESERVA"
+      ]
+    },
+    {
+      "img": "96PsRGiE.jpg",
+      "registryId": "misc96PsRGiE",
+      "prayerIds": [
+        "VL_8",
+        "SCA_EXPO"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/gloria/angel-de-la-guarda.jpg",
+      "registryId": "angelDeLaGuarda",
+      "prayerIds": [
+        "VL_13",
+        "opt:guardian"
+      ]
+    }
+  ],
+  "unused": [
+    {
+      "id": "latinSanBenito",
+      "name": "San Benito (latín)",
+      "tags": [
+        "saint",
+        "benedict",
+        "latin"
+      ]
+    },
+    {
+      "id": "miscUgQlLjwl",
+      "name": "Por nombrar (uGQlLjwl)",
+      "tags": [
+        "unidentified"
+      ]
+    }
+  ],
+  "prayers": [
+    {
+      "prayerId": "SC",
+      "title": "Señal de la Cruz",
+      "mystery": "gozosos",
+      "img": "/gallery-images/cathedral praing.jpg",
+      "registryId": "galleryCathedralPraying"
+    },
+    {
+      "prayerId": "AC",
+      "title": "Acto de Contrición",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/contricion.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "C",
+      "title": "Credo",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/credo.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "P",
+      "title": "Padre Nuestro",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/padre-nuestro.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "A",
+      "title": "Ave María",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/ave-maria.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "G",
+      "title": "Gloria",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/gloria.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "F",
+      "title": "Oración de Fátima",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/roseLimaJuarez-870x1250.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "MG1",
+      "title": "MG1: La Anunciación del Ángel a María",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriogozo1.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "MG2",
+      "title": "MG2: La Visitación de María a su prima Isabel",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriogozo2.webp",
+      "registryId": "magnificatVisitation"
+    },
+    {
+      "prayerId": "MG3",
+      "title": "MG3: El Nacimiento de Jesús en Belén",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriogozo3.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "MG4",
+      "title": "MG4: La Presentación del Niño Jesús en el Templo",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriogozo4.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "MG5",
+      "title": "MG5: El Niño Jesús perdido y hallado en el Templo",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriogozo5.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "LL",
+      "title": "Letanía de Loreto",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/francisco_de_asis_2.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "S",
+      "title": "Salve Regina",
+      "mystery": "gozosos",
+      "img": "/gallery-images/misterios/modooscuro/salve-regina.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "MD1",
+      "title": "MD1: La Oración de Jesús en el Huerto",
+      "mystery": "dolorosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriodolor1.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "MD2",
+      "title": "MD2: La Flagelación del Señor",
+      "mystery": "dolorosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriodolor2.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "MD3",
+      "title": "MD3: La Coronación de Espinas",
+      "mystery": "dolorosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriodolor3.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "MD4",
+      "title": "MD4: Jesús con la Cruz a cuestas",
+      "mystery": "dolorosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriodolor4.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "MD5",
+      "title": "MD5: La Crucifixión y Muerte de Nuestro Señor",
+      "mystery": "dolorosos",
+      "img": "/gallery-images/misterios/modooscuro/misteriodolor5.jpg",
+      "registryId": null
+    },
+    {
+      "prayerId": "ML1",
+      "title": "ML1: El Bautismo de Jesús en el Jordán",
+      "mystery": "luminosos",
+      "img": "/gallery-images/misterios/modooscuro/misterioLUZ1.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "ML2",
+      "title": "ML2: Las Bodas de Caná",
+      "mystery": "luminosos",
+      "img": "/gallery-images/misterios/modooscuro/misterioLUZ2.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "ML3",
+      "title": "ML3: El Anuncio del Reino de Dios",
+      "mystery": "luminosos",
+      "img": "/gallery-images/misterios/modooscuro/misterioLUZ3.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "ML4",
+      "title": "ML4: La Transfiguración",
+      "mystery": "luminosos",
+      "img": "/gallery-images/misterios/modooscuro/misterioLUZ4.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "ML5",
+      "title": "ML5: La Institución de la Eucaristía",
+      "mystery": "luminosos",
+      "img": "/gallery-images/misterios/modooscuro/misterioLUZ5.webp",
+      "registryId": null
+    },
+    {
+      "prayerId": "DMO1",
+      "title": "Oración opcional — Expiraste, Jesús",
+      "mystery": "divinamisericordia",
+      "img": "santafaustinadivinocorazon.jpg",
+      "registryId": "faustinaDivinoCorazon"
+    },
+    {
+      "prayerId": "DMO2",
+      "title": "Oración opcional — Sangre y Agua",
+      "mystery": "divinamisericordia",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "EF",
+      "title": "Padre Eterno",
+      "mystery": "divinamisericordia",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "MP",
+      "title": "Por su dolorosa Pasión",
+      "mystery": "divinamisericordia",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "HG",
+      "title": "Santo Dios",
+      "mystery": "divinamisericordia",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "NOVENA_DAY_INTENTION",
+      "title": "Toda la humanidad, especialmente los pecadores",
+      "mystery": "divinamisericordia_novena",
+      "img": "santafaustinastainedglass.jpg",
+      "registryId": "faustinaStainedGlass"
+    },
+    {
+      "prayerId": "ANG_SC",
+      "title": "Señal de la Cruz",
+      "mystery": "angelus",
+      "img": "AllMary17thLith.jpeg",
+      "registryId": "allMary17th"
+    },
+    {
+      "prayerId": "ANG_ANNUNCIATION",
+      "title": "El Ángel del Señor",
+      "mystery": "angelus",
+      "img": "HOSdpgPXgAAnxPi.jpg",
+      "registryId": "angAnnunciationArt"
+    },
+    {
+      "prayerId": "ANG_AVE_1",
+      "title": "Ave María",
+      "mystery": "angelus",
+      "img": "Theotokos.jpg",
+      "registryId": "theotokos"
+    },
+    {
+      "prayerId": "ANG_FIAT",
+      "title": "He aquí la esclava",
+      "mystery": "angelus",
+      "img": "HOPm6k_XgAA01Zq.jpg",
+      "registryId": "mary01"
+    },
+    {
+      "prayerId": "ANG_AVE_2",
+      "title": "Ave María",
+      "mystery": "angelus",
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata"
+    },
+    {
+      "prayerId": "ANG_INCARNATION",
+      "title": "El Verbo se hizo carne",
+      "mystery": "angelus",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "ANG_AVE_3",
+      "title": "Ave María",
+      "mystery": "angelus",
+      "img": "/gallery-images/litany/modooscuro/virgo-inmaculata.jpg",
+      "registryId": "galleryVirgoImmaculata"
+    },
+    {
+      "prayerId": "ANG_FINAL",
+      "title": "Oración final",
+      "mystery": "angelus",
+      "img": "HOQsiV3XkAANF6a.jpg",
+      "registryId": "mary02"
+    },
+    {
+      "prayerId": "MAG_SC",
+      "title": "Señal de la Cruz",
+      "mystery": "magnificat",
+      "img": "HOWQmUpXoAAhQVg.jpg",
+      "registryId": "nun05"
+    },
+    {
+      "prayerId": "MAG_1",
+      "title": "Magnificat",
+      "mystery": "magnificat",
+      "img": "/gallery-images/misterios/modooscuro/misteriogozo2.webp",
+      "registryId": "magnificatVisitation"
+    },
+    {
+      "prayerId": "MAG_2",
+      "title": "Ha mirado a su esclava",
+      "mystery": "magnificat",
+      "img": "HOUCofpbsAA1Y7v.jpg",
+      "registryId": "mary03"
+    },
+    {
+      "prayerId": "MAG_3",
+      "title": "El Poderoso hizo obras grandes",
+      "mystery": "magnificat",
+      "img": "HOUVqYlXUAA5DZa.jpg",
+      "registryId": "mary04"
+    },
+    {
+      "prayerId": "MAG_4",
+      "title": "Su misericordia llega",
+      "mystery": "magnificat",
+      "img": "HOV4it8WAAAi39L.jpg",
+      "registryId": "mary05"
+    },
+    {
+      "prayerId": "MAG_5",
+      "title": "Derriba y enaltece",
+      "mystery": "magnificat",
+      "img": "HOVIuwUXYAA-esH.jpg",
+      "registryId": "mary06"
+    },
+    {
+      "prayerId": "MAG_6",
+      "title": "Colma de bienes",
+      "mystery": "magnificat",
+      "img": "HOT5zDBXoAAjA9-.jpg",
+      "registryId": "nun01"
+    },
+    {
+      "prayerId": "MAG_7",
+      "title": "Auxilia a Israel",
+      "mystery": "magnificat",
+      "img": "HOUi_5EXEAAWo6H.jpg",
+      "registryId": "nun02"
+    },
+    {
+      "prayerId": "MAG_DOX",
+      "title": "Gloria al Padre",
+      "mystery": "magnificat",
+      "img": "HOWNTjcWIAIWqpV.png",
+      "registryId": "nun03"
+    },
+    {
+      "prayerId": "LPB_1",
+      "title": "Letanía — Señor, ten piedad",
+      "mystery": "sangrepreciosa_litany",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "LPB_2",
+      "title": "Letanía — Cristo, ten piedad",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_3",
+      "title": "Letanía — Señor, ten piedad",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "LPB_4",
+      "title": "Letanía — Cristo, óyenos",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "LPB_5",
+      "title": "Letanía — Cristo, escúchanos",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "LPB_6",
+      "title": "Letanía — Dios, Padre celestial",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "LPB_7",
+      "title": "Letanía — Dios Hijo, Redentor del mundo",
+      "mystery": "sangrepreciosa_litany",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "LPB_8",
+      "title": "Letanía — Dios, Espíritu Santo",
+      "mystery": "sangrepreciosa_litany",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "LPB_9",
+      "title": "Letanía — Santísima Trinidad, un solo Dios",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_10",
+      "title": "Letanía — Sangre de Cristo, Hijo unigénito del Pad",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "LPB_11",
+      "title": "Letanía — Sangre de Cristo, Verbo de Dios encarnad",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "LPB_12",
+      "title": "Letanía — Sangre de Cristo, de la Nueva y Eterna A",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "LPB_13",
+      "title": "Letanía — Sangre de Cristo, derramada sobre la tie",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "LPB_14",
+      "title": "Letanía — Sangre de Cristo, vertida abundantemente",
+      "mystery": "sangrepreciosa_litany",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "LPB_15",
+      "title": "Letanía — Sangre de Cristo, brotada en la Coronaci",
+      "mystery": "sangrepreciosa_litany",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "LPB_16",
+      "title": "Letanía — Sangre de Cristo, derramada en el Camino",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_17",
+      "title": "Letanía — Sangre de Cristo, preciosísima en el Cla",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "LPB_18",
+      "title": "Letanía — Sangre de Cristo, manantial de misericor",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "LPB_19",
+      "title": "Letanía — Sangre de Cristo, precio de nuestra rede",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "LPB_20",
+      "title": "Letanía — Sangre de Cristo, sin la cual no hay sal",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "LPB_21",
+      "title": "Letanía — Sangre de Cristo, bebida del Cáliz eucar",
+      "mystery": "sangrepreciosa_litany",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "LPB_22",
+      "title": "Letanía — Sangre de Cristo, torrente que lava los ",
+      "mystery": "sangrepreciosa_litany",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "LPB_23",
+      "title": "Letanía — Sangre de Cristo, victoriosa sobre los d",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_24",
+      "title": "Letanía — Sangre de Cristo, fortaleza de los márti",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "LPB_25",
+      "title": "Letanía — Sangre de Cristo, virtud de los confesor",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "LPB_26",
+      "title": "Letanía — Sangre de Cristo, que engendras vírgenes",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "LPB_27",
+      "title": "Letanía — Sangre de Cristo, sostén de los que peli",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "LPB_28",
+      "title": "Letanía — Sangre de Cristo, alivio de los que sufr",
+      "mystery": "sangrepreciosa_litany",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "LPB_29",
+      "title": "Letanía — Sangre de Cristo, consuelo de las almas ",
+      "mystery": "sangrepreciosa_litany",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "LPB_30",
+      "title": "Letanía — Sangre de Cristo, esperanza de los pecad",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_31",
+      "title": "Letanía — Sangre de Cristo, libertad de los oprimi",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "LPB_32",
+      "title": "Letanía — Sangre de Cristo, auxilio de los moribun",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "LPB_33",
+      "title": "Letanía — Sangre de Cristo, paz y dulzura de los c",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "LPB_34",
+      "title": "Letanía — Sangre de Cristo, prenda de vida eterna",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "LPB_35",
+      "title": "Letanía — Sangre de Cristo, que libras de las tini",
+      "mystery": "sangrepreciosa_litany",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "LPB_36",
+      "title": "Letanía — De todo mal",
+      "mystery": "sangrepreciosa_litany",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "LPB_37",
+      "title": "Letanía — De todo pecado",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_38",
+      "title": "Letanía — De las tentaciones del demonio",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "LPB_39",
+      "title": "Letanía — De la perdición eterna",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "LPB_40",
+      "title": "Letanía — Por tu Sagrada Encarnación",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "LPB_41",
+      "title": "Letanía — Por tu Pasión y Cruz",
+      "mystery": "sangrepreciosa_litany",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "LPB_42",
+      "title": "Letanía — Cordero de Dios, que quitas el pecado de",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_43",
+      "title": "Letanía — Cordero de Dios, que quitas el pecado de",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_44",
+      "title": "Letanía — Cordero de Dios, que quitas el pecado de",
+      "mystery": "sangrepreciosa_litany",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "LPB_Close",
+      "title": "Oración final",
+      "mystery": "sangrepreciosa_litany",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PBContrition_1",
+      "title": "Acto de Contrición",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_P_2",
+      "title": "Padre Nuestro — Misterio de la Sangre — La Circuncisión",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PB_3",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_4",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_5",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_6",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_7",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_G_8",
+      "title": "Gloria",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PB_P_9",
+      "title": "Padre Nuestro — Misterio de la Sangre — La Agonía en el Huerto de los Olivos",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PB_10",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_11",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_12",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_13",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_14",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_G_15",
+      "title": "Gloria",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PB_P_16",
+      "title": "Padre Nuestro — Misterio de la Sangre — La Flagelación",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PB_17",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_18",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_19",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_20",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_21",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_G_22",
+      "title": "Gloria",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PB_P_23",
+      "title": "Padre Nuestro — Misterio de la Sangre — La Coronación de Espinas",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PB_24",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_25",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_26",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_27",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_28",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_G_29",
+      "title": "Gloria",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PB_P_30",
+      "title": "Padre Nuestro — Misterio de la Sangre — El Camino del Calvario",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PB_31",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_32",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_33",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_34",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_35",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_G_36",
+      "title": "Gloria",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PB_P_37",
+      "title": "Padre Nuestro — Misterio de la Sangre — La Crucifixión y las Llagas",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PB_38",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_39",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_40",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_41",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_42",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_G_43",
+      "title": "Gloria",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PB_P_44",
+      "title": "Padre Nuestro — Misterio de la Sangre — La Lanza en el Costado",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PB_45",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_46",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_47",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_48",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_49",
+      "title": "Invocación a la Preciosísima Sangre",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PB_G_50",
+      "title": "Gloria",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PBClosing_51",
+      "title": "Oración final",
+      "mystery": "sangrepreciosa_chaplet",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "PBO_1",
+      "title": "Primera Ofrenda — por los pecadores",
+      "mystery": "sangrepreciosa_ofrendas",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "PBO_2",
+      "title": "Segunda Ofrenda — por los sacerdotes",
+      "mystery": "sangrepreciosa_ofrendas",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "PBO_3",
+      "title": "Tercera Ofrenda — reparación",
+      "mystery": "sangrepreciosa_ofrendas",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "PBO_4",
+      "title": "Cuarta Ofrenda — por los moribundos",
+      "mystery": "sangrepreciosa_ofrendas",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "PBO_5",
+      "title": "Quinta Ofrenda — por las almas del Purgatorio",
+      "mystery": "sangrepreciosa_ofrendas",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "PBO_6",
+      "title": "Sexta Ofrenda — por la Iglesia",
+      "mystery": "sangrepreciosa_ofrendas",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "PBO_7",
+      "title": "Séptima Ofrenda — por la paz del mundo",
+      "mystery": "sangrepreciosa_ofrendas",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "VC_OPEN",
+      "title": "Vía Crucis",
+      "mystery": "viacrucis",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "VC_1",
+      "title": "Estación 1 — Jesús es condenado a muerte",
+      "mystery": "viacrucis",
+      "img": "HOVTvK2WYAAQgCD.jpg",
+      "registryId": "monkDark"
+    },
+    {
+      "prayerId": "VC_2",
+      "title": "Estación 2 — Jesús carga con la Cruz",
+      "mystery": "viacrucis",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "VC_3",
+      "title": "Estación 3 — Jesús cae por primera vez",
+      "mystery": "viacrucis",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "VC_4",
+      "title": "Estación 4 — Jesús encuentra a su Madre",
+      "mystery": "viacrucis",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "VC_5",
+      "title": "Estación 5 — Simón de Cirene ayuda a Jesús",
+      "mystery": "viacrucis",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "VC_6",
+      "title": "Estación 6 — La Verónica enjuga el rostro de Jesús",
+      "mystery": "viacrucis",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "VC_7",
+      "title": "Estación 7 — Jesús cae por segunda vez",
+      "mystery": "viacrucis",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "VC_8",
+      "title": "Estación 8 — Jesús consuela a las hijas de Jerusalén",
+      "mystery": "viacrucis",
+      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "registryId": "rosaryBeads"
+    },
+    {
+      "prayerId": "VC_9",
+      "title": "Estación 9 — Jesús cae por tercera vez",
+      "mystery": "viacrucis",
+      "img": "/gallery-images/misterios/modooscuro/cruz-vs-roma.jpg",
+      "registryId": "galleryCruzVsRoma"
+    },
+    {
+      "prayerId": "VC_10",
+      "title": "Estación 10 — Jesús es despojado de sus vestiduras",
+      "mystery": "viacrucis",
+      "img": "francisco_de_asis_2.jpg",
+      "registryId": "franciscoDeAsis"
+    },
+    {
+      "prayerId": "VC_11",
+      "title": "Estación 11 — Jesús es clavado en la Cruz",
+      "mystery": "viacrucis",
+      "img": "st-anthony-of-padua-icon-402.jpg",
+      "registryId": "stAnthony"
+    },
+    {
+      "prayerId": "VC_12",
+      "title": "Estación 12 — Jesús muere en la Cruz",
+      "mystery": "viacrucis",
+      "img": "sain.jpg",
+      "registryId": "sain"
+    },
+    {
+      "prayerId": "VC_13",
+      "title": "Estación 13 — Jesús es bajado de la Cruz",
+      "mystery": "viacrucis",
+      "img": "cover.jpg",
+      "registryId": "cover"
+    },
+    {
+      "prayerId": "VC_14",
+      "title": "Estación 14 — Jesús es puesto en el sepulcro",
+      "mystery": "viacrucis",
+      "img": "jpg.jpg",
+      "registryId": "miscJpg"
+    },
+    {
+      "prayerId": "VCR_OPEN",
+      "title": "Vía Crucis · Rosario",
+      "mystery": "viacrucis_rosario",
+      "img": "vitreaux-cruz.jpg",
+      "registryId": "vitreauxCruz"
+    },
+    {
+      "prayerId": "VCR_1",
+      "title": "Estación 1 — Jesús es condenado a muerte",
+      "mystery": "viacrucis_rosario",
+      "img": "HOVTvK2WYAAQgCD.jpg",
+      "registryId": "monkDark"
+    },
+    {
+      "prayerId": "VCR_2",
+      "title": "Estación 2 — Jesús carga con la Cruz",
+      "mystery": "viacrucis_rosario",
+      "img": "HOTthgTWEAAHsZG.jpg",
+      "registryId": "artSacredHot"
+    },
+    {
+      "prayerId": "VCR_3",
+      "title": "Estación 3 — Jesús cae por primera vez",
+      "mystery": "viacrucis_rosario",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "VCR_4",
+      "title": "Estación 4 — Jesús encuentra a su Madre",
+      "mystery": "viacrucis_rosario",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "VCR_5",
+      "title": "Estación 5 — Simón de Cirene ayuda a Jesús",
+      "mystery": "viacrucis_rosario",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt"
+    },
+    {
+      "prayerId": "VCR_6",
+      "title": "Estación 6 — La Verónica enjuga el rostro de Jesús",
+      "mystery": "viacrucis_rosario",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "VCR_7",
+      "title": "Estación 7 — Jesús cae por segunda vez",
+      "mystery": "viacrucis_rosario",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "VCR_8",
+      "title": "Estación 8 — Jesús consuela a las hijas de Jerusalén",
+      "mystery": "viacrucis_rosario",
+      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "registryId": "rosaryBeads"
+    },
+    {
+      "prayerId": "VCR_9",
+      "title": "Estación 9 — Jesús cae por tercera vez",
+      "mystery": "viacrucis_rosario",
+      "img": "/gallery-images/misterios/modooscuro/cruz-vs-roma.jpg",
+      "registryId": "galleryCruzVsRoma"
+    },
+    {
+      "prayerId": "VCR_10",
+      "title": "Estación 10 — Jesús es despojado de sus vestiduras",
+      "mystery": "viacrucis_rosario",
+      "img": "francisco_de_asis_2.jpg",
+      "registryId": "franciscoDeAsis"
+    },
+    {
+      "prayerId": "VCR_11",
+      "title": "Estación 11 — Jesús es clavado en la Cruz",
+      "mystery": "viacrucis_rosario",
+      "img": "st-anthony-of-padua-icon-402.jpg",
+      "registryId": "stAnthony"
+    },
+    {
+      "prayerId": "VCR_12",
+      "title": "Estación 12 — Jesús muere en la Cruz",
+      "mystery": "viacrucis_rosario",
+      "img": "sain.jpg",
+      "registryId": "sain"
+    },
+    {
+      "prayerId": "VCR_13",
+      "title": "Estación 13 — Jesús es bajado de la Cruz",
+      "mystery": "viacrucis_rosario",
+      "img": "cover.jpg",
+      "registryId": "cover"
+    },
+    {
+      "prayerId": "VCR_14",
+      "title": "Estación 14 — Jesús es puesto en el sepulcro",
+      "mystery": "viacrucis_rosario",
+      "img": "jpg.jpg",
+      "registryId": "miscJpg"
+    },
+    {
+      "prayerId": "VL_OPEN",
+      "title": "Vía Lucis",
+      "mystery": "vialucis",
+      "img": "/gallery-images/misterios/modooscuro/misteriogloria3.webp",
+      "registryId": "galleryPentecost"
+    },
+    {
+      "prayerId": "VL_1",
+      "title": "Estación 1 — Jesús resucita de entre los muertos",
+      "mystery": "vialucis",
+      "img": "santafaustinastainedglass.jpg",
+      "registryId": "faustinaStainedGlass"
+    },
+    {
+      "prayerId": "VL_2",
+      "title": "Estación 2 — Los discípulos encuentran la tumba vacía",
+      "mystery": "vialucis",
+      "img": "/gallery-images/misterios/modooscuro/pastor.jpg",
+      "registryId": "galleryPastor"
+    },
+    {
+      "prayerId": "VL_3",
+      "title": "Estación 3 — Jesús se aparece a María Magdalena",
+      "mystery": "vialucis",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-2.jpg",
+      "registryId": "gallerySagradoCorazon2"
+    },
+    {
+      "prayerId": "VL_4",
+      "title": "Estación 4 — Jesús se aparece a los discípulos de Emaús",
+      "mystery": "vialucis",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+      "registryId": "gallerySagradoCorazonEm"
+    },
+    {
+      "prayerId": "VL_5",
+      "title": "Estación 5 — Jesús da el Espíritu Santo a los Apóstoles",
+      "mystery": "vialucis",
+      "img": "/gallery-images/adoracion/6051780745909814.jpg",
+      "registryId": "galleryAdoracion6051780745909814"
+    },
+    {
+      "prayerId": "VL_6",
+      "title": "Estación 6 — Jesús se aparece a Tomás",
+      "mystery": "vialucis",
+      "img": "/gallery-images/adoracion/Ante tu presencia.jpg",
+      "registryId": "galleryAdoracionAnteTuPresencia"
+    },
+    {
+      "prayerId": "VL_7",
+      "title": "Estación 7 — Jesús se aparece en el lago de Tiberíades",
+      "mystery": "vialucis",
+      "img": "/gallery-images/adoracion/Candlelight and Silence_ A Story from Adoration.jpg",
+      "registryId": "galleryAdoracionCandlelightSilence"
+    },
+    {
+      "prayerId": "VL_8",
+      "title": "Estación 8 — Jesús confía a Pedro el cuidado de su rebaño",
+      "mystery": "vialucis",
+      "img": "96PsRGiE.jpg",
+      "registryId": "misc96PsRGiE"
+    },
+    {
+      "prayerId": "VL_9",
+      "title": "Estación 9 — Jesús envía a los discípulos a evangelizar",
+      "mystery": "vialucis",
+      "img": "HOWNqmdXMAAeHH7.png",
+      "registryId": "nun04"
+    },
+    {
+      "prayerId": "VL_10",
+      "title": "Estación 10 — Jesús asciende al cielo",
+      "mystery": "vialucis",
+      "img": "HOUQXFjXwAAW7yL.jpg",
+      "registryId": "monk01"
+    },
+    {
+      "prayerId": "VL_11",
+      "title": "Estación 11 — María y los Apóstoles esperan al Espíritu Santo",
+      "mystery": "vialucis",
+      "img": "edbd5609aa30b5237d89812de8025c9f--early-christian-christian-art.jpg",
+      "registryId": "earlyChristianAlt"
+    },
+    {
+      "prayerId": "VL_12",
+      "title": "Estación 12 — El Espíritu Santo desciende en Pentecostés",
+      "mystery": "vialucis",
+      "img": "/gallery-images/licensed-image.jpg",
+      "registryId": "galleryLicensedImage"
+    },
+    {
+      "prayerId": "VL_13",
+      "title": "Estación 13 — María es asunta al cielo",
+      "mystery": "vialucis",
+      "img": "/gallery-images/misterios/gloria/angel-de-la-guarda.jpg",
+      "registryId": "angelDeLaGuarda"
+    },
+    {
+      "prayerId": "VL_14",
+      "title": "Estación 14 — María es coronada Reina del cielo",
+      "mystery": "vialucis",
+      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "registryId": "rosaryBeads"
+    },
+    {
+      "prayerId": "SCA_EXPO",
+      "title": "Exposición del Santísimo Sacramento",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "96PsRGiE.jpg",
+      "registryId": "misc96PsRGiE"
+    },
+    {
+      "prayerId": "SCA_HYMN_CANTEMOS",
+      "title": "Cantemos al Amor de los amores",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "lamb.jpg",
+      "registryId": "lamb"
+    },
+    {
+      "prayerId": "SCA_HYMN_LAUDATE",
+      "title": "Laudate omnes gentes",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "SCA_ORACION_INICIAL",
+      "title": "Oración inicial",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "santafaustinastainedglass.jpg",
+      "registryId": "faustinaStainedGlass"
+    },
+    {
+      "prayerId": "SCA_CONTRICION",
+      "title": "Acto de Contrición",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "santafaustinadivinocorazon.jpg",
+      "registryId": "faustinaDivinoCorazon"
+    },
+    {
+      "prayerId": "SCA_O_BONE_JESU",
+      "title": "Oh Buen Jesús",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon.jpg",
+      "registryId": "gallerySagradoCorazon"
+    },
+    {
+      "prayerId": "SCA_LITANY",
+      "title": "Letanías al Sagrado Corazón",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-2.jpg",
+      "registryId": "gallerySagradoCorazon2"
+    },
+    {
+      "prayerId": "SCA_INV_NOBLE",
+      "title": "Dame, Señor, un noble corazón",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/misterios/modooscuro/pastor.jpg",
+      "registryId": "galleryPastor"
+    },
+    {
+      "prayerId": "SCA_ORACION_TIEMPO",
+      "title": "Señor, quítame tiempo",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+      "registryId": "gallerySagradoCorazonEm"
+    },
+    {
+      "prayerId": "SCA_INV_IMITAR",
+      "title": "Queremos imitarte, Señor",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "francisco_de_asis_2.jpg",
+      "registryId": "franciscoDeAsis"
+    },
+    {
+      "prayerId": "SCA_LECTURA",
+      "title": "Mateo 20, 25-28",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "SCA_PETICIONES",
+      "title": "Señor, escúchanos",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/cathedral praing.jpg",
+      "registryId": "galleryCathedralPraying"
+    },
+    {
+      "prayerId": "SCA_ACLAMACIONES",
+      "title": "Aclamaciones Eucarísticas",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "Early-Christian-Art-768x549.jpg",
+      "registryId": "earlyChristian"
+    },
+    {
+      "prayerId": "SCA_TANTUM_ERGO",
+      "title": "Bendición Eucarística",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/adoracion/6051780745909814.jpg",
+      "registryId": "galleryAdoracion6051780745909814"
+    },
+    {
+      "prayerId": "SCA_RESERVA",
+      "title": "Reserva — Salmo 116",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/adoracion/Ante tu presencia.jpg",
+      "registryId": "galleryAdoracionAnteTuPresencia"
+    },
+    {
+      "prayerId": "SCA_ORACION_FINAL",
+      "title": "Oración final",
+      "mystery": "sagrado_corazon_adoracion",
+      "img": "/gallery-images/litany/modooscuro/SANTA MARGARITA MARIA DE ALACOQUE FRENTE AL SAGRADO CORAZON DE JESUS !!!.jpg",
+      "registryId": "galleryMargaritaSacredHeart"
+    },
+    {
+      "prayerId": "opt:guardian",
+      "title": "Ángel de la Guarda",
+      "mystery": "optional",
+      "img": "/gallery-images/misterios/gloria/angel-de-la-guarda.jpg",
+      "registryId": "angelDeLaGuarda"
+    },
+    {
+      "prayerId": "opt:michael",
+      "title": "San Miguel Arcángel",
+      "mystery": "optional",
+      "img": "/gallery-images/litany/modooscuro/Stained glass of St_ Michael the Archangel.jpg",
+      "registryId": "galleryStMichael"
+    },
+    {
+      "prayerId": "opt:carmen",
+      "title": "Virgen del Carmen",
+      "mystery": "optional",
+      "img": "lady-of-sorrows.jpg",
+      "registryId": "maryCarmen"
+    },
+    {
+      "prayerId": "opt:expedito",
+      "title": "San Expedito",
+      "mystery": "optional",
+      "img": "/gallery-images/litany/modooscuro/san-expedito.jpg",
+      "registryId": "gallerySanExpedito"
+    },
+    {
+      "prayerId": "opt:benedict",
+      "title": "San Benito",
+      "mystery": "optional",
+      "img": "sanctus-benedictus.jpg",
+      "registryId": "sanctusBenedictus"
+    },
+    {
+      "prayerId": "opt:patrick",
+      "title": "San Patricio — Coraza",
+      "mystery": "optional",
+      "img": "Stained glass_..jpg",
+      "registryId": "stainedGlass"
+    },
+    {
+      "prayerId": "opt:cayetano",
+      "title": "San Cayetano",
+      "mystery": "optional",
+      "img": "/gallery-images/misterios/modooscuro/pastor.jpg",
+      "registryId": "galleryPastor"
+    }
+  ],
+  "note": "imgmo/light-dark revamp deferred — uniqueness is primary resolved Liber BG per prayer id"
+}

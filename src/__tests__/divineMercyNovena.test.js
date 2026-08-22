@@ -126,8 +126,8 @@ describe('divineMercyNovena tests', () => {
       />
     );
 
-    // Click forward
-    fireEvent.click(screen.getByRole('button', { name: /siguiente oración/i }));
+    // Click forward — navigation lives in BottomNav, which fires the step event
+    fireEvent(window, new CustomEvent('rosario-booklet-step', { detail: { dir: 1 } }));
     advanceBookletTransition();
 
     // In Divine Mercy Novena (isMercy is true), onAveMariaComplete should not be called

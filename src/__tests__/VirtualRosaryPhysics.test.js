@@ -61,12 +61,15 @@ describe('VirtualRosaryPhysics (core wiring)', () => {
       isClosingPrayersUnlocked(seq, lockedIndex)
     );
 
-    // Bridge onBeadClick -> onNodeClick
+    // Bridge onBeadClick -> onNodeClick. The adapter defers the commit to a
+    // clean pointer release (drag-safe taps), so flush with onBeadHoldEnd.
     passedLocked.onBeadClick(5, 'P');
+    passedLocked.onBeadHoldEnd();
     expect(onNodeClick).toHaveBeenCalledWith(5);
 
-    // Bridge onBeadHoldStart -> onBeadHoldStart
+    // Bridge onBeadHoldStart -> onBeadHoldStart (same clean-release gate)
     passedLocked.onBeadHoldStart(7, 'A');
+    passedLocked.onBeadHoldEnd();
     expect(onBeadHoldStart).toHaveBeenCalledWith(7);
 
     rerender(

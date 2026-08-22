@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-08T07:01:28.679Z",
-  "count": 112,
-  "skipped_no_en_text": 41,
+  "generated": "2026-08-22T03:29:16.595Z",
+  "count": 113,
+  "skipped_no_en_text": 45,
   "skipped_sample": [
     {
       "id": "LL",
@@ -76,6 +76,22 @@
       "mystery": "viacrucis"
     },
     {
+      "id": "VCR_OPEN",
+      "mystery": "viacrucis_rosario"
+    },
+    {
+      "id": "VCR",
+      "mystery": "viacrucis_rosario"
+    },
+    {
+      "id": "VCR",
+      "mystery": "viacrucis_rosario"
+    },
+    {
+      "id": "VCR",
+      "mystery": "viacrucis_rosario"
+    },
+    {
       "id": "VL_OPEN",
       "mystery": "vialucis"
     },
@@ -106,22 +122,6 @@
     {
       "id": "VL_7",
       "mystery": "vialucis"
-    },
-    {
-      "id": "VL_8",
-      "mystery": "vialucis"
-    },
-    {
-      "id": "VL_9",
-      "mystery": "vialucis"
-    },
-    {
-      "id": "VL_10",
-      "mystery": "vialucis"
-    },
-    {
-      "id": "SCA_EXPO",
-      "mystery": "sagrado_corazon_adoracion"
     }
   ],
   "voice": {
@@ -1319,6 +1319,17 @@
       "voice": "fish_default_lock",
       "seed": 42,
       "inVoiceMap": true
+    },
+    {
+      "id": "VCR",
+      "prayerId": "VCR_4",
+      "mystery": "viacrucis_rosario",
+      "chars": 270,
+      "text": "María encuentra a su Hijo en el camino del dolor. Sus miradas se unen en un mismo amor y una misma ofrenda. Santa María, enséñanos a permanecer junto a los que sufren, sin huir del dolor. Te adoramos, Cristo, y te bendecimos, porque por tu Santa Cruz redimiste al mundo.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
     },
     {
       "id": "VL_11",
