@@ -727,7 +727,7 @@ export default function AppShell() {
       )}
 
       <MobileElementStepper
-        enabled={settings.mobileElementArrowsEnabled}
+        enabled={settings.mobileElementArrowsEnabled && vistaActiva !== 'rose'}
         isLeftHanded={settings.isLeftHanded}
       />
 

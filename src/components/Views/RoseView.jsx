@@ -88,13 +88,21 @@ export const getSequenceData = (mysteryType = 'gozosos') => {
 
 // Word-level reading pace — no longer character-based speeds.
 // Each verse enforces a minimum total duration regardless of word count.
+// Module-level constant: the hold-to-pray effect depends on currentRhythm;
+// recreating this object every render made that effect tear down its own
+// timer on every warmth-tick re-render, so holding never advanced words.
+const RHYTHM_CONFIG = {
+  'oro':      { minVerseMs: 3000, minWordMs: 250 }, // Fast/Focus
+  'incienso': { minVerseMs: 5000, minWordMs: 400 }, // Standard/Contemplative
+  'mirra':    { minVerseMs: 8000, minWordMs: 600 }, // Slow/Deep
+};
 
-export default function RoseView({ 
-  currentPrayerIndex, 
-  misterioActual, 
-  onUpdateProgreso, 
-  onBack, 
-  soundEnabled, 
+export default function RoseView({
+  currentPrayerIndex,
+  misterioActual,
+  onUpdateProgreso,
+  onBack,
+  soundEnabled,
   onToggleSound,
   meditationRitmo = 'incienso',
   simpleMode = false
@@ -108,14 +116,8 @@ export default function RoseView({
     Math.max(currentPrayerIndex, 0),
     Math.max(secuencia.length - 1, 0)
   );
-
-  // ─── Interaction Timing Config ───
-  const RHYTHM_CONFIG = {
-    'oro':      { minVerseMs: 3000, minWordMs: 250 }, // Fast/Focus
-    'incienso': { minVerseMs: 5000, minWordMs: 400 }, // Standard/Contemplative
-    'mirra':    { minVerseMs: 8000, minWordMs: 600 }, // Slow/Deep
-  };
   const currentRhythm = RHYTHM_CONFIG[meditationRitmo] || RHYTHM_CONFIG.incienso;
+
 
   // ─── Cloud Sync ───
   const { cloudState, syncToCloud } = useCloudSync();
@@ -909,7 +911,6 @@ export default function RoseView({
 
   const handlePointerDown = (e) => {
     debug(`[RoseView] PointerDown: ${e.pointerType}`);
-    initAudio();
     pointerStartX.current = e.clientX;
     pointerStartY.current = e.clientY;
     isVerticalGesture.current = false;
@@ -1208,8 +1209,16 @@ export default function RoseView({
             lineHeight: 1.4,
           }}>
             {simpleMode
-              ? (isCargando ? 'Toca para avanzar el verso' : 'Toca aquí para rezar')
-              : (isCargando ? 'Mantén… las palabras avanzan solas' : 'Mantén presionado aquí para rezar')}
+              ? (isPrayerComplete
+                  ? 'Soltá para pasar a la próxima oración'
+                  : isVersoComplete
+                    ? 'Soltá para seguir con la próxima estrofa'
+                    : isCargando ? 'Toca para avanzar el verso' : 'Toca aquí para rezar')
+              : (isPrayerComplete
+                  ? 'Soltá para pasar a la próxima oración'
+                  : isVersoComplete
+                    ? 'Soltá para seguir con la próxima estrofa'
+                    : isCargando ? 'Mantén… las palabras avanzan solas' : 'Mantén presionado aquí para rezar')}
           </span>
         </div>
       </div>
