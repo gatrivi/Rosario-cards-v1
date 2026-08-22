@@ -183,39 +183,37 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
         className={`bottom-nav glass-footer${bookletMode ? ' bottom-nav--booklet' : ''}`}
         aria-label="Navegación principal"
       >
-        {bookletMode ? (
-          <div className="booklet-toolbar" role="toolbar" aria-label="Controles de lectura">
-            {isLeftHanded ? nextButton : previousButton}
-            <button
-              type="button"
-              className={`booklet-toolbar__btn booklet-toolbar__btn--devotions${
-                devotionsOpen || devotionsActive ? ' booklet-toolbar__btn--active' : ''
-              }`}
-              aria-label="Devociones y oraciones breves"
-              aria-expanded={devotionsOpen}
-              title="Devociones"
-              onClick={emitDevotionsToggle}
-            >
-              <DevotionsIcon size={22} />
-              <span>Devociones</span>
-            </button>
-            {isLeftHanded ? previousButton : nextButton}
-          </div>
-        ) : null}
+        {bookletMode ? (isLeftHanded ? nextButton : previousButton) : null}
         <div className="bottom-nav__row">
-          {orderedCore.map((item) => (
-            <NavButton
-              key={item.id}
-              iconId={item.id}
-              texto={item.texto}
-              activo={vistaActiva === item.id}
-              onClick={item.onClick}
-              simpleMode={simpleMode}
-              dataAttrs={{
-                ...(item.ariaLabel ? { 'aria-label': item.ariaLabel } : {}),
-                ...(item.title ? { title: item.title } : {}),
-              }}
-            />
+          {orderedCore.map((item, i) => (
+            <React.Fragment key={item.id}>
+              {bookletMode && i === 1 ? (
+                <button
+                  type="button"
+                  className={`booklet-toolbar__btn booklet-toolbar__btn--inline booklet-toolbar__btn--devotions${
+                    devotionsOpen || devotionsActive ? ' booklet-toolbar__btn--active' : ''
+                  }`}
+                  aria-label="Devociones y oraciones breves"
+                  aria-expanded={devotionsOpen}
+                  title="Devociones"
+                  onClick={emitDevotionsToggle}
+                >
+                  <DevotionsIcon size={22} />
+                  <span>Devociones</span>
+                </button>
+              ) : null}
+              <NavButton
+                iconId={item.id}
+                texto={item.texto}
+                activo={vistaActiva === item.id}
+                onClick={item.onClick}
+                simpleMode={simpleMode}
+                dataAttrs={{
+                  ...(item.ariaLabel ? { 'aria-label': item.ariaLabel } : {}),
+                  ...(item.title ? { title: item.title } : {}),
+                }}
+              />
+            </React.Fragment>
           ))}
           <NavButton
             key="mas"
@@ -228,6 +226,7 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
             dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Reliquario, Rosa, Voz, Autorezo' }}
           />
         </div>
+        {bookletMode ? (isLeftHanded ? previousButton : nextButton) : null}
       </nav>
     </>
   );

@@ -91,30 +91,39 @@
   font-size: 0.65rem;
 }
 
-/* Local Booklet commands are a toolbar, not navigation tabs. */
-/* One glass footer: booklet toolbar lives INSIDE the nav bar (no floating pill). */
+/* Booklet commands live in the same single glass row as the nav tabs:
+   [‹] Libro · Devociones · Rosario · Más [›] — one bar, no extra rows. */
 .bottom-nav--booklet {
-  flex-direction: column;
-  height: auto;
-  justify-content: center;
+  justify-content: space-between;
 }
 
+
+/* Flanking ‹ › step buttons sit directly under .bottom-nav */
+.bottom-nav > .booklet-toolbar__btn--icon {
+  align-self: stretch;
+  color: #999;
+  flex: 0 0 auto;
+  width: 38px;
+}
 .bottom-nav__row {
   align-items: stretch;
   display: flex;
-  height: 70px;
+  flex: 1;
   width: 100%;
 }
 
-.booklet-toolbar {
-  align-items: center;
-  display: grid;
+.bottom-nav--booklet .bottom-nav__row .bottom-nav__btn {
+  min-width: 0;
+}
+
+.booklet-toolbar__btn--inline {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   gap: 2px;
-  grid-template-columns: 44px auto 44px;
+  height: 100%;
   justify-content: center;
-  min-height: 48px;
-  padding: 2px 8px 0;
-  width: 100%;
 }
 
 .booklet-toolbar__btn {
@@ -225,12 +234,9 @@
   color: #999;
 }
 
-@media (max-width: 360px) {
-  .booklet-toolbar__btn--devotions {
-    padding: 0 10px;
-  }
-
-  .booklet-toolbar__btn--devotions span {
-    font-size: 0.7rem;
+/* <390px: the single row would overflow — drop the Devociones label. */
+@media (max-width: 389px) {
+  .booklet-toolbar__btn--inline span {
+    display: none;
   }
 }

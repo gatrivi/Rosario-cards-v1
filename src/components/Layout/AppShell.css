@@ -7,9 +7,9 @@
   --app-above-nav: calc(var(--app-bottom-nav-height) + var(--app-safe-bottom));
 }
 
-/* Booklet: toolbar row lives inside the glass footer → taller nav footprint. */
+/* Booklet: single-row footer with inline step buttons → same 70px footprint. */
 .app-shell--booklet {
-  --app-bottom-nav-height: 122px;
+  --app-bottom-nav-height: 70px;
 }
 
 /* --- Action dock --- */
