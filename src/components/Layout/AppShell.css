@@ -7,6 +7,11 @@
   --app-above-nav: calc(var(--app-bottom-nav-height) + var(--app-safe-bottom));
 }
 
+/* Booklet: toolbar row lives inside the glass footer → taller nav footprint. */
+.app-shell--booklet {
+  --app-bottom-nav-height: 122px;
+}
+
 /* --- Action dock --- */
 .app-action-dock {
   position: absolute;

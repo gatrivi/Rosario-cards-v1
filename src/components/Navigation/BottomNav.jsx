@@ -59,12 +59,13 @@ const MAS_DESTINATIONS = [
   { id: 'tracker', texto: 'Diario', hint: 'Compromiso diario / Rosedal' },
   { id: 'macetones', texto: 'Rosedal', hint: 'Macetones del día' },
   { id: 'camino', texto: 'Camino', hint: 'Peregrinación' },
+  { id: 'reliquias', texto: 'Reliquario', hint: 'Reliquias e íconos de santos' },
   { id: 'rose', texto: 'Rosa', hint: 'Meditación (mantener)' },
   { id: 'voz', texto: 'Voz', hint: 'Estudio de grabación' },
   { id: 'playlist', texto: 'Autorezo', hint: 'Cola → Liber con guía ≫' },
 ];
 
-const MAS_ACTIVE = new Set(['tracker', 'macetones', 'camino', 'rose', 'voz', 'playlist', 'jardin', 'monk']);
+const MAS_ACTIVE = new Set(['tracker', 'macetones', 'camino', 'reliquias', 'rose', 'voz', 'playlist', 'jardin', 'monk']);
 
 export default function BottomNav({ isLeftHanded, simpleMode = false }) {
   const navigate = useNavigate();
@@ -178,51 +179,55 @@ export default function BottomNav({ isLeftHanded, simpleMode = false }) {
         </div>
       ) : null}
 
-      {bookletMode ? (
-        <div className="booklet-toolbar" role="toolbar" aria-label="Controles de lectura">
-          {isLeftHanded ? nextButton : previousButton}
-          <button
-            type="button"
-            className={`booklet-toolbar__btn booklet-toolbar__btn--devotions${
-              devotionsOpen || devotionsActive ? ' booklet-toolbar__btn--active' : ''
-            }`}
-            aria-label="Devociones y oraciones breves"
-            aria-expanded={devotionsOpen}
-            title="Devociones"
-            onClick={emitDevotionsToggle}
-          >
-            <DevotionsIcon size={22} />
-            <span>Devociones</span>
-          </button>
-          {isLeftHanded ? previousButton : nextButton}
-        </div>
-      ) : null}
-
-      <nav className="bottom-nav glass-footer" aria-label="Navegación principal">
-        {orderedCore.map((item) => (
+      <nav
+        className={`bottom-nav glass-footer${bookletMode ? ' bottom-nav--booklet' : ''}`}
+        aria-label="Navegación principal"
+      >
+        {bookletMode ? (
+          <div className="booklet-toolbar" role="toolbar" aria-label="Controles de lectura">
+            {isLeftHanded ? nextButton : previousButton}
+            <button
+              type="button"
+              className={`booklet-toolbar__btn booklet-toolbar__btn--devotions${
+                devotionsOpen || devotionsActive ? ' booklet-toolbar__btn--active' : ''
+              }`}
+              aria-label="Devociones y oraciones breves"
+              aria-expanded={devotionsOpen}
+              title="Devociones"
+              onClick={emitDevotionsToggle}
+            >
+              <DevotionsIcon size={22} />
+              <span>Devociones</span>
+            </button>
+            {isLeftHanded ? previousButton : nextButton}
+          </div>
+        ) : null}
+        <div className="bottom-nav__row">
+          {orderedCore.map((item) => (
+            <NavButton
+              key={item.id}
+              iconId={item.id}
+              texto={item.texto}
+              activo={vistaActiva === item.id}
+              onClick={item.onClick}
+              simpleMode={simpleMode}
+              dataAttrs={{
+                ...(item.ariaLabel ? { 'aria-label': item.ariaLabel } : {}),
+                ...(item.title ? { title: item.title } : {}),
+              }}
+            />
+          ))}
           <NavButton
-            key={item.id}
-            iconId={item.id}
-            texto={item.texto}
-            activo={vistaActiva === item.id}
-            onClick={item.onClick}
+            key="mas"
+            iconId="mas"
+            texto="Más"
+            activo={masActivo || masOpen}
+            ariaExpanded={masOpen}
+            onClick={() => setMasOpen((o) => !o)}
             simpleMode={simpleMode}
-            dataAttrs={{
-              ...(item.ariaLabel ? { 'aria-label': item.ariaLabel } : {}),
-              ...(item.title ? { title: item.title } : {}),
-            }}
+            dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Reliquario, Rosa, Voz, Autorezo' }}
           />
-        ))}
-        <NavButton
-          key="mas"
-          iconId="mas"
-          texto="Más"
-          activo={masActivo || masOpen}
-          ariaExpanded={masOpen}
-          onClick={() => setMasOpen((o) => !o)}
-          simpleMode={simpleMode}
-          dataAttrs={{ 'aria-label': 'Más: Diario, Rosedal, Camino, Rosa, Voz, Autorezo' }}
-        />
+        </div>
       </nav>
     </>
   );
