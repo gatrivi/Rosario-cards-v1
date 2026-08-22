@@ -1,6 +1,11 @@
 # Commercial readiness — gaps, decisions, plan (2026-08-21)
 
-Companion to [handoff-2026-08-21.md](../handoff-2026-08-21.md). Status after pass #1.
+Companion to [handoff-2026-08-21.md](../handoff-2026-08-21.md). Status after pass #1
+(rebased onto origin v0.3.81; 207/207 tests green; pushed).
+
+**Launch frame:** Luján 2026 pilgrimage Oct 3–4 (see [lujan-2026-launch.md](./lujan-2026-launch.md)).
+Free for pilgrims; donations optional and non-blocking; monetization for non-pilgrims
+deliberately undecided. Gap priorities below are ordered by Luján impact.
 
 ## Gap board
 
