@@ -12,11 +12,32 @@ describe('historic devoutions + San Miguel', () => {
   test('catalog marks have vs soon; upcoming thumbs have art urls', () => {
     expect(HISTORIC_DEVOTIONS.some((d) => d.status === 'have')).toBe(true);
     const soon = upcomingDevotionThumbs();
-    expect(soon.length).toBeGreaterThanOrEqual(4);
+    expect(soon.length).toBeGreaterThanOrEqual(3);
     soon.forEach((d) => {
       expect(d.img).toMatch(/^\/mock\//);
       expect(d.status).toBe('soon');
     });
+  });
+
+  test('core devotions are live, illustrated, and have Spanish prayer text', () => {
+    const coreIds = ['lujan', 'immaculate_heart', 'st_joseph', 'holy_spirit', 'holy_souls'];
+
+    coreIds.forEach((id) => {
+      const prayer = OPTIONAL_PRAYERS.find((p) => p.id === id);
+      const catalog = HISTORIC_DEVOTIONS.find((d) => d.id === id);
+      expect(prayer).toBeTruthy();
+      expect(prayer.img).toMatch(/^\/mock\//);
+      expect(prayer.imgCandidates.length).toBeGreaterThan(0);
+      expect(prayer.variants.find((v) => v.id === 'es')?.text.length).toBeGreaterThan(20);
+      expect(catalog?.status).toBe('have');
+    });
+  });
+
+  test('Holy Spirit and Holy Souls include traditional Latin variants', () => {
+    const spirit = OPTIONAL_PRAYERS.find((p) => p.id === 'holy_spirit');
+    const souls = OPTIONAL_PRAYERS.find((p) => p.id === 'holy_souls');
+    expect(spirit?.variants.find((v) => v.id === 'la')?.text).toMatch(/Veni, Sancte Spiritus/i);
+    expect(souls?.variants.find((v) => v.id === 'la')?.text).toMatch(/Requiem aeternam/i);
   });
 
   test('San Miguel optional prayer ships with text variants', () => {

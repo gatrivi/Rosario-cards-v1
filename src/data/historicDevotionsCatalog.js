@@ -62,7 +62,6 @@ export const HISTORIC_DEVOTIONS = [
     status: 'have',
     imgId: 'galleryMaterImmaculata',
   },
-  // ── not yet as shelf devoutions ──
   {
     id: 'st_michael',
     label: 'San Miguel',
@@ -78,18 +77,39 @@ export const HISTORIC_DEVOTIONS = [
     imgId: 'gallerySanExpedito',
   },
   {
+    id: 'lujan',
+    label: 'Nuestra Señora de Luján',
+    note: 'Patrona de la Argentina · peregrinación',
+    status: 'have',
+    imgId: 'theotokos',
+  },
+  {
     id: 'immaculate_heart',
     label: 'Inmaculado Corazón',
-    note: 'Mateo · Fátima',
-    status: 'soon',
+    note: 'Fátima · primeros sábados',
+    status: 'have',
     imgId: 'galleryMaterImmaculata',
   },
   {
     id: 'holy_spirit',
     label: 'Espíritu Santo',
     note: 'Pentecostés / novena',
-    status: 'soon',
+    status: 'have',
     imgId: 'galleryPentecost',
+  },
+  {
+    id: 'st_joseph',
+    label: 'San José',
+    note: 'patrono de la Iglesia',
+    status: 'have',
+    imgId: 'earlyChristian',
+  },
+  {
+    id: 'holy_souls',
+    label: 'Fieles Difuntos',
+    note: 'descanso eterno · noviembre',
+    status: 'have',
+    imgId: 'galleryCathedralPraying',
   },
   {
     id: 'scapular',
@@ -104,13 +124,6 @@ export const HISTORIC_DEVOTIONS = [
     note: 'Catalina Labouré',
     status: 'soon',
     imgId: 'allMary17th',
-  },
-  {
-    id: 'st_joseph',
-    label: 'San José',
-    note: 'patrono de la Iglesia',
-    status: 'soon',
-    imgId: 'earlyChristian',
   },
   {
     id: 'memorare',
