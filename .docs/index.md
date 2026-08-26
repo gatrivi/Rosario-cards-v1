@@ -79,6 +79,7 @@
 | **Jul 2026 session (art/Firebase/Vía)** | [session-report-2026-07-03-night.md](./dev-notes/session-report-2026-07-03-night.md) |
 | **Commercial readiness (gaps/decisions)** | [product/commercial-readiness.md](./product/commercial-readiness.md) |
 | **Handoff 2026-08-21** | [handoff-2026-08-21.md](./handoff-2026-08-21.md) |
+| **Handoff 2026-08-26 (Rosa repair)** | [handoff-2026-08-26.md](./handoff-2026-08-26.md) |
 
 ## Stack (one line)
 
