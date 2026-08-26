@@ -1,4 +1,4 @@
-import { getPrayerData, getSequenceData } from '../components/Views/RoseView';
+import { getPrayerData, getSequenceData } from '../components/Views/roseViewHelpers';
 
 describe('RoseView core helpers (pure)', () => {
   test('getPrayerData returns null for unknown id', () => {

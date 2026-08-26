@@ -1,4 +1,4 @@
-const DEFAULT_VERSION = '0.3.81';
+const DEFAULT_VERSION = '0.3.82';
 
 function isRosaPath(win) {
   return Boolean(win?.location?.pathname === '/rosa');

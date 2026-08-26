@@ -101,7 +101,8 @@ jest.mock('../components/Views/SacredText', () => {
   return { __esModule: true, default: MockSacredText };
 });
 
-import RoseView, { getSequenceData } from '../components/Views/RoseView';
+import RoseView from '../components/Views/RoseView';
+import { getSequenceData } from '../components/Views/roseViewHelpers';
 
 const aveMariaIndex = getSequenceData('gozosos').findIndex((prayer) => prayer.id === 'A');
 

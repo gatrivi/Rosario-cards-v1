@@ -4,11 +4,11 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.81',
-  name: 'Rosa drag contract',
+  version: '0.3.82',
+  name: 'El Rosal Reparable',
   CURRENT: [
-    'Rosa: mantener y arrastrar funciona igual con mouse y touch',
-    'La rosa SVG crece con el progreso real de la oración',
+    'Rosa: la zona para rezar ya no queda tapada por la barra inferior',
+    'Rosa: al terminar una oración, "Amén." se muestra antes de avanzar',
     'PWA fuerza el bundle nuevo y purga el cache anterior',
   ],
   UPCOMING: [

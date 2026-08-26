@@ -1,5 +1,5 @@
 import RosarioPrayerBook from '../data/RosarioPrayerBook';
-import { getPrayerData } from '../components/Views/RoseView';
+import { getPrayerData } from '../components/Views/roseViewHelpers';
 import { getPrayerVariants } from '../data/prayerVariants';
 import {
   getPrayerImageCandidates,
