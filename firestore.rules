@@ -1,12 +1,68 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TEMP open rules for art curation. Tighten with Auth later.
-    match /shared/{docId} {
-      allow read, write: if true;
+    function signedIn() {
+      return request.auth != null;
     }
+
+    function owns(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Shared content remains publicly readable.
+    // Voice library publication is server/admin-only for now.
+    match /shared/voiceLibrary {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Transitional: shared art tooling still writes from the authenticated app.
+    // Exclude voiceLibrary explicitly because overlapping Firestore matches OR together.
+    match /shared/{docId} {
+      allow read: if true;
+      allow write: if signedIn() && docId != 'voiceLibrary';
+    }
+
+    // Canonical user profile. Security-sensitive role cannot be self-promoted.
+    match /users/{uid} {
+      allow read: if owns(uid);
+      allow create: if owns(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'user';
+      allow update: if owns(uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.role == resource.data.role;
+      allow delete: if owns(uid);
+    }
+
+    // User-owned application state.
+    match /users/{uid}/state/{docId} {
+      allow read, write: if owns(uid);
+    }
+
+    // Legacy art sync uses a pre-auth syncId. Keep it authenticated during migration.
     match /users/{syncId}/meta/{docId} {
-      allow read, write: if true;
+      allow read, write: if signedIn();
+    }
+
+    // User recordings enter moderation as draft/pending and cannot self-publish.
+    match /recordings/{recordingId} {
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.status in ['draft', 'pending'];
+
+      allow read: if resource.data.status == 'published'
+        || (signedIn() && resource.data.ownerUid == request.auth.uid);
+
+      allow update: if signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == request.auth.uid
+        && resource.data.status != 'published'
+        && request.resource.data.status in ['draft', 'pending'];
+
+      allow delete: if signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && resource.data.status != 'published';
     }
   }
 }
