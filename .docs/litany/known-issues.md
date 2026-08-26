@@ -23,6 +23,11 @@
 
 - No structured two-voice litany UI — flat teleprompter only
 
+
+## Fixed (2026-08-26)
+
+- **Rosa unprayable on phones** — `BottomNav` (absolute, z=50, transparent `glass-footer` on Rosa) covered the hold-to-pray pill; every press hit the invisible nav. Zone + hints now sit above `var(--app-above-nav)`. Also: touch release double-fired the advance (`pointerup` + implicit leave), consuming the "Amén." state — guarded via `isPointerDownRef`. Helpers extracted to `roseViewHelpers.js`. Commit `243274b`, v0.3.82.
+
 ## Fixed (2026-07-03 night)
 
 - **Per-station Vía Crucis / Lucis meditations** — unique text per station in `viaCrucisData.js`
