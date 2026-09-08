@@ -1,81 +1,37 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from 'react';
+import { isBeadPrayerRun } from '../utils/beadProgression';
 
-/**
- * Hook to manage bead interaction state and event listeners
- */
-export const useBeadInteraction = (getRosarySequence) => {
-  const [lastTouchedBeadId, setLastTouchedBeadId] = useState(null);
-  const [touchTimestamp, setTouchTimestamp] = useState(0);
-  const [enhancedBeadId, setEnhancedBeadId] = useState(null);
-  const [blinkingBeadId, setBlinkingBeadId] = useState(null);
-  const touchCountRef = useRef(new Map());
-
-  const [chainBeadHighlight, setChainBeadHighlight] = useState(null);
-  const [pressSameBeadId, setPressSameBeadId] = useState(null);
-
-  // Listen for content exhausted event to trigger next bead blinking
+/** Canvas feedback uses live refs and actual Matter body IDs. */
+export const useBeadInteraction = (getRosarySequence, matterInstance) => {
+  const state = useRef({
+    lastTouchedBeadId: null, enhancedBeadId: null, blinkingBeadId: null,
+    chainBeadHighlight: null, pressSameBeadId: null,
+  });
   useEffect(() => {
-    const handleContentExhausted = (event) => {
-      const { prayerIndex } = event.detail;
-      const rosarySequence = getRosarySequence();
-      const nextPrayerIndex = prayerIndex + 1;
-
-      if (nextPrayerIndex < rosarySequence.length) {
-        setTimeout(() => {
-          setBlinkingBeadId((prev) => `next-${nextPrayerIndex}`);
-          setEnhancedBeadId((prev) => `next-${nextPrayerIndex}`);
-
-          setTimeout(() => {
-            setBlinkingBeadId(null);
-            setEnhancedBeadId(null);
-          }, 3000);
-        }, 100);
+    let feedbackTimer;
+    const findBody = (index) => matterInstance.current?.allBeads.find((body) => body.prayerIndex === index);
+    const clearFeedback = () => {
+      Object.assign(state.current, { enhancedBeadId: null, blinkingBeadId: null, chainBeadHighlight: null, pressSameBeadId: null });
+    };
+    const exhausted = (event) => {
+      const index = event.detail?.prayerIndex;
+      if (!Number.isInteger(index) || index + 1 >= getRosarySequence().length) return;
+      clearTimeout(feedbackTimer);
+      clearFeedback();
+      const next = findBody(index + 1);
+      state.current.blinkingBeadId = next?.id ?? null;
+      state.current.enhancedBeadId = next?.id ?? null;
+      if (isBeadPrayerRun(getRosarySequence(), index, index + 1)) {
+        state.current.chainBeadHighlight = state.current.lastTouchedBeadId;
+        state.current.pressSameBeadId = state.current.lastTouchedBeadId;
       }
+      feedbackTimer = setTimeout(clearFeedback, 3000);
     };
-
-    window.addEventListener("contentExhausted", handleContentExhausted);
+    window.addEventListener('contentExhausted', exhausted);
     return () => {
-      window.removeEventListener("contentExhausted", handleContentExhausted);
+      window.removeEventListener('contentExhausted', exhausted);
+      clearTimeout(feedbackTimer);
     };
-  }, [getRosarySequence]);
-
-  // Listen for enter chain prayers event
-  useEffect(() => {
-    const handleEnterChainPrayers = (event) => {
-      const { prayerIndex } = event.detail;
-
-      setPressSameBeadId(`chain-${prayerIndex}`);
-      setChainBeadHighlight(`chain-${prayerIndex}`);
-
-      const { prayerHistory } = require("../../../utils/soundEffects");
-      const soundEffects = require("../../../utils/soundEffects").default;
-      soundEffects.playEnterChainPrayerChime(prayerHistory);
-
-      setTimeout(() => {
-        setPressSameBeadId(null);
-        setEnhancedBeadId(null);
-      }, 5000);
-    };
-
-    window.addEventListener("enterChainPrayers", handleEnterChainPrayers);
-    return () => {
-      window.removeEventListener("enterChainPrayers", handleEnterChainPrayers);
-    };
-  }, []);
-
-  return {
-    lastTouchedBeadId,
-    setLastTouchedBeadId,
-    touchTimestamp,
-    setTouchTimestamp,
-    enhancedBeadId,
-    setEnhancedBeadId,
-    blinkingBeadId,
-    setBlinkingBeadId,
-    touchCountRef,
-    chainBeadHighlight,
-    setChainBeadHighlight,
-    pressSameBeadId,
-    setPressSameBeadId,
-  };
+  }, [getRosarySequence, matterInstance]);
+  return state;
 };

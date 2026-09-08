@@ -20,9 +20,21 @@
   z-index: 5;
 }
 
+.rosary-prayer-layer-wrap--leaving { animation: rosary-prayer-out 220ms ease-in forwards; }
+.rosary-prayer-layer-wrap--hidden { opacity: 0; visibility: hidden; }
+.rosary-prayer-layer-wrap--entering { animation: rosary-prayer-in 550ms ease-out both; }
+.rosary-prayer-layer-wrap:not(.rosary-prayer-layer-wrap--ready) .booklet-prayer-panel--rosary { pointer-events: none; }
+@keyframes rosary-prayer-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes rosary-prayer-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rosary-prayer-layer-wrap--leaving,
+  .rosary-prayer-layer-wrap--entering { animation-duration: 1ms; }
+}
+
 .booklet-prayer-panel--rosary {
   flex: none;
-  justify-content: center;
+  justify-content: flex-start;
   margin: 0 auto;
   max-height: min(52vh, 28rem);
   max-width: min(20rem, 92vw);
@@ -35,7 +47,7 @@
 
 .rosary-chrome {
   align-items: flex-end;
-  bottom: 12px;
+  bottom: calc(var(--app-above-nav, 72px) + 12px);
   display: flex;
   flex-direction: column;
   gap: 8px;

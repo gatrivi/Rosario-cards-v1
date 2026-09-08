@@ -56,6 +56,11 @@ export default function RosaryAdapter({
     pendingChainClickRef.current = prayerIndex;
   }, []);
 
+  const handleBeadRepeat = useCallback((prayerIndex) => {
+    cancelPendingBeadInteraction();
+    window.dispatchEvent(new CustomEvent('beadRepeatTouch', { detail: { prayerIndex } }));
+  }, [cancelPendingBeadInteraction]);
+
   const handleBeadHoldEnd = useCallback(() => {
     const chainPrayerIndex = pendingChainClickRef.current;
     const beadPrayerIndex = pendingBeadRef.current;
@@ -121,6 +126,7 @@ export default function RosaryAdapter({
       canStartLitany={heartLitanyEnabled}
       isInLitany={isInLitany}
       onBeadClick={handleBeadClick}
+      onBeadRepeat={handleBeadRepeat}
       onBeadHoldStart={handleBeadHoldStart}
       onBeadHoldEnd={handleBeadHoldEnd}
       prayers={RosarioPrayerBook}

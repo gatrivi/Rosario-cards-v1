@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
 
-const getDefaultRosaryZoom = () => {
-  if (typeof window === "undefined") return 1.2;
-
-  const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches;
-  const mobileViewport = window.innerWidth <= 768;
-  return coarsePointer || mobileViewport ? 1.6 : 1.2;
-};
+// The physical layout fits the viewport at 1x; magnification is opt-in.
+const getDefaultRosaryZoom = () => 1;
 
 /**
  * Hook to manage rosary visibility, developer mode, and zoom state

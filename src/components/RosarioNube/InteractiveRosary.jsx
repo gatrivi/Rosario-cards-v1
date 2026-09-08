@@ -15,7 +15,9 @@ import {
   buildRosaryPhysicsIndices,
   getDecadeAveIndex,
 } from "../../utils/rosarySequenceUtils";
-import { hitTestBeadBodies } from "./utils/canvasPointer";
+import { getRosaryLayout } from "./utils/rosaryLayout";
+import { isBeadPrayerRun } from "./utils/beadProgression";
+import { hitTestBeadBodies, syncMouseToCanvas, mouseGesturePoint } from "./utils/canvasPointer";
 
 const debug = () => {};
 
@@ -52,12 +54,12 @@ const InteractiveRosary = ({
   sequence,
   currentMystery = "gozosos",
   currentPrayerIndex = 0,
-  onBeadClick,
+  onBeadRepeat,
   onBeadHoldStart,
   onBeadHoldEnd,
   prayers,
   className = "",
-  rosaryFriction = 0.05,
+  rosaryFriction = 0.07,
   isInLitany = false,
   pressedBeads = new Set(),
   areClosingPrayersUnlocked = false,
@@ -139,21 +141,30 @@ const InteractiveRosary = ({
     return ids;
   }, [fallbackGetSequence]);
 
-  const {
-    lastTouchedBeadId,
-    setLastTouchedBeadId,
-    touchTimestamp,
-    setTouchTimestamp,
-    enhancedBeadId,
-    setEnhancedBeadId,
-    blinkingBeadId,
-    setBlinkingBeadId,
-    touchCountRef,
-    chainBeadHighlight,
-    setChainBeadHighlight,
-    pressSameBeadId,
-    setPressSameBeadId,
-  } = useBeadInteraction(getRosarySequence);
+  const interactionRef = useBeadInteraction(getRosarySequence, matterInstance);
+  const livePropsRef = useRef({});
+  livePropsRef.current = { areClosingPrayersUnlocked, canStartLitanyProp, isInLitany, pressedBeads, onBeadRepeat };
+  const gestureCancelledRef = useRef(false);
+
+  useEffect(() => {
+    const cancel = () => {
+      gestureCancelledRef.current = true;
+      swipeStartRef.current = null;
+      beadPhysicsDragRef.current = false;
+      emptyCallbacksRef.current.onEmptyPointerUp?.();
+    };
+    const multiTouch = (event) => { if (event.touches?.length > 1) cancel(); };
+    window.addEventListener('touchstart', multiTouch, true);
+    window.addEventListener('touchcancel', cancel, true);
+    window.addEventListener('pointercancel', cancel, true);
+    window.addEventListener('blur', cancel);
+    return () => {
+      window.removeEventListener('touchstart', multiTouch, true);
+      window.removeEventListener('touchcancel', cancel, true);
+      window.removeEventListener('pointercancel', cancel, true);
+      window.removeEventListener('blur', cancel);
+    };
+  }, []);
 
   const [cursorStyle, setCursorStyle] = React.useState("grab");
 
@@ -208,11 +219,6 @@ const InteractiveRosary = ({
     }
   }, [developerMode]);
 
-  const onBeadClickRef = useRef(onBeadClick);
-  useEffect(() => {
-    onBeadClickRef.current = onBeadClick;
-  }, [onBeadClick]);
-
   const onBeadHoldStartRef = useRef(onBeadHoldStart);
   useEffect(() => {
     onBeadHoldStartRef.current = onBeadHoldStart;
@@ -232,7 +238,7 @@ const InteractiveRosary = ({
     const instance = matterInstance.current;
     const canvas = instance?.render?.canvas;
     if (!canvas || !instance.allBeads?.length) return false;
-    return hitTestBeadBodies(instance.allBeads, canvas, clientX, clientY, 28);
+    return hitTestBeadBodies(instance.allBeads, canvas, clientX, clientY);
   }, []);
 
   const isPanBlocked = useCallback(() => beadPhysicsDragRef.current, []);
@@ -244,8 +250,10 @@ const InteractiveRosary = ({
     const container = sceneRef.current;
     const width = container.clientWidth;
     const height = container.clientHeight;
+    if (width <= 0 || height <= 0) return;
     // Visual zoom is CSS — keep Matter bead sizes stable across wheel/pinch.
-    const physicsZoom = 1;
+    const layout = getRosaryLayout(width, height);
+    const physicsZoom = layout.scale;
 
     debug("🎯 InteractiveRosary: Initializing...", {
       width,
@@ -269,6 +277,7 @@ const InteractiveRosary = ({
 
     // --- Engine and World ---
     const engine = Matter.Engine.create({
+      constraintIterations: 4,
       gravity: { x: 0, y: 0 }, // Zero gravity for floating rosary
     });
     const world = engine.world;
@@ -331,17 +340,16 @@ const InteractiveRosary = ({
       })`
     );
 
-    // Modulate physics based on vitality
-    const baseRestitution = 0.3 + vitality * 0.65; // 0.3 (sad) → 0.95 (glorious)
-    const vitalityFriction = rosaryFriction * (1.2 - vitality * 0.2); // Slight decrease at high vitality
+    // Prayer history affects visual feedback, not the weight/bounce of the beads.
+    const baseRestitution = 0.12;
+    const airFriction = rosaryFriction;
 
     // --- Helper function for bead options ---
-    // Using working MatterScene.tsx values to fix slingshot dragging
-    // Now with vitality-based restitution for "living rosary" effect
+    // Damped beads and low restitution keep release motion quiet.
     const beadOptions = (color, extraOptions = {}) => ({
       restitution: baseRestitution,
       friction: 0.5,
-      frictionAir: vitalityFriction,
+      frictionAir: airFriction,
       density: 0.001,
       render: {
         fillStyle: color,
@@ -353,9 +361,9 @@ const InteractiveRosary = ({
     });
 
     // --- Helper function for constraint/spring options ---
-    const springOptions = (length, stiffness = 0.08) => ({
+    const springOptions = (length, stiffness = 0.18) => ({
       stiffness: stiffness,
-      damping: 0.5,
+      damping: 0.18,
       length: length,
       render: {
         strokeStyle: "#94a3b8",
@@ -419,18 +427,14 @@ const InteractiveRosary = ({
     };
 
     // --- Layout & Bead Creation ---
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const baseRadius = Math.min(width, height) / 3.5;
-    const radius = baseRadius * physicsZoom; // Apply zoom to radius
     const baseChainSegmentLength = 15;
     const chainSegmentLength = baseChainSegmentLength * physicsZoom; // Apply zoom to chain length
 
     // --- Create Center Bead (Heart medal at top of loop) ---
     // This is decorative - holds image of Our Lady
     const centerBead = Matter.Bodies.circle(
-      centerX,
-      centerY - radius,
+      layout.points[0].x,
+      layout.points[0].y,
       centerBeadSize,
       beadOptions(colors.heart, {
         beadNumber: 0, // Display number (or hide it)
@@ -445,16 +449,13 @@ const InteractiveRosary = ({
     // Structure: 10 beads → lone → 10 beads → lone → 10 beads → lone → 10 beads → lone → 10 beads
     const numMainBeads = 54; // Changed from 50
     const mainLoopBeads = [];
-    const numLoopPoints = numMainBeads + 1; // +1 because heart bead closes the loop
 
     // Lone bead positions (after every 10 beads)
     const loneBeadPositions = [10, 21, 32, 43];
     const loneBeadPrayerIndices = physicsMaps.loneBeadPrayerIndices;
 
     for (let i = 0; i < numMainBeads; i++) {
-      const angle = ((i + 1) / numLoopPoints) * 2 * Math.PI - Math.PI / 2;
-      const x = centerX + radius * Math.cos(angle);
-      const y = centerY + radius * Math.sin(angle);
+      const { x, y } = layout.points[i + 1];
 
       // Check if this is a lone bead position
       const loneBeadIndex = loneBeadPositions.indexOf(i);
@@ -888,7 +889,7 @@ const InteractiveRosary = ({
     const crossBody = Matter.Body.create({
       parts: crossParts,
       friction: 0.5,
-      frictionAir: vitalityFriction, // Use vitality-modulated friction
+      frictionAir: airFriction,
       restitution: Math.min(baseRestitution, 0.5), // Cap at 0.5 for cross stability
       isCrossComposite: true, // Custom flag
       crossParts: crossParts, // Store reference for rendering
@@ -924,9 +925,12 @@ const InteractiveRosary = ({
     constraints.push(
       Matter.Constraint.create({
         ...springOptions(crossToTailChainHalf),
-        bodyA: crossParts[0], // Attach directly to head square
+        bodyA: crossBody, // Solve the rigid parent, not a detached compound part
         bodyB: crossToTailInvisible,
-        pointA: { x: 0, y: -cbs / 2 }, // TOP edge of head square (north)
+        pointA: {
+          x: crossParts[0].position.x - crossBody.position.x,
+          y: crossParts[0].position.y - crossBody.position.y - cbs / 2,
+        },
         pointB: { x: 0, y: 0 }, // CENTER anchor on invisible bead
         prayerIndex: crossChainIdx,
         prayerId: pid(crossChainIdx),
@@ -971,10 +975,12 @@ const InteractiveRosary = ({
 
     // --- Mouse Control ---
     const mouse = Matter.Mouse.create(render.canvas);
+    syncMouseToCanvas(mouse, render.canvas);
     const mouseConstraint = Matter.MouseConstraint.create(engine, {
       mouse: mouse,
       constraint: {
-        stiffness: guidedRef.current ? 0.6 : 0.9,
+        stiffness: 0.2,
+        damping: 0.18,
         render: { visible: false },
       },
       // Dedicated pick category so invisible beads (category 0x0002, mask 0x0004)
@@ -986,6 +992,8 @@ const InteractiveRosary = ({
     render.mouse = mouse;
 
     trackEvent(mouseConstraint, "mousedown", (event) => {
+      gestureCancelledRef.current = pinchZoomRef.current.active;
+      swipeStartRef.current = null;
       if (event.source.body) {
         beadPhysicsDragRef.current = true;
         return;
@@ -995,8 +1003,7 @@ const InteractiveRosary = ({
         soundEffects.initAudioContext();
       }
       swipeStartRef.current = {
-        x: mouse.position.x,
-        y: mouse.position.y,
+        ...mouseGesturePoint(mouse, 'mousedown'),
         time: Date.now(),
       };
       emptyCallbacksRef.current.onEmptyPointerDown?.(event);
@@ -1194,269 +1201,49 @@ const InteractiveRosary = ({
 
       if (!clickedBead) return;
 
-      // HEART BEAD LITANY NAVIGATION (check before prayerIndex check)
-      if (clickedBead.isHeartMedal) {
-        debug(`❤️ Heart bead touched`);
-
-        // Check if closing prayers are unlocked (5 mysteries visited)
-        if (canStartLitanyProp) {
-          // Litany access is unlocked - dispatch event
-          window.dispatchEvent(
-            new CustomEvent("heartBeadPressed", {
-              detail: { beadId: clickedBead.id },
-            })
-          );
-
-          // Play soft chime for litany progression
-          soundEffects.playChainPrayerChime();
-        } else {
-          debug(`❤️ Litany not yet unlocked - need 5 mysteries`);
-          // Play gentle "not available" sound
-          soundEffects.playBeadCollision(400, 0.1, 0.05); // Low, soft sound
-        }
-
-        return; // Don't process as normal bead
-      }
-
-      // Now check for prayerIndex (heart bead doesn't have one)
-      if (clickedBead.prayerIndex === undefined) return;
-
-      // TAIL BEADS CLOSING PRAYERS REDIRECT
-      // When closing prayers are unlocked, tail beads (indices 5, 6, 9) should show closing prayers (79, 80, 81)
-      let effectivePrayerIndex = clickedBead.prayerIndex;
-      let effectivePrayerId = clickedBead.prayerId;
-
-      if (areClosingPrayersUnlocked) {
-        if (tailToClosingMap[clickedBead.prayerIndex] !== undefined) {
-          const seq = getRosarySequence();
-          effectivePrayerIndex = tailToClosingMap[clickedBead.prayerIndex];
-          effectivePrayerId = getPrayerIdAt(seq, effectivePrayerIndex);
-          debug(
-            `🎯 Closing prayers unlocked - redirecting tail bead ${clickedBead.prayerIndex} → ${effectivePrayerIndex} (${effectivePrayerId})`
-          );
-        }
-      }
-
       isHoldActive = true;
-      // ponytail: when held, make rosary 30% more translucent so prayers stay readable.
+      isDragging = false;
       setBeadsOpacity(BEAD_OPACITY * 0.7);
-      holdStart = { x: mouse.position.x, y: mouse.position.y };
+      holdStart = mouseGesturePoint(mouse, 'mousedown');
       holdBody = clickedBody;
       draggedBead = clickedBead;
-      onBeadHoldStartRef.current?.(effectivePrayerIndex, effectivePrayerId);
-      prayerHistory.recordPrayer(effectivePrayerIndex, currentMystery);
-
-      const now = Date.now();
-      const beadId = clickedBead.id;
-      const timeSinceLastTouch = now - touchTimestamp;
-
-      // Get current touch count for this bead
-      const currentCount = touchCountRef.current.get(beadId) || 0;
-
-      // Only count as new touch if >300ms since last touch (not a drag)
-      // Reduced from 500ms to make interaction more responsive
-      const isNewTouch =
-        timeSinceLastTouch > 300 || lastTouchedBeadId !== beadId;
-
-      if (isNewTouch) {
-        const newCount = lastTouchedBeadId === beadId ? currentCount + 1 : 1;
-        touchCountRef.current.set(beadId, newCount);
-        setLastTouchedBeadId(beadId);
-        setTouchTimestamp(now);
-
-        debug(
-          `🎯 Bead touched: #${clickedBead.beadNumber}, Touch ${newCount}, Index ${clickedBead.prayerIndex}, Prayer ${clickedBead.prayerId}`
-        );
-
-        // Check if this bead has chain prayers
-        const seq = getRosarySequence();
-        const hasChainPrayers = (prayerIndex) => {
-          if (prayerIndex >= seq.length - 1) return false;
-
-          const chainPrayers = [];
-          const beadPrayers = ["SC", "P", "A", "LL", "S"];
-
-          for (let i = prayerIndex + 1; i < seq.length; i++) {
-            const nextPrayer = getPrayerIdAt(seq, i);
-
-            if (nextPrayer && nextPrayer.startsWith("M")) {
-              break;
-            }
-
-            if (beadPrayers.includes(nextPrayer)) {
-              break;
-            }
-
-            chainPrayers.push(i);
-          }
-
-          return chainPrayers.length > 0 ? chainPrayers : false;
-        };
-
-        if (newCount === 1) {
-          // FIRST TOUCH: reveal handled by onBeadHoldStart (mousedown hold)
-          debug(`🎯 First touch - hold reveal`);
-
-          // Clear scroll-triggered chain entry indicators
-          // This handles both tapping the original bead again OR tapping the invisible bead
-          setPressSameBeadId(null);
-          if (clickedBead.isInvisible) {
-            debug(
-              `✨ Invisible bead tapped - clearing chain entry indicators`
-            );
-            setEnhancedBeadId(null);
-          }
-
-          // Check for chain prayers (but don't set chainBeadHighlight yet)
-          // Chain mode will be entered via scroll-triggered enterChainPrayers event
-          const chainPrayers = hasChainPrayers(effectivePrayerIndex);
-          debug(
-            `🔍 Chain prayer check for index ${effectivePrayerIndex} (${effectivePrayerId}):`,
-            chainPrayers
-              ? `Found ${chainPrayers.length} chain prayers at indices ${chainPrayers}`
-              : "None found"
-          );
-
-          if (chainPrayers) {
-            // This bead has chain prayers - keep touch count active
-            // Next taps will scroll text, and when scroll ends, enterChainPrayers will trigger
-            debug(
-              `⛓️ Bead has chain prayers at indices: [${chainPrayers.join(
-                ", "
-              )}] - waiting for scroll to end`
-            );
-          } else {
-            // No chain prayers - reset touch count
-            debug(`✅ No chain prayers, resetting touch count`);
-            touchCountRef.current.set(beadId, 0);
-          }
-
-          // Clear blinking state if any
-          setBlinkingBeadId(null);
-        } else {
-          // SECOND+ TOUCH: Could be scrolling OR chain navigation
-          //
-          // FLOW:
-          // 1. User taps bead (1st time) - shows prayer
-          // 2. User taps bead (2nd+ time) - dispatches beadRepeatTouch for scrolling
-          // 3. If scroll reaches bottom AND chain prayers exist:
-          //    - ViewPrayers dispatches enterChainPrayers event
-          //    - Event handler sets pressSameBeadId and highlights invisible bead
-          // 4. User taps bead again - NOW we're in chain mode, navigate through chain prayers
-          //
-          // USER CAN TAP EITHER:
-          // - The original bead (simple, works like before)
-          // - The highlighted invisible bead (new, more intuitive for touch)
-          const chainPrayers = hasChainPrayers(effectivePrayerIndex);
-
-          debug(
-            `🔄 Touch ${newCount} on bead #${clickedBead.beadNumber} (index ${effectivePrayerIndex}, ${effectivePrayerId})`
-          );
-          debug(`   Chain prayers available:`, chainPrayers || "None");
-
-          // Check if this bead was highlighted for chain navigation (from scroll-triggered entry)
-          // This can be triggered by:
-          // 1. Tapping the original bead after enterChainPrayers event (chainBeadHighlight === beadId)
-          // 2. Tapping an invisible bead that was highlighted (clickedBead.isInvisible && enhancedBeadId === beadId)
-          // 3. Simply having chain prayers and continuing to tap the same bead (pressSameBeadId === beadId)
-          const isInChainMode =
-            chainBeadHighlight === beadId ||
-            pressSameBeadId === beadId ||
-            (clickedBead.isInvisible && enhancedBeadId === beadId);
-
-          if (
-            chainPrayers &&
-            isInChainMode &&
-            newCount <= 1 + chainPrayers.length
-          ) {
-            // IN CHAIN MODE: Navigate through chain prayers
-            const chainIndex = newCount - 2; // 2nd touch = first chain prayer (index 0)
-            debug(
-              `   Chain mode active - Calculating: newCount ${newCount} - 2 = chainIndex ${chainIndex}`
-            );
-            debug(
-              `   Chain prayers array length: ${chainPrayers.length}`
-            );
-
-            if (chainIndex < chainPrayers.length) {
-              const chainPrayerIndex = chainPrayers[chainIndex];
-              const prayerId = getPrayerIdAt(seq, chainPrayerIndex);
-
-              debug(
-                `⛓️ Navigating to chain prayer ${chainIndex + 1}/${
-                  chainPrayers.length
-                }: ${prayerId} (index ${chainPrayerIndex})`
-              );
-              onBeadClickRef.current(chainPrayerIndex, prayerId);
-
-              // Record chain prayer in history for vitality tracking
-              prayerHistory.recordPrayer(chainPrayerIndex, currentMystery);
-
-              // Clear "press same bead" indicator on first chain prayer
-              if (chainIndex === 0) {
-                setPressSameBeadId(null);
-              }
-
-              // Play chain prayer chime
-              soundEffects.playChainPrayerChime();
-
-              // If this is the last chain prayer, signal to move to next bead
-              if (chainIndex === chainPrayers.length - 1) {
-                debug(
-                  `✅ Last chain prayer - ready to move to next bead`
-                );
-
-                // Play completion chime with history modulation
-                soundEffects.playCompleteChainPrayersChime(soundPrayerHistory);
-
-                // Reset touch count
-                touchCountRef.current.set(beadId, 0);
-                setChainBeadHighlight(null);
-
-                // Blink next bead
-                const nextPrayerIndex = chainPrayerIndex + 1;
-                if (nextPrayerIndex < seq.length) {
-                  const nextPrayerId = getPrayerIdAt(seq, nextPrayerIndex);
-                  const nextBead = matterInstance.current?.allBeads.find(
-                    (b) => b.prayerId === nextPrayerId
-                  );
-                  if (nextBead) {
-                    setBlinkingBeadId(nextBead.id);
-                    setEnhancedBeadId(nextBead.id);
-                    setTimeout(() => {
-                      setBlinkingBeadId(null);
-                      setEnhancedBeadId(null);
-                    }, 3000);
-                  }
-                }
-              }
-            }
-          } else {
-            // NOT IN CHAIN MODE: Dispatch beadRepeatTouch for text scrolling
-            // ViewPrayers will handle scroll detection and dispatch enterChainPrayers when scroll ends
-            debug(
-              `📜 Dispatching beadRepeatTouch for text scrolling (touch ${newCount})`
-            );
-            window.dispatchEvent(
-              new CustomEvent("beadRepeatTouch", {
-                detail: {
-                  beadId,
-                  prayerIndex: effectivePrayerIndex,
-                  prayerId: effectivePrayerId,
-                  touchCount: newCount,
-                },
-              })
-            );
-          }
-        }
-      }
+      // Selection, repeat progression and history are committed only on release.
     });
+
+    const commitBeadRelease = () => {
+      const bead = draggedBead;
+      if (!bead) return;
+      const live = livePropsRef.current;
+      if (bead.isHeartMedal) {
+        if (live.canStartLitanyProp) {
+          window.dispatchEvent(new CustomEvent('heartBeadPressed', { detail: { beadId: bead.id } }));
+        }
+        return;
+      }
+      if (!Number.isInteger(bead.prayerIndex)) return;
+      const index = live.areClosingPrayersUnlocked && tailToClosingMap[bead.prayerIndex] !== undefined
+        ? tailToClosingMap[bead.prayerIndex] : bead.prayerIndex;
+      const activeIndex = currentPrayerIndexRef.current;
+      const state = interactionRef.current;
+      const repeat = state.lastTouchedBeadId === bead.id &&
+        isBeadPrayerRun(getRosarySequence(), index, activeIndex);
+      state.lastTouchedBeadId = bead.id;
+      if (repeat) {
+        live.onBeadRepeat?.(activeIndex);
+      } else {
+        state.pressSameBeadId = null;
+        state.chainBeadHighlight = null;
+        onBeadHoldStartRef.current?.(index, getPrayerIdAt(getRosarySequence(), index));
+        prayerHistory.recordPrayer(index, currentMystery);
+      }
+    };
 
     trackEvent(mouseConstraint, "mousemove", (event) => {
       if (isHoldActive && !isDragging && holdStart && holdBody) {
+        const point = mouseGesturePoint(mouse, 'mousemove');
         const dist = Math.hypot(
-          mouse.position.x - holdStart.x,
-          mouse.position.y - holdStart.y
+          point.x - holdStart.x,
+          point.y - holdStart.y
         );
         if (dist > DRAG_THRESHOLD_PX) {
           isDragging = true;
@@ -1532,12 +1319,13 @@ const InteractiveRosary = ({
     trackEvent(mouseConstraint, "mouseup", (event) => {
       beadPhysicsDragRef.current = false;
       const cb = emptyCallbacksRef.current;
-      if (!event.source.body) {
+      if (swipeStartRef.current) {
         cb.onEmptyPointerUp?.(event);
         const start = swipeStartRef.current;
-        if (start && guidedRef.current) {
-          const dx = mouse.position.x - start.x;
-          const dy = mouse.position.y - start.y;
+        if (start && guidedRef.current && !gestureCancelledRef.current) {
+          const point = mouseGesturePoint(mouse, 'mouseup');
+          const dx = point.x - start.x;
+          const dy = point.y - start.y;
           const duration = Date.now() - start.time;
           if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && duration < 600) {
             if (dx < 0) {
@@ -1547,18 +1335,16 @@ const InteractiveRosary = ({
               if (cb.onSwipeRetreat) cb.onSwipeRetreat();
               else if (cb.onRetreat) cb.onRetreat();
             }
-          } else if (
-            Math.hypot(dx, dy) < 30 &&
-            duration < 400 &&
-            cb.onAdvance
-          ) {
-            cb.onAdvance();
           }
         }
         swipeStartRef.current = null;
       }
 
       if (isHoldActive) {
+        // Browsers can coalesce the last move, so check displacement on release too.
+        const point = mouseGesturePoint(mouse, 'mouseup');
+        const moved = holdStart && Math.hypot(point.x - holdStart.x, point.y - holdStart.y) > DRAG_THRESHOLD_PX;
+        if (!isDragging && !moved && !gestureCancelledRef.current) commitBeadRelease();
         onBeadHoldEndRef.current?.();
         isHoldActive = false;
         holdStart = null;
@@ -1601,6 +1387,8 @@ const InteractiveRosary = ({
     trackEvent(render, "afterRender", () => {
       const context = render.context;
       const activeIdx = progressIndexRef.current;
+      const { lastTouchedBeadId, enhancedBeadId, blinkingBeadId, chainBeadHighlight, pressSameBeadId } = interactionRef.current;
+      const { areClosingPrayersUnlocked, isInLitany, pressedBeads } = livePropsRef.current;
 
       // VITALITY VISUAL FEEDBACK: Subtle golden glow at high vitality (optional enhancement)
       if (vitality > 0.7) {
@@ -2010,13 +1798,10 @@ const InteractiveRosary = ({
           context.stroke();
         }
 
-        // NEW: Tail beads glow when closing prayers unlocked
-        // Tail beads with indices 5, 6, 9 glow golden to show they're now clickable for closing prayers
+        // Glow only on tail beads that actually redirect to closing prayers.
         if (
           areClosingPrayersUnlocked &&
-          (bead.prayerIndex === 5 ||
-            bead.prayerIndex === 6 ||
-            bead.prayerIndex === 9)
+          tailToClosingMap[bead.prayerIndex] !== undefined
         ) {
           const unlockPulseAlpha =
             Math.abs(Math.sin(Date.now() / 1200)) * 0.25 + 0.35; // 0.35 to 0.6 (subtle)
@@ -2417,6 +2202,8 @@ const InteractiveRosary = ({
       allBeads,
       centerBead,
       eventHandlers,
+      width,
+      height,
     };
 
     debug("✅ InteractiveRosary: Initialization complete!");
@@ -2440,10 +2227,38 @@ const InteractiveRosary = ({
     };
   }, [initializePhysics]);
 
+  useEffect(() => {
+    const reset = () => initializePhysics();
+    let resizeTimer;
+    const resize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const el = sceneRef.current, instance = matterInstance.current;
+        if (el && el.clientWidth > 0 && el.clientHeight > 0 &&
+          (!instance || el.clientWidth !== instance.width || el.clientHeight !== instance.height)) {
+          setRosaryPosition({ x: 0, y: 0 });
+          initializePhysics();
+        }
+      }, 150);
+    };
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
+    if (sceneRef.current) observer?.observe(sceneRef.current);
+    window.addEventListener('resize', resize);
+    window.addEventListener('resetRosaryLayout', reset);
+    return () => {
+      clearTimeout(resizeTimer);
+      observer?.disconnect();
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('resetRosaryLayout', reset);
+    };
+  }, [initializePhysics, setRosaryPosition]);
+
   // Desktop / trackpad: wheel zoom (mobile uses pinch below).
   const rosaryZoomRef = useRef(rosaryZoom);
   useEffect(() => {
     rosaryZoomRef.current = rosaryZoom;
+    const instance = matterInstance.current;
+    if (instance) syncMouseToCanvas(instance.mouseConstraint.mouse, instance.render.canvas);
   }, [rosaryZoom]);
 
   useEffect(() => {

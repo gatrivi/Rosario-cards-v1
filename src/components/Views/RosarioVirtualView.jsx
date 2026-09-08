@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import RosaryAdapter from '../RosarioNube/RosaryAdapter';
+import RosaryPrayerTransition from './RosaryPrayerTransition';
 import SacredDust from '../common/SacredDust';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
@@ -52,8 +53,8 @@ export default function RosarioVirtualView({
   const [showHint, setShowHint] = useState(true);
   const [isCargando, setIsCargando] = useState(false);
   const [cargaOracion, setCargaOracion] = useState(0);
-  const [showBloom, setShowBloom] = useState(false);
   const timerRef = useRef(null);
+  const [readyArtworkKey, setReadyArtworkKey] = useState(null);
 
   const mysteryColors = useMemo(() => getMysteryColors(misterioActual), [misterioActual]);
   const accentColor = mysteryColors.highlight;
@@ -192,8 +193,6 @@ export default function RosarioVirtualView({
         );
         onAveMariaComplete?.(fp);
       }
-      setShowBloom(true);
-      setTimeout(() => setShowBloom(false), 1200);
       onUpdateProgreso(currentPrayerIndex + 1);
       setCargaOracion(100);
     }
@@ -223,6 +222,7 @@ export default function RosarioVirtualView({
 
   useEffect(() => {
     if (guided && isCargando && cargaOracion >= 100) {
+      setIsCargando(false);
       if (navigator.vibrate) navigator.vibrate(20);
       handleAdvance();
     }
@@ -244,24 +244,7 @@ export default function RosarioVirtualView({
         setCargaOracion(100);
         return;
       }
-      const beadPrayers = ['SC', 'P', 'A', 'LL', 'S'];
-      const hasChainPrayersAhead = () => {
-        for (let i = currentPrayerIndex + 1; i < secuencia.length; i += 1) {
-          const nextId = secuencia[i]?.id;
-          if (nextId?.startsWith('M')) return false;
-          if (beadPrayers.includes(nextId)) return false;
-          return true; // first non-main prayer before next bead/mystery => chain prayers exist
-        }
-        return false;
-      };
-      const shouldEnterChainPrayers = hasChainPrayersAhead();
-      if (shouldEnterChainPrayers) {
-        window.dispatchEvent(
-          new CustomEvent('enterChainPrayers', {
-            detail: { prayerIndex: currentPrayerIndex },
-          })
-        );
-      }
+      // One progression owner: complete this step once, including chain prayers.
       window.dispatchEvent(
         new CustomEvent('contentExhausted', { detail: { prayerIndex: currentPrayerIndex } })
       );
@@ -350,19 +333,20 @@ export default function RosarioVirtualView({
       style={{ ...vitralStyle, '--rosary-accent': accentColor }}
     >
       <VitralBackground
-        key={`${activePrayer?.id}-${hasInnerVerses ? innerVerseIndex : ''}-${vitralCandidates[0]}`}
         candidates={vitralCandidates}
         kind={vitralKind}
         variant="rosary"
-        stepGlow={showBloom}
+        crossfade
+        onReady={setReadyArtworkKey}
       />
 
       <SacredDust isCargando={isCargando} />
 
-      <div className={`rosary-bloom${showBloom ? ' rosary-bloom--active' : ' rosary-bloom--idle'}`} />
-
       {activePrayer && (
-        <div className="rosary-prayer-layer-wrap">
+        <RosaryPrayerTransition
+          stepKey={`${safeIndex}-${hasInnerVerses ? innerVerseIndex : ''}`}
+          artworkReady={readyArtworkKey === JSON.stringify(vitralCandidates)}
+        >
           <BookletPrayerPanel
             displayText={displayText}
             simpleMode={simpleMode}
@@ -378,7 +362,7 @@ export default function RosarioVirtualView({
             onTapNav={(dir) => (dir === 'next' ? handleAdvance() : handleRetreat())}
             isTransitioning={false}
           />
-        </div>
+        </RosaryPrayerTransition>
       )}
 
       <div className="rosary-canvas-layer">
@@ -393,6 +377,7 @@ export default function RosarioVirtualView({
           onSwipeRetreat={handleRetreat}
           onEmptyPointerDown={() => {
             if (!guided) return;
+            setCargaOracion(0);
             setIsCargando(true);
           }}
           onEmptyPointerUp={() => setIsCargando(false)}
@@ -435,6 +420,20 @@ export default function RosarioVirtualView({
         <div className="rosary-chrome__row">
           <button
             type="button"
+            className="glass-chrome-btn"
+            aria-label="Acomodar rosario"
+            title="Acomodar rosario"
+            onClick={() => {
+              localStorage.setItem('rosaryZoom', '1');
+              window.dispatchEvent(new CustomEvent('rosaryZoomChange', { detail: { zoom: 1 } }));
+              window.dispatchEvent(new CustomEvent('resetRosaryPosition', { detail: { x: 0, y: 0 } }));
+              window.dispatchEvent(new Event('resetRosaryLayout'));
+            }}
+          >
+            ↺
+          </button>
+          <button
+            type="button"
             className={`glass-chrome-btn${simpleMode ? ' glass-chrome-btn--active' : ' glass-chrome-btn--muted'}`}
             onClick={onToggleSimpleMode}
             title="Modo Simple"
@@ -461,7 +460,7 @@ export default function RosarioVirtualView({
           Mantén presionado para rezar • Desliza ← → para avanzar
           <br />
           <span style={{ opacity: 0.6, fontSize: '0.75rem' }}>
-            Libro = texto · Rosa = meditación · Dibuja ✝ para reunir cuentas
+            Libro = texto · Rosa = meditación · ↺ para acomodar las cuentas
           </span>
         </div>
       )}
