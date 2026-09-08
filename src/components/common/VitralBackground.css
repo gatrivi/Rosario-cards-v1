@@ -39,6 +39,15 @@
   opacity: 1;
 }
 
+.vitral-bg--rosary .rosary-artwork-incoming {
+  opacity: 0;
+  transition: opacity 1400ms ease-in-out;
+}
+.vitral-bg--rosary .rosary-artwork-incoming--visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .vitral-bg--rosary .rosary-artwork-incoming { transition-duration: 1ms; }
+}
+
 .booklet-vitral--ave .booklet-vitral__img,
 .booklet-vitral--mystery .booklet-vitral__img,
 .booklet-vitral--prayer .booklet-vitral__img,

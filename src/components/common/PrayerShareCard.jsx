@@ -14,6 +14,7 @@ const PrayerShareCard = forwardRef(function PrayerShareCard(
     backgroundUrl,
     progressLabel,
     brandLine = 'Rosario Cards',
+    urlLine = 'rosario.gatrivi.com',
   },
   ref
 ) {
@@ -49,7 +50,7 @@ const PrayerShareCard = forwardRef(function PrayerShareCard(
           <p className="prayer-share-card__progress">{progressLabel}</p>
         ) : null}
 
-        <p className="prayer-share-card__brand">{brandLine}</p>
+        <p className="prayer-share-card__brand">{brandLine} ✦ {urlLine}</p>
       </div>
     </div>
   );

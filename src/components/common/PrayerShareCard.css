@@ -25,9 +25,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(8, 6, 18, 0.55) 0%,
-    rgba(8, 6, 18, 0.72) 45%,
-    rgba(8, 6, 18, 0.88) 100%
+    rgba(8, 6, 18, 0.62) 0%,
+    rgba(8, 6, 18, 0.78) 45%,
+    rgba(8, 6, 18, 0.9) 100%
   );
 }
 
@@ -86,10 +86,12 @@
 }
 
 .prayer-share-card__text {
+  /* NOTE: html2canvas ignores backdrop-filter, so the flat rgba below
+     must keep text readable on its own over bright vitral art. */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  background: rgba(12, 10, 22, 0.42);
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: rgba(12, 10, 22, 0.62);
+  border: 1px solid rgba(212, 175, 55, 0.34);
   border-radius: 14px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.28),
@@ -99,6 +101,7 @@
   margin: 0;
   max-height: 100%;
   overflow: hidden;
+  overflow-wrap: break-word;
   padding: 1.1rem 1.15rem;
   text-align: center;
   white-space: pre-wrap;
@@ -114,10 +117,12 @@
 }
 
 .prayer-share-card__brand {
-  color: rgba(212, 175, 55, 0.45);
+  color: rgba(212, 175, 55, 0.6);
   font-size: 0.68rem;
   letter-spacing: 0.18em;
   margin: 0.55rem 0 0;
   text-align: center;
   text-transform: uppercase;
+  overflow-wrap: break-word;
+  word-break: break-all;
 }

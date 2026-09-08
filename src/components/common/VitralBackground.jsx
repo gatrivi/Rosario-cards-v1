@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './VitralBackground.css';
+import ArtworkCrossfade from './ArtworkCrossfade';
 
 function VitralImage({ candidates, onReady, imgClassName = 'vitral-bg__img' }) {
   const [index, setIndex] = useState(0);
@@ -160,7 +161,9 @@ export default function VitralBackground({
   const kindClass = `${prefix}--${kind}`;
   const variantClass = variant ? `${prefix}--${variant}` : '';
   const stepClass = stepGlow ? `${prefix}--step` : '';
-  const ImageComponent = crossfade ? VitralCrossfadeImage : VitralImage;
+  const ImageComponent = crossfade
+    ? (variant === 'rosary' ? ArtworkCrossfade : VitralCrossfadeImage)
+    : VitralImage;
 
   return (
     <div

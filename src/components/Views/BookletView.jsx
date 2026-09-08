@@ -1,3 +1,4 @@
+import AppOverlay from '../Layout/AppOverlay';
 import React, { useMemo, useEffect, useCallback, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -65,13 +66,14 @@ import PrayerSharePreviewModal from '../common/PrayerSharePreviewModal';
 import BookletOutlineView from './BookletOutlineView';
 import {
   buildShareCardPayload,
+  buildShareDeepLink,
   buildSharePrayerText,
   captureShareCardPng,
   deliverSharePng,
   formatBookletShareProgress,
   getBookletDevotionLabel,
   makeShareFilename,
-  preloadShareImage,
+  waitForShareReady,
 } from '../../utils/bookletShare';
 import './BookletView.css';
 import { devLog } from '../../utils/devotionsDebug';
@@ -808,6 +810,10 @@ export default function BookletView({
   const isOptionalMercyStep =
     isMercy && (activePrayer?.id === 'DMO1' || activePrayer?.id === 'DMO2');
   const displayPrayerTitle = getBookletDisplayTitle(activePrayer, voiceLangPref, misterioActual);
+  // Pacing runs (Ave ×10, Pasme, Santísimo, letanías) repeat one prayer many
+  // times — the step itself has no real title, so the header shows only the
+  // breadcrumb line instead of an invented repeated title.
+  const showHeaderTitle = !(isAveMaria || isMercyPassion || isHolyGod || isLitany);
 
   useEffect(() => {
     if (isFirstRenderRef.current) {
@@ -917,6 +923,16 @@ export default function BookletView({
     ]
   );
 
+  const shareDeepLink = useMemo(
+    () =>
+      buildShareDeepLink({
+        misterioActual,
+        displayIndex,
+        novenaDay,
+      }),
+    [misterioActual, displayIndex, novenaDay]
+  );
+
   const shareCardPayload = useMemo(
     () =>
       buildShareCardPayload({
@@ -925,6 +941,7 @@ export default function BookletView({
         prayerText: buildSharePrayerText({ displayText, isLitany, litanyVerse }),
         backgroundUrl: vitralCandidates[0],
         progressLabel: shareProgressLabel,
+        shareUrl: shareDeepLink,
       }),
     [
       misterioActual,
@@ -934,6 +951,7 @@ export default function BookletView({
       litanyVerse,
       vitralCandidates,
       shareProgressLabel,
+      shareDeepLink,
     ]
   );
 
@@ -948,25 +966,25 @@ export default function BookletView({
     if (isSharing || isTransitioning || !activePrayer) return;
     setIsSharing(true);
     try {
+      // Mount the off-screen capture host, then wait for the vitral art
+      // to actually decode inside the card before snapshotting.
       await new Promise((resolve) => {
         requestAnimationFrame(() => requestAnimationFrame(resolve));
       });
-      await preloadShareImage(shareCardPayload.backgroundUrl);
-      await new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
-      });
+      await waitForShareReady(shareCardRef.current, shareCardPayload.backgroundUrl);
       const blob = await captureShareCardPng(shareCardRef.current);
       shareBlobRef.current = blob;
       const filename = makeShareFilename(displayPrayerTitle);
       const outcome = await deliverSharePng(blob, {
         filename,
         title: displayPrayerTitle,
-        text: `${shareCardPayload.devotionTitle}${shareCardPayload.prayerTitle ? ` — ${shareCardPayload.prayerTitle}` : ''}`,
-        url: typeof window !== 'undefined'
-          ? `${window.location.origin}${window.location.pathname}`
-          : undefined,
+        // Short caption — the prayer text itself travels ON the image.
+        text: `${shareCardPayload.devotionTitle}${shareCardPayload.prayerTitle ? ` — ${shareCardPayload.prayerTitle}` : ''}${shareCardPayload.progressLabel ? ` (${shareCardPayload.progressLabel})` : ''}`,
+        url: shareDeepLink,
       });
-      if (outcome === 'preview') {
+      // 'downloaded' used to vanish silently on desktop — show the card
+      // so the user sees (and can re-share) the generated image.
+      if (outcome === 'preview' || outcome === 'downloaded') {
         setSharePreviewUrl(URL.createObjectURL(blob));
         setSharePreviewOpen(true);
       }
@@ -983,6 +1001,7 @@ export default function BookletView({
     isTransitioning,
     activePrayer,
     shareCardPayload,
+    shareDeepLink,
     displayPrayerTitle,
   ]);
 
@@ -1088,6 +1107,7 @@ export default function BookletView({
           )}
           {!shelfOpen && (
           <div className={`booklet-meta-row${isMercy ? ' booklet-meta-row--mercy' : ''}`}>
+            <div className="booklet-meta-row__actions" role="group" aria-label="Oraciones y compartir">
             {showRosaryPills && (
               <button
                 type="button"
@@ -1102,6 +1122,47 @@ export default function BookletView({
             )}
             <button
               type="button"
+              className="booklet-meta-row__share"
+              onClick={handleSharePrayer}
+              disabled={isTransitioning || isSharing}
+              title="Compartir esta oración"
+              aria-label="Compartir esta oración"
+            >
+              {isSharing ? '…' : '↗'}
+            </button>
+            </div>
+            <div className="booklet-meta-row__reading" role="group" aria-label="Lectura y voz">
+            <PrayerRecorder
+              prayerId={activePrayer.id}
+              prayerTitle={displayPrayerTitle}
+              mystery={misterioActual}
+              sequenceIndex={displayIndex}
+              simpleMode={simpleMode}
+              placement="title"
+              isLeftHanded={isLeftHanded}
+              voiceLang={voiceLangPref}
+              voiceControlEnabled
+              voiceMode={voiceMode}
+              voicePlaying={voicePlaying}
+              onVoiceControlTap={handleVoiceControlTap}
+            >
+            <div className="booklet-header-line">
+            {showHeaderTitle && displayPrayerTitle ? (
+              <h1
+                className="booklet-title booklet-title--inline"
+                style={{ fontSize: simpleMode ? '1.05rem' : '0.98rem' }}
+              >
+                {displayPrayerTitle}
+                {isOptionalMercyStep && (
+                  <span className="booklet-optional-chip">opcional</span>
+                )}
+              </h1>
+            ) : null}
+            {!showHeaderTitle && displayPrayerTitle ? (
+              <span className="booklet-run-title">{displayPrayerTitle}</span>
+            ) : null}
+            <button
+              type="button"
               className="booklet-meta-row__outline"
               onClick={() => setOutlineOpen(true)}
               disabled={isTransitioning || total < 2}
@@ -1109,21 +1170,17 @@ export default function BookletView({
               aria-label={`${devotionChrome.title}, paso ${displayIndex + 1} de ${total}. Ver recorrido`}
               data-testid="booklet-progress"
             >
-              <span className="booklet-meta-row__devotion" aria-live="polite">
-                <span className="booklet-devotion__title">{devotionChrome.title}</span>
-                {devotionChrome.subtitle && (
-                  <span className="booklet-devotion__subtitle">{devotionChrome.subtitle}</span>
-                )}
-              </span>
               <span className="booklet-meta-row__step">
                 {isOptionalMercyStep && (
                   <span className="booklet-mercy-info" title="Oración opcional de apertura" aria-hidden>
                     ⓘ{' '}
                   </span>
                 )}
+                <span className="booklet-meta-row__position">
                 {isSagradoCorazon
                   ? `Paso ${displayIndex + 1} de ${total}`
                   : `${displayIndex + 1} / ${total}`}
+                </span>
                 {misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION' && (
                   <span className="booklet-ave-count"> · Día {novenaDay} de 9</span>
                 )}
@@ -1171,53 +1228,23 @@ export default function BookletView({
                 )}
               </span>
             </button>
-            <button
-              type="button"
-              className="booklet-meta-row__share"
-              onClick={handleSharePrayer}
-              disabled={isTransitioning || isSharing}
-              title="Compartir esta oración"
-              aria-label="Compartir esta oración"
-            >
-              {isSharing ? '…' : '↗'}
-            </button>
+            {variants && (
+              <button
+                type="button"
+                className="booklet-variant-chip"
+                onClick={cycleVariant}
+                aria-label={`Cambiar versión del ${activePrayer.title}`}
+                disabled={isTransitioning}
+                title="Tocar para otra versión"
+              >
+                ◇ {activeVariantLabel}
+              </button>
+            )}
+            </div>
+            </PrayerRecorder>
+            </div>
+
           </div>
-          )}
-          <PrayerRecorder
-            prayerId={activePrayer.id}
-            prayerTitle={displayPrayerTitle}
-            mystery={misterioActual}
-            sequenceIndex={displayIndex}
-            simpleMode={simpleMode}
-            placement="title"
-            isLeftHanded={isLeftHanded}
-            voiceLang={voiceLangPref}
-            voiceControlEnabled
-            voiceMode={voiceMode}
-            voicePlaying={voicePlaying}
-            onVoiceControlTap={handleVoiceControlTap}
-          >
-            <h1
-              className={`booklet-title${isAveMaria || isMercyPassion ? ' booklet-title--ave' : ''}${stepContext.kind === 'mystery' || isMercyDecade ? ' booklet-title--mystery' : ''}`}
-              style={{ fontSize: simpleMode ? '1.75rem' : '1.35rem' }}
-            >
-              {displayPrayerTitle}
-              {isOptionalMercyStep && (
-                <span className="booklet-optional-chip">opcional</span>
-              )}
-            </h1>
-          </PrayerRecorder>
-          {variants && (
-            <button
-              type="button"
-              className="booklet-variant-turn"
-              onClick={cycleVariant}
-              aria-label={`Cambiar versión del ${activePrayer.title}`}
-              disabled={isTransitioning}
-            >
-              ◇ {activeVariantLabel}
-              <span className="booklet-variant-turn__hint"> · tocar para otra versión</span>
-            </button>
           )}
         </header>
 
@@ -1244,11 +1271,13 @@ export default function BookletView({
       />
 
       {optionalOpen && (
+        <AppOverlay>
         <OptionalPrayerSheet
           key={optionalPrayerId}
           initialPrayerId={optionalPrayerId}
           onClose={() => setOptionalOpen(false)}
         />
+        </AppOverlay>
       )}
 
       {showLitanyEntrance && litanyEntranceEnabled && (
@@ -1267,6 +1296,7 @@ export default function BookletView({
         )}
 
       {outlineOpen && (
+        <AppOverlay>
         <BookletOutlineView
           steps={secuencia}
           currentIndex={displayIndex}
@@ -1276,14 +1306,17 @@ export default function BookletView({
           onSelectStep={handleOutlineSelect}
           onClose={() => setOutlineOpen(false)}
         />
+        </AppOverlay>
       )}
 
       {sharePreviewOpen && (
+        <AppOverlay>
         <PrayerSharePreviewModal
           imageUrl={sharePreviewUrl}
           onClose={closeSharePreview}
           onDownload={handleSharePreviewDownload}
         />
+        </AppOverlay>
       )}
 
       {/* Host only — toggle lives in BottomNav (Libro). */}
@@ -1426,6 +1459,24 @@ export default function BookletView({
                 title="San Cayetano — pan y trabajo"
                 img={optionalPrayerThumbnail('cayetano')}
                 badge="Ct"
+              />
+            </ShelfItem>
+            <ShelfItem label="Salve Regina">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'salve'}
+                onClick={() => openOptionalPrayer('salve')}
+                title="Salve Regina — cierre mariano"
+                img={optionalPrayerThumbnail('salve')}
+                badge="S"
+              />
+            </ShelfItem>
+            <ShelfItem label="Bendito sea Dios">
+              <MercyWindowThumb
+                active={optionalOpen && optionalPrayerId === 'bendito'}
+                onClick={() => openOptionalPrayer('bendito')}
+                title="Bendito sea Dios — alabanzas"
+                img={optionalPrayerThumbnail('bendito')}
+                badge="✝"
               />
             </ShelfItem>
           </>

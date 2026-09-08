@@ -18,6 +18,12 @@ const patrickCandidates = [patrickImg, patrickImgAlt].filter(Boolean);
 const cayetanoImg = imagePath('galleryPastor');
 const cayetanoImgAlt = imagePath('stAnthony');
 const cayetanoCandidates = [cayetanoImg, cayetanoImgAlt].filter(Boolean);
+const salveImg = imagePath('galleryMaterImmaculata');
+const salveImgAlt = imagePath('allMary17th');
+const salveCandidates = [salveImg, salveImgAlt].filter(Boolean);
+const benditoImg = imagePath('misc96PsRGiE');
+const benditoImgAlt = imagePath('gallerySagradoCorazon');
+const benditoCandidates = [benditoImg, benditoImgAlt].filter(Boolean);
 
 export const OPTIONAL_PRAYERS = [
   {
@@ -194,6 +200,52 @@ export const OPTIONAL_PRAYERS = [
         label: 'EN',
         text:
           'Glorious Saint Cajetan, father of Providence, who help the needy and give bread to the hungry: intercede for us before the Lord.\n\nGrant me honest work to earn our daily bread, and the grace to trust always in divine Providence.\n\nSaint Cajetan, advocate of those seeking bread and work, pray for us. Amen.',
+      },
+    ],
+  },
+  {
+    id: 'salve',
+    title: 'Salve Regina',
+    img: salveImg,
+    imgCandidates: salveCandidates.length ? salveCandidates : [salveImg].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'Dios te salve, Reina y Madre de misericordia,\nvida, dulzura y esperanza nuestra:\nDios te salve.\n\nA ti llamamos los desterrados hijos de Eva.\nA ti suspiramos, gimiendo y llorando\nen este valle de lágrimas.\n\nEa, pues, Señora, abogada nuestra,\nvuelve a nosotros esos tus ojos misericordiosos.\n\nY después de este destierro,\nmuéstranos a Jesús, fruto bendito de tu vientre.\n\nOh clemente, oh piadosa, oh dulce siempre Virgen María.\nRuega por nosotros, Santa Madre de Dios,\npara que seamos dignos de alcanzar las promesas\nde Nuestro Señor Jesucristo. Amén.',
+      },
+      {
+        id: 'la',
+        label: 'LA',
+        text:
+          'Salve Regina, Mater misericordiae,\nvita, dulcedo et spes nostra, salve.\n\nAd te clamamus, exsules filii Hevae.\nAd te suspiramus, gementes et flentes\nin hac lacrimarum valle.\n\nEia ergo, Advocata nostra, illos tuos\nmisericordes oculos ad nos converte.\n\nEt Iesum, benedictum fructum ventris tui,\nnobis post hoc exsilium ostende.\n\nO clemens, o pia, o dulcis Virgo Maria.',
+      },
+      {
+        id: 'en',
+        label: 'EN',
+        text:
+          'Hail, Holy Queen, Mother of Mercy,\nhail, our life, our sweetness and our hope.\nTo thee do we cry, poor banished children of Eve.\nTo thee do we send up our sighs,\nmourning and weeping in this valley of tears.\n\nTurn then, most gracious Advocate,\nthine eyes of mercy toward us.\n\nAnd after this our exile,\nshow unto us the blessed fruit of thy womb, Jesus.\n\nO clement, O loving, O sweet Virgin Mary.\nPray for us, O Holy Mother of God,\nthat we may be made worthy of the promises of Christ. Amen.',
+      },
+    ],
+  },
+  {
+    id: 'bendito',
+    title: 'Bendito sea Dios',
+    img: benditoImg,
+    imgCandidates: benditoCandidates.length ? benditoCandidates : [benditoImg].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'Bendito sea Dios,\nbendito sea su Santo Nombre,\nbendito sea Jesucristo, verdadero Dios y verdadero hombre,\nbendito sea el nombre de Jesús,\nbendito sea su Sagrado Corazón,\nbendita sea su Preciosísima Sangre,\nbendito sea Jesús en el Santísimo Sacramento del altar,\nbendita sea la Santísima Madre de Dios, María Santísima,\nbendita sea su santa e Inmaculada Concepción,\nbendita sea su gloriosa Asunción,\nbendito sea el nombre de María, Virgen y Madre,\nbendito sea San José, su castísimo esposo,\nbendito sea Dios en sus ángeles y en sus santos.\n\nAmén.',
+      },
+      {
+        id: 'en',
+        label: 'EN',
+        text:
+          'Blessed be God.\nBlessed be His Holy Name.\nBlessed be Jesus Christ, true God and true man.\nBlessed be the name of Jesus.\nBlessed be His Sacred Heart.\nBlessed be His Most Precious Blood.\nBlessed be Jesus in the Most Holy Sacrament of the Altar.\nBlessed be the Holy Mother of God, Mary most holy.\nBlessed be her holy and Immaculate Conception.\nBlessed be her glorious Assumption.\nBlessed be the name of Mary, Virgin and Mother.\nBlessed be Saint Joseph, her most chaste spouse.\nBlessed be God in His angels and in His saints.\n\nAmen.',
       },
     ],
   },

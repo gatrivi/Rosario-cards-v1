@@ -1,10 +1,11 @@
+import AppFrame from './AppFrame';
 /**
  * SACRED PERFORMANCE LICENSE - Edition v1.2
  * Copyright (c) 2026 gatrivi. All Rights Reserved.
- * 
+ *
  * This code and its associated "Cosmic Alignment" algorithms, interaction models,
  * and procedural devotional logic are protected as intellectual and spiritual property.
- * Modification or redistribution for commercial purposes is prohibited without 
+ * Modification or redistribution for commercial purposes is prohibited without
  * express spiritual and legal consent.
  */
 import React, { useState, useEffect, useRef } from 'react';
@@ -15,6 +16,7 @@ import BookletView from '../Views/BookletView';
 import MacetonView from '../Views/MacetonView';
 import JardinDeRosasView from '../Views/JardinDeRosasView';
 import PeregrinacionView from '../Views/PeregrinacionView';
+import ReliquarioView from '../Views/ReliquarioView';
 import MonkView from '../Views/MonkView';
 import RecordingStudioView from '../Views/RecordingStudioView';
 import DevotionPlaylistView from '../Views/DevotionPlaylistView';
@@ -545,6 +547,9 @@ export default function AppShell() {
           }}
         />
       );
+      case 'reliquias': return (
+        <ReliquarioView onPray={() => navigate(getPathForView('rosary'))} />
+      );
       case 'macetones': return (
         <MacetonView
           onSelectMaceton={() => navigate(getPathForView('rose'))}
@@ -559,7 +564,7 @@ export default function AppShell() {
         const idx = sharedClassic ? currentPrayerIndex : rosaryPrayerIndex;
         const onProg = sharedClassic ? handleUpdateProgreso : handleRosaryProgreso;
         return (
-        <RosarioVirtualView 
+        <RosarioVirtualView
           currentPrayerIndex={idx}
           misterioActual={m}
           onUpdateProgreso={onProg}
@@ -582,15 +587,18 @@ export default function AppShell() {
         );
       }
       case 'rose': {
+        const patrick = searchParams.get('devocion') === 'patrick';
         const sharedClassic = isValidRosaryMystery(misterioActual);
         const m = sharedClassic ? misterioActual : rosaryMystery;
         const idx = sharedClassic ? currentPrayerIndex : rosaryPrayerIndex;
         const onProg = sharedClassic ? handleUpdateProgreso : handleRosaryProgreso;
         return (
-        <RoseView 
-          currentPrayerIndex={idx}
+        <RoseView
+          key={patrick ? 'patrick' : m}
+          devotion={patrick ? 'patrick' : undefined}
+          currentPrayerIndex={patrick ? 0 : idx}
           misterioActual={m}
-          onUpdateProgreso={onProg}
+          onUpdateProgreso={patrick ? () => {} : onProg}
           onBack={() => navigate(getPathForView('macetones'))}
           soundEnabled={settings.soundEnabled}
           onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
@@ -646,30 +654,17 @@ export default function AppShell() {
   };
 
   return (
-    <div style={{
-      height: '100dvh', 
-      width: '100vw',
-      margin: '0 auto',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#0A0A0A',
-      color: '#E0E0E0',
-      overflow: 'hidden',
-      fontFamily: 'serif',
-      position: 'relative'
-    }} className={`app-shell${vistaActiva === 'booklet' ? ' app-shell--booklet' : ''}${settings.oneHandMode ? ' app-shell--one-hand' : ''}`}>
-      
-      <AppActionDock
+    <AppFrame
+      className={`${vistaActiva === 'booklet' ? 'app-shell--booklet' : ''}${settings.oneHandMode ? ' app-shell--one-hand' : ''}`}
+      header={<AppActionDock
         simpleMode={settings.simpleMode}
         soundEnabled={settings.soundEnabled}
         onHelp={() => setShowIntro(true)}
         onSettings={() => setShowSettings(true)}
-      />
-
-      {/* Update banner — visible when a new service worker is waiting */}
-      {updateAvailable && (
+      />}
+      notice={updateAvailable && (
         <div style={{
-          position: 'absolute', top: 60, left: 12, right: 12, zIndex: 200,
+          position: 'relative',
           background: 'rgba(20,20,20,0.95)', border: '1px solid #D4AF37',
           borderRadius: '12px', padding: '12px 14px',
           display: 'flex', flexDirection: 'column', gap: '10px',
@@ -711,214 +706,212 @@ export default function AppShell() {
           </button>
         </div>
       )}
+      utilities={<>
+        {settings.oneHandQuickToggleEnabled !== false && (
+          <OneHandQuickToggle
+            oneHandMode={settings.oneHandMode === true}
+            isLeftHanded={settings.isLeftHanded}
+            onToggle={() => setSettings((s) => ({ ...s, oneHandMode: !s.oneHandMode }))}
+          />
+        )}
 
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', zIndex: 10, minHeight: 0 }} className="view-enter-active app-view-layer">
-        <ViewErrorBoundary viewId={vistaActiva}>
-          {renderizarVista()}
-        </ViewErrorBoundary>
-      </div>
-
-      {settings.oneHandQuickToggleEnabled !== false && (
-        <OneHandQuickToggle
-          oneHandMode={settings.oneHandMode === true}
+        <MobileElementStepper
+          enabled={settings.mobileElementArrowsEnabled && vistaActiva !== 'rose'}
           isLeftHanded={settings.isLeftHanded}
-          onToggle={() => setSettings((s) => ({ ...s, oneHandMode: !s.oneHandMode }))}
         />
-      )}
 
-      <MobileElementStepper
-        enabled={settings.mobileElementArrowsEnabled && vistaActiva !== 'rose'}
-        isLeftHanded={settings.isLeftHanded}
-      />
+        {/* Handedness Toggle (Floating above nav) */}
+        <HandToggle
+          isLeftHanded={settings.isLeftHanded}
+          bookletActive={vistaActiva === 'booklet'}
+          onToggle={() => setSettings(s => ({ ...s, isLeftHanded: !s.isLeftHanded }))}
+        />
 
-      {/* Handedness Toggle (Floating above nav) */}
-      <HandToggle
-        isLeftHanded={settings.isLeftHanded}
-        bookletActive={vistaActiva === 'booklet'}
-        onToggle={() => setSettings(s => ({ ...s, isLeftHanded: !s.isLeftHanded }))}
-      />
-
-      <BottomNav 
+        {/* Version badge — tap for Novedades */}
+        <button
+          type="button"
+          onClick={() => setShowReleaseNotes(true)}
+          title="Novedades de esta versión"
+          aria-label={`Versión ${APP_VERSION}. Ver novedades`}
+          className={`app-version-badge ${settings.oneHandMode ? 'app-version-badge--one-hand' : 'app-version-badge--default'}`}
+        >
+          v{APP_VERSION}
+        </button>
+      </>}
+      navigation={<BottomNav
         isLeftHanded={settings.isLeftHanded}
         simpleMode={settings.simpleMode}
-      />
+      />}
+      overlays={<>
+        {/* OVERLAYS */}
+        {showSync && <SyncManager onClose={() => setShowSync(false)} />}
+        {/* MODALS */}
+        {showSettings && (
+          <SettingsOverlay
+            settings={settings}
+            onUpdateSettings={setSettings}
+            onClose={() => setShowSettings(false)}
+            appVersion={APP_VERSION}
+            onCheckForUpdate={handleApplyPendingUpdate}
+            onStartAmbientAudio={handleStartAmbientAudio}
+            onOpenAssetStudio={() => navigate(getPathForView('assets'))}
+            onOpenVoiceStudio={() => navigate(getPathForView('voz'))}
+            onOpenReleaseNotes={() => {
+              setShowSettings(false);
+              setShowReleaseNotes(true);
+            }}
+            onOpenSync={() => {
+              setShowSettings(false);
+              setShowSync(true);
+            }}
+            onOpenFeedback={() => {
+              setShowSettings(false);
+              setShowFeedback(true);
+            }}
+            syncStatus={syncStatus}
+          />
+        )}
 
-      {/* Version badge — tap for Novedades */}
-      <button
-        type="button"
-        onClick={() => setShowReleaseNotes(true)}
-        title="Novedades de esta versión"
-        aria-label={`Versión ${APP_VERSION}. Ver novedades`}
-        className={`app-version-badge ${settings.oneHandMode ? 'app-version-badge--one-hand' : 'app-version-badge--default'}`}
-      >
-        v{APP_VERSION}
-      </button>
+        {showReleaseNotes && (
+          <ReleaseNotesOverlay
+            onClose={() => setShowReleaseNotes(false)}
+            onOpenAssetStudio={() => navigate(getPathForView('assets'))}
+          />
+        )}
 
-      {/* OVERLAYS */}
-      {showSync && <SyncManager onClose={() => setShowSync(false)} />}
-      {/* MODALS */}
-      {showSettings && (
-        <SettingsOverlay 
-          settings={settings} 
-          onUpdateSettings={setSettings} 
-          onClose={() => setShowSettings(false)}
-          appVersion={APP_VERSION}
-          onCheckForUpdate={handleApplyPendingUpdate}
-          onStartAmbientAudio={handleStartAmbientAudio}
-          onOpenAssetStudio={() => navigate(getPathForView('assets'))}
-          onOpenVoiceStudio={() => navigate(getPathForView('voz'))}
-          onOpenReleaseNotes={() => {
-            setShowSettings(false);
-            setShowReleaseNotes(true);
-          }}
-          onOpenSync={() => {
-            setShowSettings(false);
-            setShowSync(true);
-          }}
-          onOpenFeedback={() => {
-            setShowSettings(false);
-            setShowFeedback(true);
-          }}
-          syncStatus={syncStatus}
-        />
-      )}
+        {showFeedback && (
+          <FeedbackOverlay
+            telemetry={telemetryData}
+            onClose={() => setShowFeedback(false)}
+          />
+        )}
 
-      {showReleaseNotes && (
-        <ReleaseNotesOverlay
-          onClose={() => setShowReleaseNotes(false)}
-          onOpenAssetStudio={() => navigate(getPathForView('assets'))}
-        />
-      )}
-
-      {showFeedback && (
-        <FeedbackOverlay 
-          telemetry={telemetryData}
-          onClose={() => setShowFeedback(false)}
-        />
-      )}
-
-      {/* PENDING SYNC PROMPT (Magic Link activation) */}
-      {pendingSyncId && (
-        <div className="modal-overlay" style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.8)', zIndex: 20000,
-          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
-        }}>
-          <div className="modal-content" style={{
-            background: 'linear-gradient(145deg, #111, #1a1a1a)', border: '1px solid #D4AF37', borderRadius: '20px',
-            padding: '40px 30px', maxWidth: '380px', width: '100%', textAlign: 'center', boxShadow: '0 25px 50px rgba(0,0,0,0.9)',
-            backdropFilter: 'blur(15px)'
+        {/* PENDING SYNC PROMPT (Magic Link activation) */}
+        {pendingSyncId && (
+          <div className="modal-overlay" style={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.8)', zIndex: 20000,
+            display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
           }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '20px', filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.3))' }}>🔗</div>
-            <h2 style={{ color: '#D4AF37', marginBottom: '15px', fontSize: '1.6rem', fontWeight: 'bold' }}>¿Vincular Dispositivo?</h2>
-            <p style={{ color: '#bbb', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '30px', textWrap: 'pretty' }}>
-              Detectamos una <strong>llave de peregrinación</strong>. <br/>
-              Si aceptas, tu progreso actual será reemplazado por el de la llave entrante.
-            </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button 
-                onClick={confirmPendingSync}
-                style={{ flex: 1.2, padding: '14px', background: '#D4AF37', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', transition: 'transform 0.2s' }}
-              >
-                Vincular
-              </button>
-              <button 
-                onClick={dismissSync}
-                style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid #444', borderRadius: '12px', fontSize: '1rem', cursor: 'pointer' }}
-              >
-                Ahora No
-              </button>
+            <div className="modal-content" style={{
+              background: 'linear-gradient(145deg, #111, #1a1a1a)', border: '1px solid #D4AF37', borderRadius: '20px',
+              padding: '40px 30px', maxWidth: '380px', width: '100%', textAlign: 'center', boxShadow: '0 25px 50px rgba(0,0,0,0.9)',
+              backdropFilter: 'blur(15px)'
+            }}>
+              <div style={{ fontSize: '3.5rem', marginBottom: '20px', filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.3))' }}>🔗</div>
+              <h2 style={{ color: '#D4AF37', marginBottom: '15px', fontSize: '1.6rem', fontWeight: 'bold' }}>¿Vincular Dispositivo?</h2>
+              <p style={{ color: '#bbb', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '30px', textWrap: 'pretty' }}>
+                Detectamos una <strong>llave de peregrinación</strong>. <br/>
+                Si aceptas, tu progreso actual será reemplazado por el de la llave entrante.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={confirmPendingSync}
+                  style={{ flex: 1.2, padding: '14px', background: '#D4AF37', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', transition: 'transform 0.2s' }}
+                >
+                  Vincular
+                </button>
+                <button
+                  onClick={dismissSync}
+                  style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid #444', borderRadius: '12px', fontSize: '1rem', cursor: 'pointer' }}
+                >
+                  Ahora No
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* WELCOME INTRO — honest first-run */}
-      {showIntro && (
-        <div className="modal-overlay" style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
-        }} onClick={dismissIntro}>
-          <div className="modal-content" style={{
-            background: 'linear-gradient(145deg, #0d0d0d, #1a0a0a)', border: '1px solid #D4AF37',
-            borderRadius: '24px', padding: '36px 26px', maxWidth: '420px', width: '100%', textAlign: 'center',
-            boxShadow: '0 30px 60px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)',
-            position: 'relative', overflow: 'hidden'
-          }} onClick={e => e.stopPropagation()}>
-            <h1 style={{ color: '#D4AF37', margin: '0 0 10px', fontSize: '2rem', letterSpacing: '1px' }}>Rosario Cards</h1>
-            <p style={{ color: '#ccc', fontSize: '0.95rem', lineHeight: '1.55', margin: '0 0 22px' }}>
-              El Libro te guía paso a paso en el Rosario de hoy. Un Rosario completo son cinco misterios (décenas).
-            </p>
+        {/* WELCOME INTRO — honest first-run */}
+        {showIntro && (
+          <div className="modal-overlay" style={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+          }} onClick={dismissIntro}>
+            <div className="modal-content" style={{
+              background: 'linear-gradient(145deg, #0d0d0d, #1a0a0a)', border: '1px solid #D4AF37',
+              borderRadius: '24px', padding: '36px 26px', maxWidth: '420px', width: '100%', textAlign: 'center',
+              boxShadow: '0 30px 60px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)',
+              position: 'relative', overflow: 'hidden'
+            }} onClick={e => e.stopPropagation()}>
+              <h1 style={{ color: '#D4AF37', margin: '0 0 10px', fontSize: '2rem', letterSpacing: '1px' }}>Rosario Cards</h1>
+              <p style={{ color: '#ccc', fontSize: '0.95rem', lineHeight: '1.55', margin: '0 0 22px' }}>
+                El Libro te guía paso a paso en el Rosario de hoy. Un Rosario completo son cinco misterios (décenas).
+              </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  dismissIntro();
-                  startLibroHoy();
-                }}
-                style={{
-                  width: '100%', padding: '16px', background: 'linear-gradient(90deg, #D4AF37, #C5A028)', color: '#000',
-                  border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.05rem',
-                  cursor: 'pointer',
-                }}
-              >
-                Rezar el Rosario de hoy
-              </button>
-              {isCompromisoCampaignActive() ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button
                   type="button"
                   onClick={() => {
                     dismissIntro();
-                    setCompromisoMode('commit');
-                    setShowCompromiso(true);
+                    startLibroHoy();
                   }}
                   style={{
-                    width: '100%', padding: '14px',
-                    background: 'linear-gradient(90deg, #2a0a0a, #3d0f0f)',
-                    border: '1px solid #D4AF37', borderRadius: '12px',
-                    color: '#D4AF37', fontWeight: 'bold', fontSize: '1rem',
+                    width: '100%', padding: '16px', background: 'linear-gradient(90deg, #D4AF37, #C5A028)', color: '#000',
+                    border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.05rem',
                     cursor: 'pointer',
                   }}
                 >
-                  Rezá por Argentina
+                  Rezar el Rosario de hoy
                 </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={dismissIntro}
-                style={{
-                  width: '100%', padding: '12px', background: 'transparent', color: '#888',
-                  border: '1px solid #333', borderRadius: '12px', fontSize: '0.9rem', cursor: 'pointer',
-                }}
-              >
-                Más tarde
-              </button>
+                {isCompromisoCampaignActive() ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      dismissIntro();
+                      setCompromisoMode('commit');
+                      setShowCompromiso(true);
+                    }}
+                    style={{
+                      width: '100%', padding: '14px',
+                      background: 'linear-gradient(90deg, #2a0a0a, #3d0f0f)',
+                      border: '1px solid #D4AF37', borderRadius: '12px',
+                      color: '#D4AF37', fontWeight: 'bold', fontSize: '1rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Rezá por Argentina
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={dismissIntro}
+                  style={{
+                    width: '100%', padding: '12px', background: 'transparent', color: '#888',
+                    border: '1px solid #333', borderRadius: '12px', fontSize: '0.9rem', cursor: 'pointer',
+                  }}
+                >
+                  Más tarde
+                </button>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: '#555', margin: '18px 0 0 0' }}>
+                Ayuda (arriba) vuelve a abrir esta guía.
+              </p>
             </div>
-            <p style={{ fontSize: '0.72rem', color: '#555', margin: '18px 0 0 0' }}>
-              Ayuda (arriba) vuelve a abrir esta guía.
-            </p>
           </div>
-        </div>
-      )}
+        )}
 
-      {showCompromiso && (
-        <CompromisoSheet
-          mode={compromisoMode}
-          onCommit={handleCompromisoCommit}
-          onDismiss={() => setShowCompromiso(false)}
-          onStartPray={() => {
-            setShowCompromiso(false);
-            navigate('/libro');
-          }}
-          onOpenCamino={() => {
-            setShowCompromiso(false);
-            navigate(getPathForView('camino'));
-          }}
-        />
-      )}
-
-    </div>
+        {showCompromiso && (
+          <CompromisoSheet
+            mode={compromisoMode}
+            onCommit={handleCompromisoCommit}
+            onDismiss={() => setShowCompromiso(false)}
+            onStartPray={() => {
+              setShowCompromiso(false);
+              navigate('/libro');
+            }}
+            onOpenCamino={() => {
+              setShowCompromiso(false);
+              navigate(getPathForView('camino'));
+            }}
+          />
+        )}
+      </>}
+    >
+      <ViewErrorBoundary viewId={vistaActiva}>
+          {renderizarVista()}
+        </ViewErrorBoundary>
+    </AppFrame>
   );
 }
 
@@ -933,7 +926,7 @@ function AppActionDock({
   // Always top: user wants globes + Ayuda + Ajustes on the first row.
   // oneHandMode must not drag this chrome over Devociones / bottom nav.
   return (
-    <div className="app-action-dock app-action-dock--top">
+    <div className="app-action-dock">
       <div className="app-action-cluster app-action-cluster--left app-action-cluster--orbs">
         <PrayForOrbs
           simpleMode={simpleMode}

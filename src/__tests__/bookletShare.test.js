@@ -1,7 +1,11 @@
 import {
   buildShareCardPayload,
+  buildShareDeepLink,
   formatBookletShareProgress,
   getBookletDevotionLabel,
+  getShareUrlLine,
+  resolveShareBackgroundUrl,
+  resolveShareBackgroundUrlWithFallback,
   truncateShareText,
   makeShareFilename,
 } from '../utils/bookletShare';
@@ -64,5 +68,56 @@ describe('bookletShare', () => {
 
   test('makeShareFilename slugifies prayer title', () => {
     expect(makeShareFilename('Oración inicial')).toMatch(/^rosario-cards-oracion-inicial\.png$/);
+  });
+
+  test('truncateShareText preserves verse line breaks', () => {
+    const out = truncateShareText('Padre nuestro\nque estás en el cielo\n\nsantificado sea', 720);
+    expect(out).toContain('Padre nuestro\nque estás en el cielo');
+    expect(out).toContain('\n\nsantificado sea');
+  });
+
+  test('truncateShareText cuts long text at a boundary with ellipsis', () => {
+    const out = truncateShareText('palabra '.repeat(200), 100);
+    expect(out.length).toBeLessThanOrEqual(100);
+    expect(out.endsWith('…')).toBe(true);
+  });
+
+  test('resolveShareBackgroundUrl absolutizes relative asset paths', () => {
+    expect(resolveShareBackgroundUrl('gallery-images/a.webp')).toMatch(
+      /^https?:\/\/.+\/gallery-images\/a\.webp$/
+    );
+    expect(resolveShareBackgroundUrl('/gallery-images/a.webp')).toMatch(/\/gallery-images\/a\.webp$/);
+    expect(resolveShareBackgroundUrl(null)).toBeNull();
+  });
+
+  test('buildShareCardPayload falls back to bundled art and prints the link', () => {
+    const payload = buildShareCardPayload({
+      misterioActual: 'gozosos',
+      prayerTitle: 'Ave María',
+      prayerText: 'Dios te salve\nMaría',
+      backgroundUrl: null,
+      progressLabel: '3 / 70',
+      shareUrl: 'https://rosario.gatrivi.com/?misterio=gozosos&paso=3',
+    });
+    expect(payload.backgroundUrl).toMatch(/logo\.png$/);
+    expect(payload.urlLine).toBe('rosario.gatrivi.com');
+    expect(payload.prayerText).toContain('\n');
+  });
+
+  test('buildShareDeepLink keeps misterio and paso', () => {
+    const link = buildShareDeepLink({ misterioActual: 'gozosos', displayIndex: 3 });
+    expect(link).toContain('misterio=gozosos');
+    expect(link).toContain('paso=3');
+  });
+
+  test('getShareUrlLine shortens to host', () => {
+    expect(getShareUrlLine('https://rosario.gatrivi.com/?misterio=gozosos')).toBe(
+      'rosario.gatrivi.com'
+    );
+  });
+
+  test('resolveShareBackgroundUrlWithFallback uses fallback when empty', () => {
+    expect(resolveShareBackgroundUrlWithFallback(null)).toMatch(/logo\.png$/);
+    expect(resolveShareBackgroundUrlWithFallback('/gallery-images/x.jpg')).toMatch(/x\.jpg$/);
   });
 });

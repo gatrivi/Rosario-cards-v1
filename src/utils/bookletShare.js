@@ -110,10 +110,26 @@ export function formatBookletShareProgress({
   return `${base} · ${extras.join(' · ')}`;
 }
 
+/**
+ * Collapse whitespace but KEEP paragraph / verse line breaks so prayers
+ * (Padre Nuestro, Ave María, …) don't render as a wall of text on the card.
+ */
 export function truncateShareText(text, maxChars = 720) {
-  const normalized = `${text || ''}`.replace(/\s+/g, ' ').trim();
+  const normalized = `${text || ''}`
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t\u00a0]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
   if (normalized.length <= maxChars) return normalized;
-  return `${normalized.slice(0, maxChars - 1).trim()}…`;
+  const sliced = normalized.slice(0, maxChars - 1).trim();
+  // Prefer cutting at a line/word boundary so we don't split mid-word.
+  const boundary = Math.max(sliced.lastIndexOf('\n'), sliced.lastIndexOf(' '));
+  if (boundary > maxChars * 0.6) return `${sliced.slice(0, boundary).trim()}…`;
+  return `${sliced}…`;
 }
 
 export function resolveShareBackgroundUrl(rawUrl) {
@@ -124,7 +140,61 @@ export function resolveShareBackgroundUrl(rawUrl) {
   if (typeof window !== 'undefined' && rawUrl.startsWith('/')) {
     return `${window.location.origin}${rawUrl}`;
   }
+  // Relative asset path (e.g. "gallery-images/…") — resolve against origin
+  // so the card <img> and the preload probe hit the same absolute URL.
+  if (typeof window !== 'undefined' && !rawUrl.startsWith('blob:')) {
+    return `${window.location.origin}/${rawUrl.replace(/^\/+/, '')}`;
+  }
   return rawUrl;
+}
+
+/** Fallback art so the card never renders as a flat dark rectangle. */
+export const SHARE_FALLBACK_ART = '/logo.png';
+
+export function resolveShareBackgroundUrlWithFallback(rawUrl, fallback = SHARE_FALLBACK_ART) {
+  return resolveShareBackgroundUrl(rawUrl) || resolveShareBackgroundUrl(fallback);
+}
+
+/**
+ * Deep link back to the exact prayer step. AppShell syncs
+ * `?misterio=&paso=` (& `dia=` for the novena) into the URL, so the
+ * current href already encodes the step — keep it, stripping only
+ * volatile params. Falls back to an explicitly built link.
+ */
+export function buildShareDeepLink({ misterioActual, displayIndex, novenaDay } = {}) {
+  if (typeof window !== 'undefined') {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('sync');
+      if (misterioActual) url.searchParams.set('misterio', misterioActual);
+      if (Number.isInteger(displayIndex) && displayIndex >= 0) {
+        url.searchParams.set('paso', String(displayIndex));
+      }
+      if (misterioActual === 'divinamisericordia_novena' && novenaDay) {
+        url.searchParams.set('dia', String(novenaDay));
+      }
+      return url.toString();
+    } catch (_) {
+      /* fall through to origin fallback */
+    }
+  }
+  const base =
+    typeof window !== 'undefined' ? window.location.origin : 'https://rosario.gatrivi.com';
+  const params = new URLSearchParams();
+  if (misterioActual) params.set('misterio', misterioActual);
+  if (Number.isInteger(displayIndex) && displayIndex >= 0) params.set('paso', String(displayIndex));
+  const qs = params.toString();
+  return qs ? `${base}/?${qs}` : `${base}/`;
+}
+
+/** Short host line printed ON the PNG (the pixels aren't clickable). */
+export function getShareUrlLine(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.host + (parsed.pathname !== '/' ? parsed.pathname : '');
+  } catch (_) {
+    return 'rosario.gatrivi.com';
+  }
 }
 
 export function buildShareCardPayload({
@@ -133,6 +203,7 @@ export function buildShareCardPayload({
   prayerText,
   backgroundUrl,
   progressLabel,
+  shareUrl,
 }) {
   const devotion = getBookletDevotionLabel(misterioActual);
   return {
@@ -140,9 +211,10 @@ export function buildShareCardPayload({
     devotionSubtitle: devotion.subtitle,
     prayerTitle: prayerTitle || '',
     prayerText: truncateShareText(prayerText),
-    backgroundUrl: resolveShareBackgroundUrl(backgroundUrl),
+    backgroundUrl: resolveShareBackgroundUrlWithFallback(backgroundUrl),
     progressLabel: progressLabel || '',
     brandLine: 'Rosario Cards',
+    urlLine: shareUrl ? getShareUrlLine(shareUrl) : 'rosario.gatrivi.com',
   };
 }
 
@@ -154,18 +226,94 @@ export function getOutlineStepThumb(step, mysteryType, index) {
   return null;
 }
 
-export function preloadShareImage(url) {
+export function preloadShareImage(url, timeoutMs = 8000) {
   return new Promise((resolve) => {
     if (!url) {
       resolve(false);
       return;
     }
+    let settled = false;
+    const done = (ok) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => done(false), timeoutMs);
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
+    img.onload = () => done(true);
+    img.onerror = () => done(false);
     img.src = url;
   });
+}
+
+/**
+ * Wait until every <img> inside the card is decoded so html2canvas
+ * doesn't capture a blank background. Never rejects; resolves false
+ * on timeout so sharing can still proceed with whatever rendered.
+ */
+export async function waitForCardImages(cardElement, timeoutMs = 8000) {
+  try {
+    if (!cardElement) return false;
+    const imgs = Array.from(cardElement.querySelectorAll('img'));
+    if (!imgs.length) return true;
+    const deadline = Date.now() + timeoutMs;
+    const pending = imgs.filter((img) => !(img.complete && img.naturalWidth > 0));
+    if (!pending.length) return true;
+    await Promise.all(
+      pending.map(
+        (img) =>
+          new Promise((resolve) => {
+            const timer = setTimeout(resolve, Math.max(0, deadline - Date.now()));
+            img.onload = () => {
+              clearTimeout(timer);
+              resolve();
+            };
+            img.onerror = () => {
+              clearTimeout(timer);
+              resolve();
+            };
+            // Re-kick decoding for cached-but-not-decoded images.
+            if (img.complete && img.naturalWidth > 0) {
+              clearTimeout(timer);
+              resolve();
+            }
+          })
+      )
+    );
+    try {
+      await Promise.all(
+        pending
+          .filter((img) => img.decode && img.naturalWidth > 0)
+          .map((img) => img.decode().catch(() => {}))
+      );
+    } catch (_) {
+      /* decode is best-effort */
+    }
+    return imgs.every((img) => img.complete && img.naturalWidth > 0);
+  } catch (_) {
+    return false;
+  }
+}
+
+export async function waitForShareReady(cardElement, backgroundUrl, timeoutMs = 8000) {
+  try {
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 2500)),
+      ]);
+    }
+  } catch (_) {
+    /* fonts are best-effort */
+  }
+  await preloadShareImage(backgroundUrl, timeoutMs);
+  // Let React commit the portal + the <img> start decoding.
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+  return waitForCardImages(cardElement, timeoutMs);
 }
 
 export async function captureShareCardPng(cardElement) {
@@ -177,6 +325,24 @@ export async function captureShareCardPng(cardElement) {
     allowTaint: false,
     backgroundColor: '#0d0a1a',
     logging: false,
+    imageTimeout: 15000,
+    windowWidth: Math.max(cardElement.scrollWidth, 540),
+    windowHeight: Math.max(cardElement.scrollHeight, 720),
+    // The capture host sits off-screen with opacity 0 so it never
+    // flashes on screen; force the clone visible for html2canvas,
+    // which can otherwise snapshot `visibility: hidden` as blank.
+    onclone: (doc) => {
+      try {
+        const hosts = doc.querySelectorAll('.booklet-share-capture-host');
+        hosts.forEach((host) => {
+          host.style.visibility = 'visible';
+          host.style.opacity = '1';
+          host.style.zIndex = '99999';
+        });
+      } catch (_) {
+        /* best-effort */
+      }
+    },
   });
   return new Promise((resolve, reject) => {
     canvas.toBlob(
@@ -198,10 +364,20 @@ export async function captureShareCardPng(cardElement) {
 export async function deliverSharePng(blob, { filename, title, text, url }) {
   const file = new File([blob], filename, { type: 'image/png' });
   const shareText = [text, url].filter(Boolean).join('\n\n');
-  const canShareFiles =
-    typeof navigator !== 'undefined' &&
-    navigator.share &&
-    navigator.canShare?.({ files: [file] });
+  const hasShare =
+    typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const canShareFiles = hasShare
+    ? (() => {
+        try {
+          // Some browsers (older canShare) throw or omit the API yet
+          // still accept files — treat "unknown" as try-it.
+          if (typeof navigator.canShare !== 'function') return true;
+          return navigator.canShare({ files: [file] });
+        } catch (_) {
+          return false;
+        }
+      })()
+    : false;
 
   if (canShareFiles) {
     try {
@@ -210,11 +386,12 @@ export async function deliverSharePng(blob, { filename, title, text, url }) {
       return 'shared';
     } catch (err) {
       if (err?.name === 'AbortError') return 'preview';
+      // e.g. NotSupportedError for files on this UA — fall through to link share.
     }
   }
 
   // Fallback: share clickable link+text, then offer PNG download.
-  if (typeof navigator !== 'undefined' && navigator.share && (shareText || url)) {
+  if (hasShare && (shareText || url)) {
     try {
       const payload = { title: title || 'Rosario Cards', text: shareText || text };
       if (url) payload.url = url;

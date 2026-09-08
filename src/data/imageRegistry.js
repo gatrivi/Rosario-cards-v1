@@ -37,6 +37,13 @@ import sanctusBenedictus from './assets/img/sanctus-benedictus.jpg';
 import reginaCaeli from './assets/img/Prayer-text-handwritten/regina caeli.jpg';
 import stAnthony from './assets/img/st-anthony-of-padua-icon-402.jpg';
 import franciscoDeAsis from './assets/img/francisco_de_asis_2.jpg';
+import christFace from './assets/img/Arte-Sacro/classic-orthodox/christface.jpg';
+import santaTeresita from './assets/img/Arte-Sacro/santa teresa de lisieux.jpeg';
+import saintPeterRelic from './assets/img/Arte-Sacro/SaintPeterRelic.jpg';
+import virgenDeLujan from './assets/img/Arte-Sacro/virgendelujan.jpg';
+import sanLuisMontfort from './assets/img/Arte-Sacro/louis montfort.jpg';
+import eliasProfeta from './assets/img/Arte-Sacro/classic-orthodox/elijah.jpg';
+import coronaDeEspinas from './assets/img/Arte-Sacro/DarkMode/crown.jpg';
 import allMary17th from './assets/img/AllMary17thLith.jpeg';
 import encountersCathedral from './assets/img/Encounters in the cathedral of Raleigh.jpg';
 import earlyChristianAlt from './assets/img/edbd5609aa30b5237d89812de8025c9f--early-christian-christian-art.jpg';
@@ -94,6 +101,13 @@ const REGISTRY = {
   latinSanBenito: { path: latinSanBenito, name: 'San Benito (latín)', tags: ['saint', 'benedict', 'latin'], source: 'asset' },
   stAnthony: { path: stAnthony, name: 'San Antonio de Padua', tags: ['saint', 'anthony', 'icon'], source: 'asset' },
   franciscoDeAsis: { path: franciscoDeAsis, name: 'San Francisco de Asís', tags: ['saint', 'francis', 'assisi'], source: 'asset' },
+  christFace: { path: christFace, name: 'Mandylion — Rostro Santo', tags: ['christ', 'icon', 'orthodox', 'relic'], source: 'asset' },
+  santaTeresita: { path: santaTeresita, name: 'Santa Teresita de Lisieux', tags: ['saint', 'carmel', 'teresa'], source: 'asset' },
+  saintPeterRelic: { path: saintPeterRelic, name: 'Reliquia de San Pedro', tags: ['relic', 'peter', 'apostle'], source: 'asset' },
+  virgenDeLujan: { path: virgenDeLujan, name: 'Virgen de Luján', tags: ['mary', 'lujan', 'argentina'], source: 'asset' },
+  sanLuisMontfort: { path: sanLuisMontfort, name: 'San Luis María de Montfort', tags: ['saint', 'montfort', 'rosary'], source: 'asset' },
+  eliasProfeta: { path: eliasProfeta, name: 'San Elías profeta', tags: ['elijah', 'prophet', 'carmel', 'orthodox'], source: 'asset' },
+  coronaDeEspinas: { path: coronaDeEspinas, name: 'Corona de espinas', tags: ['passion', 'crown', 'relic'], source: 'asset' },
 
   // ── Divine Mercy / Faustina ──
   faustinaDivinoCorazon: { path: faustinaDivinoCorazon, name: 'Santa Faustina — Corazón Divino', tags: ['faustina', 'divine-mercy', 'sacred-heart'], source: 'asset' },

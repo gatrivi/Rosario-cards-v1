@@ -4,7 +4,7 @@ import './CompromisoShareCard.css';
 import {
   captureShareCardPng,
   deliverSharePng,
-  preloadShareImage,
+  waitForShareReady,
 } from '../../utils/bookletShare';
 import {
   COMPROMISO_BODY,
@@ -35,7 +35,7 @@ export default function CompromisoSheet({
     setIsSharing(true);
     try {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      await preloadShareImage(null);
+      await waitForShareReady(cardRef.current, null);
       const blob = await captureShareCardPng(cardRef.current);
       const filename = fulfilled
         ? 'rosario-cards-ya-rece-argentina.png'

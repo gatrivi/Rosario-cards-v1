@@ -104,7 +104,9 @@ describe('devotions shelf flow', () => {
         onMysteryChange={jest.fn()}
       />
     );
-    expect(screen.getByText('Ángelus')).toBeInTheDocument();
+    // El nombre de la devoción vive en el aria-label del botón de recorrido;
+    // el paso inicial se muestra como título del panel.
+    expect(screen.getByLabelText(/Ángelus, paso 1 de/)).toBeInTheDocument();
     expect(screen.getByText(/Señal de la Cruz/i)).toBeInTheDocument();
   });
 

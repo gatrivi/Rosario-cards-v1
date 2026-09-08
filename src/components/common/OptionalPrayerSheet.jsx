@@ -58,6 +58,16 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
     setPlaying(false);
   }, [prayerId, variantId]);
 
+  // Keyboard a11y: Esc closes the sheet like the ✕ button.
+  useEffect(() => {
+    if (!onClose) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   const pickLang = (id) => {
     setVariantId(id);
     applyVariantToVoiceLang(id);

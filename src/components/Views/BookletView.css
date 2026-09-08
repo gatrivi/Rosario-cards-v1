@@ -36,6 +36,8 @@
   min-height: 0;
   position: relative;
   z-index: 2;
+  padding-top: var(--app-header-height, 62px);
+  overflow-y: auto;
 }
 
 .booklet-prayer-chrome--leaving {
@@ -92,7 +94,7 @@
 
 .booklet-header {
   flex-shrink: 0;
-  padding: 3.25rem 1rem 0.25rem;
+  padding: 0.25rem 1rem;
   position: relative;
   text-align: center;
   z-index: 2;
@@ -191,10 +193,12 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
 }
 
-/* One chrome row: devotion · step (→ Recorrido) | share */
+/* Prayer toolbar: grouped actions above reading controls. */
+/* devotion · step (→ Recorrido) | share */
 .booklet-meta-row {
-  align-items: center;
+  align-items: stretch;
   display: flex;
+  flex-direction: column;
   gap: 0.35rem;
   justify-content: center;
   margin: 0 auto 0.3rem;
@@ -210,7 +214,7 @@
   color: rgba(248, 244, 230, 0.82);
   cursor: pointer;
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   font-family: inherit;
   gap: 0.2rem 0.45rem;
@@ -309,10 +313,14 @@
 
 .booklet-share-capture-host {
   left: -10000px;
+  /* NOTE: keep visibility VISIBLE — html2canvas snapshots
+     `visibility: hidden` subtrees as blank. Opacity 0 + off-screen
+     keeps the card out of sight without breaking capture. */
+  opacity: 0;
   pointer-events: none;
   position: fixed;
   top: 0;
-  visibility: hidden;
+  visibility: visible;
   z-index: -1;
 }
 
@@ -470,13 +478,46 @@
   padding: 0.25rem 0.5rem;
 }
 
-.booklet-variant-turn__hint {
-  color: rgba(248, 244, 230, 0.45);
-  font-size: 0.62rem;
-  font-style: italic;
-  font-variant: normal;
-  letter-spacing: 0.02em;
-  text-transform: none;
+/* Title above a stable count/language row inside the voice controls. */
+.booklet-header-line {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  justify-content: center;
+}
+
+.booklet-title--inline {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pacing-run label (e.g. "Ave María · 3 de 10") — small, not a big title. */
+.booklet-run-title {
+  color: rgba(248, 244, 230, 0.85);
+  flex: 0 1 auto;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.booklet-variant-chip {
+  background: rgba(12, 10, 22, 0.28);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 999px;
+  color: rgba(212, 175, 55, 0.75);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  min-height: 30px;
+  padding: 0 0.5rem;
+  white-space: nowrap;
+  touch-action: manipulation;
 }
 
 /* ── Glass text panel (stained glass overlay) ── */
@@ -681,4 +722,65 @@
   color: #0c0a16;
   font-weight: bold;
   box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.booklet-meta-row__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.booklet-meta-row__actions .booklet-meta-row__share {
+  margin-left: auto;
+}
+
+.booklet-meta-row__reading,
+.booklet-meta-row__reading .prayer-recorder {
+  min-width: 0;
+  width: 100%;
+}
+
+.booklet-meta-row__reading .prayer-recorder__title-row {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+
+.booklet-meta-row__reading .prayer-recorder__side-btn {
+  width: 44px;
+  height: 44px;
+  touch-action: manipulation;
+}
+
+
+.booklet-header-line > .booklet-title,
+.booklet-header-line > .booklet-run-title {
+  grid-column: 1 / -1;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+}
+
+.booklet-meta-row__position {
+  white-space: nowrap;
+}
+
+.booklet-meta-row__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.booklet-meta-row__outline,
+.booklet-variant-chip,
+.booklet-meta-row__share,
+.booklet-optional-btn {
+  min-height: 44px;
+}
+
+.booklet-meta-row__share { min-width: 44px; }
+
+/* Short windows scroll the reading surface instead of collapsing the prayer. */
+.booklet-prayer-chrome > .booklet-glass-panel {
+  min-height: min(12rem, 35dvh);
 }

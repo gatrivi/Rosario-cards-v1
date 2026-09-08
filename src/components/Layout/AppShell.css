@@ -2,6 +2,7 @@
 
 :root,
 .app-shell {
+  --app-header-height: calc(62px + env(safe-area-inset-top, 0px));
   --app-bottom-nav-height: 70px;
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --app-above-nav: calc(var(--app-bottom-nav-height) + var(--app-safe-bottom));
@@ -12,25 +13,58 @@
   --app-bottom-nav-height: 70px;
 }
 
+/* AppFrame owns the viewport and global layers. Display-contents slots group
+   siblings without trapping existing fixed dialogs or changing their z-order. */
+.app-shell {
+  height: 100dvh;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0a;
+  color: #e0e0e0;
+  overflow: hidden;
+  font-family: serif;
+  position: relative;
+  isolation: isolate;
+}
+
+.app-shell__header {
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 100;
+  padding: max(10px, env(safe-area-inset-top, 0px)) max(15px, env(safe-area-inset-right, 0px)) 8px max(15px, env(safe-area-inset-left, 0px));
+  pointer-events: none;
+}
+
+.app-view-layer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  z-index: 10;
+  min-height: 0;
+  min-width: 0;
+}
+
+.app-shell__notice {
+  position: absolute;
+  top: var(--app-header-height);
+  inset-inline: 12px;
+  z-index: 200;
+}
+
+.app-shell__utilities,
+.app-shell__navigation {
+  display: contents;
+}
+
 /* --- Action dock --- */
 .app-action-dock {
-  position: absolute;
-  left: 15px;
-  right: 15px;
   display: flex;
   justify-content: space-between;
   z-index: 100;
   pointer-events: none;
-}
-
-.app-action-dock--top {
-  top: max(10px, env(safe-area-inset-top, 0px));
-}
-
-.app-action-dock--bottom {
-  bottom: calc(var(--app-above-nav) + 6px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .app-action-cluster {
@@ -291,3 +325,13 @@
 .app-shell--booklet.app-shell--one-hand .hand-toggle-anchor {
   bottom: calc(var(--app-above-nav) + 56px);
 }
+
+
+/* All app dialogs share this layer above navigation and floating utilities. */
+.app-shell__overlays {
+  position: absolute;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+}
+.app-shell__overlays > * { pointer-events: auto; }
