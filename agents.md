@@ -1,5 +1,7 @@
 ## ROSARIO CARDS — Agent Context & Audit
 
+> **Rosa changes (2026-09-04):** Before editing RoseView, SacredText, SVG drawings, garden resume/manual recording, or Patrick, read [the current handoff](.docs/handoff-2026-09-04-rosa.md). Preserve drag/hold separation, nearest touch targets, deterministic verse traits, and isolated resume/counting. Local changes still show v0.3.82; do not assume they are deployed.
+
 > **Canonical deep context:** [`.docs/index.md`](.docs/index.md) → [`.docs/architecture/current-stack-jun-2026.md`](.docs/architecture/current-stack-jun-2026.md).  
 > **This file is a legacy audit snapshot (Apr–Jun 2026).** Do not trust version numbers, routing, or component status here — use `.docs/` + `releaseNotes.js`.
 

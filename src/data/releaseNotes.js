@@ -4,12 +4,13 @@
  */
 
 export const RELEASE_NOTES = {
-  version: '0.3.82',
-  name: 'El Rosal Reparable',
+  version: '0.3.83',
+  name: 'El Relicario',
   CURRENT: [
-    'Rosa: la zona para rezar ya no queda tapada por la barra inferior',
-    'Rosa: al terminar una oración, "Amén." se muestra antes de avanzar',
-    'PWA fuerza el bundle nuevo y purga el cache anterior',
+    'Nuevo Reliquario: reliquias que se abren con tus Ave Marías (menú Más)',
+    'Rosa: rework de gestos, audio y reanudación de sesión',
+    'Libro: barra compacta, controles al pie, devociones desde el estante',
+    'Rosario: gestos y progresión de cuentas afinados',
   ],
   UPCOMING: [
     'QR de peregrinación + prueba móvil/offline',

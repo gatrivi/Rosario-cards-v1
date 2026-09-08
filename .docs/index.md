@@ -2,6 +2,14 @@
 
 # Rosario Cards — Documentation Index
 
+**Latest direction:** [Matter rosary: usable, artwork transitions restored; chain selection next](./handoff-2026-09-06-matter-rosary.md). Local changes, verification, file map and restart commands.
+
+**Earlier direction:** [Pause shared layout; return to audio effects](./handoff-2026-09-05-next-session.md). Retained context for unrelated layout/audio work.
+
+**Rosa / SVG / garden handoff (2026-09-04):** [Working mechanics, regression contracts, resume, manual recording, Patrick, and safe devotion expansion](./handoff-2026-09-04-rosa.md). Read before editing these features; changes are local, not yet deployed.
+
+**App layout (2026-09-05):** [Frame, spacing, toolbar and overlay ownership](./architecture/app-layout.md).
+
 **Start here.** Canonical context for agents and humans. Model-efficient: tables, paths, invariants.
 
 **Live (prod):** [https://rosario.gatrivi.com](https://rosario.gatrivi.com) — not `*.vercel.app` for share / deep links  

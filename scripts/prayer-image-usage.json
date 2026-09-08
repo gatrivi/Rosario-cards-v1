@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-22T04:44:10.815Z",
-  "prayerCount": 218,
-  "collisionCount": 26,
-  "unusedCount": 2,
+  "generatedAt": "2026-09-08T01:05:54.644Z",
+  "prayerCount": 220,
+  "collisionCount": 27,
+  "unusedCount": 9,
   "collisions": [
     {
       "img": "vitreaux-cruz.jpg",
@@ -210,6 +210,15 @@
       ]
     },
     {
+      "img": "96PsRGiE.jpg",
+      "registryId": "misc96PsRGiE",
+      "prayerIds": [
+        "VL_8",
+        "SCA_EXPO",
+        "opt:bendito"
+      ]
+    },
+    {
       "img": "/gallery-images/cathedral praing.jpg",
       "registryId": "galleryCathedralPraying",
       "prayerIds": [
@@ -231,6 +240,14 @@
       "prayerIds": [
         "DMO1",
         "SCA_CONTRICION"
+      ]
+    },
+    {
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata",
+      "prayerIds": [
+        "ANG_AVE_2",
+        "opt:salve"
       ]
     },
     {
@@ -314,14 +331,6 @@
       ]
     },
     {
-      "img": "96PsRGiE.jpg",
-      "registryId": "misc96PsRGiE",
-      "prayerIds": [
-        "VL_8",
-        "SCA_EXPO"
-      ]
-    },
-    {
       "img": "/gallery-images/misterios/gloria/angel-de-la-guarda.jpg",
       "registryId": "angelDeLaGuarda",
       "prayerIds": [
@@ -338,6 +347,71 @@
         "saint",
         "benedict",
         "latin"
+      ]
+    },
+    {
+      "id": "christFace",
+      "name": "Mandylion — Rostro Santo",
+      "tags": [
+        "christ",
+        "icon",
+        "orthodox",
+        "relic"
+      ]
+    },
+    {
+      "id": "santaTeresita",
+      "name": "Santa Teresita de Lisieux",
+      "tags": [
+        "saint",
+        "carmel",
+        "teresa"
+      ]
+    },
+    {
+      "id": "saintPeterRelic",
+      "name": "Reliquia de San Pedro",
+      "tags": [
+        "relic",
+        "peter",
+        "apostle"
+      ]
+    },
+    {
+      "id": "virgenDeLujan",
+      "name": "Virgen de Luján",
+      "tags": [
+        "mary",
+        "lujan",
+        "argentina"
+      ]
+    },
+    {
+      "id": "sanLuisMontfort",
+      "name": "San Luis María de Montfort",
+      "tags": [
+        "saint",
+        "montfort",
+        "rosary"
+      ]
+    },
+    {
+      "id": "eliasProfeta",
+      "name": "San Elías profeta",
+      "tags": [
+        "elijah",
+        "prophet",
+        "carmel",
+        "orthodox"
+      ]
+    },
+    {
+      "id": "coronaDeEspinas",
+      "name": "Corona de espinas",
+      "tags": [
+        "passion",
+        "crown",
+        "relic"
       ]
     },
     {
@@ -1874,6 +1948,20 @@
       "mystery": "optional",
       "img": "/gallery-images/misterios/modooscuro/pastor.jpg",
       "registryId": "galleryPastor"
+    },
+    {
+      "prayerId": "opt:salve",
+      "title": "Salve Regina",
+      "mystery": "optional",
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata"
+    },
+    {
+      "prayerId": "opt:bendito",
+      "title": "Bendito sea Dios",
+      "mystery": "optional",
+      "img": "96PsRGiE.jpg",
+      "registryId": "misc96PsRGiE"
     }
   ],
   "note": "imgmo/light-dark revamp deferred — uniqueness is primary resolved Liber BG per prayer id"
