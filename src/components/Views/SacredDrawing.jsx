@@ -3,6 +3,7 @@
  * Copyright (c) 2026 gatrivi. All Rights Reserved.
  */
 import React from 'react';
+import VerseDrawing from './VerseDrawing';
 import { SACRED_SYMBOLS } from '../../data/SacredSymbols';
 import { getCosmicPhases } from '../../utils/cosmicModulator';
 
@@ -40,6 +41,9 @@ function getDrawingColor(warmth, shift) {
 }
 
 export default function SacredDrawing({
+  verseTraits,
+  verseCount,
+  seed = 0,
   symbolKey = 'cross',
   progress = 0,
   warmthProfile = [],
@@ -64,6 +68,11 @@ export default function SacredDrawing({
       setPathLengths(lengths);
     }
   }, [symbolKey]); 
+
+  if (verseTraits && verseCount > 0) {
+    return <VerseDrawing paths={paths} verseCount={verseCount} progress={progress}
+      traits={verseTraits} seed={seed} size={size} style={style} />;
+  }
 
   // Intra-decade Bloom: Each prayer adds a subtle expansion to the sacred geometry
   const bloomScale = 1 + (decadeIndex * 0.015) + (phases.jupiter * 0.05);

@@ -141,6 +141,8 @@ export default function JardinDeRosasView() {
                       {rose ? (
                         <RoseDrawing
                           progress={1}
+                          verseCount={rose.verseCount}
+                          verseTraits={rose.verseTraits}
                           warmthProfile={rose.warmthProfile || []}
                           wiggleProfile={rose.wiggleProfile || []}
                           enrichment={enrichment}

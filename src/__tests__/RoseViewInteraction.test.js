@@ -153,11 +153,13 @@ function dragAcrossFirstTwoWords(surface, pointerType) {
 
 describe('RoseView drag-to-pray interaction contract', () => {
   beforeEach(() => {
+    sessionStorage.clear();
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-08-17T20:00:00-03:00'));
   });
 
   afterEach(() => {
+    sessionStorage.clear();
     jest.clearAllTimers();
     jest.useRealTimers();
     delete HTMLElement.prototype.setPointerCapture;
@@ -180,6 +182,19 @@ describe('RoseView drag-to-pray interaction contract', () => {
 
     expect(Number(screen.getByTestId('sacred-text').dataset.charProgress)).toBeGreaterThanOrEqual(0);
     expect(Number(screen.getByTestId('rose-drawing').dataset.progress)).toBeGreaterThan(0);
+  });
+
+  test('returning from the garden restores the reading position and rose progress', () => {
+    const first = renderAveMaria();
+    dragAcrossFirstTwoWords(first.surface, 'touch');
+    const position = screen.getByTestId('sacred-text').dataset.charProgress;
+    const progress = screen.getByTestId('rose-drawing').dataset.progress;
+    first.unmount();
+    renderAveMaria();
+    expect(screen.getByTestId('sacred-text').dataset.charProgress).toBe(position);
+    expect(screen.getByTestId('rose-drawing').dataset.progress).toBe(progress);
+    act(() => { jest.advanceTimersByTime(3000); });
+    expect(screen.getByTestId('sacred-text').dataset.charProgress).toBe(position);
   });
 
   test('touch pointer is captured and released when the browser supports pointer capture', () => {

@@ -3,6 +3,7 @@
  * them without pulling a View component into the module graph.
  */
 import RosarioPrayerBook from '../../data/RosarioPrayerBook';
+import { OPTIONAL_PRAYERS } from '../../data/optionalPrayers';
 import { formatLitanyLine } from '../../utils/litanyHelpers';
 import { resolveLitanyVerseImage } from '../../utils/prayerImages';
 
@@ -18,7 +19,15 @@ export const getPrayerData = (id, mysteryType = 'gozosos') => {
   return null;
 };
 
-export const getSequenceData = (mysteryType = 'gozosos') => {
+export const getSequenceData = (mysteryType = 'gozosos', devotion) => {
+  if (devotion === 'patrick') {
+    const prayer = OPTIONAL_PRAYERS.find(p => p.id === 'patrick');
+    return [{
+      id: 'PATRICK', title: prayer.title, icono: '✝', color: '#59b88e',
+      img: prayer.img, imgCandidates: prayer.imgCandidates,
+      versos: prayer.variants.find(v => v.id === 'es').text.split(/\n+/).filter(Boolean),
+    }];
+  }
   const seqMap = { 'gozosos': 'RGo', 'dolorosos': 'RDo', 'gloriosos': 'RGl', 'luminosos': 'RL' };
   const sequenceKeys = RosarioPrayerBook[seqMap[mysteryType]] || RosarioPrayerBook.RGo;
 

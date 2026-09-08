@@ -5,8 +5,8 @@
  * This code and its associated "Cosmic Alignment" algorithms, interaction models,
  * and procedural devotional logic are protected as intellectual and spiritual property.
  */
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import audioManager from '../../utils/audioManager';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import usePrayerSoundscape from '../../hooks/usePrayerSoundscape';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import { getSequenceData, RHYTHM_CONFIG } from './roseViewHelpers';
@@ -14,8 +14,8 @@ import RoseDrawing from './RoseDrawing';
 import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
 import SacredDust from '../common/SacredDust';
-import { getCosmicPhases } from '../../utils/cosmicModulator';
 import { SYMBOL_MAP } from '../../data/SacredSymbols';
+import { readRoseSession, saveRoseSession } from './roseSession';
 
 const debug = () => {};
 
@@ -23,6 +23,7 @@ const debug = () => {};
 export default function RoseView({
   currentPrayerIndex,
   misterioActual,
+  devotion,
   onUpdateProgreso,
   onBack,
   soundEnabled,
@@ -34,7 +35,8 @@ export default function RoseView({
   const totalRosasRef = useRef(totalAveMarias);
   useEffect(() => { totalRosasRef.current = totalAveMarias; }, [totalAveMarias]);
 
-  const secuencia = useMemo(() => getSequenceData(misterioActual), [misterioActual]);
+  const secuencia = useMemo(() => getSequenceData(misterioActual, devotion), [misterioActual, devotion]);
+  const sessionMystery = devotion || misterioActual;
   const safeIndex = Math.min(
     Math.max(currentPrayerIndex, 0),
     Math.max(secuencia.length - 1, 0)
@@ -48,16 +50,13 @@ export default function RoseView({
 
   useEffect(() => {
     if (cloudState && !loadedPrayerIndex) {
-      const idx = cloudState.rosaryIndex ?? cloudState.bookletIndex;
-      if (idx !== undefined && cloudState.todayDate === new Date().toDateString()) {
-        onUpdateProgreso(Math.min(idx, secuencia.length - 1));
-      }
+      // AppShell owns the prayer index; don't overwrite it on each return from the garden.
       setLoadedPrayerIndex(true);
     }
   }, [cloudState, loadedPrayerIndex, secuencia.length, onUpdateProgreso]);
 
   useEffect(() => {
-    if (loadedPrayerIndex) {
+    if (loadedPrayerIndex && !devotion) {
       syncToCloud({
         rosaryIndex: currentPrayerIndex,
         todayDate: new Date().toDateString(),
@@ -68,11 +67,12 @@ export default function RoseView({
   const rezoData = secuencia[safeIndex] || secuencia[0];
 
   // ─── Interaction State ───
-  const [versoIndex, setVersoIndex] = useState(0);
-  const [charProgressIndex, setCharProgressIndex] = useState(-1); 
-  const [isVerseActivated, setIsVerseActivated] = useState(false);
-  const [isVersoComplete, setIsVersoComplete] = useState(false);
-  const [isPrayerComplete, setIsPrayerComplete] = useState(false);
+  const [resume] = useState(() => readRoseSession(sessionMystery, currentPrayerIndex));
+  const [versoIndex, setVersoIndex] = useState(resume?.versoIndex ?? 0);
+  const [charProgressIndex, setCharProgressIndex] = useState(resume?.charProgressIndex ?? -1);
+  const [isVerseActivated, setIsVerseActivated] = useState(resume?.isVerseActivated ?? false);
+  const [isVersoComplete, setIsVersoComplete] = useState(resume?.isVersoComplete ?? false);
+  const [isPrayerComplete, setIsPrayerComplete] = useState(resume?.isPrayerComplete ?? false);
   const [isCargando, setIsCargando] = useState(false);
   const [warmthTick, setWarmthTick] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -82,10 +82,10 @@ export default function RoseView({
   const containerRef = useRef(null);
   const textoRef = useRef(null);
   const wordSpanRefs = useRef([]);       // DOM elements for each word (for getBoundingClientRect)
-  const charReachedAtRef = useRef([]);   // Timestamp when each global char was first reached
-  const charDwellRef = useRef([]);       // LOCKED dwell ms for passed chars (fast = small, slow = large)
-  const verseWarmthRef = useRef([]);     // Per-verse average warmth (for rose fingerprint)
-  const verseWiggleRef = useRef([]);     // Per-verse mouse variance (for rose uniqueness)
+  const charReachedAtRef = useRef(resume?.charReachedAt?.map(time => time ? Date.now() : null) ?? []);   // Timestamp when each global char was first reached
+  const charDwellRef = useRef(resume?.charDwell ?? []);       // LOCKED dwell ms for passed chars (fast = small, slow = large)
+  const verseWarmthRef = useRef(resume?.warmth ?? []);     // Per-verse average warmth (for rose fingerprint)
+  const verseWiggleRef = useRef(resume?.wiggle ?? []);     // Per-verse mouse variance (for rose uniqueness)
   const mouseWiggleRef = useRef({ lastX: null, lastY: null, samples: [] });
   const autoAdvanceTimer = useRef(null);
   const holdTimerRef = useRef(null);
@@ -94,63 +94,72 @@ export default function RoseView({
   const pointerStartY = useRef(null);
   const pointerStartedInTextRef = useRef(false);
   const isVerticalGesture = useRef(false);
-  const versoIndexRef = useRef(0);
+  const versoIndexRef = useRef(resume?.versoIndex ?? 0);
   const advanceVerseRef = useRef(null);
-  const roseSeedRef = useRef(0);
+  const roseSeedRef = useRef(resume?.seed ?? Date.now());
+  const countedRef = useRef(resume?.isPrayerComplete ?? false);
+  const prayerKey = sessionMystery + ':' + currentPrayerIndex;
+  const previousPrayerKeyRef = useRef(prayerKey);
+  const latestSessionRef = useRef(null);
+  useEffect(() => {
+    latestSessionRef.current = {
+      mystery: sessionMystery, prayerIndex: currentPrayerIndex, versoIndex,
+      charProgressIndex, isVerseActivated, isVersoComplete, isPrayerComplete,
+      charReachedAt: charReachedAtRef.current, charDwell: charDwellRef.current,
+      warmth: verseWarmthRef.current, wiggle: verseWiggleRef.current, seed: roseSeedRef.current,
+    };
+  });
+  useEffect(() => {
+    const save = () => { if (latestSessionRef.current) saveRoseSession(latestSessionRef.current); };
+    window.addEventListener('pagehide', save);
+    return () => { save(); window.removeEventListener('pagehide', save); };
+  }, []);
   const lastAdvanceTimeRef = useRef(0);
-  const isVersoCompleteRef = useRef(false);
-  const isPrayerCompleteRef = useRef(false);
-  const charProgressIndexRef = useRef(-1);
+  const isVersoCompleteRef = useRef(resume?.isVersoComplete ?? false);
+  const isPrayerCompleteRef = useRef(resume?.isPrayerComplete ?? false);
+  const charProgressIndexRef = useRef(resume?.charProgressIndex ?? -1);
   const wordProgressIndexRef = useRef(-1);
   const lastWordAdvanceTimeRef = useRef(0);
   const isPointerDownRef = useRef(false); // guards pointerup/pointerleave double-fire on touch
-
-  // Audio
-  const audioCtxRef = useRef(null);
-  const synthRef = useRef(null);
-  const soundEnabledRef = useRef(soundEnabled);
-  useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
-
-  useEffect(() => {
-    if (!soundEnabled) {
-      if (synthRef.current?.gainNode && audioCtxRef.current) {
-        synthRef.current.gainNode.gain.setTargetAtTime(
-          0, audioCtxRef.current.currentTime, 0.15
-        );
-      }
-      return;
-    }
-    audioManager.resume().then(() => {
-      if (isCargando || isVerseActivated) modulateAudio(true);
-    });
-  }, [soundEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { versoIndexRef.current = versoIndex; }, [versoIndex]);
   useEffect(() => { isVersoCompleteRef.current = isVersoComplete; }, [isVersoComplete]);
   useEffect(() => { isPrayerCompleteRef.current = isPrayerComplete; }, [isPrayerComplete]);
   useEffect(() => { charProgressIndexRef.current = charProgressIndex; }, [charProgressIndex]);
-  useEffect(() => { wordProgressIndexRef.current = -1; lastWordAdvanceTimeRef.current = 0; }, [currentPrayerIndex, versoIndex]);
+  useEffect(() => {
+    let offset = 0;
+    wordProgressIndexRef.current = -1;
+    const words = (rezoData.versos[versoIndex] || '').split(/\s+/).filter(Boolean);
+    words.forEach((word, index) => {
+      offset += word.length;
+      if (offset - 1 <= charProgressIndexRef.current) wordProgressIndexRef.current = index;
+    });
+    lastWordAdvanceTimeRef.current = 0;
+  }, [currentPrayerIndex, versoIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (previousPrayerKeyRef.current === prayerKey) return;
+    previousPrayerKeyRef.current = prayerKey;
+    countedRef.current = false;
+    roseSeedRef.current = Date.now();
+    verseWarmthRef.current = [];
+    verseWiggleRef.current = [];
+    charReachedAtRef.current = [];
+    charDwellRef.current = [];
     setVersoIndex(0);
     setCharProgressIndex(-1);
     setIsVerseActivated(false);
     setIsVersoComplete(false);
     setIsPrayerComplete(false);
     setIsCargando(false);
-  }, [currentPrayerIndex]);
+  }, [prayerKey]);
 
   // ─── Derived ───
   const totalVersos = rezoData.versos.length;
   const currentVerseText = isPrayerComplete ? 'Amén.' : (rezoData.versos[versoIndex] || '');
   const currentWords = currentVerseText.split(/\s+/).filter(w => w.length > 0);
 
-  // Initialize unique seed for the current rose
-  useEffect(() => {
-    if (rezoData.id === 'A') {
-      roseSeedRef.current = Date.now();
-    }
-  }, [currentPrayerIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Seed and completed strokes survive garden visits.
 
   // Precompute character offsets: wordCharOffsets[w] = global index of the first char of word w
   const wordCharOffsets = [];
@@ -165,279 +174,12 @@ export default function RoseView({
   // ─── Audio System ───
   // ═══════════════════════════════════════════════════════
 
-  // Root note per prayer type (Hz)
-  const PRAYER_FREQ = {
-    'P': 130.81, // C3 — Padre Nuestro (grounding)
-    'A': 164.81, // E3 — Ave María (warm)
-    'G': 196.00, // G3 — Gloria (bright, ascending)
-    'F': 146.83, // D3 — Creed (contemplative)
-    'LL': 130.81, // C3
-    'S': 130.81, // C3
-  };
-  const getBaseFreq = useCallback(() => PRAYER_FREQ[rezoData.id] || PRAYER_FREQ[rezoData.id?.[0]] || 164.81, [rezoData.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
-  const initAudio = useCallback(() => {
-    if (!audioCtxRef.current) {
-      const ctx = audioManager.getContext();
-      if (!ctx) return;
-      audioCtxRef.current = ctx;
-
-      const gainNode = ctx.createGain();
-      gainNode.gain.value = 0;
-      gainNode.connect(ctx.destination);
-
-      if (!soundEnabledRef.current) {
-        gainNode.gain.value = 0;
-      } else {
-        audioManager.resume();
-      }
-
-      // --- AMBIANCE LAYER: Deep Monastery Drone (Foundational) ---
-      const droneOsc = ctx.createOscillator();
-      droneOsc.type = 'sine';
-      droneOsc.frequency.setValueAtTime(getBaseFreq() * 0.25, ctx.currentTime); // 2 Octaves down
-      const droneGain = ctx.createGain();
-      droneGain.gain.value = 0.012;
-      droneOsc.connect(droneGain);
-      droneGain.connect(gainNode);
-      droneOsc.start();
-
-      // --- SACRED ORGAN LAYERS ---
-      // Osc1: Sine (Foundational Root)
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(getBaseFreq(), ctx.currentTime);
-
-      // Osc2: Triangle (Perfect 5th — adds organ "reed" texture)
-      const osc2 = ctx.createOscillator();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(getBaseFreq() * 1.5, ctx.currentTime);
-
-      // Osc3: Sine (Octave below — adds depth/solemnity)
-      const osc3 = ctx.createOscillator();
-      osc3.type = 'sine';
-      osc3.frequency.setValueAtTime(getBaseFreq() * 0.5, ctx.currentTime);
-      
-      // Osc4: Sine (Celestial Choir / Harmonic Shimmer)
-      const osc4 = ctx.createOscillator();
-      osc4.type = 'sine';
-      osc4.frequency.setValueAtTime(getBaseFreq() * 4, ctx.currentTime);
-      const celestialGain = ctx.createGain();
-      celestialGain.gain.value = 0;
-
-      const padGain = ctx.createGain();
-      padGain.gain.value = 0.028; 
-
-      // Reverb Simulation: Long delay + Filter feedback
-      const reverbGain = ctx.createGain();
-      reverbGain.gain.value = 0.3;
-      const delay = ctx.createDelay();
-      delay.delayTime.value = 0.5;
-      const feedback = ctx.createGain();
-      feedback.gain.value = 0.4;
-      const reverbFilter = ctx.createBiquadFilter();
-      reverbFilter.type = 'lowpass';
-      reverbFilter.frequency.value = 800;
-      
-      delay.connect(feedback);
-      feedback.connect(reverbFilter);
-      reverbFilter.connect(delay);
-      delay.connect(reverbGain);
-
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 500; 
-      filter.Q.value = 1.5;
-
-      // LFO for "Sacred Breath" (Tremolo + Filter)
-      const lfo = ctx.createOscillator();
-      const lfoGain = ctx.createGain();
-      lfo.type = 'sine';
-      lfo.frequency.value = 0.15; 
-      lfoGain.gain.value = 0;     
-      lfo.connect(lfoGain);
-      lfoGain.connect(filter.frequency);
-      lfo.start();
-
-      osc.connect(filter);
-      osc2.connect(filter);
-      osc3.connect(padGain);
-      osc4.connect(celestialGain);
-      celestialGain.connect(filter);
-      padGain.connect(filter);
-      filter.connect(gainNode);
-      filter.connect(delay);
-      reverbGain.connect(gainNode);
-
-      osc.start();
-      osc2.start();
-      osc3.start();
-      osc4.start();
-
-      synthRef.current = {
-        osc, osc2, osc3, osc4, celestialGain, lfo, lfoGain, filter, gainNode, padGain, droneGain, droneOsc,
-      };
-    } else if (audioCtxRef.current.state === 'suspended' && soundEnabledRef.current) {
-      audioCtxRef.current.resume();
-    }
-  }, [getBaseFreq]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const disposeRoseAudio = useCallback(() => {
-    const synth = synthRef.current;
-    if (!synth) return;
-    const ctx = audioCtxRef.current;
-    const t = (ctx?.currentTime ?? 0) + 0.02;
-    try {
-      if (synth.gainNode) synth.gainNode.gain.setValueAtTime(0, t);
-      ['droneOsc', 'osc', 'osc2', 'osc3', 'osc4', 'lfo'].forEach((key) => {
-        const node = synth[key];
-        if (node?.stop) {
-          try {
-            node.stop(t);
-          } catch (_) { /* already stopped */ }
-        }
-      });
-    } catch (_) { /* ignore teardown errors */ }
-    synthRef.current = null;
-  }, []);
-
-  useEffect(() => () => {
-    disposeRoseAudio();
-  }, [disposeRoseAudio]);
-
-  // Called on pointer activity (on/off toggle)
-  const modulateAudio = (active) => {
-    if (!synthRef.current || !soundEnabledRef.current) return;
-    const { gainNode } = synthRef.current;
-    if (active) {
-      updateAudioWarmth();
-    } else {
-      // Don't kill it instantly, leave a tiny "ghost" hum
-      gainNode.gain.setTargetAtTime(0.002, audioCtxRef.current.currentTime, 0.6);
-    }
-  };
-
-  const updateAudioWarmth = () => {
-    if (!synthRef.current || !soundEnabledRef.current) return;
-    const { filter, gainNode, padGain, celestialGain, lfoGain, droneGain } = synthRef.current;
-    const t = audioCtxRef.current.currentTime;
-    
-    const reachedAt = charReachedAtRef.current[charProgressIndex];
-    const liveDwell = reachedAt ? Date.now() - reachedAt : 0;
-    const warmth = Math.min(1, liveDwell / 3500);
-
-    const tRosos = totalRosasRef.current || 0;
-    const totalEnrichment = Math.min(1, Math.log10(tRosos + 1) / 8); 
-
-    const sessionProgress = (currentPrayerIndex + 1) / (secuencia.length || 1);
-    const sessionEnrichment = Math.min(1, sessionProgress);
-
-    // --- Cosmic Modulation ---
-    const cosmic = getCosmicPhases();
-    
-    const deepBase = cosmic.pluto * 15 + cosmic.saturn * 8;
-    
-    const lfoSpeed = 0.12 + (cosmic.mercury * 0.08);
-    if (synthRef.current.lfo) {
-      synthRef.current.lfo.frequency.setTargetAtTime(lfoSpeed, t, 1.5);
-    }
-
-    // --- Filter: extremely subtle opening ---
-    const jupiterMod = cosmic.jupiter * 200;
-    const targetFreq = 450 + warmth * 350 + sessionEnrichment * 500 + totalEnrichment * 250 + jupiterMod + deepBase;
-    filter.frequency.setTargetAtTime(targetFreq, t, 0.8);
-    
-    filter.Q.setTargetAtTime(1.5 + sessionEnrichment * 3 + cosmic.neptune * 2, t, 0.8); 
-
-    // --- Ambiance Layers ---
-    celestialGain.gain.setTargetAtTime(sessionEnrichment * 0.025 + (cosmic.uranus * 0.01), t, 1.5); 
-    droneGain.gain.setTargetAtTime(0.005 + (cosmic.pluto * 0.005), t, 2.0);
-    lfoGain.gain.setTargetAtTime(sessionEnrichment * 60 + (cosmic.mercury * 30), t, 1.5);
-
-    // --- Volume (audible on phone speakers) ---
-    const baseVolume = 0.038 + (totalEnrichment * 0.012);
-    gainNode.gain.setTargetAtTime(baseVolume + warmth * 0.018, t, 0.6);
-
-    padGain.gain.setTargetAtTime(0.022 + totalEnrichment * 0.018, t, 0.8);
-  };
-
-
-  // Verse start chime — pitch matches prayer type
-  const playActivationChime = useCallback(() => {
-    if (!soundEnabledRef.current || !audioCtxRef.current) return;
-    try {
-      const ctx = audioCtxRef.current;
-      const base = getBaseFreq();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(base * 2, ctx.currentTime);        // octave up
-      osc.frequency.setValueAtTime(base * 2.5, ctx.currentTime + 0.06); // major 3rd
-      gain.gain.setValueAtTime(0.05, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.2);
-    } catch (e) { /* ignore */ }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Verse completion: Campana Gregoriana (Deep warm bell)
-  const playVerseCompleteSound = useCallback((avgDwell) => {
-    if (!soundEnabledRef.current || !audioCtxRef.current) return;
-    try {
-      const ctx = audioCtxRef.current;
-      const base = getBaseFreq() * 0.5; 
-      
-      // Gothic Bell harmonics
-      const freqs = [base, base * 2.01, base * 3.02, base * 4.03]; 
-      
-      freqs.forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = (i === 0) ? 'sine' : 'triangle'; // triangle adds that "metal strike" harmonic
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 2000;
-        
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.04 - (i * 0.01), ctx.currentTime + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 4.0);
-        
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 4.1);
-      });
-    } catch (e) { /* ignore */ }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Prayer completion: richer resolved chord
-  const playPrayerCompleteSound = useCallback(() => {
-    if (!soundEnabledRef.current || !audioCtxRef.current) return;
-    try {
-      const ctx = audioCtxRef.current;
-      const base = getBaseFreq();
-      // Full major chord (root + 3rd + 5th + octave)
-      [base, base * 1.25, base * 1.5, base * 2].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq * 2, ctx.currentTime);
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.04 - i * 0.005, ctx.currentTime + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.6);
-      });
-    } catch (e) { /* ignore */ }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const { initAudio, modulateAudio, playActivationChime, playVerseCompleteSound, playPrayerCompleteSound } = usePrayerSoundscape({
+    enabled: soundEnabled,
+    active: isCargando && isVerseActivated && !isVersoComplete && !isPrayerComplete,
+    theme: devotion || misterioActual,
+    prayerId: rezoData.id,
+  });
 
 
   // ═══════════════════════════════════════════════════════
@@ -538,7 +280,6 @@ export default function RoseView({
     if (charProgressIndex < 0 || isVersoComplete || isPrayerComplete) return;
     const timer = setInterval(() => {
       setWarmthTick(t => t + 1);
-      updateAudioWarmth(); // sync sound to visual warmth
     }, 50);
     return () => clearInterval(timer);
   }, [charProgressIndex, isVersoComplete, isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -549,7 +290,7 @@ export default function RoseView({
     if (isVersoComplete && !isPrayerComplete) {
       const dwells = charDwellRef.current.filter(d => d !== undefined && d !== null);
       const avgDwell = dwells.length > 0 ? dwells.reduce((s, d) => s + d, 0) / dwells.length : 200;
-      verseWarmthRef.current.push(Math.min(1, avgDwell / 1000));
+      verseWarmthRef.current[versoIndex] = Math.min(1, avgDwell / 1000);
       const ws = mouseWiggleRef.current.samples;
       let wiggle = 0;
       if (ws.length >= 3) {
@@ -557,7 +298,7 @@ export default function RoseView({
         const variance = ws.reduce((sum, v) => sum + (v - avg) ** 2, 0) / ws.length;
         wiggle = Math.min(5, Math.sqrt(variance));
       }
-      verseWiggleRef.current.push(wiggle);
+      verseWiggleRef.current[versoIndex] = wiggle;
       mouseWiggleRef.current.samples = [];
       playVerseCompleteSound(avgDwell);
     }
@@ -566,7 +307,8 @@ export default function RoseView({
   // Prayer completion — sound, vibration, rose data, but NO auto-advance.
   // The user must release to move to the next prayer.
   useEffect(() => {
-    if (isPrayerComplete) {
+    if (isPrayerComplete && !countedRef.current) {
+      countedRef.current = true;
       if (rezoData.id === 'A') {
         addRosas(1);
         const N = RoseDrawing.PATH_COUNT;
@@ -580,7 +322,8 @@ export default function RoseView({
           const vi = Math.floor(i * totalVersos / N);
           return vg[Math.min(vi, vg.length - 1)] || 0;
         });
-        storeRoseData({ 
+        storeRoseData({
+          verseTraits: { warmth: [...vw], wiggle: [...vg] },
           warmthProfile, 
           wiggleProfile, 
           verseCount: totalVersos,
@@ -649,7 +392,7 @@ export default function RoseView({
 
   // Hold mode — reveals one word per tick at reading pace.
   useEffect(() => {
-    if (isCargando && !isVersoComplete && !isPrayerComplete) {
+    if (isCargando && !pointerStartedInTextRef.current && !isVersoComplete && !isPrayerComplete) {
       debug(`[RoseView] Starting Hold Timer...`);
       holdDelayTimerRef.current = setTimeout(() => {
         if (!isVerseActivated) {
@@ -689,18 +432,6 @@ export default function RoseView({
     };
   }, [isCargando, isVersoComplete, isPrayerComplete, totalChars, isVerseActivated, currentRhythm, initAudio, playActivationChime]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep organ layers modulating while user holds or reads
-  useEffect(() => {
-    if (!isCargando && !isVerseActivated) return undefined;
-    const tick = setInterval(() => {
-      setWarmthTick((t) => t + 1);
-      if (soundEnabledRef.current && synthRef.current) {
-        updateAudioWarmth();
-      }
-    }, 120);
-    return () => clearInterval(tick);
-  }, [isCargando, isVerseActivated]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Wheel handler
   useEffect(() => {
     const el = containerRef.current;
@@ -729,17 +460,24 @@ export default function RoseView({
 
   const findWordAtPointer = (clientX, clientY) => {
     if (wordSpanRefs.current.length === 0) return -1;
-    const M = 80; // Increased margin for easier detection
-    for (let w = 0; w < wordSpanRefs.current.length; w++) {
+    let nearest = -1;
+    let nearestDistance = Infinity;
+    for (let w = 0; w < currentWords.length; w++) {
       const span = wordSpanRefs.current[w];
       if (!span) continue;
       const rect = span.getBoundingClientRect();
-      if (clientY >= rect.top - M && clientY <= rect.bottom + M &&
-          clientX >= rect.left - M && clientX <= rect.right + M) {
-        return w;
+      const dx = Math.max(rect.left - clientX, 0, clientX - rect.right);
+      const dy = Math.max(rect.top - clientY, 0, clientY - rect.bottom);
+      // Leave room below the letters for a thumb without overlapping word targets.
+      if (clientY >= rect.top - 12 && clientY <= rect.bottom + 56 && dx <= 24) {
+        const distance = dx * dx + dy * dy;
+        if (distance < nearestDistance) {
+          nearest = w;
+          nearestDistance = distance;
+        }
       }
     }
-    return -1;
+    return nearest;
   };
 
 
@@ -753,6 +491,7 @@ export default function RoseView({
     clientY >= window.innerHeight * THUMB_ZONE_START;
 
   const handleTrackPointer = (clientX, clientY, pointerType) => {
+    if (!isPointerDownRef.current) return;
     if (!hasInteracted) setHasInteracted(true);
 
     const mw = mouseWiggleRef.current;
@@ -779,7 +518,7 @@ export default function RoseView({
       pointerType === 'touch' &&
       pointerStartY.current !== null &&
       !isVerticalGesture.current &&
-      (pointerStartedInTextRef.current || !isInThumbZone(clientY))
+      !pointerStartedInTextRef.current && !isInThumbZone(clientY)
     ) {
       const dY = clientY - pointerStartY.current;
       const dX = clientX - (pointerStartX.current || 0);
@@ -797,7 +536,8 @@ export default function RoseView({
 
     // ─── ACTIVATION ───
     // Activate when holding anywhere, or near text — thumb zone always activates
-    if (!isVerseActivated && (isNearText || isCargando || isInThumbZone(clientY))) {
+    if (findWordAtPointer(clientX, clientY) < 0) return;
+    if (!isVerseActivated) {
       debug(`[RoseView] Activating Verse! Proximity: ${isNearText}, Charging: ${isCargando}`);
       setIsVerseActivated(true);
       initAudio();
@@ -807,7 +547,7 @@ export default function RoseView({
       debug(`[RoseView] Initial word: idx=${wordIdx}, startAt=${startWord}`);
       wordProgressIndexRef.current = startWord;
       lastWordAdvanceTimeRef.current = Date.now();
-      const endChar = wordCharOffsets[startWord] + currentWords[startWord].length - 1;
+      const endChar = wordCharOffsets[startWord] - 1;
       charProgressIndexRef.current = endChar;
       const now = Date.now();
       for (let i = 0; i <= endChar; i++) {
@@ -818,34 +558,43 @@ export default function RoseView({
     }
 
     // ─── HOVER / DRAG TRACKING ───
-    if (isVerseActivated) {
+    {
       const wordIdx = findWordAtPointer(clientX, clientY);
       if (wordIdx < 0) {
         if (Math.random() < 0.02) debug(`[RoseView] Hover: No word at pointer`);
         return;
       }
-      if (wordIdx <= wordProgressIndexRef.current) return;
-      
-      debug(`[RoseView] Hover: Over new word ${wordIdx} ('${currentWords[wordIdx]}')`);
-      tryAdvanceWord();
+      const span = wordSpanRefs.current[wordIdx];
+      const rect = span.getBoundingClientRect();
+      const letters = Array.from(span.children);
+      let li = letters.findIndex(letter => clientX <= letter.getBoundingClientRect().right);
+      if (!letters.length) li = Math.floor((clientX - rect.left) / Math.max(1, rect.width) * currentWords[wordIdx].length);
+      if (li < 0) li = currentWords[wordIdx].length - 1;
+      const next = wordCharOffsets[wordIdx] + Math.min(currentWords[wordIdx].length - 1, Math.max(0, li));
+      if (next <= charProgressIndexRef.current) return;
+      const now = Date.now();
+      for (let i = charProgressIndexRef.current + 1; i <= next; i++) charReachedAtRef.current[i] = now;
+      wordProgressIndexRef.current = wordIdx;
+      charProgressIndexRef.current = next;
+      setCharProgressIndex(next);
+      if (next === totalChars - 1) {
+        isVersoCompleteRef.current = true;
+        setIsVersoComplete(true);
+        modulateAudio(false);
+      }
     }
   };
 
   const handlePointerMove = (e) => { handleTrackPointer(e.clientX, e.clientY, e.pointerType); };
 
   const handlePointerDown = (e) => {
+    initAudio();
     debug(`[RoseView] PointerDown: ${e.pointerType}`);
     pointerStartX.current = e.clientX;
     pointerStartY.current = e.clientY;
     isVerticalGesture.current = false;
-    const textRect = textoRef.current?.getBoundingClientRect();
-    pointerStartedInTextRef.current = Boolean(
-      textRect &&
-      e.clientY >= textRect.top &&
-      e.clientY <= textRect.bottom &&
-      e.clientX >= textRect.left &&
-      e.clientX <= textRect.right
-    );
+    pointerStartedInTextRef.current = !e.target.closest?.('[data-rose-hold]') &&
+      findWordAtPointer(e.clientX, e.clientY) >= 0;
     
     isPointerDownRef.current = true;
     // Always start charging (allows hold-to-advance alongside swipe)
@@ -856,7 +605,7 @@ export default function RoseView({
     }
 
     // ADVANCE WORD ON TAP: if already activated, clicking advances to next word
-    if (isVerseActivated && !isVersoComplete && !isPrayerComplete) {
+    if (!pointerStartedInTextRef.current && isVerseActivated && !isVersoComplete && !isPrayerComplete) {
        debug(`[RoseView] Tap-to-Advance word attempt`);
        tryAdvanceWord();
     }
@@ -927,13 +676,14 @@ export default function RoseView({
     >
       {/* Top chrome */}
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30,
+        position: 'absolute', top: 'var(--app-header-height, 64px)', left: 0, right: 0, zIndex: 30,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '10px 14px', pointerEvents: 'none',
       }}>
         {onBack && (
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onBack(); }}
             style={{
               pointerEvents: 'auto', background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(212,175,55,0.35)',
@@ -946,6 +696,7 @@ export default function RoseView({
         {onToggleSound && (
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onToggleSound(); }}
             style={{
               pointerEvents: 'auto', marginLeft: 'auto',
@@ -994,6 +745,8 @@ export default function RoseView({
             transition: 'transform 0.3s ease-out, filter 0.4s ease, opacity 0.3s',
           }}>
             <RoseDrawing
+              verseCount={totalVersos}
+              verseTraits={{ warmth: verseWarmthRef.current, wiggle: verseWiggleRef.current }}
               progress={overallProgress}
               liveWarmth={(() => {
                 if (charProgressIndex < 0) return 0;
@@ -1031,6 +784,9 @@ export default function RoseView({
             transition: 'transform 0.2s ease-out, filter 0.3s ease, opacity 0.3s'
           }}>
             <SacredDrawing
+              verseCount={totalVersos}
+              verseTraits={{ warmth: verseWarmthRef.current, wiggle: verseWiggleRef.current }}
+              seed={roseSeedRef.current}
               symbolKey={(() => {
                 const id = rezoData.id;
                 const type = misterioActual; // 'gozosos', 'dolorosos', 'gloriosos', 'luminosos'
@@ -1119,7 +875,7 @@ export default function RoseView({
           touchAction: 'none',
         }}
       >
-        <div style={{
+        <div data-rose-hold="true" style={{
           width: 'min(92%, 420px)',
           minHeight: '72px',
           borderRadius: '16px',

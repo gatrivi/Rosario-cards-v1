@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import RoseDrawing from './RoseDrawing';
+import ManualPrayerEntry from './ManualPrayerEntry';
 
 export default function MacetonView({ onSelectMaceton, onViewGarden }) {
   const { 
@@ -20,10 +21,10 @@ export default function MacetonView({ onSelectMaceton, onViewGarden }) {
 
   // Filter roses for today? Actually, for simplicity and UX, we can just show 
   // the latest N roses that correspond to today's progress.
-  const todayRoses = allRoses.slice(-dailyAveMarias);
+  const todayRoses = dailyAveMarias > 0 ? allRoses.slice(-dailyAveMarias) : [];
 
   const pots = [];
-  for (let i = 0; i < objetivoMacetonesHoy; i++) {
+  for (let i = 0; i < Math.max(objetivoMacetonesHoy, Math.ceil(dailyAveMarias / ROSAS_PER_MACETON)); i++) {
     const startIdx = i * ROSAS_PER_MACETON;
     const potContent = todayRoses.slice(startIdx, startIdx + ROSAS_PER_MACETON);
     // Fill with nulls to show ghost cells
@@ -54,6 +55,12 @@ export default function MacetonView({ onSelectMaceton, onViewGarden }) {
             Tu nivel no pide rosarios hoy — descansa o elige otro ritmo en Plan.
           </p>
         )}
+        {onSelectMaceton && <button type="button" onClick={onSelectMaceton}
+          style={{ padding: '10px 16px', borderRadius: 8, cursor: 'pointer' }}>Volver a mi rosa</button>}
+        <ManualPrayerEntry />
+        <a href="/rosa?devocion=patrick" style={{ display: 'block', color: '#79cba5', padding: 12 }}>
+          Dibujar la Coraza de San Patricio
+        </a>
         {onViewGarden && (
           <button
             type="button"
@@ -124,7 +131,10 @@ export default function MacetonView({ onSelectMaceton, onViewGarden }) {
                 }}>
                   {rose ? (
                     <RoseDrawing 
-                      progress={1} 
+                      progress={1}
+                      seed={rose.timestamp}
+                      verseCount={rose.verseCount}
+                      verseTraits={rose.verseTraits}
                       size={24} 
                       compact={true} 
                       warmthProfile={rose.warmthProfile} 

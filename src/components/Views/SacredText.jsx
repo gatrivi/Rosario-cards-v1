@@ -115,7 +115,7 @@ const SacredText = forwardRef(({
           const dist = gi - charProgressIndex; 
 
           if (dist < 0) {
-            const dwell = charDwellRef.current[gi] || 0; 
+            const dwell = Math.max(200, charDwellRef.current[gi] || 0);
             const color = colorFromElapsed(dwell);
             const shadow = glowFromElapsed(dwell, glowSize);
             return (
@@ -130,7 +130,7 @@ const SacredText = forwardRef(({
 
           if (dist === 0) {
             const reachedAt = charReachedAtRef.current[gi];
-            const liveDwell = reachedAt ? now - reachedAt : 0;
+            const liveDwell = Math.max(200, reachedAt ? now - reachedAt : 0);
             const color = colorFromElapsed(liveDwell);
             const shadow = glowFromElapsed(liveDwell, glowSize);
             return (
@@ -143,7 +143,7 @@ const SacredText = forwardRef(({
             );
           }
 
-          if (dist <= 4) {
+          if (dist <= 0) {
             const cursorReachedAt = charReachedAtRef.current[charProgressIndex];
             const cursorDwell = cursorReachedAt ? now - cursorReachedAt : 0;
             const lingerBonus = Math.min(0.35, cursorDwell / 4000); 

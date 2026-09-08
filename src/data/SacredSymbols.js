@@ -8,6 +8,19 @@
  */
 
 export const SACRED_SYMBOLS = {
+  // Ten illuminated contours for the ten lines of the bundled Breastplate excerpt.
+  patrick_shield: [
+    'M50 8 Q70 20 88 17 L85 69 Q82 104 50 128 Q18 104 15 69 L12 17 Q30 20 50 8 Z',
+    'M50 16 Q68 27 80 25 L77 68 Q74 97 50 118 Q26 97 23 68 L20 25 Q32 27 50 16 Z',
+    'M45 34 L55 34 L55 53 L69 53 L69 63 L55 63 L55 96 L45 96 L45 63 L31 63 L31 53 L45 53 Z',
+    'M50 38 A20 20 0 1 1 49.99 38 M50 43 A15 15 0 1 0 50.01 43',
+    'M28 34 C12 45 38 57 28 70 C18 81 38 91 35 100 M29 39 C43 52 16 61 29 76 C40 87 27 91 36 104',
+    'M72 34 C88 45 62 57 72 70 C82 81 62 91 65 100 M71 39 C57 52 84 61 71 76 C60 87 73 91 64 104',
+    'M35 28 C38 17 48 21 50 29 C52 21 62 17 65 28 C61 36 54 31 50 29 C46 31 39 36 35 28 Z',
+    'M38 104 C36 94 49 91 50 103 C51 91 64 94 62 104 C58 111 51 110 50 116 C49 110 42 111 38 104 Z',
+    'M18 29 L21 32 L18 35 L15 32 Z M82 29 L85 32 L82 35 L79 32 Z M22 84 L25 87 L22 90 L19 87 Z M78 84 L81 87 L78 90 L75 87 Z',
+    'M50 20 L52 23 L50 26 L48 23 Z M50 46 L53 57 L50 71 L47 57 Z M43 79 Q50 84 57 79 M43 86 Q50 91 57 86',
+  ],
   // --- CORE PRAYERS ---
   'cross': [
     'M 50,20 L 50,110', // Vertical stem
@@ -143,6 +156,7 @@ export const SACRED_SYMBOLS = {
 
 // Maps prayer IDs to symbol keys (Base mapping, refined in views)
 export const SYMBOL_MAP = {
+  'PATRICK': 'patrick_shield',
   'SC': 'cross',
   'P':  'bread',
   'AC': 'praying_hands',

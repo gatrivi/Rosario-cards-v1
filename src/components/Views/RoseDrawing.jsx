@@ -5,6 +5,7 @@
  * Procedural Rose Interaction Logic
  */
 import React from 'react';
+import VerseDrawing from './VerseDrawing';
 
 // ═══════════════════════════════════════════════════════
 // RoseDrawing — SVG rose that draws itself progressively
@@ -59,6 +60,8 @@ function petalColor(warmth, seed = 0) {
 }
 
 export default function RoseDrawing({
+  verseTraits,
+  verseCount,
   progress = 0,        
   warmthProfile = [],  
   wiggleProfile = [],  
@@ -84,6 +87,10 @@ export default function RoseDrawing({
   }, []);
 
   const sVal = seed || 0;
+  if (verseTraits && verseCount > 0) {
+    return <VerseDrawing paths={ROSE_PATHS} verseCount={verseCount} progress={progress}
+      traits={verseTraits} seed={seed} rose size={size} compact={compact} style={style} onClick={onClick} />;
+  }
 
   return (
     <svg
