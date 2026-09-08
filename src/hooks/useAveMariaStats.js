@@ -155,12 +155,15 @@ export function useAveMariaStats() {
   const storeRoseData = (roseData) => {
     try {
       const stored = JSON.parse(localStorage.getItem('rosedal_roses') || '[]');
-      stored.push({
-        timestamp: roseData.timestamp ?? Date.now(),
-        warmthProfile: roseData.warmthProfile || [],
-        wiggleProfile: roseData.wiggleProfile || [],
-        verseCount: roseData.verseCount || 0,
-      });
+      const entries = Array.isArray(roseData) ? roseData : [roseData];
+      stored.push(...entries.map(entry => ({
+        timestamp: entry.timestamp ?? Date.now(),
+        warmthProfile: entry.warmthProfile || [],
+        wiggleProfile: entry.wiggleProfile || [],
+        verseCount: entry.verseCount || 0,
+        ...(entry.verseTraits ? { verseTraits: entry.verseTraits } : {}),
+        ...(entry.source ? { source: entry.source } : {}),
+      })));
       // Keep last 500 roses (~10 rosaries of Ave Marías)
       if (stored.length > 500) stored.splice(0, stored.length - 500);
       localStorage.setItem('rosedal_roses', JSON.stringify(stored));

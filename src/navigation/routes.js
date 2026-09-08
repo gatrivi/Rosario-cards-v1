@@ -1,6 +1,7 @@
 export const VIEW_ROUTES = {
   tracker: '/plan',
   camino: '/camino',
+  reliquias: '/reliquias',
   booklet: '/libro',
   rose: '/rosa',
   rosary: '/rosario',
