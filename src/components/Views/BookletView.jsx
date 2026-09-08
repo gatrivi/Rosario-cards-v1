@@ -124,6 +124,101 @@ const MYSTERY_OPTIONS = [
   },
 ];
 
+/** Recorridos del estante; 'stations' y 'faustina' tienen thumbs propios. */
+const SHELF_RECORRIDOS = [
+  { type: 'stations', label: 'Estaciones' },
+  {
+    id: 'sangrepreciosa_litany',
+    label: 'Letanía Sangre',
+    title: 'Letanía de la Preciosísima Sangre (Julio)',
+    img: registryImage('vitreauxCruz'),
+    badge: 'L',
+  },
+  {
+    id: 'sangrepreciosa_chaplet',
+    label: 'Corona Sangre',
+    title: 'Corona de la Preciosísima Sangre',
+    img: registryImage('lamb'),
+    badge: 'C',
+  },
+  {
+    id: 'sangrepreciosa_ofrendas',
+    label: '7 Ofrendas',
+    title: 'Siete Ofrendas de la Sangre de Cristo',
+    img: registryImage('lamb'),
+    badge: '7',
+  },
+  {
+    id: SAGRADO_CORAZON_ADORACION_ID,
+    label: 'Sagrado Corazón',
+    title: 'Adoración Eucarística — Sagrado Corazón de Jesús',
+    img: sagradoCorazonAdoracionThumbnail,
+    badge: 'SC',
+  },
+  { type: 'faustina', label: 'Sta. Faustina' },
+  {
+    id: ANGELUS_ID,
+    label: 'Ángelus',
+    title: 'Ángelus',
+    img: angelusThumbnail,
+    badge: 'A',
+  },
+  {
+    id: MAGNIFICAT_ID,
+    label: 'Magnificat',
+    title: 'Magnificat',
+    img: magnificatThumbnail,
+    badge: 'M',
+  },
+];
+
+/** Oraciones breves del estante: abren la hoja opcional por id. */
+const SHELF_BREVES = [
+  { prayerId: 'carmen', label: 'Virgen del Carmen', title: 'Virgen del Carmen — 16 de julio', badge: '16' },
+  { prayerId: 'guardian', label: 'Ángel Guarda', title: 'Ángel de la Guarda', badge: 'Á' },
+  { prayerId: 'michael', label: 'San Miguel', title: 'San Miguel Arcángel', badge: 'SM' },
+  { prayerId: 'expedito', label: 'San Expedito', title: 'San Expedito — causas urgentes (HODIE)', badge: 'H' },
+  { prayerId: 'benedict', label: 'San Benito', title: 'San Benito', badge: 'B' },
+  { prayerId: 'patrick', label: 'San Patricio', title: 'San Patricio — Coraza (Breastplate)', badge: 'P' },
+  { prayerId: 'cayetano', label: 'San Cayetano', title: 'San Cayetano — pan y trabajo', badge: 'Ct' },
+  { prayerId: 'salve', label: 'Salve Regina', title: 'Salve Regina — cierre mariano', badge: 'S' },
+  { prayerId: 'bendito', label: 'Bendito sea Dios', title: 'Bendito sea Dios — alabanzas', badge: '✝' },
+];
+
+function renderShelfRecorrido(item, { misterioActual, onShelfDevotionClick, onMysteryChange }) {
+  if (item.type === 'stations') {
+    return (
+      <ShelfItem key={item.label} label={item.label}>
+        <StationsDevotionThumb
+          misterioActual={misterioActual}
+          onMysteryChange={onMysteryChange}
+        />
+      </ShelfItem>
+    );
+  }
+  if (item.type === 'faustina') {
+    return (
+      <ShelfItem key={item.label} label={item.label}>
+        <FaustinaMercyThumb
+          misterioActual={misterioActual}
+          onMysteryChange={onMysteryChange}
+        />
+      </ShelfItem>
+    );
+  }
+  return (
+    <ShelfItem key={item.id} label={item.label}>
+      <MercyWindowThumb
+        active={misterioActual === item.id}
+        onClick={(e) => onShelfDevotionClick(e, item.id, item.label)}
+        title={item.title}
+        img={item.img}
+        badge={item.badge}
+      />
+    </ShelfItem>
+  );
+}
+
 function getDevotionChrome(misterioActual) {
   return getBookletDevotionLabel(misterioActual);
 }
@@ -815,6 +910,19 @@ export default function BookletView({
   // breadcrumb line instead of an invented repeated title.
   const showHeaderTitle = !(isAveMaria || isMercyPassion || isHolyGod || isLitany);
 
+  // Breadcrumb suffixes after "N / total": only the runs that apply to this step.
+  const progressSuffixes = [
+    misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION'
+      && `Día ${novenaDay} de 9`,
+    isLitany && litanyVerseTotal > 0 && `letanía ${litanyVerseIndex + 1} / ${litanyVerseTotal}`,
+    isPerVersePrayer && prayerVerseTotal > 0 && `verso ${prayerVerseIndex + 1} / ${prayerVerseTotal}`,
+    isAveMaria && `${aveRunInfo.position} de ${aveRunInfo.total}`,
+    isMercyPassion && `${mercyRunInfo.position} de ${mercyRunInfo.total}`,
+    isHolyGod && `${tripletRunInfo.position} de ${tripletRunInfo.total}`,
+    stepContext.kind === 'mystery' && stepContext.mysteryDecade && `misterio ${stepContext.mysteryDecade} de 5`,
+    isMercyDecade && stepContext.mysteryDecade && `década ${stepContext.mysteryDecade} de 5`,
+  ].filter(Boolean);
+
   useEffect(() => {
     if (isFirstRenderRef.current) {
       isFirstRenderRef.current = false;
@@ -1047,6 +1155,35 @@ export default function BookletView({
       ? 'mystery'
       : 'prayer';
 
+  // Actions ride the mystery pills line when present; in devotion mode they
+  // fall back to the meta row (no pills).
+  const headerActions = (
+    <div className="booklet-meta-row__actions" role="group" aria-label="Oraciones y compartir">
+      {showRosaryPills && (
+        <button
+          type="button"
+          className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
+          onClick={() => openOptionalPrayer('guardian')}
+          title="Oraciones opcionales: Ángel de la Guarda y San Benito"
+          aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
+        >
+          <span className="booklet-optional-btn__star" aria-hidden>✦</span>
+          <span className="booklet-optional-btn__label">Ángel · Benito</span>
+        </button>
+      )}
+      <button
+        type="button"
+        className="booklet-meta-row__share"
+        onClick={handleSharePrayer}
+        disabled={isTransitioning || isSharing}
+        title="Compartir esta oración"
+        aria-label="Compartir esta oración"
+      >
+        {isSharing ? '…' : '↗'}
+      </button>
+    </div>
+  );
+
   return (
     <div className="booklet-view" style={vitralStyle} onPointerDown={resetOptionalIdle}>
       <VitralBackground
@@ -1083,6 +1220,7 @@ export default function BookletView({
                   <span className="booklet-mystery-pill__thumb-label">{opt.label}</span>
                 </button>
               ))}
+              {headerActions}
             </div>
           </div>
           )}
@@ -1107,30 +1245,7 @@ export default function BookletView({
           )}
           {!shelfOpen && (
           <div className={`booklet-meta-row${isMercy ? ' booklet-meta-row--mercy' : ''}`}>
-            <div className="booklet-meta-row__actions" role="group" aria-label="Oraciones y compartir">
-            {showRosaryPills && (
-              <button
-                type="button"
-                className={`booklet-optional-btn${optionalGlow ? ' booklet-optional-btn--glow' : ''}`}
-                onClick={() => openOptionalPrayer('guardian')}
-                title="Oraciones opcionales: Ángel de la Guarda y San Benito"
-                aria-label="Oraciones opcionales: Ángel de la Guarda y San Benito"
-              >
-                <span className="booklet-optional-btn__star" aria-hidden>✦</span>
-                <span className="booklet-optional-btn__label">Ángel · Benito</span>
-              </button>
-            )}
-            <button
-              type="button"
-              className="booklet-meta-row__share"
-              onClick={handleSharePrayer}
-              disabled={isTransitioning || isSharing}
-              title="Compartir esta oración"
-              aria-label="Compartir esta oración"
-            >
-              {isSharing ? '…' : '↗'}
-            </button>
-            </div>
+            {!showRosaryPills && headerActions}
             <div className="booklet-meta-row__reading" role="group" aria-label="Lectura y voz">
             <PrayerRecorder
               prayerId={activePrayer.id}
@@ -1181,49 +1296,10 @@ export default function BookletView({
                   ? `Paso ${displayIndex + 1} de ${total}`
                   : `${displayIndex + 1} / ${total}`}
                 </span>
-                {misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION' && (
-                  <span className="booklet-ave-count"> · Día {novenaDay} de 9</span>
-                )}
-                {isLitany && litanyVerseTotal > 0 && (
+                {progressSuffixes.length > 0 && (
                   <span className="booklet-ave-count">
                     {' '}
-                    · letanía {litanyVerseIndex + 1} / {litanyVerseTotal}
-                  </span>
-                )}
-                {isPerVersePrayer && prayerVerseTotal > 0 && (
-                  <span className="booklet-ave-count">
-                    {' '}
-                    · verso {prayerVerseIndex + 1} / {prayerVerseTotal}
-                  </span>
-                )}
-                {isAveMaria && (
-                  <span className="booklet-ave-count">
-                    {' '}
-                    · {aveRunInfo.position} de {aveRunInfo.total}
-                  </span>
-                )}
-                {isMercyPassion && (
-                  <span className="booklet-ave-count">
-                    {' '}
-                    · {mercyRunInfo.position} de {mercyRunInfo.total}
-                  </span>
-                )}
-                {isHolyGod && (
-                  <span className="booklet-ave-count">
-                    {' '}
-                    · {tripletRunInfo.position} de {tripletRunInfo.total}
-                  </span>
-                )}
-                {stepContext.kind === 'mystery' && stepContext.mysteryDecade && (
-                  <span className="booklet-ave-count">
-                    {' '}
-                    · misterio {stepContext.mysteryDecade} de 5
-                  </span>
-                )}
-                {isMercyDecade && stepContext.mysteryDecade && (
-                  <span className="booklet-ave-count">
-                    {' '}
-                    · década {stepContext.mysteryDecade} de 5
+                    · {progressSuffixes.join(' · ')}
                   </span>
                 )}
               </span>
@@ -1327,159 +1403,22 @@ export default function BookletView({
         open={shelfOpen}
         onOpenChange={setShelfOpen}
         recorridos={
-          <>
-            <ShelfItem label="Estaciones">
-              <StationsDevotionThumb
-                misterioActual={misterioActual}
-                onMysteryChange={onMysteryChange}
-              />
-            </ShelfItem>
-            <ShelfItem label="Letanía Sangre">
-              <MercyWindowThumb
-                active={misterioActual === 'sangrepreciosa_litany'}
-                onClick={(e) => onShelfDevotionClick(e, 'sangrepreciosa_litany', 'Letanía Sangre')}
-                title="Letanía de la Preciosísima Sangre (Julio)"
-                img={registryImage('vitreauxCruz')}
-                badge="L"
-              />
-            </ShelfItem>
-            <ShelfItem label="Corona Sangre">
-              <MercyWindowThumb
-                active={misterioActual === 'sangrepreciosa_chaplet'}
-                onClick={(e) => onShelfDevotionClick(e, 'sangrepreciosa_chaplet', 'Corona Sangre')}
-                title="Corona de la Preciosísima Sangre"
-                img={registryImage('lamb')}
-                badge="C"
-              />
-            </ShelfItem>
-            <ShelfItem label="7 Ofrendas">
-              <MercyWindowThumb
-                active={misterioActual === 'sangrepreciosa_ofrendas'}
-                onClick={(e) => onShelfDevotionClick(e, 'sangrepreciosa_ofrendas', '7 Ofrendas')}
-                title="Siete Ofrendas de la Sangre de Cristo"
-                img={registryImage('lamb')}
-                badge="7"
-              />
-            </ShelfItem>
-            <ShelfItem label="Sagrado Corazón">
-              <MercyWindowThumb
-                active={misterioActual === SAGRADO_CORAZON_ADORACION_ID}
-                onClick={(e) => onShelfDevotionClick(e, SAGRADO_CORAZON_ADORACION_ID, 'Sagrado Corazón')}
-                title="Adoración Eucarística — Sagrado Corazón de Jesús"
-                img={sagradoCorazonAdoracionThumbnail}
-                badge="SC"
-              />
-            </ShelfItem>
-            <ShelfItem label="Sta. Faustina">
-              <FaustinaMercyThumb
-                misterioActual={misterioActual}
-                onMysteryChange={onMysteryChange}
-              />
-            </ShelfItem>
-            <ShelfItem label="Ángelus">
-              <MercyWindowThumb
-                active={misterioActual === ANGELUS_ID}
-                onClick={(e) => onShelfDevotionClick(e, ANGELUS_ID, 'Ángelus')}
-                title="Ángelus"
-                img={angelusThumbnail}
-                badge="A"
-              />
-            </ShelfItem>
-            <ShelfItem label="Magnificat">
-              <MercyWindowThumb
-                active={misterioActual === MAGNIFICAT_ID}
-                onClick={(e) => onShelfDevotionClick(e, MAGNIFICAT_ID, 'Magnificat')}
-                title="Magnificat"
-                img={magnificatThumbnail}
-                badge="M"
-              />
-            </ShelfItem>
-          </>
+          SHELF_RECORRIDOS.map((item) =>
+            renderShelfRecorrido(item, { misterioActual, onShelfDevotionClick, onMysteryChange })
+          )
         }
         breves={
-          <>
-            <ShelfItem label="Virgen del Carmen">
+          SHELF_BREVES.map((item) => (
+            <ShelfItem key={item.prayerId} label={item.label}>
               <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'carmen'}
-                onClick={() => openOptionalPrayer('carmen')}
-                title="Virgen del Carmen — 16 de julio"
-                img={optionalPrayerThumbnail('carmen')}
-                badge="16"
+                active={optionalOpen && optionalPrayerId === item.prayerId}
+                onClick={() => openOptionalPrayer(item.prayerId)}
+                title={item.title}
+                img={optionalPrayerThumbnail(item.prayerId)}
+                badge={item.badge}
               />
             </ShelfItem>
-            <ShelfItem label="Ángel Guarda">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'guardian'}
-                onClick={() => openOptionalPrayer('guardian')}
-                title="Ángel de la Guarda"
-                img={optionalPrayerThumbnail('guardian')}
-                badge="Á"
-              />
-            </ShelfItem>
-            <ShelfItem label="San Miguel">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'michael'}
-                onClick={() => openOptionalPrayer('michael')}
-                title="San Miguel Arcángel"
-                img={optionalPrayerThumbnail('michael')}
-                badge="SM"
-              />
-            </ShelfItem>
-            <ShelfItem label="San Expedito">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'expedito'}
-                onClick={() => openOptionalPrayer('expedito')}
-                title="San Expedito — causas urgentes (HODIE)"
-                img={optionalPrayerThumbnail('expedito')}
-                badge="H"
-              />
-            </ShelfItem>
-            <ShelfItem label="San Benito">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'benedict'}
-                onClick={() => openOptionalPrayer('benedict')}
-                title="San Benito"
-                img={optionalPrayerThumbnail('benedict')}
-                badge="B"
-              />
-            </ShelfItem>
-            <ShelfItem label="San Patricio">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'patrick'}
-                onClick={() => openOptionalPrayer('patrick')}
-                title="San Patricio — Coraza (Breastplate)"
-                img={optionalPrayerThumbnail('patrick')}
-                badge="P"
-              />
-            </ShelfItem>
-            <ShelfItem label="San Cayetano">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'cayetano'}
-                onClick={() => openOptionalPrayer('cayetano')}
-                title="San Cayetano — pan y trabajo"
-                img={optionalPrayerThumbnail('cayetano')}
-                badge="Ct"
-              />
-            </ShelfItem>
-            <ShelfItem label="Salve Regina">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'salve'}
-                onClick={() => openOptionalPrayer('salve')}
-                title="Salve Regina — cierre mariano"
-                img={optionalPrayerThumbnail('salve')}
-                badge="S"
-              />
-            </ShelfItem>
-            <ShelfItem label="Bendito sea Dios">
-              <MercyWindowThumb
-                active={optionalOpen && optionalPrayerId === 'bendito'}
-                onClick={() => openOptionalPrayer('bendito')}
-                title="Bendito sea Dios — alabanzas"
-                img={optionalPrayerThumbnail('bendito')}
-                badge="✝"
-              />
-            </ShelfItem>
-          </>
+          ))
         }
         proximas={null}
         onReturnToRosary={
