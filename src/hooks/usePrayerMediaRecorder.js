@@ -1,6 +1,6 @@
 import { useRef, useCallback } from 'react';
 import { saveRecording } from '../utils/prayerRecordingStore';
-import { publishVoiceClipSoft } from '../services/firebaseVoiceLibrary';
+import { submitVoiceContributionSoft } from '../services/firebaseVoiceContributions';
 
 function makeRecorderError(message, name = 'NotSupportedError') {
   const error = new Error(message);
@@ -129,13 +129,17 @@ export function usePrayerMediaRecorder() {
               label: clipLabel,
               voiceLang,
             });
-            void publishVoiceClipSoft({
+            void submitVoiceContributionSoft({
+              mystery,
+              sequenceIndex,
               prayerId,
+              variantIndex,
               blob,
               mimeType,
               label: clipLabel,
+              voiceLang,
             }).catch((cloudError) => {
-              console.warn('[voiceLibrary] deferred publish failed', cloudError);
+              console.warn('[voiceContribution] deferred upload failed', cloudError);
             });
             resolve({ ...saved, cloudOk: null, cloudPending: true });
           } catch (error) {

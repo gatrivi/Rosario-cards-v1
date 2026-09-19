@@ -1,13 +1,29 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // TEMP open for art uploads from Estudio de imágenes.
-    match /art/{allPaths=**} {
-      allow read, write: if true;
+    function signedIn() {
+      return request.auth != null;
     }
-    // TEMP open for shared prayer voice (Estudio de voz → Liber ▶).
-    match /voice/{allPaths=**} {
-      allow read, write: if true;
+
+    function owns(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Transitional: image studio still writes from the authenticated app.
+    match /art/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    // Published/shared voice is public to read, never client-writable.
+    match /voice/shared/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Raw user contributions are private to their owner.
+    match /voice/users/{uid}/{allPaths=**} {
+      allow read, write: if owns(uid);
     }
   }
 }
