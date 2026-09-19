@@ -64,6 +64,7 @@
   product/
     overview.md
     lujan-2026-launch.md              ← launch target, sharing, donation policy, mobile gate
+    nearby-cloistered-monasteries-olivos.md ← verified cloisters near Olivos (links + Maps)
 ```
 
 ## Quick links by topic
@@ -71,6 +72,7 @@
 | Topic | Doc |
 |-------|-----|
 | **What runs today** | [current-stack-jun-2026.md](./architecture/current-stack-jun-2026.md) |
+| **Cloistered monasteries near Olivos** | [nearby-cloistered-monasteries-olivos.md](./product/nearby-cloistered-monasteries-olivos.md) |
 | **Luján 2026 launch** | [lujan-2026-launch.md](./product/lujan-2026-launch.md) |
 | **Libro devoutions / Próximas** | [historic-devotions.md](./libro/historic-devotions.md) |
 | **Liber voice autoplay** | [voice-autoplay.md](./libro/voice-autoplay.md) |

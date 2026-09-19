@@ -14,14 +14,34 @@ No dedicated `public/assets/` — all paths are root-relative URLs.
 
 `src/utils/prayerImages.js` — `PREFER_MODOOSCURO = true`
 
+**Owner-curated drop-in folders (v0.3.85):** `public/prayers/<PRAYER_ID>/` scanned
+by `scripts/build-prayer-image-manifest.js` (npm prestart/prebuild →
+`src/data/prayerImageManifest.json`, read via `src/data/prayerImageFolders.js`).
+`NN-name.jpg` pins verse NN (1-based). Folder images skip the text-heavy scrub.
+
+Base-prayer chain (`getPrayerImageCandidates`):
+
+1. User assignment (`rosario_image_assignments`, `prayerId:default`)
+2. **Folder images** (`public/prayers/<ID>/`, alphabetical; `[0]` pinned)
+3. Mystery maps (MD modooscuro)
+4. `imgmo` → `img` → static `imgCandidates`
+5. Thematic filename extras
+6. `/gallery-images/cathedral-painting.jpg`
+
+`countPrayerPinnedSources(prayer) > 0` → `pickPrayerImage` returns `candidates[0]`
+deterministically (no seed rotation over explicit picks).
+
 Per-verse chain (`getLitanyVerseImageCandidates`):
 
-1. `verse.imgmo`
-2. `verse.img`
-3. Prayer fallback `imgmo` / `img` (from meta)
-4. `/gallery-images/cathedral-painting.jpg`
+1. Verse assignment (`prayerId:verseIndex`)
+2. **Folder verse image** (`NN-*.jpg`), then prayer base assignment
+3. `verse.imgmo` → `verse.img` → prayer fallback `imgmo` / `img`
+4. Folder base images
+5. `/gallery-images/cathedral-painting.jpg`
 
-BookletView and RosarioVirtualView both use this resolver.
+BookletView, RosarioVirtualView, OptionalPrayerSheet and roseViewHelpers all use
+these resolvers (`resolveLitanyVerseImage` / `resolvePrayerVerseImage` already pin
+`candidates[0]`).
 
 ## Prayer-level fallbacks (meta)
 
