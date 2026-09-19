@@ -1,28 +1,33 @@
 import { getAssignedPath, getAssignedPrayerPath } from './imageAssignments';
 import { isTextHeavyImagePath } from '../data/imageRegistry';
+import { curatedPrayerArt } from '../data/curatedPrayerArt';
 
-const FALLBACK = '/gallery-images/cathedral-painting.jpg';
 const MODO = '/gallery-images/misterios/modooscuro/';
 const BROKEN_EXT = /\.(xcf|jng|psd|ai)$/i;
+const MYSTERY_SPECIFIC_ID = /^M(?:G|D|L)\d$/;
 
 /** Prefer modooscuro (imgmo) over light/mododia paths for devotional backgrounds. */
 const PREFER_MODOOSCURO = true;
 
-/** Filename-themed extras (matched against prayer id + title). */
+/**
+ * Mystery prayers need a context-aware art assignment id.
+ * RosarioPrayerBook historically reuses MG1..MG5 for both Joyful and Glorious
+ * mysteries, even though those ids describe completely different events.
+ */
+export function prayerArtAssignmentId(prayerId, mysteryType) {
+  if (!prayerId) return prayerId;
+  if (mysteryType && MYSTERY_SPECIFIC_ID.test(prayerId)) {
+    return `${mysteryType}:${prayerId}`;
+  }
+  return prayerId;
+}
+
+/** Conservative thematic extras. Exact/curated art always comes first. */
 const THEMATIC = [
-  { re: /contrición|contricion/i, files: ['contricion.jpg', 'contricion2.png'] },
-  { re: /credo/i, files: ['credo.webp'] },
-  { re: /padre nuestro|^P$/i, files: ['padre-nuestro.jpg'] },
-  { re: /ave maría|ave maria|^A$/i, files: ['ave-maria.jpg', 'MetMary-870x489.jpg', 'roseLimaJuarez-870x1250.jpg'] },
-  { re: /gloria|^G$/i, files: ['gloria.webp', 'misteriogloria0.jpg'] },
-  { re: /fátima|fatima|^F$/i, files: ['francisco_de_asis_2.jpg', 'theresadelisieux.jpg'] },
-  { re: /salve|^S$/i, files: ['salve-regina.jpg'] },
   { re: /papa/i, files: ['papa.jpg', 'sanpadrepio.jpg'] },
-  { re: /letanía|letania|^LL$/i, files: ['salve-regina.jpg', 'theresadelisieux.jpg'] },
-  { re: /ángel|angel|anunciación|anunciacion/i, files: ['festinangelguardia.jpg', 'angeldealaguardia.jpg', 'MetMary-870x489.jpg'] },
-  { re: /niño|nino|nacimiento|belén|belen|infant/i, files: ['Georges_de_La_Tour_-_Newlyborn_infant_-_Musée_des_Beaux-Arts_de_Rennes-copy-870x717.jpg'] },
+  { re: /ángel|angel|anunciación|anunciacion/i, files: ['festinangelguardia.jpg', 'angeldealaguardia.jpg'] },
+  { re: /niño|nino|nacimiento|belén|belen|infant/i, files: ['Georges_de_La_Tour_-_Newlyborn_infant_-_Musée_des_Beaux-Arts_de_Rennes-copy-870x717.jpg'] },
   { re: /cruz|crucifix|crucif/i, files: ['1954.15-The-Crucifixion-864x1536.jpg'] },
-  { re: /señal|^SC$/i, files: ['Encounters in the cathedral of Raleigh.jpg'] },
 ];
 
 const MODOOSCURO_DOLOR = {
@@ -39,8 +44,8 @@ function thematicExtras(prayer) {
   const out = [];
   for (const { re, files } of THEMATIC) {
     if (!re.test(hay)) continue;
-    for (const f of files) {
-      const url = MODO + f;
+    for (const file of files) {
+      const url = MODO + file;
       if (!out.includes(url)) out.push(url);
     }
   }
@@ -48,10 +53,10 @@ function thematicExtras(prayer) {
 }
 
 export function pickPrayerImage(candidates, seed = 0) {
-  if (!candidates?.length) return FALLBACK;
+  if (!candidates?.length) return null;
   const n = candidates.length;
   const idx = Math.abs(seed) % n;
-  return candidates[idx];
+  return candidates[idx] || null;
 }
 
 function pushImage(candidates, url, push) {
@@ -64,21 +69,30 @@ function pushAssignment(candidates, prayerId, verseIndex, push) {
   if (assigned) push(assigned);
 }
 
+function pushPrayerAssignment(candidates, prayerId, mysteryType, push) {
+  const assignmentId = prayerArtAssignmentId(prayerId, mysteryType);
+  pushImage(candidates, getAssignedPrayerPath(assignmentId), push);
+
+  // Deliberately do not fall back from scoped MG/MD/ML ids to a legacy global
+  // override. `MG3:default` is ambiguous because MG3 means Nativity in the
+  // Joyful mysteries and Pentecost in the Glorious mysteries.
+}
+
 /** Build ordered candidate URLs for a litany verse background. */
 export function getLitanyVerseImageCandidates(verse, prayerFallback = null, verseIndex = 0) {
   const candidates = [];
-  const push = (url) => pushImage(candidates, url, (u) => candidates.push(u));
+  const push = (url) => pushImage(candidates, url, (value) => candidates.push(value));
   const prayerId = prayerFallback?.id || 'LL';
-
-  if (!verse) {
-    if (prayerFallback?.imgmo) push(prayerFallback.imgmo);
-    if (prayerFallback?.img) push(prayerFallback.img);
-    push(FALLBACK);
-    return candidates;
-  }
 
   pushAssignment(candidates, prayerId, verseIndex, push);
   pushImage(candidates, getAssignedPrayerPath(prayerId), push);
+
+  if (!verse) {
+    curatedPrayerArt(prayerId).forEach(push);
+    if (prayerFallback?.imgmo) push(prayerFallback.imgmo);
+    if (prayerFallback?.img) push(prayerFallback.img);
+    return candidates;
+  }
 
   if (PREFER_MODOOSCURO) {
     if (verse.imgmo) push(verse.imgmo);
@@ -88,9 +102,9 @@ export function getLitanyVerseImageCandidates(verse, prayerFallback = null, vers
     if (verse.imgmo) push(verse.imgmo);
   }
 
+  curatedPrayerArt(prayerId).forEach(push);
   if (prayerFallback?.imgmo) push(prayerFallback.imgmo);
   if (prayerFallback?.img) push(prayerFallback.img);
-  push(FALLBACK);
   return candidates;
 }
 
@@ -98,14 +112,18 @@ export function resolveLitanyVerseImage(verse, prayerFallback = null, seed = 0) 
   return pickPrayerImage(getLitanyVerseImageCandidates(verse, prayerFallback, seed), 0);
 }
 
-/** Build ordered candidate URLs for a prayer vitral image. */
+/** Build ordered candidate URLs for a prayer background. */
 export function getPrayerImageCandidates(prayer, mysteryType) {
-  if (!prayer) return [FALLBACK];
+  if (!prayer) return [];
 
   const candidates = [];
-  const push = (url) => pushImage(candidates, url, (u) => candidates.push(u));
+  const push = (url) => pushImage(candidates, url, (value) => candidates.push(value));
 
-  pushImage(candidates, getAssignedPrayerPath(prayer.id), push);
+  pushPrayerAssignment(candidates, prayer.id, mysteryType, push);
+
+  // Curated art deliberately precedes legacy img/imgmo values. This is where
+  // we repair known bad mappings and duplicate blobs without rewriting prayer text data.
+  curatedPrayerArt(prayer.id, mysteryType).forEach(push);
 
   if (prayer.id?.startsWith('MD') && MODOOSCURO_DOLOR[prayer.id]) {
     push(MODOOSCURO_DOLOR[prayer.id]);
@@ -118,10 +136,6 @@ export function getPrayerImageCandidates(prayer, mysteryType) {
   }
   if (!PREFER_MODOOSCURO && prayer.imgmo) push(prayer.imgmo);
 
-  if (prayer.id?.startsWith('MD')) {
-    push('/gallery-images/misterios/modooscuro/misteriodolor0.jpg');
-  }
-
   if (mysteryType === 'dolorosos' && prayer.id?.startsWith('MD')) {
     const num = prayer.id.replace('MD', '');
     push(`/gallery-images/misterios/modooscuro/misteriodolor${num}.webp`);
@@ -130,7 +144,8 @@ export function getPrayerImageCandidates(prayer, mysteryType) {
 
   thematicExtras(prayer).forEach(push);
 
-  push(FALLBACK);
+  // Do not append a generic cathedral. A missing image should remain visible
+  // as missing so it can be fixed instead of silently showing unrelated art.
   return candidates;
 }
 
