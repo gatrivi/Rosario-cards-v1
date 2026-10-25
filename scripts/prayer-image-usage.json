@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-08T01:05:54.644Z",
-  "prayerCount": 220,
-  "collisionCount": 27,
-  "unusedCount": 9,
+  "generatedAt": "2026-10-25T22:17:30.071Z",
+  "prayerCount": 234,
+  "collisionCount": 30,
+  "unusedCount": 316,
   "collisions": [
     {
       "img": "vitreaux-cruz.jpg",
@@ -103,7 +103,8 @@
         "PBO_6",
         "VC_6",
         "VCR_6",
-        "SCA_HYMN_LAUDATE"
+        "SCA_HYMN_LAUDATE",
+        "ES_DAY_INTENTION"
       ]
     },
     {
@@ -128,22 +129,6 @@
       ]
     },
     {
-      "img": "Religious-Byzantine-Art-825x1024.jpg",
-      "registryId": "byzantineArt",
-      "prayerIds": [
-        "ANG_INCARNATION",
-        "LPB_4",
-        "LPB_11",
-        "LPB_18",
-        "LPB_25",
-        "LPB_32",
-        "LPB_39",
-        "PBO_4",
-        "VC_5",
-        "VCR_5"
-      ]
-    },
-    {
       "img": "Early-Christian-Art-768x549.jpg",
       "registryId": "earlyChristian",
       "prayerIds": [
@@ -160,7 +145,22 @@
       ]
     },
     {
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "Religious-Byzantine-Art-825x1024.jpg",
+      "registryId": "byzantineArt",
+      "prayerIds": [
+        "LPB_4",
+        "LPB_11",
+        "LPB_18",
+        "LPB_25",
+        "LPB_32",
+        "LPB_39",
+        "PBO_4",
+        "VC_5",
+        "VCR_5"
+      ]
+    },
+    {
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot",
       "prayerIds": [
         "LPB_7",
@@ -174,6 +174,29 @@
       ]
     },
     {
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata",
+      "prayerIds": [
+        "MM_ESTRELLAS",
+        "IC_OFENSA1",
+        "IC_OFENSA3",
+        "IC_OFENSA5",
+        "IC_CONSAGRACION",
+        "opt:salve"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+      "registryId": "gallerySagradoCorazonEm",
+      "prayerIds": [
+        "VL_4",
+        "SCA_ORACION_TIEMPO",
+        "IC_OFENSA2",
+        "IC_OFENSA4",
+        "IC_PROMESA"
+      ]
+    },
+    {
       "img": "santafaustinastainedglass.jpg",
       "registryId": "faustinaStainedGlass",
       "prayerIds": [
@@ -183,7 +206,7 @@
       ]
     },
     {
-      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "img": "sagrado-corazon-ten-piedad-de-mi.jpg",
       "registryId": "rosaryBeads",
       "prayerIds": [
         "VC_8",
@@ -210,7 +233,7 @@
       ]
     },
     {
-      "img": "96PsRGiE.jpg",
+      "img": "altar-mayor-barroco-crucifijo.jpg",
       "registryId": "misc96PsRGiE",
       "prayerIds": [
         "VL_8",
@@ -243,15 +266,15 @@
       ]
     },
     {
-      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
-      "registryId": "galleryMaterImmaculata",
+      "img": "mujeres-rezando-santo-rosario.jpg",
+      "registryId": "nun05",
       "prayerIds": [
-        "ANG_AVE_2",
-        "opt:salve"
+        "MAG_SC",
+        "opt:escapulario"
       ]
     },
     {
-      "img": "HOVTvK2WYAAQgCD.jpg",
+      "img": "monje-franciscano-meditacion.jpg",
       "registryId": "monkDark",
       "prayerIds": [
         "VC_1",
@@ -275,7 +298,7 @@
       ]
     },
     {
-      "img": "sain.jpg",
+      "img": "santa-gemma-galgani.jpg",
       "registryId": "sain",
       "prayerIds": [
         "VC_12",
@@ -291,11 +314,19 @@
       ]
     },
     {
-      "img": "jpg.jpg",
+      "img": "resurreccion-anastasis-evangelistas.jpg",
       "registryId": "miscJpg",
       "prayerIds": [
         "VC_14",
         "VCR_14"
+      ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/misteriogloria3.webp",
+      "registryId": "galleryPentecost",
+      "prayerIds": [
+        "VL_OPEN",
+        "ES_ANTIPHON"
       ]
     },
     {
@@ -307,15 +338,7 @@
       ]
     },
     {
-      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
-      "registryId": "gallerySagradoCorazonEm",
-      "prayerIds": [
-        "VL_4",
-        "SCA_ORACION_TIEMPO"
-      ]
-    },
-    {
-      "img": "/gallery-images/adoracion/6051780745909814.jpg",
+      "img": "/gallery-images/adoracion/elevacion-santismo-sacramento-misa.jpg",
       "registryId": "galleryAdoracion6051780745909814",
       "prayerIds": [
         "VL_5",
@@ -337,9 +360,26 @@
         "VL_13",
         "opt:guardian"
       ]
+    },
+    {
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon.jpg",
+      "registryId": "gallerySagradoCorazon",
+      "prayerIds": [
+        "SCA_O_BONE_JESU",
+        "MM_CORAZONES"
+      ]
     }
   ],
   "unused": [
+    {
+      "id": "theotokos",
+      "name": "Theotokos — Madre de Dios",
+      "tags": [
+        "mary",
+        "theotokos",
+        "byzantine"
+      ]
+    },
     {
       "id": "latinSanBenito",
       "name": "San Benito (latín)",
@@ -415,10 +455,2557 @@
       ]
     },
     {
-      "id": "miscUgQlLjwl",
-      "name": "Por nombrar (uGQlLjwl)",
+      "id": "maryCarmen",
+      "name": "Virgen — dolores / Carmen",
       "tags": [
-        "unidentified"
+        "mary",
+        "carmen",
+        "sorrows",
+        "optional"
+      ]
+    },
+    {
+      "id": "mary01",
+      "name": "Virgen de Lourdes y Santa Bernardita",
+      "tags": [
+        "mary",
+        "lourdes",
+        "rosary",
+        "grotto"
+      ]
+    },
+    {
+      "id": "mary02",
+      "name": "Virgen de las Rosas con el Niño Jesús",
+      "tags": [
+        "mary",
+        "rosary",
+        "child",
+        "roses"
+      ]
+    },
+    {
+      "id": "angAnnunciationArt",
+      "name": "Ángel de la Guarda — estampa",
+      "tags": [
+        "angel",
+        "guardian-angel"
+      ]
+    },
+    {
+      "id": "angelusMillet",
+      "name": "El Ángelus — Millet",
+      "tags": [
+        "angelus",
+        "prayer",
+        "chiaroscuro"
+      ]
+    },
+    {
+      "id": "vitralAgnusDei",
+      "name": "Ecce Agnus Dei — vitral",
+      "tags": [
+        "lamb",
+        "agnus-dei",
+        "precious-blood",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "vitralCaliz",
+      "name": "Cáliz, trigo y uvas — vitral",
+      "tags": [
+        "eucharist",
+        "chalice",
+        "precious-blood",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "vitralSagradoCorazon",
+      "name": "Sagrado Corazón — vitral",
+      "tags": [
+        "sacred-heart",
+        "christ",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "vitralMilagrosa",
+      "name": "Inmaculada sobre la serpiente — vitral (Henley)",
+      "tags": [
+        "mary",
+        "immaculate",
+        "miraculous-medal",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "vitralEspirituSanto",
+      "name": "Espíritu Santo — vitral (Bernini)",
+      "tags": [
+        "holy-spirit",
+        "dove",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "vitralVisitacion",
+      "name": "La Visitación — vitral",
+      "tags": [
+        "mary",
+        "visitation",
+        "magnificat",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-000-goodfridaycrucifixion",
+      "name": "'Good' Friday - crucifixion_",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-001-16lindasimagensdemarianaarte",
+      "name": "16 lindas imagens de Maria na arte",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-002-6z8d6ga7",
+      "name": "6z8d6ga7",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-003-escobarsoaponinstagram",
+      "name": "@escobarsoap 🗽 on instagram",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-004-ambitolombardosecxixmadonnadelrosario",
+      "name": "Ambito lombardo sec_ XIX, Madonna del Rosario",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-005-ambitolombardosecxviiimadonnadelrosario",
+      "name": "Ambito lombardo sec_ XVIII, Madonna del rosario",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-006-annunciation",
+      "name": "Annunciation",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-007-anthusmediarosacarmeliretreatcentercatholiccharismaticp",
+      "name": "Anthusmedia Rosa Carmeli Retreat Center Catholic Charismatic Prayer Group",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-008-arcadelaalianza",
+      "name": "Arca de la alianza",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-009-blessedinscrantonpa",
+      "name": "Blessed in Scranton, PA",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "visitation"
+      ]
+    },
+    {
+      "id": "ave-010-carlomarattamadonnawithchild",
+      "name": "Carlo Maratta - Madonna with child_",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-011-casadeoro",
+      "name": "Casa de oro",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-012-cobuxvfa",
+      "name": "CoBUXVfA",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-013-consoladoradelosafligidos",
+      "name": "Consoladora de los afligidos",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-014-crenhatthai",
+      "name": "Cre_ Nhat Thai",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-015-duszpasterstwotradycjikatolickiejwbiaymstoku",
+      "name": "Duszpasterstwo Tradycji Katolickiej w Białymstoku",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-016-figuradelainmaculada",
+      "name": "Figura de la Inmaculada",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-017-goldenandpreciousthebeautifulmotherofgod",
+      "name": "Golden and precious the beautiful Mother of God",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-018-gothicinfluencelynchburgstainedglass",
+      "name": "Gothic Influence - Lynchburg Stained Glass",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-019-hbwapay",
+      "name": "HBWAp_Ay",
+      "tags": [
+        "mary",
+        "theotokos"
+      ]
+    },
+    {
+      "id": "ave-020-hbtutlyu",
+      "name": "HBtUtlYu",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-021-hesnotherenorwalkct",
+      "name": "He's not here! Norwalk, CT",
+      "tags": [
+        "mary",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-022-holymary",
+      "name": "Holy Mary_",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-023-iconoftheholyprotectionofthetheotokos",
+      "name": "Icon of _The Holy Protection_ of the Theotokos",
+      "tags": [
+        "mary",
+        "theotokos"
+      ]
+    },
+    {
+      "id": "ave-024-icono",
+      "name": "Icono",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-025-iglesiadelasantacruzmadridspain",
+      "name": "Iglesia de la Santa Cruz, Madrid, Spain",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-026-imasdukm",
+      "name": "ImAsduKM",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-027-lacoronaciondelavirgenmaestrodeaugsburgerca1470",
+      "name": "La Coronación de La Virgen, Maestro de Augsburger, ca_ 1470",
+      "tags": [
+        "mary",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-028-lavirgendelosdoloresvirgendelaamargura",
+      "name": "La Virgen de los Dolores, Virgen de la Amargura…",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-029-lavirgendelsigno",
+      "name": "La Virgen del Signo_",
+      "tags": [
+        "mary",
+        "theotokos"
+      ]
+    },
+    {
+      "id": "ave-030-lvxeztpz",
+      "name": "LvXEzTPz",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-031-maryandjesus",
+      "name": "Mary and Jesus",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-032-mary",
+      "name": "Mary 💕💕💕",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-033-miraculousmedal",
+      "name": "Miraculous Medal",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-034-nossasenhoradasdoresimagensfotosiconespinturasvitrais",
+      "name": "Nossa Senhora das Dores - Imagens, fotos, ícones, pinturas, vitrais",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-035-nossasenhoradocarmo",
+      "name": "Nossa Senhora do Carmo",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-036-ntrasradesanjuandeloslagosjalisco",
+      "name": "Ntra Sra De San Juan De Los Lagos Jalisco",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-037-obrafranciscoromerozafra",
+      "name": "Obra - Francisco Romero Zafra",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-038-obrafranciscoromerozafra2",
+      "name": "Obra - Francisco Romero Zafra2",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-039-orthodoxicons",
+      "name": "Orthodox icons",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-040-ourladyoffatima",
+      "name": "Our Lady of Fatima",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-041-ourladyofsorrowsturinitaly",
+      "name": "Our Lady of Sorrows - Turin - Italy",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-042-ourladyofsorrows2",
+      "name": "Our Lady of Sorrows2",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-043-ourladyofsorrows3",
+      "name": "Our Lady of Sorrows3",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-044-ourladyofsorrows",
+      "name": "Our lady of sorrows",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-045-revelation1215",
+      "name": "Revelation 12_1-5",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-046-santamarina",
+      "name": "Santa Marina",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-047-stabatmaternuestrasenorasantamariadel",
+      "name": "Stabat Mater_ Nuestra Señora Santa María del…",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-048-thepresentationofjesusatthetemple",
+      "name": "The Presentation of Jesus at the Temple…",
+      "tags": [
+        "mary",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-049-thevirginwithangelscirca1881",
+      "name": "The Virgin with Angels_ circa 1881",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-050-tphkxovl",
+      "name": "TphkXOVl",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-051-urjouyhr",
+      "name": "UrJoUyHR",
+      "tags": [
+        "mary",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-052-vophklch",
+      "name": "VOPHKLcH",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-053-virgemdolorosaebenditatuesmaepoistucarregastecontigoosa",
+      "name": "Virgem Dolorosa e bendita, tu és mãe, pois tu carregaste contigo o Salvador do mundo_",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-054-williamadolphebouguereaulannonciation1888",
+      "name": "William-Adolphe Bouguereau - L'Annonciation (1888)",
+      "tags": [
+        "mary",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-055-wishingeveryonethegiftsoftheseasonpeacejoyhope",
+      "name": "Wishing everyone the gifts of the season —Peace, Joy, Hope_ 💞👼🎅☃️❄️",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-056-avemaria0",
+      "name": "ave-maria0",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-057-bzskmwnn",
+      "name": "bZSkmwNN",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-058-blessedmothertheotokosvirginmary",
+      "name": "blessed mother theotokos virgin mary",
+      "tags": [
+        "mary",
+        "theotokos"
+      ]
+    },
+    {
+      "id": "ave-059-carlodolci",
+      "name": "carlo dolci",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-060-catedralpiedadesculturaaltar",
+      "name": "catedral-piedad-escultura-altar",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-061-claroscurocapillavirgenmariacandles",
+      "name": "claroscuro-capilla-virgen-maria-candles",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-062-claroscurovirgenmariaapparition",
+      "name": "claroscuro-virgen-maria-apparition",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-063-claroscurovirgenmariadoloreshands",
+      "name": "claroscuro-virgen-maria-dolores-hands",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-064-claroscurovirgenmariadolorosaestatua02",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-02",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-065-claroscurovirgenmariadolorosaestatua03",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-03",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-066-claroscurovirgenmariadolorosaestatua05",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-05",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-067-claroscurovirgenmariadolorosaestatua06",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-06",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-068-claroscurovirgenmariadolorosaestatua07",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-07",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-069-claroscurovirgenmariadolorosaestatua08",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-08",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-070-claroscurovirgenmariadolorosaestatua09",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-09",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-071-claroscurovirgenmariadolorosaestatua10",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua-10",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-072-claroscurovirgenmariadolorosaestatua",
+      "name": "claroscuro-virgen-maria-dolorosa-estatua",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-073-claroscurovirgenmariadolorosaoracion",
+      "name": "claroscuro-virgen-maria-dolorosa-oracion",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-074-claroscurovirgenmariadolorosasagradocorazon",
+      "name": "claroscuro-virgen-maria-dolorosa-sagrado-corazon",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-075-claroscurovirgenmariaestatuaaltar",
+      "name": "claroscuro-virgen-maria-estatua-altar",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-076-claroscurovirgenmariaestatuacandles",
+      "name": "claroscuro-virgen-maria-estatua-candles",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-077-claroscurovirgenmariaestatua",
+      "name": "claroscuro-virgen-maria-estatua",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-078-claroscurovirgenmariafatimaestatua",
+      "name": "claroscuro-virgen-maria-fatima-estatua",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-079-claroscurovirgenmariafatimaimmaculateheart",
+      "name": "claroscuro-virgen-maria-fatima-immaculate-heart",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-080-claroscurovirgenmariaguadalupe",
+      "name": "claroscuro-virgen-maria-guadalupe",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-081-claroscurovirgenmarianinojesuscoronada",
+      "name": "claroscuro-virgen-maria-nino-jesus-coronada",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-082-claroscurovirgenmarianinojesus",
+      "name": "claroscuro-virgen-maria-nino-jesus",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-083-claroscurovirgenmariasietedoloresestatua",
+      "name": "claroscuro-virgen-maria-siete-dolores-estatua",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-084-claroscurovirgenmariatearsestatua",
+      "name": "claroscuro-virgen-maria-tears-estatua",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-085-estampavirgenmariadolores",
+      "name": "estampa-virgen-maria-dolores",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-086-estampavirgenmariaoracion",
+      "name": "estampa-virgen-maria-oracion",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-087-estrellamanana",
+      "name": "estrella-manana",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-088-etlmpb",
+      "name": "et_lMP-B",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-089-exaltationofjesuschrist",
+      "name": "exaltation of jesus christ",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-090-fhpvte1",
+      "name": "fh-pvte1",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-091-grabadovirgenmariadolorosatears",
+      "name": "grabado-virgen-maria-dolorosa-tears",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-092-grabadovirgenmariaphotobw",
+      "name": "grabado-virgen-maria-photo-bw",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-093-grabadovirgenmariasietedolores",
+      "name": "grabado-virgen-maria-siete-dolores",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-094-iconovirgenmarianinojesusentronizada02",
+      "name": "icono-virgen-maria-nino-jesus-entronizada-02",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-095-iconovirgenmarianinojesus",
+      "name": "icono-virgen-maria-nino-jesus",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-096-iconovirgenmariaperpetuosocorro",
+      "name": "icono-virgen-maria-perpetuo-socorro",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-097-iconovirgenmariasietedoloresswords",
+      "name": "icono-virgen-maria-siete-dolores-swords",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-098-iconovirgenmaria",
+      "name": "icono-virgen-maria",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-099-ladyflower",
+      "name": "ladyflower",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-100-ladyrosary",
+      "name": "ladyrosary",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-101-nktkpovf",
+      "name": "nKtKPOVf",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-102-nbailxwm",
+      "name": "nbAIlxWm",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-103-ochorodamaepoisosseusfilhosestaoseperdendo",
+      "name": "o choro da mãe, pois os seus filhos estão se perdendo_.",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-104-odowlkpw",
+      "name": "odowLKPw",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-105-phvxvol",
+      "name": "phVXvoL_",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-106-pinturaimmaculateheartrosassword",
+      "name": "pintura-immaculate-heart-rosas-sword",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-107-pinturavirgenmariaangeleslirios",
+      "name": "pintura-virgen-maria-angeles-lirios",
+      "tags": [
+        "mary",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-108-pinturavirgenmariaasuncionapostles",
+      "name": "pintura-virgen-maria-asuncion-apostles",
+      "tags": [
+        "mary",
+        "assumption"
+      ]
+    },
+    {
+      "id": "ave-109-pinturavirgenmariaasuncion",
+      "name": "pintura-virgen-maria-asuncion",
+      "tags": [
+        "mary",
+        "assumption"
+      ]
+    },
+    {
+      "id": "ave-110-pinturavirgenmariacorderodediosbouguereau",
+      "name": "pintura-virgen-maria-cordero-de-dios-bouguereau",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-111-pinturavirgenmariacoronacion",
+      "name": "pintura-virgen-maria-coronacion",
+      "tags": [
+        "mary",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-112-pinturavirgenmariademonmedieval",
+      "name": "pintura-virgen-maria-demon-medieval",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-113-pinturavirgenmariadoloresdolor",
+      "name": "pintura-virgen-maria-dolores-dolor",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-114-pinturavirgenmariainmaculadaasuncion",
+      "name": "pintura-virgen-maria-inmaculada-asuncion",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-115-pinturavirgenmarianinojesusclouds",
+      "name": "pintura-virgen-maria-nino-jesus-clouds",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-116-pinturavirgenmarianinojesusentronizada",
+      "name": "pintura-virgen-maria-nino-jesus-entronizada",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-117-pinturavirgenmarianinojesuslirios",
+      "name": "pintura-virgen-maria-nino-jesus-lirios",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-118-pinturavirgenmarianinojesus",
+      "name": "pintura-virgen-maria-nino-jesus",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-119-pinturavirgenmariarosariosantodomingo",
+      "name": "pintura-virgen-maria-rosario-santo-domingo",
+      "tags": [
+        "mary",
+        "rosary"
+      ]
+    },
+    {
+      "id": "ave-120-pkej4o7",
+      "name": "pkej4o-7",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-121-ppcbet9i",
+      "name": "ppcbet9i",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-122-puertacielo",
+      "name": "puerta-cielo",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-123-reinaprofetas",
+      "name": "reina-profetas",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-124-rsaiulkf",
+      "name": "rsaIULkf",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-125-sjhpwaob",
+      "name": "sJHpwaoB",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-126-senoradolores",
+      "name": "senora-dolores",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-127-senoralourdes",
+      "name": "senora-lourdes",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-128-virgendelcarmenescapularioestatua",
+      "name": "virgen-del-carmen-escapulario-estatua",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-129-vitralpiedad",
+      "name": "vitral-piedad",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-130-vitralvirgenmaria02",
+      "name": "vitral-virgen-maria-02",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-131-vitralvirgenmariaanunciacionangel02",
+      "name": "vitral-virgen-maria-anunciacion-angel-02",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-132-vitralvirgenmariaanunciacionangel",
+      "name": "vitral-virgen-maria-anunciacion-angel",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-133-vitralvirgenmariainmaculada02",
+      "name": "vitral-virgen-maria-inmaculada-02",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-134-vitralvirgenmarianinojesussantodomingo",
+      "name": "vitral-virgen-maria-nino-jesus-santo-domingo",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-135-vitralvirgenmaria",
+      "name": "vitral-virgen-maria",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-136-ypnedmfc",
+      "name": "ypNEdmFc",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-137-thevirginjesusandjohnthebaptist1881",
+      "name": "“The Virgin, Jesus, and John the Baptist” (1881)",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-138-viergeconsolatriceadolphewilliambouguereau18251905",
+      "name": "【Vierge consolatrice】Adolphe William Bouguereau (1825-1905)",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-139-licensedimage",
+      "name": "licensed-image",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-140-beautifulscenesofthepolishchapelinstamfordct",
+      "name": "Beautiful scenes of the Polish chapel in Stamford, CT",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-141-categoryhenrifeurwikimediacommons",
+      "name": "Category_Henri Feur - Wikimedia Commons",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-142-causanostraelaetitiae",
+      "name": "Causa nostrae laetitiae",
+      "tags": [
+        "mary",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-143-conradschmittstudioshomeconradschmittstudios",
+      "name": "Conrad Schmitt Studios Home - Conrad Schmitt Studios",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-144-eziries",
+      "name": "EziR_ieS",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-145-ii92j609",
+      "name": "II92J609",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-146-imagendelavirgen",
+      "name": "Imagen de la Virgen",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-147-lifeisshortandsoamiphoto",
+      "name": "Life Is Short And So Am I_ Photo",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-148-matercreatoris",
+      "name": "Mater Creatoris",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-149-materadmirabilis",
+      "name": "Mater admirabilis",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-150-materamabilis",
+      "name": "Mater amabilis",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-151-materboniconsilii",
+      "name": "Mater boni consilii",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "visitation"
+      ]
+    },
+    {
+      "id": "ave-152-materimmaculata",
+      "name": "Mater immaculata",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-153-matersempervirgo",
+      "name": "Mater semper virgo",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-154-matersinemacula",
+      "name": "Mater sine macula",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-155-ourladyofthemiraculousmedal",
+      "name": "Our Lady of the Miraculous Medal",
+      "tags": [
+        "mary",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-156-reinadelosapostoles",
+      "name": "Reina de los Apóstoles",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-157-reinadelospatriarcas",
+      "name": "Reina de los Patriarcas",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "assumption"
+      ]
+    },
+    {
+      "id": "ave-158-sanctadeigenetrix",
+      "name": "Sancta Dei Genetrix",
+      "tags": [
+        "mary",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-159-speculumiustitiae",
+      "name": "Speculum iustitiae",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-160-stmargaretkingslynnnorfolkwindow",
+      "name": "St Margaret, King's Lynn, Norfolk - Window…",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-161-stmarythevirginhenley1stjohnsvisionofan",
+      "name": "St Mary the Virgin Henley 1 St John's vision of an…",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-162-virgenclemente",
+      "name": "Virgen clemente",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-163-virgendignadealabanza",
+      "name": "Virgen digna de alabanza",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-164-virgenpoderosa",
+      "name": "Virgen poderosa",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-165-virgoprudentissima",
+      "name": "Virgo prudentissima",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-166-virgoveneranda",
+      "name": "Virgo veneranda",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "assumption"
+      ]
+    },
+    {
+      "id": "ave-167-angel2",
+      "name": "angel2",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-168-deupatercaelestismisererenobis",
+      "name": "deu-pater-caelestis-miserere-nobis",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-169-dignadealabanza",
+      "name": "digna-de-alabanza",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-170-eltnpnwt",
+      "name": "eLTnPnwT",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-171-espiritu",
+      "name": "espiritu",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-172-icgggsnp",
+      "name": "iCGgGSnP",
+      "tags": [
+        "mary",
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "ave-173-lourdes",
+      "name": "lourdes",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-174-madreadmirable",
+      "name": "madre-admirable",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-175-madredios",
+      "name": "madre-dios",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-176-madredivinagracia",
+      "name": "madre-divina-gracia",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-177-madresiemprevirgen",
+      "name": "madre-siempre-virgen",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-178-madrevenerable",
+      "name": "madre-venerable",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-179-matercastissima",
+      "name": "mater-castissima",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-180-matercristi",
+      "name": "mater-cristi",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-181-materdei",
+      "name": "mater-dei",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-182-materdivinagratiae",
+      "name": "mater-divina-gratiae",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-183-materpurissima",
+      "name": "mater-purissima",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-184-reinaapostoles",
+      "name": "reina-apostoles",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-185-reinacielo",
+      "name": "reina-cielo",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-186-reinadedolores",
+      "name": "reina-de-dolores",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-187-reinadelosangeles",
+      "name": "reina-de-los-angeles",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-188-reinadetodos",
+      "name": "reina-de-todos",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-189-reinadelcielo",
+      "name": "reina-del-cielo",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "assumption"
+      ]
+    },
+    {
+      "id": "ave-190-reinareina",
+      "name": "reina-reina",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-191-reina",
+      "name": "reina",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-192-sanctamariaorapronobis",
+      "name": "sancta-maria-ora-pro-nobis",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-193-virgenrosario",
+      "name": "virgen-rosario",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-194-virgoinmaculata",
+      "name": "virgo-inmaculata",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-195-virgovirginum",
+      "name": "virgo-virginum",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-196-vitraljesusperdidoyhalladotemplo",
+      "name": "vitral-jesus-perdido-y-hallado-templo",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-197-vitrallaanunciacion",
+      "name": "vitral-la-anunciacion",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-198-vitralnatividadsagradafamilia",
+      "name": "vitral-natividad-sagrada-familia",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-199-vitralsagradafamiliasanjose",
+      "name": "vitral-sagrada-familia-san-jose",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-200-vitralvirgenmarialitania",
+      "name": "vitral-virgen-maria-litania",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-201-xpcvmwjl",
+      "name": "xpCVmwJl",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-202-stbernadettestainedglass",
+      "name": "stbernadettestainedglass",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-203-anunciacionarcangelgabriel",
+      "name": "anunciacion-arcangel-gabriel",
+      "tags": [
+        "mary",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-204-georgesdelatournewlyborninfantmuseedesbeauxartsderennes",
+      "name": "Georges_de_La_Tour_-_Newlyborn_infant_-_Musée_des_Beaux-Arts_de_Rennes-copy-870x717",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-205-metmary870x489",
+      "name": "MetMary-870x489",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-206-avemaria",
+      "name": "ave-maria",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-207-contricion",
+      "name": "contricion",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-208-misteriogloria5",
+      "name": "misteriogloria5",
+      "tags": [
+        "mary",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-209-misteriogozo0",
+      "name": "misteriogozo0",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-210-misteriogozo1",
+      "name": "misteriogozo1",
+      "tags": [
+        "mary",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-211-misteriogozo4",
+      "name": "misteriogozo4",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-212-033l19037b7dk6a876424546",
+      "name": "033l19037-b7dk6-a-876424546",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-213-b2b07fvirgenuvasmignard",
+      "name": "b2b07f_virgen-uvas-mignard",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-214-claroscurorosariohand",
+      "name": "claroscuro-rosario-hand",
+      "tags": [
+        "mary",
+        "rosary"
+      ]
+    },
+    {
+      "id": "ave-215-oip856279200",
+      "name": "OIP-856279200",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-216-claroscurovirgenmariacoronadaangeles",
+      "name": "claroscuro-virgen-maria-coronada-angeles",
+      "tags": [
+        "mary",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-217-claroscurovirgenmariaoracionsassoferrato",
+      "name": "claroscuro-virgen-maria-oracion-sassoferrato",
+      "tags": [
+        "mary",
+        "litany-title"
+      ]
+    },
+    {
+      "id": "ave-218-4c05c8virgenrocasdavinci",
+      "name": "4c05c8_virgen-rocas-davinci",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-219-hailmotherqueenmary",
+      "name": "Hail Mother Queen Mary 👸🏽🫀",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-220-madrededios",
+      "name": "madre de dios",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-221-diegovelazquezcoronationofthevirginprado",
+      "name": "Diego_Velázquez_-_Coronation_of_the_Virgin_-_Prado",
+      "tags": [
+        "mary",
+        "coronation"
+      ]
+    },
+    {
+      "id": "ave-222-cirgenreza",
+      "name": "cirgenreza",
+      "tags": [
+        "mary"
+      ]
+    },
+    {
+      "id": "ave-223-claroscuronatividadpastoresnight",
+      "name": "claroscuro-natividad-pastores-night",
+      "tags": [
+        "mary",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-224-angelofthelordreligiousstainedglasswindow",
+      "name": "_Angel of the Lord_ Religious Stained Glass Window",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-225-vitralimmaculateheartlirios",
+      "name": "vitral-immaculate-heart-lirios",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-226-vitralvirgenmariaanunciacion",
+      "name": "vitral-virgen-maria-anunciacion",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "annunciation"
+      ]
+    },
+    {
+      "id": "ave-227-vitralvirgenmariainmaculadaasuncion",
+      "name": "vitral-virgen-maria-inmaculada-asuncion",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-228-vitralvirgenmarialourdessantabernardita",
+      "name": "vitral-virgen-maria-lourdes-santa-bernardita",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "ave-229-vitralvirgenmarianinojesuscoronada",
+      "name": "vitral-virgen-maria-nino-jesus-coronada",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "mother-and-child"
+      ]
+    },
+    {
+      "id": "ave-230-vitralvirgenmariavisitacion",
+      "name": "vitral-virgen-maria-visitacion",
+      "tags": [
+        "mary",
+        "stained-glass",
+        "visitation"
+      ]
+    },
+    {
+      "id": "ave-231-ladyofsorrows",
+      "name": "lady-of-sorrows",
+      "tags": [
+        "mary",
+        "sorrowful"
+      ]
+    },
+    {
+      "id": "ave-232-virgendelourdesbernadette",
+      "name": "virgen-de-lourdes-bernadette",
+      "tags": [
+        "mary",
+        "immaculate"
+      ]
+    },
+    {
+      "id": "passion-000-baptismofchristbiggeste1587963361851",
+      "name": "Baptism-of-Christ-biggest-e1587963361851",
+      "tags": [
+        "passion",
+        "nativity",
+        "baptism"
+      ]
+    },
+    {
+      "id": "passion-001-benvenutotisidagarofaloascensionofchrist",
+      "name": "Benvenuto_Tisi_da_Garofalo_-_Ascension_of_Christ",
+      "tags": [
+        "passion",
+        "resurrection"
+      ]
+    },
+    {
+      "id": "passion-002-carlblochweddingatcanatalle1668715253924",
+      "name": "CarlBloch_weddingatCana-tall-e1668715253924",
+      "tags": [
+        "passion"
+      ]
+    },
+    {
+      "id": "passion-003-christfallingonthewaytocalvaryraphaelscalede15879631508",
+      "name": "Christ_Falling_on_the_Way_to_Calvary_-_Raphael-scaled-e1587963150894",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-004-cristoabrazandoalacruz",
+      "name": "Cristo-abrazando-a-la-Cruz",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-005-disputationoftheholysacrament768x554jpg",
+      "name": "Disputation-of-the-Holy-Sacrament-768x554.jpg",
+      "tags": [
+        "passion",
+        "eucharist",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-006-extremeunctionnicolaspoussinjpg",
+      "name": "Extreme-Unction-Nicolas-Poussin.jpg",
+      "tags": [
+        "passion",
+        "eucharist",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-007-blochlastsupperlonge1587962938420",
+      "name": "bloch-last-supper-long-e1587962938420",
+      "tags": [
+        "passion",
+        "eucharist",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-008-christface",
+      "name": "christface",
+      "tags": [
+        "passion"
+      ]
+    },
+    {
+      "id": "passion-009-claroscurocrucifixionangeles",
+      "name": "claroscuro-crucifixion-angeles",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-010-claroscurosantodomingocrucifijocoronadeespinas",
+      "name": "claroscuro-santo-domingo-crucifijo-corona-de-espinas",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-011-cordero",
+      "name": "cordero",
+      "tags": [
+        "passion",
+        "lamb"
+      ]
+    },
+    {
+      "id": "passion-012-crucifixion",
+      "name": "crucifixion",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-013-grunewaldisenheimaltarpiecedetail300x265",
+      "name": "grunewald-isenheim-altarpiece-detail-300x265",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-014-iconocristocruzacuestas",
+      "name": "icono-cristo-cruz-a-cuestas",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-015-iconocristopantocratorangeles",
+      "name": "icono-cristo-pantocrator-angeles",
+      "tags": [
+        "passion"
+      ]
+    },
+    {
+      "id": "passion-016-iconocrucifixioncalvariosanjuan",
+      "name": "icono-crucifixion-calvario-san-juan",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-017-encountersinyonkersny",
+      "name": "Encounters in Yonkers, NY",
+      "tags": [
+        "passion",
+        "stained-glass",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-018-sanctadeigenetrix",
+      "name": "Sancta Dei Genetrix",
+      "tags": [
+        "passion",
+        "stained-glass",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-019-stmarysromancatholicchurchalbanynewyork",
+      "name": "St_ Mary's Roman Catholic Church, Albany, New York",
+      "tags": [
+        "passion",
+        "stained-glass",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-020-vasspirituale",
+      "name": "Vas spirituale",
+      "tags": [
+        "passion",
+        "eucharist",
+        "stained-glass",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-021-vasspirituale2",
+      "name": "Vas spirituale2",
+      "tags": [
+        "passion",
+        "eucharist",
+        "stained-glass",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-022-madreamable",
+      "name": "madre-amable",
+      "tags": [
+        "passion",
+        "eucharist",
+        "stained-glass",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-023-vitraljesusconlacruzacuestas",
+      "name": "vitral-jesus-con-la-cruz-a-cuestas",
+      "tags": [
+        "passion",
+        "stained-glass",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-024-cristocrucificadosemanasanta",
+      "name": "cristo-crucificado-semana-santa",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-025-crucifijorayosluzroseton",
+      "name": "crucifijo-rayos-luz-roseton",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-026-jesusmio",
+      "name": "jesus-mio",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-027-195415thecrucifixion864x1536",
+      "name": "1954.15-The-Crucifixion-864x1536",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-028-angel",
+      "name": "angel",
+      "tags": [
+        "passion",
+        "getsemani"
+      ]
+    },
+    {
+      "id": "passion-029-contricion2",
+      "name": "contricion2",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-030-misteriodolor0",
+      "name": "misteriodolor0",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-031-misteriodolor1",
+      "name": "misteriodolor1",
+      "tags": [
+        "passion",
+        "getsemani"
+      ]
+    },
+    {
+      "id": "passion-032-misteriodolor2",
+      "name": "misteriodolor2",
+      "tags": [
+        "passion"
+      ]
+    },
+    {
+      "id": "passion-033-misteriodolor3",
+      "name": "misteriodolor3",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-034-misteriodolor5",
+      "name": "misteriodolor5",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-035-rubensrembrandt870x556",
+      "name": "rubens-rembrandt-870x556",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-036-cristocrucificadomurillo205xe1664749349690",
+      "name": "Cristo_crucificado_Murillo-2@05x-e1664749349690",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-037-claroscurocristocruzacuestassimon",
+      "name": "claroscuro-cristo-cruz-a-cuestas-simon",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-038-crown",
+      "name": "crown",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-039-getsemani",
+      "name": "getsemani",
+      "tags": [
+        "passion",
+        "getsemani"
+      ]
+    },
+    {
+      "id": "passion-040-gettyimages463896955612x612",
+      "name": "gettyimages-463896955-612x612",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-041-hijioyfwwaakhlo",
+      "name": "HIjIOYFWwAAkHLo",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-042-lacoronaciondeespinas",
+      "name": "La-coronacion-de-espinas",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-043-peterpaulrubense1587963172434",
+      "name": "PeterPaulRubens-e1587963172434",
+      "tags": [
+        "passion"
+      ]
+    },
+    {
+      "id": "passion-044-santacatalinadesiena",
+      "name": "Santa Catalina de Siena",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-045-theelevationofthecrosspeterpaulrubens768x495jpg",
+      "name": "The-Elevation-of-the-Cross-Peter-Paul-Rubens-768x495.jpg",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-046-theentombmentofchristcaravaggiojpg",
+      "name": "The-Entombment-of-Christ-Caravaggio.jpg",
+      "tags": [
+        "passion",
+        "resurrection",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-047-jesusandstjohn",
+      "name": "Jesus and St John",
+      "tags": [
+        "passion",
+        "eucharist",
+        "stained-glass",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-048-jesusonthecross",
+      "name": "Jesus on the Cross",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-049-lastsupperinscrantonpa",
+      "name": "Last Supper in Scranton, PA",
+      "tags": [
+        "passion",
+        "eucharist",
+        "stained-glass",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-050-lot329williamshakespeareburtonoilkingofsorrowscaseaucti",
+      "name": "Lot 329_ William Shakespeare Burton oil, King of Sorrows _ Case Auctions",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-051-qcmcvyth",
+      "name": "qCmCvYtH",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-052-vitralcrucifixion",
+      "name": "vitral-crucifixion",
+      "tags": [
+        "passion",
+        "stained-glass",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-053-image",
+      "name": "♱⃓",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-054-claroscurocalvariolandscapestorm",
+      "name": "claroscuro-calvario-landscape-storm",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-055-claroscurocrucifijosmoke",
+      "name": "claroscuro-crucifijo-smoke",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-056-claroscurocrucifixioncalvariocrowd",
+      "name": "claroscuro-crucifixion-calvario-crowd",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-057-claroscurosantotomasdeaquinocrucifijoangeles",
+      "name": "claroscuro-santo-tomas-de-aquino-crucifijo-angeles",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-058-claroscuroultimacenatintoretto",
+      "name": "claroscuro-ultima-cena-tintoretto",
+      "tags": [
+        "passion",
+        "eucharist",
+        "supper"
+      ]
+    },
+    {
+      "id": "passion-059-gettyimages2252804557612x612",
+      "name": "gettyimages-2252804557-612x612",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-060-viacrucis",
+      "name": "viacrucis",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
+      ]
+    },
+    {
+      "id": "passion-061-viadolorosa03",
+      "name": "viadolorosa03",
+      "tags": [
+        "passion",
+        "cross"
+      ]
+    },
+    {
+      "id": "passion-062-viadolorosa3",
+      "name": "viadolorosa3",
+      "tags": [
+        "passion",
+        "crown-of-thorns"
       ]
     }
   ],
@@ -456,7 +3043,7 @@
       "title": "Ave María",
       "mystery": "gozosos",
       "img": "/gallery-images/misterios/modooscuro/ave-maria.jpg",
-      "registryId": null
+      "registryId": "maryPrayingSassoferrato"
     },
     {
       "prayerId": "G",
@@ -637,63 +3224,63 @@
       "prayerId": "ANG_SC",
       "title": "Señal de la Cruz",
       "mystery": "angelus",
-      "img": "AllMary17thLith.jpeg",
-      "registryId": "allMary17th"
+      "img": "/prayers/ANG_SC/interior-iglesia-gotica.jpg",
+      "registryId": null
     },
     {
       "prayerId": "ANG_ANNUNCIATION",
       "title": "El Ángel del Señor",
       "mystery": "angelus",
-      "img": "HOSdpgPXgAAnxPi.jpg",
-      "registryId": "angAnnunciationArt"
+      "img": "/prayers/ANG_ANNUNCIATION/vitral-anunciacion.jpg",
+      "registryId": null
     },
     {
       "prayerId": "ANG_AVE_1",
       "title": "Ave María",
       "mystery": "angelus",
-      "img": "Theotokos.jpg",
-      "registryId": "theotokos"
+      "img": "/prayers/ANG_AVE_1/vitral-maria-chartres.jpg",
+      "registryId": null
     },
     {
       "prayerId": "ANG_FIAT",
       "title": "He aquí la esclava",
       "mystery": "angelus",
-      "img": "HOPm6k_XgAA01Zq.jpg",
-      "registryId": "mary01"
+      "img": "/prayers/ANG_FIAT/vitral-fiat-lirio.jpg",
+      "registryId": null
     },
     {
       "prayerId": "ANG_AVE_2",
       "title": "Ave María",
       "mystery": "angelus",
-      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
-      "registryId": "galleryMaterImmaculata"
+      "img": "/prayers/ANG_AVE_2/altar-maria-iglesia.jpg",
+      "registryId": null
     },
     {
       "prayerId": "ANG_INCARNATION",
       "title": "El Verbo se hizo carne",
       "mystery": "angelus",
-      "img": "Religious-Byzantine-Art-825x1024.jpg",
-      "registryId": "byzantineArt"
+      "img": "/prayers/ANG_INCARNATION/vitral-encarnacion.jpg",
+      "registryId": null
     },
     {
       "prayerId": "ANG_AVE_3",
       "title": "Ave María",
       "mystery": "angelus",
-      "img": "/gallery-images/litany/modooscuro/virgo-inmaculata.jpg",
-      "registryId": "galleryVirgoImmaculata"
+      "img": "/prayers/ANG_AVE_3/vitral-vierge-marie.jpg",
+      "registryId": null
     },
     {
       "prayerId": "ANG_FINAL",
       "title": "Oración final",
       "mystery": "angelus",
-      "img": "HOQsiV3XkAANF6a.jpg",
-      "registryId": "mary02"
+      "img": "/prayers/ANG_FINAL/vitral-crucifixion.jpg",
+      "registryId": null
     },
     {
       "prayerId": "MAG_SC",
       "title": "Señal de la Cruz",
       "mystery": "magnificat",
-      "img": "HOWQmUpXoAAhQVg.jpg",
+      "img": "mujeres-rezando-santo-rosario.jpg",
       "registryId": "nun05"
     },
     {
@@ -707,49 +3294,49 @@
       "prayerId": "MAG_2",
       "title": "Ha mirado a su esclava",
       "mystery": "magnificat",
-      "img": "HOUCofpbsAA1Y7v.jpg",
+      "img": "bouguereau-reina-de-los-angeles.jpg",
       "registryId": "mary03"
     },
     {
       "prayerId": "MAG_3",
       "title": "El Poderoso hizo obras grandes",
       "mystery": "magnificat",
-      "img": "HOUVqYlXUAA5DZa.jpg",
+      "img": "presentacion-virgen-maria-templo.jpg",
       "registryId": "mary04"
     },
     {
       "prayerId": "MAG_4",
       "title": "Su misericordia llega",
       "mystery": "magnificat",
-      "img": "HOV4it8WAAAi39L.jpg",
+      "img": "virgen-con-nino-y-angeles-flores.jpg",
       "registryId": "mary05"
     },
     {
       "prayerId": "MAG_5",
       "title": "Derriba y enaltece",
       "mystery": "magnificat",
-      "img": "HOVIuwUXYAA-esH.jpg",
+      "img": "oracion-rosario-virgen-guadalupe.jpg",
       "registryId": "mary06"
     },
     {
       "prayerId": "MAG_6",
       "title": "Colma de bienes",
       "mystery": "magnificat",
-      "img": "HOT5zDBXoAAjA9-.jpg",
+      "img": "escultura-dama-orante-velo-encaje.jpg",
       "registryId": "nun01"
     },
     {
       "prayerId": "MAG_7",
       "title": "Auxilia a Israel",
       "mystery": "magnificat",
-      "img": "HOUi_5EXEAAWo6H.jpg",
+      "img": "santa-teresa-de-avila-doctora.jpg",
       "registryId": "nun02"
     },
     {
       "prayerId": "MAG_DOX",
       "title": "Gloria al Padre",
       "mystery": "magnificat",
-      "img": "HOWNTjcWIAIWqpV.png",
+      "img": "santa-teresita-lecho-crucifijo.png",
       "registryId": "nun03"
     },
     {
@@ -798,7 +3385,7 @@
       "prayerId": "LPB_7",
       "title": "Letanía — Dios Hijo, Redentor del mundo",
       "mystery": "sangrepreciosa_litany",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -847,7 +3434,7 @@
       "prayerId": "LPB_14",
       "title": "Letanía — Sangre de Cristo, vertida abundantemente",
       "mystery": "sangrepreciosa_litany",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -896,7 +3483,7 @@
       "prayerId": "LPB_21",
       "title": "Letanía — Sangre de Cristo, bebida del Cáliz eucar",
       "mystery": "sangrepreciosa_litany",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -945,7 +3532,7 @@
       "prayerId": "LPB_28",
       "title": "Letanía — Sangre de Cristo, alivio de los que sufr",
       "mystery": "sangrepreciosa_litany",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -994,7 +3581,7 @@
       "prayerId": "LPB_35",
       "title": "Letanía — Sangre de Cristo, que libras de las tini",
       "mystery": "sangrepreciosa_litany",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -1470,7 +4057,7 @@
       "prayerId": "PBO_7",
       "title": "Séptima Ofrenda — por la paz del mundo",
       "mystery": "sangrepreciosa_ofrendas",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -1484,14 +4071,14 @@
       "prayerId": "VC_1",
       "title": "Estación 1 — Jesús es condenado a muerte",
       "mystery": "viacrucis",
-      "img": "HOVTvK2WYAAQgCD.jpg",
+      "img": "monje-franciscano-meditacion.jpg",
       "registryId": "monkDark"
     },
     {
       "prayerId": "VC_2",
       "title": "Estación 2 — Jesús carga con la Cruz",
       "mystery": "viacrucis",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -1533,7 +4120,7 @@
       "prayerId": "VC_8",
       "title": "Estación 8 — Jesús consuela a las hijas de Jerusalén",
       "mystery": "viacrucis",
-      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "img": "sagrado-corazon-ten-piedad-de-mi.jpg",
       "registryId": "rosaryBeads"
     },
     {
@@ -1561,7 +4148,7 @@
       "prayerId": "VC_12",
       "title": "Estación 12 — Jesús muere en la Cruz",
       "mystery": "viacrucis",
-      "img": "sain.jpg",
+      "img": "santa-gemma-galgani.jpg",
       "registryId": "sain"
     },
     {
@@ -1575,7 +4162,7 @@
       "prayerId": "VC_14",
       "title": "Estación 14 — Jesús es puesto en el sepulcro",
       "mystery": "viacrucis",
-      "img": "jpg.jpg",
+      "img": "resurreccion-anastasis-evangelistas.jpg",
       "registryId": "miscJpg"
     },
     {
@@ -1589,14 +4176,14 @@
       "prayerId": "VCR_1",
       "title": "Estación 1 — Jesús es condenado a muerte",
       "mystery": "viacrucis_rosario",
-      "img": "HOVTvK2WYAAQgCD.jpg",
+      "img": "monje-franciscano-meditacion.jpg",
       "registryId": "monkDark"
     },
     {
       "prayerId": "VCR_2",
       "title": "Estación 2 — Jesús carga con la Cruz",
       "mystery": "viacrucis_rosario",
-      "img": "HOTthgTWEAAHsZG.jpg",
+      "img": "capilla-gotica-vitrales-crucifijo.jpg",
       "registryId": "artSacredHot"
     },
     {
@@ -1638,7 +4225,7 @@
       "prayerId": "VCR_8",
       "title": "Estación 8 — Jesús consuela a las hijas de Jerusalén",
       "mystery": "viacrucis_rosario",
-      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "img": "sagrado-corazon-ten-piedad-de-mi.jpg",
       "registryId": "rosaryBeads"
     },
     {
@@ -1666,7 +4253,7 @@
       "prayerId": "VCR_12",
       "title": "Estación 12 — Jesús muere en la Cruz",
       "mystery": "viacrucis_rosario",
-      "img": "sain.jpg",
+      "img": "santa-gemma-galgani.jpg",
       "registryId": "sain"
     },
     {
@@ -1680,7 +4267,7 @@
       "prayerId": "VCR_14",
       "title": "Estación 14 — Jesús es puesto en el sepulcro",
       "mystery": "viacrucis_rosario",
-      "img": "jpg.jpg",
+      "img": "resurreccion-anastasis-evangelistas.jpg",
       "registryId": "miscJpg"
     },
     {
@@ -1722,7 +4309,7 @@
       "prayerId": "VL_5",
       "title": "Estación 5 — Jesús da el Espíritu Santo a los Apóstoles",
       "mystery": "vialucis",
-      "img": "/gallery-images/adoracion/6051780745909814.jpg",
+      "img": "/gallery-images/adoracion/elevacion-santismo-sacramento-misa.jpg",
       "registryId": "galleryAdoracion6051780745909814"
     },
     {
@@ -1743,28 +4330,28 @@
       "prayerId": "VL_8",
       "title": "Estación 8 — Jesús confía a Pedro el cuidado de su rebaño",
       "mystery": "vialucis",
-      "img": "96PsRGiE.jpg",
+      "img": "altar-mayor-barroco-crucifijo.jpg",
       "registryId": "misc96PsRGiE"
     },
     {
       "prayerId": "VL_9",
       "title": "Estación 9 — Jesús envía a los discípulos a evangelizar",
       "mystery": "vialucis",
-      "img": "HOWNqmdXMAAeHH7.png",
+      "img": "dama-oracion-altar-iglesia.png",
       "registryId": "nun04"
     },
     {
       "prayerId": "VL_10",
       "title": "Estación 10 — Jesús asciende al cielo",
       "mystery": "vialucis",
-      "img": "HOUQXFjXwAAW7yL.jpg",
+      "img": "caballeros-templarios-cruzados.jpg",
       "registryId": "monk01"
     },
     {
       "prayerId": "VL_11",
       "title": "Estación 11 — María y los Apóstoles esperan al Espíritu Santo",
       "mystery": "vialucis",
-      "img": "edbd5609aa30b5237d89812de8025c9f--early-christian-christian-art.jpg",
+      "img": "cristo-alfa-omega-catacumbas.jpg",
       "registryId": "earlyChristianAlt"
     },
     {
@@ -1785,14 +4372,14 @@
       "prayerId": "VL_14",
       "title": "Estación 14 — María es coronada Reina del cielo",
       "mystery": "vialucis",
-      "img": "HOWtZOEXAAA3UhZ.jpg",
+      "img": "sagrado-corazon-ten-piedad-de-mi.jpg",
       "registryId": "rosaryBeads"
     },
     {
       "prayerId": "SCA_EXPO",
       "title": "Exposición del Santísimo Sacramento",
       "mystery": "sagrado_corazon_adoracion",
-      "img": "96PsRGiE.jpg",
+      "img": "altar-mayor-barroco-crucifijo.jpg",
       "registryId": "misc96PsRGiE"
     },
     {
@@ -1883,7 +4470,7 @@
       "prayerId": "SCA_TANTUM_ERGO",
       "title": "Bendición Eucarística",
       "mystery": "sagrado_corazon_adoracion",
-      "img": "/gallery-images/adoracion/6051780745909814.jpg",
+      "img": "/gallery-images/adoracion/elevacion-santismo-sacramento-misa.jpg",
       "registryId": "galleryAdoracion6051780745909814"
     },
     {
@@ -1897,8 +4484,99 @@
       "prayerId": "SCA_ORACION_FINAL",
       "title": "Oración final",
       "mystery": "sagrado_corazon_adoracion",
-      "img": "/gallery-images/litany/modooscuro/SANTA MARGARITA MARIA DE ALACOQUE FRENTE AL SAGRADO CORAZON DE JESUS !!!.jpg",
+      "img": "/gallery-images/litany/modooscuro/SANTA MARGARITA MARÍA DE ALACOQUE FRENTE AL SAGRADO CORAZÓN DE JESÚS !!!.jpg",
       "registryId": "galleryMargaritaSacredHeart"
+    },
+    {
+      "prayerId": "MEM",
+      "title": "Memorare",
+      "mystery": "memorare",
+      "img": "/gallery-images/litany/modooscuro/virgo-inmaculata.jpg",
+      "registryId": "galleryVirgoImmaculata"
+    },
+    {
+      "prayerId": "MM_LLAMADA",
+      "title": "La Llamada",
+      "mystery": "medalla_milagrosa",
+      "img": "AllMary17thLith.jpeg",
+      "registryId": "allMary17th"
+    },
+    {
+      "prayerId": "MM_ESTRELLAS",
+      "title": "Las doce estrellas",
+      "mystery": "medalla_milagrosa",
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata"
+    },
+    {
+      "prayerId": "MM_CORAZONES",
+      "title": "Los dos corazones",
+      "mystery": "medalla_milagrosa",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon.jpg",
+      "registryId": "gallerySagradoCorazon"
+    },
+    {
+      "prayerId": "IC_OFENSA1",
+      "title": "1. Blasfemias contra la Inmaculada Concepción",
+      "mystery": "inmaculado_corazon",
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata"
+    },
+    {
+      "prayerId": "IC_OFENSA2",
+      "title": "2. Contra su Virginidad",
+      "mystery": "inmaculado_corazon",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+      "registryId": "gallerySagradoCorazonEm"
+    },
+    {
+      "prayerId": "IC_OFENSA3",
+      "title": "3. Contra su Maternidad Divina",
+      "mystery": "inmaculado_corazon",
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata"
+    },
+    {
+      "prayerId": "IC_OFENSA4",
+      "title": "4. La indiferencia en el corazón de los niños",
+      "mystery": "inmaculado_corazon",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+      "registryId": "gallerySagradoCorazonEm"
+    },
+    {
+      "prayerId": "IC_OFENSA5",
+      "title": "5. La ofensa en sus sagradas imágenes",
+      "mystery": "inmaculado_corazon",
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata"
+    },
+    {
+      "prayerId": "IC_PROMESA",
+      "title": "La promesa",
+      "mystery": "inmaculado_corazon",
+      "img": "/gallery-images/misterios/modooscuro/sagrado-corazon-esus-maria.jpg",
+      "registryId": "gallerySagradoCorazonEm"
+    },
+    {
+      "prayerId": "IC_CONSAGRACION",
+      "title": "Consagración",
+      "mystery": "inmaculado_corazon",
+      "img": "/gallery-images/litany/modooscuro/Mater immaculata.jpg",
+      "registryId": "galleryMaterImmaculata"
+    },
+    {
+      "prayerId": "ES_DAY_INTENTION",
+      "title": "undefined — La Iglesia",
+      "mystery": "espiritu_santo_novena",
+      "img": "Encounters in the cathedral of Raleigh.jpg",
+      "registryId": "encountersCathedral"
+    },
+    {
+      "prayerId": "ES_ANTIPHON",
+      "title": "Ven, Espíritu Santo",
+      "mystery": "espiritu_santo_novena",
+      "img": "/gallery-images/misterios/modooscuro/misteriogloria3.webp",
+      "registryId": "galleryPentecost"
     },
     {
       "prayerId": "opt:guardian",
@@ -1918,8 +4596,15 @@
       "prayerId": "opt:carmen",
       "title": "Virgen del Carmen",
       "mystery": "optional",
-      "img": "lady-of-sorrows.jpg",
-      "registryId": "maryCarmen"
+      "img": "virgen-del-carmen-escapulario-estatua.jpg",
+      "registryId": "carmenStatue"
+    },
+    {
+      "prayerId": "opt:escapulario",
+      "title": "Escápulario del Carmen",
+      "mystery": "optional",
+      "img": "mujeres-rezando-santo-rosario.jpg",
+      "registryId": "nun05"
     },
     {
       "prayerId": "opt:expedito",
@@ -1960,7 +4645,7 @@
       "prayerId": "opt:bendito",
       "title": "Bendito sea Dios",
       "mystery": "optional",
-      "img": "96PsRGiE.jpg",
+      "img": "altar-mayor-barroco-crucifijo.jpg",
       "registryId": "misc96PsRGiE"
     }
   ],

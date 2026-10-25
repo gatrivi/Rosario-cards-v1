@@ -91,7 +91,7 @@
     0 0 3px rgba(255, 248, 220, 0.2),
     inset 0 0 9px rgba(255, 255, 255, 0.14);
   background: radial-gradient(circle at 30% 25%, rgba(255, 248, 220, 0.25), rgba(20, 16, 30, 0.85));
-  animation: pray-for-orb-breathe 6.5s ease-in-out infinite;
+  animation: pray-for-orb-breathe 6.5s steps(12) infinite; /* stepped: a per-frame box-shadow animation costs style+layout+paint 60x/s on every screen */
   animation-delay: calc(var(--orb-i, 0) * 0.85s);
   /* Progressive joy: --pray-joy (0→1) warms and quickens the breath */
   filter: brightness(calc(1 + var(--pray-joy, 0) * 0.18))
@@ -262,7 +262,7 @@
   cursor: pointer;
   color: #d4af37;
   overflow: hidden;
-  animation: pray-for-orb-breathe 7s ease-in-out infinite;
+  animation: pray-for-orb-breathe 7s steps(12) infinite;
   box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
 }
 

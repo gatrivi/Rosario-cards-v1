@@ -47,6 +47,25 @@
   min-width: 0;
 }
 
+/* Keyed per-view wrapper: re-mounted on every view switch so the enter
+   fade replays. Opacity only — transforms here would create a containing
+   block that breaks position:fixed overlays inside views. */
+.view-slot {
+  height: 100%;
+  animation: view-enter 200ms ease-out;
+}
+
+@keyframes view-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-slot {
+    animation: none;
+  }
+}
+
 .app-shell__notice {
   position: absolute;
   top: var(--app-header-height);

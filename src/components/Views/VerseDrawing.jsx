@@ -1,4 +1,5 @@
 import React from 'react';
+import { DAYLIGHT_BANDS, dwellCalm } from '../../utils/roseFingerprint';
 
 // Split the drawing's path timeline into exactly one segment per verse.
 // A verse may finish one contour and begin another without losing any artwork.
@@ -19,13 +20,20 @@ const noise = (seed, index) => {
 
 export default function VerseDrawing({
   paths, verseCount, progress, traits = {}, seed = 0, rose = false,
-  size = 120, compact = false, style, onClick,
+  context = null, size = 120, compact = false, style, onClick,
 }) {
   const count = Math.max(1, Math.floor(verseCount));
   const groups = React.useMemo(
     () => Array.from({ length: count }, (_, i) => verseSegments(paths.length, count, i)),
     [paths.length, count]
   );
+  // How the prayer was prayed tints and weights the ink. Rose-only: symbol
+  // drawings keep their canonical palette. Absent context (old roses) = no change.
+  const band = rose && context?.daylight ? DAYLIGHT_BANDS[context.daylight] : null;
+  const calm = rose && context && Number.isFinite(context.dwellMs)
+    ? dwellCalm(context.dwellMs) : null;
+  const isManual = rose && context?.source === 'manual';
+  const livelier = rose && context?.source === 'rosario' ? 1.5 : 1;
   return (
     <svg viewBox={compact ? '15 14 70 48' : '0 0 100 140'}
       width={size} height={compact ? size * 0.68 : size * 1.4}
@@ -35,10 +43,16 @@ export default function VerseDrawing({
         const revealed = clamp(progress * count - verse);
         const warmth = clamp(traits.warmth?.[verse] ?? 0.25);
         const movement = Math.min(1, Math.max(0, (traits.wiggle?.[verse] ?? 0) / 5));
-        const width = 1.35 + warmth * 1.15 + movement * 0.35;
+        // Context ink only applies when a context exists; legacy roses (none)
+        // must render with the exact historical formula.
+        const contextInk = rose && context
+          ? (calm ?? 0.5) * 0.3 - (isManual ? 0.12 : 0) + noise(seed, verse + 131) * 0.06
+          : 0;
+        const width = 1.35 + warmth * 1.15 + movement * 0.35 + contextInk;
         // Stable per prayer and verse: later progress never changes finished ink.
         const rotation = noise(seed, verse + 1) * (0.35 + movement * 1.8);
-        const expansion = 1 + noise(seed, verse + 71) * (0.012 + movement * 0.028);
+        const expansion = 1 + noise(seed, verse + 71)
+          * (0.012 + movement * 0.028) * livelier;
         let remaining = revealed * segments.reduce((sum, s) => sum + s.end - s.start, 0);
         return (
           <g key={verse} data-verse-stroke={verse}
@@ -48,13 +62,23 @@ export default function VerseDrawing({
               const visible = Math.min(end - start, remaining);
               remaining = Math.max(0, remaining - visible);
               if (visible <= 0) return null;
-              const hue = rose ? (pathIndex >= 9 ? 112 : 350 + noise(seed, verse + 9) * 12) : 40;
-              const color = `hsl(${hue}, ${rose ? 65 + warmth * 20 : 35 + warmth * 40}%, ${38 + warmth * 24}%)`;
+              const hue = rose
+                ? (pathIndex >= 9 ? 112 : 350 + (band?.hue ?? 0) + noise(seed, verse + 9) * 12)
+                : 40;
+              const sat = rose
+                ? 65 + warmth * 20 + (band?.sat ?? 0) - (isManual ? 12 : 0)
+                : 35 + warmth * 40;
+              const light = rose
+                ? 38 + warmth * 24 + (band?.light ?? 0)
+                : 38 + warmth * 24;
+              const color = `hsl(${hue}, ${Math.max(0, Math.min(100, sat))}%, ${Math.max(0, Math.min(92, light))}%)`;
               const dash = `${visible} 2`;
               return (
                 <g key={pathIndex}>
                   <path d={paths[pathIndex]} pathLength="1" fill="none"
-                    stroke={color} strokeWidth={width + 2} opacity={0.12 + warmth * 0.1}
+                    stroke={color} strokeWidth={width + 2}
+                    opacity={0.12 + warmth * 0.1
+                      + (rose && context ? (calm ?? 0.3) * 0.08 - (isManual ? 0.03 : 0) : 0)}
                     strokeDasharray={dash} strokeDashoffset={-start}
                     strokeLinecap="round" strokeLinejoin="round" />
                   <path d={paths[pathIndex]} pathLength="1" fill="none"

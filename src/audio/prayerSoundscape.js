@@ -5,6 +5,7 @@ export function prayerTone(theme, prayerId) {
     gozosos: [164.81, 1.25, 950], dolorosos: [146.83, 1.2, 650],
     gloriosos: [196, 1.25, 1400], luminosos: [174.61, 1.5, 1700],
     patrick: [146.83, 1.5, 1000],
+    misericordia: [146.83, 1.2, 800],
   };
   const [root, third, brightness] = colors[theme] || colors.gozosos;
   return { root: root * ({ P: 0.8, G: 1.2, S: 0.8 }[prayerId] || 1), third, brightness };

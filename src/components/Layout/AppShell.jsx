@@ -12,6 +12,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import RosarioVirtualView from '../Views/RosarioVirtualView';
 import RoseView from '../Views/RoseView';
+import { isRoseDevotion } from '../Views/roseViewHelpers';
 import BookletView from '../Views/BookletView';
 import MacetonView from '../Views/MacetonView';
 import JardinDeRosasView from '../Views/JardinDeRosasView';
@@ -53,6 +54,7 @@ import {
   isValidBookletMystery,
   isValidRosaryMystery,
   buildSequence,
+  earnsRoseForDevotion,
 } from '../../utils/bookletSequence';
 import {
   ensurePlaylistRunnerListening,
@@ -67,7 +69,6 @@ import {
   hasActiveCompromiso,
 } from '../../utils/compromisoStore';
 import CompromisoSheet from '../compromiso/CompromisoSheet';
-import { SAGRADO_CORAZON_ADORACION_ID } from '../../data/sagradoCorazonAdoracionData';
 import { devLog } from '../../utils/devotionsDebug';
 import MobileElementStepper from './MobileElementStepper';
 import './AppShell.css';
@@ -76,6 +77,7 @@ const APP_VERSION = '0.3.79';
 const ROSARY_INDEX_KEY = 'rosario_booklet_index';
 const ROSARY_MYSTERY_KEY = 'rosario_booklet_mystery';
 const ROSARY_ONLY_INDEX_KEY = 'rosario_rosary_index';
+const ROSE_DEVOTION_INDEX_KEY = 'rosario_rose_devotion_index';
 const ROSARY_ONLY_MYSTERY_KEY = 'rosario_rosary_mystery';
 const NOVENA_DAY_KEY = 'rosario_booklet_novena_day';
 
@@ -132,7 +134,14 @@ export default function AppShell() {
       mobileElementArrowsEnabled: localStorage.getItem('rosario_mobile_element_arrows_enabled') !== 'false',
       mercyOptionalOpening: true,
       litanyEntranceEnabled: true,
-      perVersePrayerImages: false,
+      // On by default: the Ave María and Padre Nuestro have a hand-picked image
+      // per verse (prayerVerseCatalog.js), and with it off every repetition of
+      // those prayers showed one picture. Still toggleable in Ajustes.
+      perVersePrayerImages: true,
+      // The rosary stays off: there, next-step walks verses, so one bead would
+      // cost nine taps. The Libro advances verse by verse anyway, which is why
+      // the setting is on there and not here.
+      perVerseImagesInRosary: false,
       useUserVoice: localStorage.getItem('rosario_voice_user') !== 'false',
       useBundledVoice: localStorage.getItem('rosario_voice_bundled') !== 'false',
     };
@@ -174,6 +183,14 @@ export default function AppShell() {
       return saved ? parseInt(saved, 10) : 0;
     } catch {
       return 0;
+    }
+  });
+  const [roseDevotionIndex, setRoseDevotionIndex] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(ROSE_DEVOTION_INDEX_KEY) || '{}');
+      return saved && typeof saved === 'object' ? saved : {};
+    } catch {
+      return {};
     }
   });
   const [rosaryMystery, setRosaryMystery] = useState(() => {
@@ -414,6 +431,16 @@ export default function AppShell() {
     }
   }, [syncToCloud, misterioActual]);
 
+  const handleRoseDevotionProgreso = React.useCallback((devotion, newIndex) => {
+    setRoseDevotionIndex((prev) => {
+      const next = { ...prev, [devotion]: newIndex };
+      try {
+        localStorage.setItem(ROSE_DEVOTION_INDEX_KEY, JSON.stringify(next));
+      } catch (_) { /* ignore */ }
+      return next;
+    });
+  }, []);
+
   const handleRosaryProgreso = React.useCallback((newIndex) => {
     setRosaryPrayerIndex(newIndex);
     try {
@@ -508,14 +535,12 @@ export default function AppShell() {
             litanyEntranceEnabled={settings.litanyEntranceEnabled !== false}
             perVersePrayerImages={settings.perVersePrayerImages === true}
             onAveMariaComplete={(fingerprint) => {
-              if (misterioActual === 'divinamisericordia_novena') return;
-              if (misterioActual === SAGRADO_CORAZON_ADORACION_ID) return;
+              if (!earnsRoseForDevotion(misterioActual)) return;
               addRosas(1);
               storeRoseData(fingerprint);
             }}
             onAveMariaUndo={() => {
-              if (misterioActual === 'divinamisericordia_novena') return;
-              if (misterioActual === SAGRADO_CORAZON_ADORACION_ID) return;
+              if (!earnsRoseForDevotion(misterioActual)) return;
               removeRosas(1);
               popRoseData();
             }}
@@ -572,14 +597,16 @@ export default function AppShell() {
           isLeftHanded={settings.isLeftHanded}
           simpleMode={settings.simpleMode}
           litanyEntranceEnabled={settings.litanyEntranceEnabled !== false}
-          perVersePrayerImages={settings.perVersePrayerImages === true}
+          perVersePrayerImages={settings.perVerseImagesInRosary === true}
           onToggleSimpleMode={() => setSettings(s => ({ ...s, simpleMode: !s.simpleMode }))}
           onShowRosedal={() => navigate(getPathForView('macetones'))}
           onAveMariaComplete={(fingerprint) => {
+            if (!earnsRoseForDevotion(misterioActual)) return;
             addRosas(1);
             storeRoseData(fingerprint);
           }}
           onAveMariaUndo={() => {
+            if (!earnsRoseForDevotion(misterioActual)) return;
             removeRosas(1);
             popRoseData();
           }}
@@ -587,18 +614,22 @@ export default function AppShell() {
         );
       }
       case 'rose': {
-        const patrick = searchParams.get('devocion') === 'patrick';
+        // Rosa devotions keep their own cursor; they never touch the rosary index.
+        const devocion = searchParams.get('devocion');
+        const roseDevotion = isRoseDevotion(devocion) ? devocion : undefined;
         const sharedClassic = isValidRosaryMystery(misterioActual);
         const m = sharedClassic ? misterioActual : rosaryMystery;
         const idx = sharedClassic ? currentPrayerIndex : rosaryPrayerIndex;
         const onProg = sharedClassic ? handleUpdateProgreso : handleRosaryProgreso;
         return (
         <RoseView
-          key={patrick ? 'patrick' : m}
-          devotion={patrick ? 'patrick' : undefined}
-          currentPrayerIndex={patrick ? 0 : idx}
+          key={roseDevotion || m}
+          devotion={roseDevotion}
+          currentPrayerIndex={roseDevotion ? (roseDevotionIndex[roseDevotion] || 0) : idx}
           misterioActual={m}
-          onUpdateProgreso={patrick ? () => {} : onProg}
+          onUpdateProgreso={roseDevotion
+            ? (newIndex) => handleRoseDevotionProgreso(roseDevotion, newIndex)
+            : onProg}
           onBack={() => navigate(getPathForView('macetones'))}
           soundEnabled={settings.soundEnabled}
           onToggleSound={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}

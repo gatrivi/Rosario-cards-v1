@@ -3,7 +3,7 @@ import { OPTIONAL_PRAYERS } from '../../data/optionalPrayers';
 import { applyVariantToVoiceLang, getVoicePrefs } from '../../utils/voicePrefs';
 import { playStepVoice, stopStepVoice } from '../../utils/prayerVoicePlayback';
 import VitralBackground from './VitralBackground';
-import { isTextHeavyImagePath } from '../../data/imageRegistry';
+import { getPrayerImageCandidates } from '../../utils/prayerImages';
 import './OptionalPrayerSheet.css';
 
 function variantVoiceLang(variantId) {
@@ -41,10 +41,8 @@ export default function OptionalPrayerSheet({ onClose, initialPrayerId }) {
   const prayer = OPTIONAL_PRAYERS.find((p) => p.id === prayerId) || OPTIONAL_PRAYERS[0];
   const variant =
     prayer.variants.find((v) => v.id === variantId) || prayer.variants[0];
-  const candidates = (prayer.imgCandidates?.length
-    ? prayer.imgCandidates
-    : [prayer.img]
-  ).filter((u) => u && !isTextHeavyImagePath(u));
+  // Shared chain: user assignment → drop-in folder images → static pools → fallback.
+  const candidates = getPrayerImageCandidates(prayer);
 
   useEffect(() => {
     // Kill Liber ▶/≫ so Guarda doesn't keep hearing Ángelus/Ave under the sheet.

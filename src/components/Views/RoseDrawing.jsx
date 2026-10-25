@@ -70,6 +70,7 @@ export default function RoseDrawing({
   seed = 0,            
   size = 120,
   compact = false,     
+  context = null,      
   style = {},
   onClick,
 }) {
@@ -89,7 +90,7 @@ export default function RoseDrawing({
   const sVal = seed || 0;
   if (verseTraits && verseCount > 0) {
     return <VerseDrawing paths={ROSE_PATHS} verseCount={verseCount} progress={progress}
-      traits={verseTraits} seed={seed} rose size={size} compact={compact} style={style} onClick={onClick} />;
+      traits={verseTraits} seed={seed} rose context={context} size={size} compact={compact} style={style} onClick={onClick} />;
   }
 
   return (

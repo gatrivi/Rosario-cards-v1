@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, cleanup } from '@testing-library/react';
+import { act, render, cleanup, fireEvent } from '@testing-library/react';
 import Matter from 'matter-js';
 import RosaryAdapter from '../components/RosarioNube/RosaryAdapter';
 import { buildSequence } from '../utils/bookletSequence';
@@ -155,6 +155,28 @@ describe('production Matter gesture handling', () => {
     expect(Math.min(...visible.map((b) => b.bounds.min.y))).toBeGreaterThanOrEqual(-1);
     expect(Math.max(...visible.map((b) => b.bounds.max.y))).toBeLessThanOrEqual(height + 1);
     expect(Math.max(...visible.map((b) => b.speed))).toBeLessThan(0.3);
+  });
+
+  test('double tap on empty space zooms beads to thumb size and back; on a bead it never zooms', () => {
+    localStorage.removeItem('rosaryZoom');
+    const select = jest.fn();
+    render(<RosaryAdapter sequence={sequence} soundEnabled={false} onBeadHoldStart={select} />);
+    const surface = document.querySelector('.interactive-rosary');
+    const tap = (x, y) => {
+      const point = [{ clientX: x, clientY: y, identifier: 1 }];
+      fireEvent.touchStart(surface, { touches: point, changedTouches: point });
+      fireEvent.touchEnd(surface, { touches: [], changedTouches: point });
+    };
+    tap(10, 10);
+    expect(localStorage.getItem('rosaryZoom')).toBeNull(); // one tap is not a zoom
+    tap(10, 10);
+    expect(localStorage.getItem('rosaryZoom')).toBe('2.5');
+    tap(10, 10); tap(10, 10);
+    expect(localStorage.getItem('rosaryZoom')).toBe('1');
+    const bead = beadAt(12);
+    tap(bead.position.x, bead.position.y); tap(bead.position.x, bead.position.y);
+    expect(localStorage.getItem('rosaryZoom')).toBe('1');
+    localStorage.removeItem('rosaryZoom');
   });
 
   test('rearranging the rosary rebuilds geometry without navigating', () => {

@@ -1,5 +1,97 @@
 {
-  "generated": "2026-09-08T01:05:54.605Z",
-  "count": 0,
-  "clips": []
+  "generated": "2026-10-25T22:17:25.424Z",
+  "count": 13,
+  "clips": [
+    {
+      "id": "ES_ANTIPHON",
+      "prayerId": "ES_ANTIPHON",
+      "mystery": "espiritu_santo_novena",
+      "chars": 96,
+      "text": "Ven, Espíritu Santo, llena los corazones de tus fieles, y enciende en ellos la llama de tu amor."
+    },
+    {
+      "id": "ES_DAY_INTENTION",
+      "prayerId": "ES_DAY_INTENTION",
+      "mystery": "espiritu_santo_novena",
+      "chars": 125,
+      "text": "Pedimos que el Espíritu Santo santifique a su Iglesia, la guarde en la verdad y le devuelva el fervor de sus primera caridad."
+    },
+    {
+      "id": "IC_CONSAGRACION",
+      "prayerId": "IC_CONSAGRACION",
+      "mystery": "inmaculado_corazon",
+      "chars": 646,
+      "text": "Virgen María, Madre de Dios y Madre nuestra, a vuestro Corazón Inmaculado nos consagramos, en acto de entrega total al Señor. Por Vos seremos llevados a Cristo, y por Él y con Él seremos llevados a Dios Padre. Caminaremos a la luz de la fe, y haremos todo para que el mundo crea que Jesucristo es el Enviado del Padre. Con Él queremos llevar el Amor y la Salvación hasta los confines del mundo. Bajo la maternal protección de vuestro Corazón Inmaculado, seremos un solo pueblo con Cristo. Seremos testimonio de su Resurrección. Por Él seremos llevados al Padre, para gloria de la Santísima Trinidad, a quien adoramos, alabamos y bendecimos. Amén."
+    },
+    {
+      "id": "IC_OFENSA1",
+      "prayerId": "IC_OFENSA1",
+      "mystery": "inmaculado_corazon",
+      "chars": 47,
+      "text": "Las blasfemias contra la Inmaculada Concepción."
+    },
+    {
+      "id": "IC_OFENSA2",
+      "prayerId": "IC_OFENSA2",
+      "mystery": "inmaculado_corazon",
+      "chars": 36,
+      "text": "Las blasfemias contra su Virginidad."
+    },
+    {
+      "id": "IC_OFENSA3",
+      "prayerId": "IC_OFENSA3",
+      "mystery": "inmaculado_corazon",
+      "chars": 103,
+      "text": "Las blasfemias contra su Maternidad Divina, negándose a la vez a reconocerla como Madre de los hombres."
+    },
+    {
+      "id": "IC_OFENSA4",
+      "prayerId": "IC_OFENSA4",
+      "mystery": "inmaculado_corazon",
+      "chars": 149,
+      "text": "Los que pretenden implantar públicamente, en el corazón de los niños, la indiferencia, la falta de respeto e incluso el odio a esta Madre Inmaculada."
+    },
+    {
+      "id": "IC_OFENSA5",
+      "prayerId": "IC_OFENSA5",
+      "mystery": "inmaculado_corazon",
+      "chars": 58,
+      "text": "Los que la injurian directamente en sus sagradas imágenes."
+    },
+    {
+      "id": "IC_PROMESA",
+      "prayerId": "IC_PROMESA",
+      "mystery": "inmaculado_corazon",
+      "chars": 333,
+      "text": "Hija, el motivo es simple: hay cinco clases de ofensas y blasfemias pronunciadas contra el Inmaculado Corazón de María. Mira, hija mía, mi Corazón rodeado de espinas con las que los hombres ingratos lo traspasan a cada momento con sus blasfemias e ingratitudes. Procura, al menos, consolarme. (Hermana Lucía, 10 de diciembre de 1925)"
+    },
+    {
+      "id": "MEM",
+      "prayerId": "MEM",
+      "mystery": "memorare",
+      "chars": 237,
+      "text": "Acuérdate, Virgen Madre, estando tú en la presencia de Dios, para que hables por nosotros cosas buenas. Y no sea en balde nuestra vida, si en tu presencia no ofrecemos nada que merezca recompensa; tú, Madre, preséntate a nuestra súplica."
+    },
+    {
+      "id": "MM_CORAZONES",
+      "prayerId": "MM_CORAZONES",
+      "mystery": "medalla_milagrosa",
+      "chars": 274,
+      "text": "Y una espada te traspasará el alma, tu misma alma; y tu propia espada te penetrarán. Dos corazones aparecen en el reverso de la medalla: el de Jesús, coronado de espinas, y el de María, atravesado por una espada. Juntos señalan la intimidad de María con Jesús. (Lucas 2, 35)"
+    },
+    {
+      "id": "MM_ESTRELLAS",
+      "prayerId": "MM_ESTRELLAS",
+      "mystery": "medalla_milagrosa",
+      "chars": 237,
+      "text": "Y apareció una gran señal en el cielo: una mujer vestida de sol, con la luna bajo sus pies, y sobre su cabeza una corona de doce estrellas. Y dando un grito de grande voz, como cuando ruge un león, la tierra tembló. (Apocalipsis 12, 1-2)"
+    },
+    {
+      "id": "MM_LLAMADA",
+      "prayerId": "MM_LLAMADA",
+      "mystery": "medalla_milagrosa",
+      "chars": 74,
+      "text": "Oh María sin pecado concebida, ruega por nosotros los que recurrimos a ti."
+    }
+  ]
 }

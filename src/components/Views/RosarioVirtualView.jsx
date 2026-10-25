@@ -11,6 +11,10 @@ import {
   getLitanyVerseImageCandidates,
   resolveLitanyVerseImage,
   getPrayerImageCandidates,
+  countPrayerPinnedSources,
+  occurrenceIndexAt,
+  dailyRotationOffset,
+  FALLBACK_IMAGE,
 } from '../../utils/prayerImages';
 import { isTextHeavyImagePath } from '../../data/imageRegistry';
 import { getLitanyVerse, isLitanyPrayer } from '../../utils/litanyHelpers';
@@ -22,8 +26,9 @@ import {
 } from '../../utils/prayerVerseImages';
 import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
-import { getBookletStepContext, stepContextToVitralVars, makeBookletRoseFingerprint } from '../../utils/bookletProgress';
+import { getBookletStepContext, stepContextToVitralVars, makeBookletRoseFingerprint, getOngoingMysteryDecade } from '../../utils/bookletProgress';
 import { getAveMariaRunInfo } from '../../utils/aveMariaRunInfo';
+import { playBookletTransitionSound } from '../../utils/bookletSounds';
 import { canStartLitany, isClosingPrayersUnlocked } from '../../utils/rosarySequenceUtils';
 import { getMysteryColors } from '../RosarioNube/utils/mysteryColors';
 import { usePrayerVoiceAutoplay } from '../../hooks/usePrayerVoiceAutoplay';
@@ -50,6 +55,13 @@ export default function RosarioVirtualView({
   const [showLitanyEntrance, setShowLitanyEntrance] = useState(false);
   const litanyEntranceShownRef = useRef(false);
   const [guided, setGuided] = useState(true);
+  const guidedRef = useRef(true);
+  useEffect(() => { guidedRef.current = guided; }, [guided]);
+  // Dwell of the current step — becomes the rose fingerprint's measured calm.
+  const stepShownAtRef = useRef(Date.now());
+  useEffect(() => {
+    stepShownAtRef.current = Date.now();
+  }, [currentPrayerIndex]);
   const [showHint, setShowHint] = useState(true);
   const [isCargando, setIsCargando] = useState(false);
   const [cargaOracion, setCargaOracion] = useState(0);
@@ -66,6 +78,20 @@ export default function RosarioVirtualView({
   );
 
   const activePrayer = secuencia[safeIndex];
+  /**
+   * Which repetition of `activePrayer` this is — a decade has 10 Ave Marías that
+   * all share one prayer object, so seeding by position alone made every one of
+   * them land on the same phase of the candidate pool.
+   */
+  const occurrence = useMemo(
+    () => occurrenceIndexAt(secuencia, safeIndex),
+    [secuencia, safeIndex]
+  );
+  // Today's start point in the pool, so tomorrow's rosary is not a replay.
+  const dayOffset = useMemo(
+    () => dailyRotationOffset(secuencia, safeIndex),
+    [secuencia, safeIndex]
+  );
 
   usePrayerVoiceAutoplay({
     enabled: false,
@@ -87,6 +113,17 @@ export default function RosarioVirtualView({
     [secuencia, safeIndex, total]
   );
   const vitralStyle = useMemo(() => stepContextToVitralVars(stepContext), [stepContext]);
+
+  // Entering a prayer rings the same chime as the Libro. The gesture rework
+  // (e0b4889) removed every deliberate sound from the Matter rosary; only
+  // bead collisions were left, so tapping a bead was silent.
+  const lastChimedIndexRef = useRef(safeIndex);
+  useEffect(() => {
+    if (lastChimedIndexRef.current === safeIndex) return;
+    lastChimedIndexRef.current = safeIndex;
+    playBookletTransitionSound({ prayerId: secuencia[safeIndex]?.id, stepContext, soundEnabled });
+  }, [safeIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const aveRunInfo = stepContext.aveRun;
   const isAveMaria = activePrayer?.id === 'A' && aveRunInfo;
   const vitralKind = isAveMaria
@@ -107,7 +144,7 @@ export default function RosarioVirtualView({
   }, [activePrayer, variantId, isPerVersePrayer, prayerVerseIndex]);
 
   const vitralCandidates = useMemo(() => {
-    if (!activePrayer) return ['/gallery-images/cathedral.jpg'];
+    if (!activePrayer) return [FALLBACK_IMAGE];
     const scrub = (list) => (list || []).filter((u) => u && !isTextHeavyImagePath(u));
     if (isLitany && litanyVerse) {
       const all = scrub(getLitanyVerseImageCandidates(litanyVerse, activePrayer, litanyVerseIndex));
@@ -129,21 +166,19 @@ export default function RosarioVirtualView({
           activePrayer.id,
           prayerVerseIndex,
           activePrayer,
-          misterioActual
+          misterioActual,
+          occurrence + dayOffset
         ),
       ])[0] || all[0];
       return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
     }
-    const raw = activePrayer.imgCandidates?.length
-      ? activePrayer.imgCandidates
-      : getPrayerImageCandidates(activePrayer, misterioActual);
-    const all = scrub(raw);
-    const safe = all.length ? all : getPrayerImageCandidates(activePrayer, misterioActual);
-    const picked = pickPrayerImage(safe, safeIndex);
-    return [picked, ...safe.filter((u) => u !== picked)].filter(Boolean);
+    const all = scrub(getPrayerImageCandidates(activePrayer, misterioActual));
+    const picked = pickPrayerImage(all, occurrence, countPrayerPinnedSources(activePrayer), dayOffset);
+    return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
   }, [
     activePrayer,
-    safeIndex,
+    occurrence,
+    dayOffset,
     isLitany,
     litanyVerse,
     litanyVerseIndex,
@@ -189,14 +224,20 @@ export default function RosarioVirtualView({
       if (prayer?.id === 'A') {
         const fp = makeBookletRoseFingerprint(
           getAveMariaRunInfo(secuencia, currentPrayerIndex),
-          getBookletStepContext(secuencia, currentPrayerIndex, total).mysteryDecade
+          getOngoingMysteryDecade(secuencia, currentPrayerIndex),
+          {
+            source: 'rosario',
+            timestamp: Date.now(),
+            dwellMs: Math.max(0, Date.now() - stepShownAtRef.current),
+            guided: guidedRef.current,
+          }
         );
         onAveMariaComplete?.(fp);
       }
       onUpdateProgreso(currentPrayerIndex + 1);
       setCargaOracion(100);
     }
-  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, prayerVerseIndex, perVersePrayerImages, secuencia, total, onUpdateProgreso, onAveMariaComplete]);
+  }, [currentPrayerIndex, litanyVerseIndex, litanyVerseTotal, prayerVerseIndex, perVersePrayerImages, secuencia, onUpdateProgreso, onAveMariaComplete]);
 
   useEffect(() => {
     if (isCargando && cargaOracion < 100) {
@@ -461,6 +502,8 @@ export default function RosarioVirtualView({
           <br />
           <span style={{ opacity: 0.6, fontSize: '0.75rem' }}>
             Libro = texto · Rosa = meditación · ↺ para acomodar las cuentas
+            <br />
+            Doble toque en un espacio vacío = acercar las cuentas
           </span>
         </div>
       )}

@@ -1,140 +1,118 @@
-# Current stack — Jun 2026 (updated Jul 2026)
+# Current Stack & System Architecture — Oct 2026 (v0.3.88)
 
-**Live (prod):** https://rosario.gatrivi.com (Vercel custom domain; previews may still be `*.vercel.app`)  
-**Version:** see `AppShell.jsx` `APP_VERSION` + `src/data/releaseNotes.js`  
-**Entry:** `src/index.js` → `App.js` → `AppShell.jsx` (react-router v7)
+> **Canonical System Reference**  
+> **Live (prod):** [https://rosario.gatrivi.com](https://rosario.gatrivi.com) (Vercel custom domain; branch `cloud-rosary-v2`)  
+> **Version:** `v0.3.88 — La Hora de la Misericordia` (defined in `src/data/releaseNotes.js` → `APP_VERSION`)  
+> **Entry point:** `src/index.js` → `src/App.js` → `src/components/Layout/AppShell.jsx` (react-router v7)
 
-## View routing (`src/navigation/routes.js` → `AppShell`)
+---
 
-| View key | Path | Component | Nav |
-|----------|------|-----------|-----|
-| `booklet` | `/libro`, `/` | `BookletView` | BottomNav |
-| `rosary` | `/rosario` | `RosarioVirtualView` | BottomNav |
-| `rose` | `/rosa` | `RoseView` | BottomNav |
-| `voz` | `/voz` | `RecordingStudioView` | BottomNav |
-| `tracker` | `/plan` | `DailyTracker` | BottomNav |
-| `camino` | `/camino` | `PeregrinacionView` | BottomNav |
-| `macetones` | `/macetones` | `MacetonView` | via Camino / settings |
-| `jardin` | `/jardin` | `JardinDeRosasView` | via Macetones |
-| `monk` | `/monk` | `MonkView` | hidden / dev |
-| `assets` | `/assets` | `AssetStudio` | Ajustes → Estudio de imágenes |
+## 1. Application Routing & Views (`src/navigation/routes.js` → `AppShell.jsx`)
 
-**BottomNav on Libro:** only Libro · Rosa · Voz (clean prayer panel).  
-**Ajustes** (top-right, not a gear): settings, Novedades, Estudio. **Sync** adjacent.
+All navigation passes through `AppShell.jsx` which renders the active view based on URL route and manages top chrome (PWA update toast, version badge, Ajustes modal, cloud sync status):
 
-## Libro devotions (header vitrales + URL)
+| View Key | Path | Component | Navigation Access | Role / Surface |
+|----------|------|-----------|-------------------|----------------|
+| `booklet` | `/libro`, `/` | `BookletView` | BottomNav | **Libro:** Contemplative stained-glass flipbook, devotions shelf, per-verse vitral art, voice guide playback |
+| `rosary` | `/rosario` | `RosarioVirtualView` | BottomNav | **Rosario Virtual:** 61-bead interactive physics rosary (Matter.js), velvet settling, gesture magnetism ✝, double-tap zoom |
+| `rose` | `/rosa` | `RoseView` | BottomNav | **La Rosa:** Hold-to-charge sacred text reading, deterministic vector rose generation (`roseFingerprint.js`), devotions mode |
+| `voz` | `/voz` | `RecordingStudioView` | BottomNav | **Estudio de Voz:** Devotional audio recording, playback review, Fish TTS coverage inspection |
+| `tracker` | `/plan` | `DailyTracker` | BottomNav | **Plan Diario:** Daily commitment selector (1/2/4/8 rosarios) with macetero visualizer |
+| `camino` | `/camino` | `PeregrinacionView` | BottomNav | **Peregrinación:** Snake-map pilgrimage path connecting local church towards universal shrines |
+| `macetones` | `/macetones` | `MacetonView` | via Camino / settings | **Macetones:** Daily commitments visualizer and garden portal |
+| `jardin` | `/jardin` | `JardinDeRosasView` | via Macetones | **Rosedal:** Visual gallery of all planted roses rendered with context-aware ink |
+| `reliquias` | `/reliquias` | `ReliquarioView` | via Camino | **Reliquiario:** Sacred devotions and medals overview |
+| `playlist` | `/cola` | `DevotionPlaylistView` | via settings / dev | **Playlist:** Sequence queue for continuous multi-devotion playback |
+| `assets` | `/assets` | `AssetStudio` | Ajustes → Estudio | **Estudio de Arte:** Liturgical categorization, verse assignment, rejected image review |
+| `monk` | `/monk` | `MonkView` | hidden / dev | Monastic reflection prototype |
 
-Classic mysteries: `?misterio=gozosos|dolorosos|gloriosos|luminosos`  
-Faustina: Corona / Novena (`?dia=` for novena day)  
-Estaciones: Vía Crucis / Vía Lucis (`?misterio=viacrucis|vialucis`)  
-Oraciones breves: `?oracion=expedito|michael|guardian|benedict|carmen`  
-Sangre Preciosa, Ofrendas — see `BookletView` + `session-report-2026-07-03-night.md`  
-Share / deep-link base: **`https://rosario.gatrivi.com`** (also hardcoded in `compromisoStore.js`, `SettingsOverlay.jsx`)
+---
 
-## Rosary path (production)
+## 2. Devotions & Parameters (`BookletView` & `RoseView`)
 
-```
-RosarioVirtualView
-  → RosaryAdapter
-  → InteractiveRosary (Matter.js + MouseConstraint)
-  → soundEffects.js (event chimes, lazy init)
-```
+The app supports comprehensive classic and historic devotions via query parameters:
 
-Archived reference: `physics-stable/`, `VirtualRosaryPhysics.stable.jsx`
+- **Classic Rosary Mysteries:** `/libro?misterio=gozosos|dolorosos|gloriosos|luminosos`
+- **Faustina Divine Mercy:**
+  - In Libro: `/libro?misterio=divinamisericordia` (Corona) or `/libro?misterio=divinamisericordia_novena&dia=1..9` (Novena)
+  - In Rosa: `/rosa?devocion=misericordia` (64-step Chaplet with `mercy_heart` symbol, independent cursor)
+- **St. Patrick Breastplate:** `/rosa?devocion=patrick`
+- **Historic Stations:** `/libro?misterio=viacrucis|vialucis`
+- **Historic Recorridos:** `/libro?misterio=sagrado_corazon_adoracion|inmaculado_corazon|espiritu_santo_novena|medalla_milagrosa|memorare|sangrepreciosa_litany`
+- **Oraciones Breves (Sheets):** `/libro?oracion=michael|expedito|escapulario|guardian|benedict|carmen`
 
-## Litany (LL)
+---
 
-| Piece | Path |
-|-------|------|
-| Verse data | `src/data/litanyLauretana.js` → `RosarioPrayerBook.cierre` |
-| Helpers | `src/utils/litanyHelpers.js` |
-| Images | `src/utils/prayerImages.js`, `imageRegistry.js`, Estudio assignments |
-| UI | `src/components/Litany/*` |
-| Booklet | `BookletView` — `litanyVerseIndex`, per-verse vitral |
-| Rosario | `getSequenceData()` — `verseImages[]` on LL |
+## 3. Core Subsystems
 
-## Data layer
+### 3.1 Physics Rosary (`RosarioVirtualView` + `InteractiveRosary`)
+- **Physics Engine:** Matter.js with 61 constrained physical bodies (1 crucifix, 1 central medal, 59 beads).
+- **Feel:** High friction (`frictionAir: 0.06`), zero restitution (`restitution: 0.0`), differentiated bead masses for tactile velvet settling.
+- **Interactions:**
+  - Single tap: Selects bead and navigates prayer step.
+  - Cross gesture: Drawing ✝ magnetically aligns scattered beads.
+  - Double tap: Toggles bead zoom (2.5×) to thumb size for comfortable elderly touch.
+  - Audio: Rings the Libro chime on prayer advance; lazy oscillator chimes on bead collision.
+- **Layering:** Background vitral image (z=0) → Prayer text (z=5) → Matter.js canvas (z=20) → Chrome HUD (z=25+).
 
-| File | Role |
-|------|------|
-| `RosarioPrayerBook.js` | Prayers, sequences `RGo`/`RDo`/`RGl`/`RL`, mysteries |
-| `physicsRosaryData.js` | 61 physical beads, `getPhysicalMapping()` |
-| `rosaryTopology.js` | `buildRosaryEdges()` — v4 constraint graph |
-| `litanyLauretana.js` | Structured LL verses + sections |
-| `viaCrucisData.js` | Vía Crucis / Vía Lucis stations |
-| `imageRegistry.js` | Bundled art ids; overrides via Estudio |
+### 3.2 Sacred Rose & Gesture Contracts (`RoseView`, `SacredText`, `VerseDrawing`)
+- **Hold-to-charge & Drag-reading:** User touches or drags over sacred text to illuminate words from silver to molten gold.
+- **Gesture Contracts (v0.3.88):**
+  - Unread letters share identical metrics with read letters (zero reflow on first touch).
+  - Trailing punctuation rides with the last letter.
+  - Bounding boxes are measured once per gesture (`rectCacheRef`), eliminating per-frame DOM querying.
+  - Lifting inside the last word finishes the line; lifting at the end of the last verse completes the prayer.
+  - Completed prayer stays illuminated for `PRAYER_COMPLETE_BEAT_MS` (700ms) before advancing cleanly in a single pass.
+- **Rose Fingerprints (`src/utils/roseFingerprint.js`):**
+  - Every completed Ave María generates a cryptographic-like deterministic visual fingerprint capturing: `source` (libro, rosario, rosa, manual), `dwellMs` (reading dwell duration), `hour` and `daylight` band, `decade` and `guided` state.
+  - Stores up to 500 recent fingerprints in local storage and cloud sync.
 
-## State / sync
+### 3.3 Vitral Artwork Pipeline (v0.3.85 – v0.3.87)
+- **Folder Manifest:** Owner-curated images placed in `public/prayers/<PRAYER_ID>/` are scanned by `scripts/build-prayer-image-manifest.js` (run automatically on `npm prestart` and `prebuild`) into `src/data/prayerImageManifest.json`.
+- **Candidate Chain:** Assignment → Folder images → Mystery maps → `imgmo` → `img` → `imgCandidates` → Thematic → Fallback (`src/utils/prayerImages.js`).
+- **Variety Resolvers:** `repeatedPrayerImageVariety.js` ensures repeated prayers (53 Ave Marías in the Rosary, 50 "Por su dolorosa Pasión" in Divine Mercy) cycle through distinct stained glass vitrales rather than looping 2–3 images.
+- **Litany Lauretana:** All 100/100 images fully resolve without 404s.
 
-| Hook / module | Storage |
-|---------------|---------|
-| `useRosaryStats.js` | localStorage dates |
-| `useAveMariaStats.js` | Rosas, macetones, levels |
-| `useCloudSync.js` | jsonblob.com, 2s debounce |
-| `useArtConfigCloudSync.js` | `artConfig` in same jsonblob payload |
-| `artConfigSync.js` | Registry overrides + verse assignments merge |
+### 3.4 Audio & Voice Architecture
+- **Web Audio API (`audioManager.js`):** Singleton AudioContext with user-gesture resume for low-latency procedural bells and chimes.
+- **Devotional Voice Autoplay (`usePrayerVoiceAutoplay.js`, `prayerVoicePlayback.js`):** Automatic or on-demand audio guidance in Libro and Rosario.
+- **Voice Packs:** Fish TTS Spanish Voz 4 (seed 77) locked standard (`.docs/voice/fish-es-lock.md`). Voice cue sheet in `.docs/voice-cue-sheet.md`.
 
-## Firebase (optional, lazy)
+### 3.5 State & Cloud Synchronization
+- **Local:** `localStorage` for rosary date history (`useRosaryStats.js`), active settings, and rose devotion cursors.
+- **Stats & Fingerprints (`useAveMariaStats.js`):** Tracks total Ave Marías, level progression (La Semilla → Padre Pío), and rose fingerprints.
+- **Cloud Sync (`useCloudSync.js`):** Automatic background syncing to jsonblob.com with 2-second debounce; offline fallback.
+- **Art Overrides (`useArtConfigCloudSync.js`):** Synchronizes user verse assignments and image library configurations.
 
-| Module | Role |
-|--------|------|
-| `src/config/firebase.js` | Active only if `REACT_APP_FIREBASE_*` in `.env.local` |
-| `firebaseArtConfig.js` | `shared/artConfig` read/write |
-| `firebaseImageLibrary.js` | `shared/imageLibrary` + Storage uploads |
+---
 
-**Blocked until console:** Firestore + Storage rules (permission denied in Estudio). See `releaseNotes.js` UPCOMING.
+## 4. Component Inventory & Status
 
-## Audio / voice
+| Component | File Path | Status | Role |
+|-----------|-----------|--------|------|
+| `AppShell` | `src/components/Layout/AppShell.jsx` | ✅ Active | Root router, chrome, update banner, modal manager |
+| `BookletView` | `src/components/Views/BookletView.jsx` | ✅ Active | Primary devotional reader (Libro) |
+| `RosarioVirtualView` | `src/components/Views/RosarioVirtualView.jsx` | ✅ Active | Production physics rosary surface |
+| `InteractiveRosary` | `src/components/RosarioNube/InteractiveRosary.jsx` | ✅ Active | Matter.js physics rosary canvas & gesture handler |
+| `RoseView` | `src/components/Views/RoseView.jsx` | ✅ Active | Hold-to-charge meditation & rose generator |
+| `SacredText` | `src/components/Views/SacredText.jsx` | ✅ Active | Precision-measured sacred text renderer |
+| `VerseDrawing` | `src/components/Views/VerseDrawing.jsx` | ✅ Active | Dynamic SVG vector rose renderer |
+| `DevotionsShelf` | `src/components/Views/DevotionsShelf.jsx` | ✅ Active | Grid of historic devotions, recorridos and sheets |
+| `RecordingStudioView` | `src/components/Views/RecordingStudioView.jsx` | ✅ Active | Voice recording studio and cue sheet monitor |
+| `AssetStudio` | `src/components/Views/AssetStudio.jsx` | ✅ Active | Curation, tagging and assignment of vitral artwork |
+| `PeregrinacionView` | `src/components/Views/PeregrinacionView.jsx` | ✅ Active | Pilgrimage route visualizer |
+| `DailyTracker` | `src/components/Views/DailyTracker.jsx` | ✅ Active | Macetero visualizer and daily goal commitment |
+| `MacetonView` | `src/components/Views/MacetonView.jsx` | ✅ Active | Rosary commitments visualizer |
+| `JardinDeRosasView` | `src/components/Views/JardinDeRosasView.jsx` | ✅ Active | Garden of prayed roses |
+| `ReliquarioView` | `src/components/Views/ReliquarioView.jsx` | ✅ Active | Reliquary view of devotional artifacts |
+| `DevotionPlaylistView` | `src/components/Views/DevotionPlaylistView.jsx` | ✅ Active | Continuous playlist queue viewer |
 
-| Module | Status |
-|--------|--------|
-| `audioManager.js` | Singleton Web AudioContext, resume on tap |
-| `soundEffects.js` | Rosary chimes — **wired** |
-| `bookletSounds.js` | Booklet transition chimes |
-| `usePrayerVoiceAutoplay` + `pickRecordingForSlot` | Libro + Rosario virtual — **wired** |
-| `CosmicResonator.js` | Gothic organ — **orphaned**, future opt-in |
+---
 
-Settings: `localStorage.rosario_sound_enabled` via `AppShell` / `SettingsOverlay`.
+## 5. Build, Test & Development Workflows
 
-## Component inventory
-
-### Working — keep
-
-| Component | Notes |
-|-----------|-------|
-| `AppShell.jsx` | Router, PWA update banner, version badge, Ajustes |
-| `BookletView.jsx` | Libro + litany + devotions |
-| `RosarioVirtualView.jsx` | Layered prayer + rosary (⚠ stale hardcoded `v0.3.40` chrome badge — use AppShell badge) |
-| `RosaryAdapter` + `InteractiveRosary` | Production physics rosary |
-| `AssetStudio.jsx` | Registro / Clasificar / Asignar versos |
-| `RoseView.jsx` | Jardín — large, extract before extending |
-| `useAveMariaStats`, `useCloudSync`, `useArtConfigCloudSync` | Stats + cloud + art |
-
-### Legacy / unused (not production bugs)
-
-| File | Notes |
-|------|-------|
-| `ViewPrayers.js` | Not mounted by `AppShell`; dark forced — moot |
-| `old_App.js`, `old_App_matter.js` | Reference only |
-| `useD3Rosary.js` | Pre-Matter D3 rosary |
-| `VirtualRosaryPhysics.stable.jsx` | Archive reference |
-
-## Layering (Rosario view)
-
-| z-index | Layer |
-|---------|-------|
-| 5 | Prayer text / RosaEnFoco / litany UI |
-| 20 | Matter canvas (transparent bg) |
-| 25+ | Floating chrome |
-
-## Shipped vs next
-
-Source of truth: `src/data/releaseNotes.js` (`CURRENT` / `UPCOMING`).  
-Ranked backlog: [future-features.md](../roadmap/future-features.md).  
-Open bugs (verified): [known-issues.md](../litany/known-issues.md).
-
-## Related
-
-- [rosary-ux-recovery-jun-2026.md](../virtual-rosary/rosary-ux-recovery-jun-2026.md)
-- [session-report-2026-07-03-night.md](../dev-notes/session-report-2026-07-03-night.md)
-- [live-system-snapshot.md](./live-system-snapshot.md) — **historical** pre-recovery detail
+- **Node / React Stack:** Node 18+, React 19, Create React App (`react-scripts 5.0.1`), `react-router-dom v7`.
+- **Start Development:** `npm start` (runs `prestart` scripts to rebuild image manifests, opens on `localhost:3000`).
+- **Production Build:** `npm run build` (runs `prebuild` manifest generation and compiles production bundle).
+- **Testing:** `npm test -- --watchAll=false --maxWorkers=2` (use `--maxWorkers=2` on Windows to prevent worker OOM).
+- **Manifest Updates:** `node scripts/build-prayer-image-manifest.js` and `node scripts/build-image-pools.js`.

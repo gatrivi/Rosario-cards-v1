@@ -28,4 +28,24 @@ describe('speakablePrayerText', () => {
     expect(spoken).toBe('Señor, ten piedad de nosotros.');
     expect(spoken).not.toMatch(/^Estación/);
   });
+
+  test('does not truncate a body whose opening words echo the title', () => {
+    const step = {
+      id: 'ES_ANTIPHON',
+      title: 'Ven, Espíritu Santo',
+      text: 'Ven, Espíritu Santo, llena los corazones de tus fieles, y enciende en ellos la llama de tu amor.',
+    };
+    // A bare prefix match would leave ", llena los corazones…" — a broken clip.
+    expect(getSpeakablePrayerText(step)).toBe(
+      'Ven, Espíritu Santo, llena los corazones de tus fieles, y enciende en ellos la llama de tu amor.'
+    );
+  });
+
+  test('still drops a genuine heading title', () => {
+    expect(
+      getSpeakablePrayerText({ id: 'X', title: 'Padre Nuestro', text: 'Padre nuestro\nPadre nuestro' })
+    ).toBe('Padre nuestro');
+    expect(getSpeakablePrayerText({ id: 'X', title: 'Memorare', text: 'Memorare' })).toBe('');
+    expect(getSpeakablePrayerText({ id: 'X', title: 'Memorare', text: 'Memorare — A' })).toBe('A');
+  });
 });

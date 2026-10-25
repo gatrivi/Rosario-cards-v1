@@ -1,6 +1,11 @@
-import { isDivineMercyMode } from './bookletSequence';
+import { isDivineMercyMode, getNovenaConfig, isNovenaMode } from './bookletSequence';
+import { DIVINE_MERCY_NOVENA_ID } from '../data/divineMercyData';
 import { ANGELUS_ID, MAGNIFICAT_ID } from '../data/marianDevotionsData';
 import { SAGRADO_CORAZON_ADORACION_ID } from '../data/sagradoCorazonAdoracionData';
+import { MEMORARE_ID } from '../data/memorareData';
+import { MILAGROSA_ID } from '../data/medallaMilagrosaData';
+import { INMACULADO_CORAZON_ID } from '../data/inmaculadoCorazonData';
+import { ESPIRITU_SANTO_ID } from '../data/espirituSantoNovenaData';
 import { formatLitanyLine } from './litanyHelpers';
 import { pickPrayerImage } from './prayerImages';
 
@@ -20,7 +25,7 @@ export function getBookletDevotionLabel(misterioActual) {
   if (misterioActual === MAGNIFICAT_ID) {
     return { title: 'Magnificat', subtitle: 'Cántico de María' };
   }
-  if (misterioActual === 'divinamisericordia_novena') {
+  if (misterioActual === DIVINE_MERCY_NOVENA_ID) {
     return { title: 'Novena de la Divina Misericordia', subtitle: null };
   }
   if (isMercy) {
@@ -46,6 +51,18 @@ export function getBookletDevotionLabel(misterioActual) {
   }
   if (misterioActual === SAGRADO_CORAZON_ADORACION_ID) {
     return { title: 'Adoración Eucarística', subtitle: 'Sagrado Corazón de Jesús' };
+  }
+  if (misterioActual === MEMORARE_ID) {
+    return { title: 'Memorare', subtitle: 'Cierre del Rosario · San Bernardo' };
+  }
+  if (misterioActual === MILAGROSA_ID) {
+    return { title: 'Medalla Milagrosa', subtitle: '27 de noviembre · Catalina Labouré' };
+  }
+  if (misterioActual === INMACULADO_CORAZON_ID) {
+    return { title: 'Inmaculado Corazón', subtitle: 'Fátima · las cinco ofensas' };
+  }
+  if (misterioActual === ESPIRITU_SANTO_ID) {
+    return { title: 'Novena al Espíritu Santo', subtitle: 'Veni Creator Spiritus · Pentecostés' };
   }
   return {
     title: 'Santo Rosario',
@@ -81,8 +98,9 @@ export function formatBookletShareProgress({
     : `${displayIndex + 1} / ${total}`;
 
   const extras = [];
-  if (misterioActual === 'divinamisericordia_novena' && activePrayerId === 'NOVENA_DAY_INTENTION') {
-    extras.push(`Día ${novenaDay} de 9`);
+  const novena = getNovenaConfig(misterioActual);
+  if (novena && activePrayerId === novena.dayStepId) {
+    extras.push(`Día ${novenaDay} de ${novena.total}`);
   }
   if (isLitany && litanyVerseTotal > 0) {
     extras.push(`letanía ${litanyVerseIndex + 1} / ${litanyVerseTotal}`);
@@ -170,7 +188,7 @@ export function buildShareDeepLink({ misterioActual, displayIndex, novenaDay } =
       if (Number.isInteger(displayIndex) && displayIndex >= 0) {
         url.searchParams.set('paso', String(displayIndex));
       }
-      if (misterioActual === 'divinamisericordia_novena' && novenaDay) {
+      if (isNovenaMode(misterioActual) && novenaDay) {
         url.searchParams.set('dia', String(novenaDay));
       }
       return url.toString();

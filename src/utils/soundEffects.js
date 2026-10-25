@@ -160,7 +160,14 @@ class SoundEffects {
   }
 
   initAudioContext() {
-    if (this.audioContext) return;
+    if (this.audioContext) {
+      // A context suspended by the browser (tab hidden, phone locked) stays
+      // silent until someone resumes it.
+      if (this.audioContext.state === "suspended") {
+        this.audioContext.resume?.()?.catch?.(() => {});
+      }
+      return;
+    }
     try {
       this.audioContext = new (window.AudioContext ||
         window.webkitAudioContext)();

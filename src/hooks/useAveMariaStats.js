@@ -163,6 +163,7 @@ export function useAveMariaStats() {
         verseCount: entry.verseCount || 0,
         ...(entry.verseTraits ? { verseTraits: entry.verseTraits } : {}),
         ...(entry.source ? { source: entry.source } : {}),
+        ...(entry.context ? { context: entry.context } : {}),
       })));
       // Keep last 500 roses (~10 rosaries of Ave Marías)
       if (stored.length > 500) stored.splice(0, stored.length - 500);

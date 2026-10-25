@@ -1,3 +1,5 @@
+import { createRoseFingerprint } from './roseFingerprint';
+
 /** Count Ave Marías in sequence strictly before `index`. */
 export function countAvesBefore(sequence, index) {
   if (!sequence?.length || index <= 0) return 0;
@@ -8,6 +10,15 @@ export function countAvesBefore(sequence, index) {
 export function getMysteryDecadeNumber(prayerId) {
   const match = `${prayerId}`.match(/^M[A-Za-z]*(\d)$/);
   return match ? parseInt(match[1], 10) : null;
+}
+
+/** Decade an index belongs to: the most recent mystery step at or before it. */
+export function getOngoingMysteryDecade(sequence, index) {
+  for (let i = Math.min(index, sequence.length - 1); i >= 0; i--) {
+    const decade = getMysteryDecadeNumber(sequence[i]?.id);
+    if (decade) return decade;
+  }
+  return null;
 }
 
 function getConsecutiveRun(sequence, index, prayerId) {
@@ -156,14 +167,18 @@ export function stepContextToVitralVars(ctx) {
   };
 }
 
-export function makeBookletRoseFingerprint(aveRun, mysteryDecade) {
-  const seed = (aveRun?.position ?? 1) + (mysteryDecade ?? 0) * 0.1;
-  const N = 12;
-  const warmth = Array.from({ length: N }, (_, i) =>
-    Math.min(1, 0.25 + seed * 0.04 + ((i * 17) % 10) * 0.04)
-  );
-  const wiggle = Array.from({ length: N }, (_, i) =>
-    Math.min(0.35, 0.05 + ((i * 13 + seed * 3) % 10) * 0.025)
-  );
-  return { warmthProfile: warmth, wiggleProfile: wiggle, verseCount: 10 };
+/**
+ * Fingerprint for one Ave María completed in Libro or the physics rosary.
+ * `extras` may carry { timestamp, dwellMs, guided, source }: measured dwell
+ * and time of day then shape the rose's ink (see utils/roseFingerprint.js).
+ */
+export function makeBookletRoseFingerprint(aveRun, mysteryDecade, extras = {}) {
+  return createRoseFingerprint({
+    source: extras.source ?? 'libro',
+    timestamp: extras.timestamp,
+    dwellMs: extras.dwellMs ?? null,
+    aveRun,
+    mysteryDecade,
+    guided: extras.guided ?? null,
+  });
 }

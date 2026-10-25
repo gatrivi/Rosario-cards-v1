@@ -1,5 +1,12 @@
+/* The app shell clips .app-view-layer, so the view must be its own
+   scroll container. Top padding clears the floating action dock. */
 .reliquario-view {
-  padding-bottom: 96px;
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 62px 0 calc(var(--app-above-nav, 96px) + 16px);
 }
 
 .reliquario-header {

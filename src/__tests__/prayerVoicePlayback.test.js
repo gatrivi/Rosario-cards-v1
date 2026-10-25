@@ -237,3 +237,156 @@ describe('playStepVoice browser TTS', () => {
     expect(result.source).toBe('fish-miss');
   });
 });
+
+describe('playStepVoice Tier S priority', () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    if (typeof URL.createObjectURL !== 'function') {
+      URL.createObjectURL = jest.fn(() => 'blob:fake');
+      URL.revokeObjectURL = jest.fn();
+    } else {
+      jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake');
+      jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    }
+    const { deleteRecording, listAllRecordings } = await import('../utils/prayerRecordingStore');
+    const all = await listAllRecordings();
+    await Promise.all(all.map((rec) => deleteRecording(rec.id)));
+  });
+
+  afterEach(() => {
+    stopStepVoice();
+    URL.createObjectURL.mockRestore?.();
+    URL.revokeObjectURL.mockRestore?.();
+    delete window.speechSynthesis;
+  });
+
+  function mockAudio(expectNotBundled) {
+    window.Audio = jest.fn().mockImplementation((url) => {
+      if (expectNotBundled) expect(String(url)).not.toMatch(/^\/voice\//);
+      const a = {
+        src: url,
+        onended: null,
+        onerror: null,
+        play: jest.fn(() => {
+          setTimeout(() => a.onended?.(), 0);
+          return Promise.resolve();
+        }),
+        pause: jest.fn(),
+      };
+      return a;
+    });
+  }
+
+  test('Liber ▶ plays the user take over the bundled Fish pack', async () => {
+    const { saveRecording } = await import('../utils/prayerRecordingStore');
+    await saveRecording({
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+      prayerId: 'P',
+      variantIndex: 0,
+      blob: new Blob(['x'.repeat(600)], { type: 'audio/webm' }),
+      mimeType: 'audio/webm',
+      label: 'mi padre nuestro',
+      voiceLang: 'es',
+    });
+    setVoicePrefs({ useUserVoice: true, useBundledVoice: true, useBrowserTts: false, voiceLang: 'es' });
+    mockAudio(true);
+
+    const result = await playStepVoice({
+      text: 'Padre nuestro',
+      prayerId: 'P',
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+      lang: 'es',
+      preferBundled: true,
+    });
+
+    expect(window.Audio).toHaveBeenCalledWith('blob:fake');
+    expect(result.source).toBe('audio');
+    expect(result.ended).toBe(true);
+  });
+
+  test('falls through to bundled when only another language has a take', async () => {
+    const { saveRecording } = await import('../utils/prayerRecordingStore');
+    await saveRecording({
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+      prayerId: 'P',
+      variantIndex: 0,
+      blob: new Blob(['x'.repeat(600)], { type: 'audio/webm' }),
+      mimeType: 'audio/webm',
+      label: 'english take',
+      voiceLang: 'en',
+    });
+    setVoicePrefs({ useUserVoice: true, useBundledVoice: true, useBrowserTts: false, voiceLang: 'es' });
+    mockAudio(false);
+
+    const result = await playStepVoice({
+      text: 'Padre nuestro',
+      prayerId: 'P',
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+      lang: 'es',
+      preferBundled: true,
+    });
+
+    expect(window.Audio).toHaveBeenCalledWith('/voice/es/P.wav');
+    expect(result.source).toBe('audio');
+  });
+
+  test('slot-less prayers (optional sheet) still find the latest take', async () => {
+    const { saveRecording } = await import('../utils/prayerRecordingStore');
+    await saveRecording({
+      mystery: null,
+      sequenceIndex: null,
+      prayerId: 'OP_TEST',
+      variantIndex: 0,
+      blob: new Blob(['x'.repeat(600)], { type: 'audio/webm' }),
+      mimeType: 'audio/webm',
+      label: 'angelus mio',
+      voiceLang: 'es',
+    });
+    setVoicePrefs({ useUserVoice: true, useBundledVoice: true, useBrowserTts: false, voiceLang: 'es' });
+    mockAudio(true);
+
+    const result = await playStepVoice({
+      text: 'Ángelus',
+      prayerId: 'OP_TEST',
+      mystery: null,
+      sequenceIndex: null,
+      lang: 'es',
+      preferBundled: true,
+    });
+
+    expect(window.Audio).toHaveBeenCalledWith('blob:fake');
+    expect(result.source).toBe('audio');
+  });
+
+  test('useUserVoice off keeps the bundled guide', async () => {
+    const { saveRecording } = await import('../utils/prayerRecordingStore');
+    await saveRecording({
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+      prayerId: 'P',
+      variantIndex: 0,
+      blob: new Blob(['x'.repeat(600)], { type: 'audio/webm' }),
+      mimeType: 'audio/webm',
+      label: 'mi padre nuestro',
+      voiceLang: 'es',
+    });
+    setVoicePrefs({ useUserVoice: false, useBundledVoice: true, useBrowserTts: false, voiceLang: 'es' });
+    mockAudio(false);
+
+    const result = await playStepVoice({
+      text: 'Padre nuestro',
+      prayerId: 'P',
+      mystery: 'gozosos',
+      sequenceIndex: 1,
+      lang: 'es',
+      preferBundled: true,
+    });
+
+    expect(window.Audio).toHaveBeenCalledWith('/voice/es/P.wav');
+    expect(result.source).toBe('audio');
+  });
+});

@@ -4,6 +4,7 @@
 
 import {
   pickRecordingForSlot,
+  pickRecordingForPrayer,
   blobToObjectUrl,
 } from './prayerRecordingStore';
 import { resolveBundledVoiceUrl } from '../data/bundledVoiceMap';
@@ -55,7 +56,11 @@ function playAudioUrl(url, revoke, gen) {
         return;
       }
       if (revoke && activeObjectUrl === url) {
-        URL.revokeObjectURL(url);
+        try {
+          URL.revokeObjectURL(url);
+        } catch (_) {
+          /* ignore */
+        }
         activeObjectUrl = null;
       }
       if (activeAudio === audio) activeAudio = null;
@@ -210,6 +215,22 @@ function playBrowserTts(text, prefs, gen, langOverride) {
 }
 
 /**
+ * Tier S: slot take when the caller knows its rosary slot, else the latest
+ * take recorded for the prayer (optional prayers / devotions have no slot).
+ */
+async function pickUserTake(mystery, sequenceIndex, prayerId, voiceLang) {
+  if (typeof indexedDB === 'undefined') return null;
+  try {
+    if (mystery != null && sequenceIndex != null) {
+      return await pickRecordingForSlot(mystery, sequenceIndex, prayerId, voiceLang);
+    }
+    return await pickRecordingForPrayer(prayerId, voiceLang);
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
  * @param {{ text: string, prayerId: string, mystery: string, sequenceIndex: number, lang?: string, preferBundled?: boolean, forceTts?: boolean }} opts
  * @returns {Promise<{ ended: boolean, cancelled: boolean, source?: string }>}
  */
@@ -228,8 +249,20 @@ export async function playStepVoice({
   const speakable = typeof text === 'string' ? text.trim() : '';
   const packLang = lang || prefs.voiceLang || 'es';
 
-  // Liber ▶: Fish guide pack only for this lang (no ES under EN, no TTS unless forceTts).
+  // Tier S leads in every mode: the Libro passes preferBundled for its ▶/≫ FSM,
+  // but a personal take must still outrank the bundled guide pack.
+  const userTake =
+    prayerId && prefs.useUserVoice
+      ? await pickUserTake(mystery, sequenceIndex, prayerId, packLang)
+      : null;
+
+  // Liber ▶: personal take → Fish guide pack only for this lang (no ES under EN, no TTS unless forceTts).
   if (prayerId && preferBundled) {
+    if (userTake?.blob) {
+      if (gen !== playGeneration) return { ended: false, cancelled: true };
+      const url = blobToObjectUrl(userTake);
+      if (url) return playAudioUrl(url, true, gen);
+    }
     const url = resolveBundledVoiceUrl(prayerId, packLang);
     if (url) return playAudioUrl(url, false, gen);
     if (!forceTts) {
@@ -238,13 +271,10 @@ export async function playStepVoice({
   }
 
   try {
-    if (!preferBundled && prefs.useUserVoice && mystery != null && sequenceIndex != null && prayerId) {
-      const rec = await pickRecordingForSlot(mystery, sequenceIndex, prayerId);
+    if (userTake?.blob) {
       if (gen !== playGeneration) return { ended: false, cancelled: true };
-      if (rec?.blob) {
-        const url = blobToObjectUrl(rec);
-        if (url) return playAudioUrl(url, true, gen);
-      }
+      const url = blobToObjectUrl(userTake);
+      if (url) return playAudioUrl(url, true, gen);
     }
 
     if (prefs.useBundledVoice && prayerId) {

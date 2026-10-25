@@ -6,12 +6,12 @@ Current version (UI baseline): `v0.3.35 — El Cosmos Resonante`
 Implementation target phase: `v0.3.35 — El Cosmos Resonante`
 
 ## Grounding references
-- [VirtualRosaryPhysics.jsx](src/components/RosarioNube/VirtualRosaryPhysics.jsx)
-- [physicsRosaryData.js](src/data/physicsRosaryData.js)
-- [audioManager.js](src/utils/audioManager.js)
-- [cosmicModulator.js](src/utils/cosmicModulator.js)
-- [physics-blueprint-v4.md](.docs/virtual-rosary/physics-blueprint-v4.md)
-- [cosmic-modulator.md](.docs/sacred-cosmic/cosmic-modulator.md)
+- [VirtualRosaryPhysics.jsx](../../src/components/RosarioNube/VirtualRosaryPhysics.jsx)
+- [physicsRosaryData.js](../../src/data/physicsRosaryData.js)
+- [audioManager.js](../../src/utils/audioManager.js)
+- [cosmicModulator.js](../../src/utils/cosmicModulator.js)
+- [physics-blueprint-v4.md](../virtual-rosary/physics-blueprint-v4.md)
+- [cosmic-modulator.md](../sacred-cosmic/cosmic-modulator.md)
 
 ---
 

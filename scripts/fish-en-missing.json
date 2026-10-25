@@ -1,7 +1,7 @@
 {
-  "generated": "2026-09-08T01:05:58.397Z",
-  "count": 113,
-  "skipped_no_en_text": 45,
+  "generated": "2026-10-25T22:17:29.742Z",
+  "count": 122,
+  "skipped_no_en_text": 49,
   "skipped_sample": [
     {
       "id": "LL",
@@ -287,6 +287,28 @@
       "inVoiceMap": true
     },
     {
+      "id": "ES_ANTIPHON",
+      "prayerId": "ES_ANTIPHON",
+      "mystery": "espiritu_santo_novena",
+      "chars": 96,
+      "text": "Ven, Espíritu Santo, llena los corazones de tus fieles, y enciende en ellos la llama de tu amor.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
+      "id": "ES_DAY_INTENTION",
+      "prayerId": "ES_DAY_INTENTION",
+      "mystery": "espiritu_santo_novena",
+      "chars": 125,
+      "text": "Pedimos que el Espíritu Santo santifique a su Iglesia, la guarde en la verdad y le devuelva el fervor de sus primera caridad.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
       "id": "F",
       "prayerId": "F",
       "mystery": "gozosos",
@@ -318,6 +340,72 @@
       "voice": "fish_default_lock",
       "seed": 42,
       "inVoiceMap": true
+    },
+    {
+      "id": "IC_OFENSA1",
+      "prayerId": "IC_OFENSA1",
+      "mystery": "inmaculado_corazon",
+      "chars": 47,
+      "text": "Las blasfemias contra la Inmaculada Concepción.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
+      "id": "IC_OFENSA2",
+      "prayerId": "IC_OFENSA2",
+      "mystery": "inmaculado_corazon",
+      "chars": 36,
+      "text": "Las blasfemias contra su Virginidad.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
+      "id": "IC_OFENSA3",
+      "prayerId": "IC_OFENSA3",
+      "mystery": "inmaculado_corazon",
+      "chars": 103,
+      "text": "Las blasfemias contra su Maternidad Divina, negándose a la vez a reconocerla como Madre de los hombres.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
+      "id": "IC_OFENSA4",
+      "prayerId": "IC_OFENSA4",
+      "mystery": "inmaculado_corazon",
+      "chars": 149,
+      "text": "Los que pretenden implantar públicamente, en el corazón de los niños, la indiferencia, la falta de respeto e incluso el odio a esta Madre Inmaculada.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
+      "id": "IC_OFENSA5",
+      "prayerId": "IC_OFENSA5",
+      "mystery": "inmaculado_corazon",
+      "chars": 58,
+      "text": "Los que la injurian directamente en sus sagradas imágenes.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
+      "id": "IC_PROMESA",
+      "prayerId": "IC_PROMESA",
+      "mystery": "inmaculado_corazon",
+      "chars": 333,
+      "text": "Hija, el motivo es simple: hay cinco clases de ofensas y blasfemias pronunciadas contra el Inmaculado Corazón de María. Mira, hija mía, mi Corazón rodeado de espinas con las que los hombres ingratos lo traspasan a cada momento con sus blasfemias e ingratitudes. Procura, al menos, consolarme. (Hermana Lucía, 10 de diciembre de 1925)",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
     },
     {
       "id": "LPB_1",
@@ -969,6 +1057,17 @@
       "inVoiceMap": true
     },
     {
+      "id": "MEM",
+      "prayerId": "MEM",
+      "mystery": "memorare",
+      "chars": 237,
+      "text": "Acuérdate, Virgen Madre, estando tú en la presencia de Dios, para que hables por nosotros cosas buenas. Y no sea en balde nuestra vida, si en tu presencia no ofrecemos nada que merezca recompensa; tú, Madre, preséntate a nuestra súplica.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
       "id": "MG1",
       "prayerId": "MG1",
       "mystery": "gozosos",
@@ -1077,6 +1176,28 @@
       "voice": "fish_default_lock",
       "seed": 42,
       "inVoiceMap": true
+    },
+    {
+      "id": "MM_ESTRELLAS",
+      "prayerId": "MM_ESTRELLAS",
+      "mystery": "medalla_milagrosa",
+      "chars": 237,
+      "text": "Y apareció una gran señal en el cielo: una mujer vestida de sol, con la luna bajo sus pies, y sobre su cabeza una corona de doce estrellas. Y dando un grito de grande voz, como cuando ruge un león, la tierra tembló. (Apocalipsis 12, 1-2)",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
+    },
+    {
+      "id": "MM_LLAMADA",
+      "prayerId": "MM_LLAMADA",
+      "mystery": "medalla_milagrosa",
+      "chars": 74,
+      "text": "Oh María sin pecado concebida, ruega por nosotros los que recurrimos a ti.",
+      "lang": "en",
+      "voice": "fish_default_lock",
+      "seed": 42,
+      "inVoiceMap": false
     },
     {
       "id": "MP",
@@ -1271,28 +1392,6 @@
       "mystery": "sagrado_corazon_adoracion",
       "chars": 744,
       "text": "R. Bendito sea el Sagrado Corazón. Bendito sea el Corazón que nos revela el amor de Dios. Bendito sea el Corazón que tanto amó al Padre. Bendito sea el Corazón que tanto amó a los hombres. Bendito sea el Corazón que proclama las Bienaventuranzas. Bendito sea el Corazón suave y humilde que aligera nuestra carga. Bendito sea el Corazón que ofrece el perdón a los pecadores. Bendito sea el Corazón que recibió tanta ingratitud a cambio de su amor. Bendito sea el Corazón abierto por la lanza. Bendito sea el Corazón de donde surgió el agua del bautismo. Bendito sea el Corazón de donde surgió la sangre de la nueva alianza. Bendito sea el Corazón de donde nació la Iglesia, la nueva Eva. Bendito sea el Corazón que nos ha dado a María por madre.",
-      "lang": "en",
-      "voice": "fish_default_lock",
-      "seed": 42,
-      "inVoiceMap": true
-    },
-    {
-      "id": "SCA_HYMN_CANTEMOS",
-      "prayerId": "SCA_HYMN_CANTEMOS",
-      "mystery": "sagrado_corazon_adoracion",
-      "chars": 156,
-      "text": "[Canto: Cantemos al Amor de los amores — letra pendiente por derechos] Del Valle – Sagastizábal, 1911. Cante la asamblea según la costumbre de la parroquia.",
-      "lang": "en",
-      "voice": "fish_default_lock",
-      "seed": 42,
-      "inVoiceMap": true
-    },
-    {
-      "id": "SCA_HYMN_LAUDATE",
-      "prayerId": "SCA_HYMN_LAUDATE",
-      "mystery": "sagrado_corazon_adoracion",
-      "chars": 121,
-      "text": "[Canto: Laudate omnes gentes — letra pendiente por derechos] Taizé. Cante la asamblea según la costumbre de la parroquia.",
       "lang": "en",
       "voice": "fish_default_lock",
       "seed": 42,

@@ -172,7 +172,28 @@ export async function pickRecordingForSlot(mystery, sequenceIndex, prayerId, voi
   return prayerClips[idx];
 }
 
+/**
+ * Latest language-matched take for a prayer when no rosary slot is known
+ * (optional prayers, devotions played outside a sequence).
+ */
+export async function pickRecordingForPrayer(prayerId, voiceLang = null) {
+  if (!prayerId) return null;
+  const matchesLanguage = (recording) => {
+    if (!voiceLang) return true;
+    return recording.voiceLang ? recording.voiceLang === voiceLang : voiceLang === 'es';
+  };
+  const prayerClips = (await listRecordingsForPrayer(prayerId)).filter(matchesLanguage);
+  if (prayerClips.length === 0) return null;
+  return prayerClips.reduce((latest, rec) =>
+    (rec.createdAt >= latest.createdAt ? rec : latest)
+  , prayerClips[0]);
+}
+
 export function blobToObjectUrl(recording) {
   if (!recording?.blob) return null;
-  return URL.createObjectURL(recording.blob);
+  try {
+    return URL.createObjectURL(recording.blob);
+  } catch (_) {
+    return null;
+  }
 }

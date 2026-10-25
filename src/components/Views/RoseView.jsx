@@ -9,15 +9,22 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import usePrayerSoundscape from '../../hooks/usePrayerSoundscape';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import { useCloudSync } from '../../hooks/useCloudSync';
-import { getSequenceData, RHYTHM_CONFIG } from './roseViewHelpers';
+import { getSequenceData, RHYTHM_CONFIG, isMysteryStepId, MYSTERY_ORDINALS, MYSTERY_SET_NAMES, resolveRoseSymbolKey } from './roseViewHelpers';
+import { cleanPrayerDisplayTitle } from '../../utils/speakablePrayerText';
 import RoseDrawing from './RoseDrawing';
 import SacredDrawing from './SacredDrawing';
 import SacredText from './SacredText';
 import SacredDust from '../common/SacredDust';
-import { SYMBOL_MAP } from '../../data/SacredSymbols';
-import { readRoseSession, saveRoseSession } from './roseSession';
+import { readRoseSession, saveRoseSession, clearRoseSessions } from './roseSession';
+import { daylightBandFromTimestamp } from '../../utils/roseFingerprint';
 
-const debug = () => {};
+// How long a finished prayer stays lit before the next one comes in.
+const PRAYER_COMPLETE_BEAT_MS = 700;
+
+// Silent unless `window.__roseDebug = true` is set from the console.
+const debug = (...args) => {
+  if (typeof window !== 'undefined' && window.__roseDebug) console.log(...args);
+};
 
 
 export default function RoseView({
@@ -29,6 +36,7 @@ export default function RoseView({
   soundEnabled,
   onToggleSound,
   meditationRitmo = 'incienso',
+  roseCitationMode = 'una',
   simpleMode = false
 }) {
   const { addRosas, storeRoseData, totalAveMarias } = useAveMariaStats();
@@ -66,6 +74,21 @@ export default function RoseView({
 
   const rezoData = secuencia[safeIndex] || secuencia[0];
 
+  // ─── Mystery announcement state ───
+  // Mystery steps are contemplated, not hold-prayed: clean title, per-set
+  // accent, meditation + one flippable citation instead of word-by-word hold.
+  const isMysteryStep = isMysteryStepId(rezoData?.id);
+  const mysteryTitle = isMysteryStep
+    ? (rezoData.cleanTitle || cleanPrayerDisplayTitle(rezoData.title))
+    : rezoData.title;
+  const mysteryOrdinal = isMysteryStep ? (MYSTERY_ORDINALS[rezoData.decade] || '') : '';
+  const mysterySetName = MYSTERY_SET_NAMES[misterioActual] || '';
+  const mysteryCitations = isMysteryStep ? (rezoData.citations || []) : [];
+  const [citationIndex, setCitationIndex] = useState(0);
+  const safeCitationIndex = mysteryCitations.length
+    ? Math.min(Math.max(citationIndex, 0), mysteryCitations.length - 1)
+    : 0;
+
   // ─── Interaction State ───
   const [resume] = useState(() => readRoseSession(sessionMystery, currentPrayerIndex));
   const [versoIndex, setVersoIndex] = useState(resume?.versoIndex ?? 0);
@@ -93,9 +116,12 @@ export default function RoseView({
   const pointerStartX = useRef(null);
   const pointerStartY = useRef(null);
   const pointerStartedInTextRef = useRef(false);
+  const pointerStartedOnHoldRef = useRef(false);
   const isVerticalGesture = useRef(false);
   const versoIndexRef = useRef(resume?.versoIndex ?? 0);
   const advanceVerseRef = useRef(null);
+  const advancePrayerRef = useRef(null);
+  const rectCacheRef = useRef(null);       // word/letter boxes, measured once per gesture
   const roseSeedRef = useRef(resume?.seed ?? Date.now());
   const countedRef = useRef(resume?.isPrayerComplete ?? false);
   const prayerKey = sessionMystery + ':' + currentPrayerIndex;
@@ -152,11 +178,16 @@ export default function RoseView({
     setIsVersoComplete(false);
     setIsPrayerComplete(false);
     setIsCargando(false);
+    setCitationIndex(0);
   }, [prayerKey]);
 
   // ─── Derived ───
   const totalVersos = rezoData.versos.length;
-  const currentVerseText = isPrayerComplete ? 'Amén.' : (rezoData.versos[versoIndex] || '');
+  // A completed prayer keeps its own last verse lit; it never invents an
+  // "Amén." the prayer does not have (e.g. "Por su dolorosa Pasión").
+  const currentVerseText = isPrayerComplete
+    ? (rezoData.versos[totalVersos - 1] || 'Amén.')
+    : (rezoData.versos[versoIndex] || '');
   const currentWords = currentVerseText.split(/\s+/).filter(w => w.length > 0);
 
   // Seed and completed strokes survive garden visits.
@@ -217,9 +248,15 @@ export default function RoseView({
     const newIndex = currentIdx + direction;
     if (newIndex >= totalVersos) { 
       debug(`[RoseView] reached end of versos, setting isPrayerComplete=true`);
-      setIsVersoComplete(false); 
-      setIsPrayerComplete(true); 
-      return; 
+      setIsVersoComplete(false);
+      setIsPrayerComplete(true);
+      // One pass is enough: the last verse (often "Amén.") stays lit for a
+      // beat while the completion effect runs, then the next prayer comes in.
+      // A finger already back on the glass decides for itself on release.
+      autoAdvanceTimer.current = setTimeout(() => {
+        if (!isPointerDownRef.current) advancePrayerRef.current?.();
+      }, PRAYER_COMPLETE_BEAT_MS);
+      return;
     }
     if (newIndex < 0) {
        debug(`[RoseView] cannot retreat beyond index 0`);
@@ -238,6 +275,34 @@ export default function RoseView({
   };
 
   useEffect(() => { advanceVerseRef.current = advanceVerse; });
+
+  // Leave a completed prayer: next step, or close a finished devotion.
+  const advancePrayer = () => {
+    debug(`[RoseView] Advance Prayer`);
+    if (currentPrayerIndex < secuencia.length - 1) {
+      setShowBloom(true);
+      setTimeout(() => setShowBloom(false), 1200);
+      onUpdateProgreso(currentPrayerIndex + 1);
+    } else if (devotion && secuencia.length > 1) {
+      // A multi-step devotion ended: next visit starts a clean pass.
+      clearRoseSessions(sessionMystery);
+      latestSessionRef.current = null;
+      onUpdateProgreso(0);
+      onBack?.();
+    }
+    resetVerseState();
+  };
+
+  useEffect(() => { advancePrayerRef.current = advancePrayer; });
+
+  // Other text on screen, or another screen size: the measured boxes are stale.
+  useEffect(() => {
+    rectCacheRef.current = null;
+    const clear = () => { rectCacheRef.current = null; };
+    window.addEventListener('resize', clear);
+    return () => window.removeEventListener('resize', clear);
+  }, [prayerKey, versoIndex, isPrayerComplete, simpleMode]);
+  useEffect(() => () => { if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current); }, []);
 
 
   // ═══════════════════════════════════════════════════════
@@ -275,12 +340,14 @@ export default function RoseView({
     }
   }, [charProgressIndex]);
 
-  // Warmth animation + audio: re-render every 50ms while reading
+  // Slow tick for the drawing's live warmth while reading. The letters
+  // animate themselves inside SacredText; a fast tick here re-rendered the
+  // whole view 20 times a second and made the drag trail the finger.
   useEffect(() => {
     if (charProgressIndex < 0 || isVersoComplete || isPrayerComplete) return;
     const timer = setInterval(() => {
       setWarmthTick(t => t + 1);
-    }, 50);
+    }, 250);
     return () => clearInterval(timer);
   }, [charProgressIndex, isVersoComplete, isPrayerComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -309,7 +376,8 @@ export default function RoseView({
   useEffect(() => {
     if (isPrayerComplete && !countedRef.current) {
       countedRef.current = true;
-      if (rezoData.id === 'A') {
+      // Devotions (Patrick, Coronilla) never count roses, even on their Ave María.
+      if (rezoData.id === 'A' && !devotion) {
         addRosas(1);
         const N = RoseDrawing.PATH_COUNT;
         const vw = verseWarmthRef.current;
@@ -324,10 +392,23 @@ export default function RoseView({
         });
         storeRoseData({
           verseTraits: { warmth: [...vw], wiggle: [...vg] },
-          warmthProfile, 
-          wiggleProfile, 
+          warmthProfile,
+          wiggleProfile,
           verseCount: totalVersos,
-          timestamp: roseSeedRef.current || Date.now() 
+          timestamp: roseSeedRef.current || Date.now(),
+          source: 'rosa',
+          context: {
+            source: 'rosa',
+            dwellMs: roseSeedRef.current
+              ? Math.max(0, Date.now() - roseSeedRef.current)
+              : null,
+            hour: new Date().getHours(),
+            daylight: daylightBandFromTimestamp(Date.now()),
+            mysteryDecade: null,
+            guided: null,
+            avePosition: null,
+            aveTotal: null,
+          },
         });
       }
       playPrayerCompleteSound();
@@ -391,7 +472,9 @@ export default function RoseView({
   };
 
   // Hold mode — reveals one word per tick at reading pace.
+  // Mystery announcements skip hold entirely: tap/release advances.
   useEffect(() => {
+    if (isMysteryStep) return;
     if (isCargando && !pointerStartedInTextRef.current && !isVersoComplete && !isPrayerComplete) {
       debug(`[RoseView] Starting Hold Timer...`);
       holdDelayTimerRef.current = setTimeout(() => {
@@ -458,14 +541,51 @@ export default function RoseView({
   // which word the mouse is over, then interpolates within that
   // word to find the specific character. Handles multi-line text.
 
+  // Word that holds the next unread letter (the line being read).
+  const readingWordIndex = () => {
+    const nextChar = charProgressIndexRef.current + 1;
+    for (let w = 0; w < currentWords.length; w++) {
+      if (nextChar < wordCharOffsets[w] + currentWords[w].length) return w;
+    }
+    return currentWords.length - 1;
+  };
+
+  // Word and letter boxes are measured once per gesture. Measuring on every
+  // pointermove forces a synchronous layout right after each React commit,
+  // which is what made the light trail the finger on slower phones.
+  const wordRect = (w) => {
+    const cache = rectCacheRef.current || (rectCacheRef.current = { words: [], letters: [] });
+    if (cache.words[w] === undefined) {
+      cache.words[w] = wordSpanRefs.current[w]?.getBoundingClientRect() || null;
+    }
+    return cache.words[w];
+  };
+
+  const letterRights = (w) => {
+    const cache = rectCacheRef.current || (rectCacheRef.current = { words: [], letters: [] });
+    if (cache.letters[w] === undefined) {
+      const span = wordSpanRefs.current[w];
+      cache.letters[w] = span ? Array.from(span.children, letter => letter.getBoundingClientRect().right) : [];
+    }
+    return cache.letters[w];
+  };
+
+  const sameRow = (a, b) => {
+    const ra = wordRect(a);
+    const rb = wordRect(b);
+    return Boolean(ra && rb) && Math.abs(ra.top - rb.top) <= 1;
+  };
+
   const findWordAtPointer = (clientX, clientY) => {
     if (wordSpanRefs.current.length === 0) return -1;
+    const readingTop = wordRect(readingWordIndex())?.top;
     let nearest = -1;
     let nearestDistance = Infinity;
+    let nearestInRow = -1;
+    let nearestInRowDistance = Infinity;
     for (let w = 0; w < currentWords.length; w++) {
-      const span = wordSpanRefs.current[w];
-      if (!span) continue;
-      const rect = span.getBoundingClientRect();
+      const rect = wordRect(w);
+      if (!rect) continue;
       const dx = Math.max(rect.left - clientX, 0, clientX - rect.right);
       const dy = Math.max(rect.top - clientY, 0, clientY - rect.bottom);
       // Leave room below the letters for a thumb without overlapping word targets.
@@ -475,9 +595,50 @@ export default function RoseView({
           nearest = w;
           nearestDistance = distance;
         }
+        if (readingTop !== undefined && Math.abs(rect.top - readingTop) <= 1 && distance < nearestInRowDistance) {
+          nearestInRow = w;
+          nearestInRowDistance = distance;
+        }
       }
     }
-    return nearest;
+    // The line being read wins: a thumb resting below it sits on the next
+    // line's letters and must not jump ahead to them.
+    // ...unless the finger is squarely on the very next word (first word of
+    // the following line): that is simply reading on.
+    if (nearest === readingWordIndex() + 1 && nearestDistance === 0) return nearest;
+    return nearestInRow >= 0 ? nearestInRow : nearest;
+  };
+
+  // A drag that runs off the right end of the line being read still finishes
+  // that line: returns its last word, or -1. Only the line that holds the
+  // current reading position counts, so it can never skip an unread line.
+  const findLineEndWord = (clientX, clientY) => {
+    const row = wordRect(wordProgressIndexRef.current);
+    if (!row) return -1;
+    if (clientY < row.top - 12 || clientY > row.bottom + 56) return -1;
+    let last = -1;
+    let right = -Infinity;
+    for (let w = 0; w < currentWords.length; w++) {
+      const rect = wordRect(w);
+      if (!rect || Math.abs(rect.top - row.top) > 1) continue;
+      if (rect.right > right) { right = rect.right; last = w; }
+    }
+    return clientX > right ? last : -1;
+  };
+
+  // Global char index under the pointer inside a word. Trailing punctuation
+  // rides with the last letter: nobody aims a thumb at a comma.
+  const charInWordAtPointer = (wordIdx, clientX) => {
+    const word = currentWords[wordIdx];
+    const rect = wordRect(wordIdx);
+    const rights = letterRights(wordIdx);
+    let li = rights.findIndex(right => clientX <= right);
+    if (!rights.length) li = Math.floor((clientX - rect.left) / Math.max(1, rect.width) * word.length);
+    if (li < 0) li = word.length - 1;
+    li = Math.min(word.length - 1, Math.max(0, li));
+    const lastLetter = word.search(/[^\p{L}\p{N}]*$/u) - 1;
+    if (li >= lastLetter) li = word.length - 1;
+    return wordCharOffsets[wordIdx] + li;
   };
 
 
@@ -513,6 +674,22 @@ export default function RoseView({
       debug(`[RoseView] PointerMove: ${pointerType} at (${clientX}, ${clientY}), isNear: ${isNearText}, active: ${isVerseActivated}, charging: ${isCargando}`);
     }
 
+    // A drag that began just outside the letters and then sweeps across them
+    // is a text drag: stop the hold timer so it cannot race the finger.
+    // Presses on the pill or in the thumb zone always stay hold gestures.
+    if (
+      !pointerStartedInTextRef.current &&
+      !pointerStartedOnHoldRef.current &&
+      pointerStartX.current !== null &&
+      !isInThumbZone(pointerStartY.current) &&
+      Math.abs(clientX - pointerStartX.current) > 16 &&
+      findWordAtPointer(clientX, clientY) >= 0
+    ) {
+      pointerStartedInTextRef.current = true;
+      if (holdDelayTimerRef.current) clearTimeout(holdDelayTimerRef.current);
+      if (holdTimerRef.current) clearInterval(holdTimerRef.current);
+    }
+
     // Vertical swipe on text zone; thumb zone is hold-only unless gesture started on text
     if (
       pointerType === 'touch' &&
@@ -536,7 +713,9 @@ export default function RoseView({
 
     // ─── ACTIVATION ───
     // Activate when holding anywhere, or near text — thumb zone always activates
-    if (findWordAtPointer(clientX, clientY) < 0) return;
+    const hitWord = findWordAtPointer(clientX, clientY);
+    // Off every word: only an already-reading text drag may go on (line end).
+    if (hitWord < 0 && !(isVerseActivated && pointerStartedInTextRef.current)) return;
     if (!isVerseActivated) {
       debug(`[RoseView] Activating Verse! Proximity: ${isNearText}, Charging: ${isCargando}`);
       setIsVerseActivated(true);
@@ -559,19 +738,23 @@ export default function RoseView({
 
     // ─── HOVER / DRAG TRACKING ───
     {
-      const wordIdx = findWordAtPointer(clientX, clientY);
-      if (wordIdx < 0) {
-        if (Math.random() < 0.02) debug(`[RoseView] Hover: No word at pointer`);
-        return;
+      let wordIdx = hitWord;
+      // A new line is entered at its beginning, never in the middle: the
+      // finger travelling back to the left must not light the line it crosses.
+      const reading = readingWordIndex();
+      if (wordIdx > reading + 1 && !sameRow(wordIdx, reading)) wordIdx = -1;
+      let next = wordIdx >= 0 ? charInWordAtPointer(wordIdx, clientX) : -1;
+      if (next <= charProgressIndexRef.current && pointerStartedInTextRef.current) {
+        const endWord = findLineEndWord(clientX, clientY);
+        if (endWord >= 0) {
+          wordIdx = endWord;
+          next = wordCharOffsets[endWord] + currentWords[endWord].length - 1;
+        }
       }
-      const span = wordSpanRefs.current[wordIdx];
-      const rect = span.getBoundingClientRect();
-      const letters = Array.from(span.children);
-      let li = letters.findIndex(letter => clientX <= letter.getBoundingClientRect().right);
-      if (!letters.length) li = Math.floor((clientX - rect.left) / Math.max(1, rect.width) * currentWords[wordIdx].length);
-      if (li < 0) li = currentWords[wordIdx].length - 1;
-      const next = wordCharOffsets[wordIdx] + Math.min(currentWords[wordIdx].length - 1, Math.max(0, li));
-      if (next <= charProgressIndexRef.current) return;
+      // A one-word verse lit by the hold timer is already at its last letter:
+      // touching that letter must still finish the verse, not be ignored.
+      const atVerseEnd = next === totalChars - 1 && charProgressIndexRef.current === next;
+      if (next <= charProgressIndexRef.current && !atVerseEnd) return;
       const now = Date.now();
       for (let i = charProgressIndexRef.current + 1; i <= next; i++) charReachedAtRef.current[i] = now;
       wordProgressIndexRef.current = wordIdx;
@@ -593,10 +776,14 @@ export default function RoseView({
     pointerStartX.current = e.clientX;
     pointerStartY.current = e.clientY;
     isVerticalGesture.current = false;
-    pointerStartedInTextRef.current = !e.target.closest?.('[data-rose-hold]') &&
+    rectCacheRef.current = null;
+    pointerStartedOnHoldRef.current = Boolean(e.target.closest?.('[data-rose-hold]'));
+    pointerStartedInTextRef.current = !pointerStartedOnHoldRef.current &&
       findWordAtPointer(e.clientX, e.clientY) >= 0;
     
     isPointerDownRef.current = true;
+    // Mystery announcements need no hold/drag tracking: release advances.
+    if (isMysteryStep) return;
     // Always start charging (allows hold-to-advance alongside swipe)
     setIsCargando(true);
 
@@ -624,6 +811,7 @@ export default function RoseView({
     // (e.g. skipping the "Amén." completion state entirely).
     if (!isPointerDownRef.current) return;
     isPointerDownRef.current = false;
+    const startedInText = pointerStartedInTextRef.current;
     setIsCargando(false);
     if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
       e.target.releasePointerCapture(e.pointerId);
@@ -635,17 +823,51 @@ export default function RoseView({
 
     // Advance on release if the verse/prayer is complete.
     // This gives the user control: hold to read, release to move on.
-    if (isPrayerCompleteRef.current) {
-      debug(`[RoseView] Advance Prayer on Release`);
+    // Mystery announcements need no hold: any tap/release moves into the decade.
+    // (Citation toggle buttons stopPropagation on pointerdown, so
+    // isPointerDownRef is false for those taps and we return early above.)
+    if (isMysteryStep) {
+      debug(`[RoseView] Advance from Mystery announcement on Release`);
       if (currentPrayerIndex < secuencia.length - 1) {
         setShowBloom(true);
         setTimeout(() => setShowBloom(false), 1200);
         onUpdateProgreso(currentPrayerIndex + 1);
       }
       resetVerseState();
+      return;
+    }
+    if (isPrayerCompleteRef.current) {
+      // Reached when a touch lands during the completion beat, or on a
+      // prayer that was already complete when the view was resumed.
+      advancePrayer();
     } else if (!simpleMode && isVersoCompleteRef.current) {
       debug(`[RoseView] Advance Verse on Release`);
       advanceVerse(1);
+    } else if (!simpleMode && startedInText && charProgressIndexRef.current >= 0) {
+      // Lifting the finger inside the last word of a line finishes that line;
+      // on the last line it ends the verse (stats + chime) and moves on.
+      const progress = charProgressIndexRef.current;
+      let w = currentWords.length - 1;
+      for (let i = 0; i < currentWords.length; i++) {
+        if (progress < wordCharOffsets[i] + currentWords[i].length) { w = i; break; }
+      }
+      const lastOfLine = w === currentWords.length - 1 || !sameRow(w, w + 1);
+      const wordEnd = wordCharOffsets[w] + currentWords[w].length - 1;
+      if (lastOfLine && (progress < wordEnd || wordEnd === totalChars - 1)) {
+        debug(`[RoseView] Release inside last word of line: snapping to its end`);
+        const now = Date.now();
+        for (let i = progress + 1; i <= wordEnd; i++) charReachedAtRef.current[i] = now;
+        wordProgressIndexRef.current = w;
+        charProgressIndexRef.current = wordEnd;
+        setCharProgressIndex(wordEnd);
+        if (wordEnd === totalChars - 1) {
+          isVersoCompleteRef.current = true;
+          setIsVersoComplete(true);
+          autoAdvanceTimer.current = setTimeout(() => {
+            if (!isPointerDownRef.current) advanceVerseRef.current?.(1);
+          }, 250);
+        }
+      }
     }
   };
 
@@ -731,12 +953,40 @@ export default function RoseView({
             marginTop: '40px', textAlign: 'center', opacity: 0.3, 
             fontSize: '0.7rem', color: '#D4AF37', letterSpacing: '3px', textTransform: 'uppercase' 
           }}>
-            {rezoData.title}
+            {isMysteryStep ? mysteryTitle : rezoData.title}
           </div>
 
           {/* ICON / SACRED DRAWING */}
           <div style={{ flex: '0 0 35%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-        {rezoData.id === 'A' ? (
+        {isMysteryStep ? (
+          /* ── Mystery medallion: the painted mystery, not a line icon ── */
+          <div style={{
+            filter: `drop-shadow(0 0 18px ${rezoData.color})`,
+            maxHeight: '100%', display: 'flex', justifyContent: 'center',
+          }}>
+            {rezoData.img ? (
+              <img
+                src={rezoData.img}
+                alt={mysteryTitle}
+                style={{
+                  maxHeight: 'min(26vh, 240px)',
+                  maxWidth: 'min(78%, 320px)',
+                  borderRadius: '16px',
+                  objectFit: 'cover',
+                  border: `1px solid ${rezoData.color}55`,
+                }}
+              />
+            ) : (
+              <SacredDrawing
+                verseCount={0}
+                seed={roseSeedRef.current}
+                symbolKey={resolveRoseSymbolKey(rezoData.id, misterioActual)}
+                progress={1}
+                size={Math.min(150, window.innerHeight * 0.21)}
+              />
+            )}
+          </div>
+        ) : rezoData.id === 'A' ? (
           /* ── Progressive SVG rose for Ave María ── */
           <div style={{
             filter: `drop-shadow(0 0 ${6 + overallProgress * 12}px ${rezoData.color})`,
@@ -787,21 +1037,7 @@ export default function RoseView({
               verseCount={totalVersos}
               verseTraits={{ warmth: verseWarmthRef.current, wiggle: verseWiggleRef.current }}
               seed={roseSeedRef.current}
-              symbolKey={(() => {
-                const id = rezoData.id;
-                const type = misterioActual; // 'gozosos', 'dolorosos', 'gloriosos', 'luminosos'
-                
-                // Map MG1-5, MD1-5, ML1-5 to unique keys
-                if (id.startsWith('MG')) {
-                  const num = id.slice(2);
-                  if (type === 'gozosos') return `gozoso_${num}`;
-                  if (type === 'gloriosos') return `glorioso_${num}`;
-                }
-                if (id.startsWith('MD')) return `doloroso_${id.slice(2)}`;
-                if (id.startsWith('ML')) return `luminoso_${id.slice(2)}`;
-                
-                return SYMBOL_MAP[id] || 'cross';
-              })()}
+              symbolKey={resolveRoseSymbolKey(rezoData.id, misterioActual)}
               progress={overallProgress}
               liveWarmth={(() => {
                 if (charProgressIndex < 0) return 0;
@@ -833,11 +1069,92 @@ export default function RoseView({
       </div>
 
       {/* ─── FOCAL TEXT ZONE ─── */}
-      <div style={{ 
-        flex: '0 0 45%', display: 'flex', justifyContent: 'center', 
-        padding: '20px', zIndex: 10, position: 'relative' 
+      <div style={{
+        flex: '0 0 45%', display: 'flex', justifyContent: 'center',
+        padding: '20px', zIndex: 10, position: 'relative',
+        overflowY: isMysteryStep ? 'auto' : 'visible',
+        touchAction: isMysteryStep ? 'pan-y' : undefined,
       }}>
-         <SacredText 
+        {isMysteryStep ? (
+          /* ── Mystery announcement: contemplate, then tap to enter the decade ── */
+          <div style={{ maxWidth: 'min(92%, 480px)', textAlign: 'center' }}>
+            <div style={{
+              fontSize: '0.7rem', color: rezoData.color, letterSpacing: '2px',
+              textTransform: 'uppercase', opacity: 0.85, marginBottom: '8px',
+            }}>
+              {mysteryOrdinal} misterio · {rezoData.decade} de 5{mysterySetName ? ` · ${mysterySetName}` : ''}
+            </div>
+            {rezoData.meditation ? (
+              <p style={{
+                color: '#E8E0C8', fontSize: simpleMode ? '1.3rem' : '1.05rem',
+                fontFamily: "'Playfair Display', serif", fontStyle: 'italic',
+                lineHeight: 1.5, margin: '0 0 12px',
+                textShadow: '0 2px 12px rgba(0,0,0,0.9)',
+              }}>
+                {rezoData.meditation}
+              </p>
+            ) : null}
+            {roseCitationMode !== 'ocultar' && mysteryCitations.length > 0 && (
+              roseCitationMode === 'todas' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {mysteryCitations.map((citation, i) => (
+                    <p key={i} style={{
+                      color: '#9A937F', fontSize: simpleMode ? '1rem' : '0.85rem',
+                      lineHeight: 1.5, margin: 0, fontStyle: 'italic',
+                    }}>
+                      {citation}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <p style={{
+                    color: '#9A937F', fontSize: simpleMode ? '1rem' : '0.85rem',
+                    lineHeight: 1.5, margin: '0 0 8px', fontStyle: 'italic',
+                  }}>
+                    {mysteryCitations[safeCitationIndex]}
+                  </p>
+                  {mysteryCitations.length > 1 && (
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onPointerUp={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        aria-label="Cita anterior"
+                        onClick={() => setCitationIndex((i) => (i - 1 + mysteryCitations.length) % mysteryCitations.length)}
+                        style={{
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
+                          color: '#D4AF37', borderRadius: '10px', padding: '6px 14px',
+                          cursor: 'pointer', fontSize: '1rem',
+                        }}
+                      >
+                        ‹
+                      </button>
+                      <span style={{ color: '#666', fontSize: '0.75rem', letterSpacing: '1px' }}>
+                        {safeCitationIndex + 1} / {mysteryCitations.length}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Cita siguiente"
+                        onClick={() => setCitationIndex((i) => (i + 1) % mysteryCitations.length)}
+                        style={{
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
+                          color: '#D4AF37', borderRadius: '10px', padding: '6px 14px',
+                          cursor: 'pointer', fontSize: '1rem',
+                        }}
+                      >
+                        ›
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            )}
+          </div>
+        ) : (
+          <SacredText
             ref={textoRef}
             words={currentWords}
             wordCharOffsets={wordCharOffsets}
@@ -850,7 +1167,8 @@ export default function RoseView({
             warmthTick={warmthTick}
             totalAveMarias={totalAveMarias}
             simpleMode={simpleMode}
-         />
+          />
+        )}
       </div>
 
       {/* Instruction + thumb hold zone (reachable on large phones) */}
@@ -895,7 +1213,9 @@ export default function RoseView({
             textAlign: 'center',
             lineHeight: 1.4,
           }}>
-            {simpleMode
+            {isMysteryStep
+              ? 'Toca para entrar en la decena'
+              : simpleMode
               ? (isPrayerComplete
                   ? 'Soltá para pasar a la próxima oración'
                   : isVersoComplete
@@ -913,7 +1233,7 @@ export default function RoseView({
       <div style={{
           bottom: 'calc(var(--app-above-nav, 70px) + min(30vh, 240px) - 12px)', width: '100%', textAlign: 'center',
           fontSize: '0.65rem', color: '#444', letterSpacing: '1px',
-          opacity: (charProgressIndex < 0 && !isVersoComplete && !isPrayerComplete) ? 0.5 : 0,
+          opacity: (!isMysteryStep && charProgressIndex < 0 && !isVersoComplete && !isPrayerComplete) ? 0.5 : 0,
           transition: 'opacity 0.5s', pointerEvents: 'none', zIndex: 5
       }}>
         {simpleMode ? 'Toca la barra inferior' : 'También puedes deslizar sobre las palabras'}

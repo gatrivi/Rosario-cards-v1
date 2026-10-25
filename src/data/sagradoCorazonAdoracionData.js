@@ -3,7 +3,8 @@ import { imagePath } from './imageRegistry';
 export const SAGRADO_CORAZON_ADORACION_ID = 'sagrado_corazon_adoracion';
 
 /** Header thumb only — existing sacred-heart tagged asset. */
-export const sagradoCorazonAdoracionThumbnail = imagePath('faustinaDivinoCorazon');
+// Faustina stays on the Divine Mercy Corona; this shelf face is its own window.
+export const sagradoCorazonAdoracionThumbnail = imagePath('vitralSagradoCorazon') || imagePath('faustinaDivinoCorazon');
 
 const LITANY_RESPONSE = 'Te rogamos, óyenos.';
 
@@ -208,17 +209,58 @@ export const SAGRADO_CORAZON_ADORACION_STEPS = [
     id: 'SCA_HYMN_CANTEMOS',
     type: 'hymn',
     title: 'Cantemos al Amor de los amores',
-    text: '[Canto: Cantemos al Amor de los amores — letra pendiente por derechos]\n\nDel Valle – Sagastizábal, 1911.\nCante la asamblea según la costumbre de la parroquia.',
+    // Letra del P. Restituto del Valle (†1930) para el Congreso Eucarístico
+    // de Madrid, 1911: texto tal como figura en el librito de la parroquia.
+    text: `Cantemos al Amor de los amores,
+cantemos al Señor.
+¡Dios está aquí! Venid, adoradores:
+adoremos a Cristo Redentor.
+
+¡Gloria a Cristo Jesús!
+Cielos y tierra, bendecid al Señor.
+¡Honor y gloria a Ti, Rey de la gloria;
+amor por siempre a Ti, Dios del amor!
+
+Unamos nuestra voz a los cantares
+del coro celestial.
+¡Dios está aquí! Al Dios de los altares
+alabemos con gozo angelical.
+
+¡Gloria a Cristo Jesús!
+Cielos y tierra, bendecid al Señor.
+¡Honor y gloria a Ti, Rey de la gloria;
+amor por siempre a Ti, Dios del amor!
+
+Cantemos al Amor de los amores,
+cantemos sin cesar.
+¡Dios está aquí! Venid, adoradores:
+adoremos a Cristo en el altar.
+
+¡Gloria a Cristo Jesús!
+Cielos y tierra, bendecid al Señor.
+¡Honor y gloria a Ti, Rey de la gloria;
+amor por siempre a Ti, Dios del amor!
+
+(Del Valle – Sagastizábal, 1911)`,
     imageHint: 'Jesús Eucaristía',
-    copyrightStatus: 'restricted',
+    copyrightStatus: 'public-domain',
   },
   {
     id: 'SCA_HYMN_LAUDATE',
     type: 'hymn',
     title: 'Laudate omnes gentes',
-    text: '[Canto: Laudate omnes gentes — letra pendiente por derechos]\n\nTaizé.\nCante la asamblea según la costumbre de la parroquia.',
+    // The words are Psalm 117 (116), 1 in Latin; only the melody is Taizé's.
+    text: `Laudate omnes gentes,
+laudate Dominum.
+Laudate omnes gentes,
+laudate Dominum.
+
+Alabad, todos los pueblos,
+alabad al Señor.
+
+(Salmo 117, 1 — canto de Taizé)`,
     imageHint: 'Iglesia / adoración eucarística',
-    copyrightStatus: 'restricted',
+    copyrightStatus: 'public-domain',
   },
   {
     id: 'SCA_ORACION_INICIAL',

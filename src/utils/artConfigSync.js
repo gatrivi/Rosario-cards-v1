@@ -32,6 +32,7 @@ export function packArtConfigForCloud() {
   return {
     registryOverrides: packed.registryOverrides,
     verseAssignments: packed.verseAssignments,
+    rejectedImages: packed.rejectedImages,
     updatedAt: getLocalArtConfigUpdatedAt() || Date.now(),
   };
 }
@@ -46,7 +47,8 @@ export function applyArtConfigFromCloud(artConfig, { force = false } = {}) {
   const localAt = getLocalArtConfigUpdatedAt();
   const hasData =
     Object.keys(artConfig.registryOverrides || {}).length > 0
-    || Object.keys(artConfig.verseAssignments || {}).length > 0;
+    || Object.keys(artConfig.verseAssignments || {}).length > 0
+    || (Array.isArray(artConfig.rejectedImages) && artConfig.rejectedImages.length > 0);
   if (!hasData) return 'empty';
   if (!force && remoteAt <= localAt && localAt > 0) return 'skipped';
 
@@ -54,6 +56,7 @@ export function applyArtConfigFromCloud(artConfig, { force = false } = {}) {
     {
       registryOverrides: artConfig.registryOverrides || {},
       verseAssignments: artConfig.verseAssignments || {},
+      rejectedImages: artConfig.rejectedImages || [],
     },
     { merge: true }
   );

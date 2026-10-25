@@ -45,6 +45,13 @@
   will-change: transform;
 }
 
+/* Double-tap zoom glides; panning and pinching must stay 1:1 with the finger,
+   so the transition exists only while the zoom toggle is settling (240 ms,
+   THUMB_ZOOM_ANIM_MS in InteractiveRosary.jsx). */
+.interactive-rosary--zooming canvas {
+  transition: transform 240ms ease-out;
+}
+
 .interactive-rosary canvas:active {
   cursor: grabbing;
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
+import { createRoseFingerprint } from '../../utils/roseFingerprint';
 
 export default function ManualPrayerEntry() {
   const { addRosas, storeRoseData } = useAveMariaStats();
@@ -8,9 +9,8 @@ export default function ManualPrayerEntry() {
   const record = event => {
     event.preventDefault();
     const timestamp = Date.now();
-    storeRoseData(Array.from({ length: amount }, (_, index) => ({
-      timestamp: timestamp + index, source: 'manual',
-    })));
+    storeRoseData(Array.from({ length: amount }, (_, index) =>
+      createRoseFingerprint({ source: 'manual', timestamp: timestamp + index })));
     addRosas(amount);
     setMessage(`Registradas ${amount} ${amount === 1 ? 'rosa' : 'rosas'} de tu oración fuera de la app.`);
   };

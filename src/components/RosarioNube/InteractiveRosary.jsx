@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback } from "react";
 import Matter from "matter-js";
 import "./InteractiveRosary.css";
 import soundEffects, { prayerHistory as soundPrayerHistory } from "../../utils/soundEffects";
+import audioManager from "../../utils/audioManager";
 import prayerHistory from "../../utils/prayerHistory";
 import { getMysteryColors } from "./utils/mysteryColors";
 import { useRosarySequence } from "./hooks/useRosarySequence";
@@ -50,6 +51,11 @@ function destroyMatterInstance(instance) {
  * - Center: 1 bead
  * - Main loop: 50 beads (5 decades of 10 beads each)
  */
+// Double-tap zoom: beads are 8 px radius at 1x, so 2.5x makes a ~40 px target.
+const THUMB_ZOOM = 2.5;
+const THUMB_ZOOM_OUT_ABOVE = 1.6; // already this close: the next double tap zooms out
+const THUMB_ZOOM_ANIM_MS = 240;
+
 const InteractiveRosary = ({
   sequence,
   currentMystery = "gozosos",
@@ -1001,6 +1007,9 @@ const InteractiveRosary = ({
       if (soundEnabledRef.current) {
         audioReadyRef.current = true;
         soundEffects.initAudioContext();
+        // Unlock the shared context too: the step chime (played by the view)
+        // must be resumed from inside a user gesture on iOS.
+        audioManager.resume().catch(() => {});
       }
       swipeStartRef.current = {
         ...mouseGesturePoint(mouse, 'mousedown'),
@@ -1193,6 +1202,9 @@ const InteractiveRosary = ({
       if (soundEnabledRef.current) {
         audioReadyRef.current = true;
         soundEffects.initAudioContext();
+        // Unlock the shared context too: the step chime (played by the view)
+        // must be resumed from inside a user gesture on iOS.
+        audioManager.resume().catch(() => {});
       }
 
       const clickedBead = matterInstance.current?.allBeads.find(
@@ -2261,6 +2273,129 @@ const InteractiveRosary = ({
     if (instance) syncMouseToCanvas(instance.mouseConstraint.mouse, instance.render.canvas);
   }, [rosaryZoom]);
 
+  // Double tap on empty space: zoom in until a bead is thumb-sized (8 px
+  // radius x 2.5 = a 40 px target) around the tapped spot; double tap again
+  // to return to the framing the user had before.
+  const rosaryPositionRef = useRef(rosaryPosition);
+  useEffect(() => { rosaryPositionRef.current = rosaryPosition; }, [rosaryPosition]);
+  const zoomRestoreRef = useRef(null);
+  const tapStartRef = useRef(null);
+  const lastEmptyTapRef = useRef({ time: 0, x: 0, y: 0 });
+  const zoomAnimTimerRef = useRef(null);
+  const [zoomAnimating, setZoomAnimating] = React.useState(false);
+  useEffect(() => () => clearTimeout(zoomAnimTimerRef.current), []);
+
+  const startZoomGlide = useCallback(() => {
+    setZoomAnimating(true);
+    clearTimeout(zoomAnimTimerRef.current);
+    zoomAnimTimerRef.current = setTimeout(() => {
+      setZoomAnimating(false);
+      // Picking scale was measured mid-transition; measure the settled canvas.
+      const instance = matterInstance.current;
+      if (instance) syncMouseToCanvas(instance.mouseConstraint.mouse, instance.render.canvas);
+    }, THUMB_ZOOM_ANIM_MS + 40);
+  }, []);
+
+  // Where the bead being prayed sits, in container pixels. Chain prayers
+  // (Gloria, Fátima, mysteries) have no bead of their own: use the bead
+  // just before them, which is right beside the chain.
+  const activeBeadPoint = useCallback(() => {
+    const instance = matterInstance.current;
+    const el = sceneRef.current;
+    const canvas = instance?.render?.canvas;
+    if (!el || !canvas || !instance.allBeads?.length) return null;
+    const active = currentPrayerIndexRef.current;
+    let best = null;
+    instance.allBeads.forEach((bead) => {
+      if (bead.prayerIndex === undefined || bead.prayerIndex > active) return;
+      if (!best || bead.prayerIndex > best.prayerIndex) best = bead;
+    });
+    if (!best?.position) return null;
+    const k = canvas.width > 0 ? el.clientWidth / canvas.width : 1;
+    return { x: best.position.x * k, y: best.position.y * k };
+  }, []);
+
+  // The container never moves (InteractiveRosary.css); its canvas gets
+  // translate(position) scale(zoom) about the centre. This is the position
+  // that puts `point` in the middle of the screen at `zoom`.
+  const positionCentredOn = useCallback((point, zoom) => {
+    const el = sceneRef.current;
+    const w = el?.clientWidth || 0;
+    const h = el?.clientHeight || 0;
+    const maxX = (w * zoom) / 2;
+    const maxY = (h * zoom) / 2;
+    return {
+      x: Math.max(-maxX, Math.min(maxX, -zoom * (point.x - w / 2))),
+      y: Math.max(-maxY, Math.min(maxY, -zoom * (point.y - h / 2))),
+    };
+  }, []);
+
+  const toggleThumbZoom = useCallback((clientX, clientY) => {
+    const el = sceneRef.current;
+    if (!el) return;
+    const zoom = rosaryZoomRef.current;
+    const position = rosaryPositionRef.current;
+    startZoomGlide();
+
+    if (zoom >= THUMB_ZOOM_OUT_ABOVE) {
+      const back = zoomRestoreRef.current || { zoom: 1, position: { x: 0, y: 0 } };
+      zoomRestoreRef.current = null;
+      setRosaryZoomValue(back.zoom);
+      setRosaryPosition(back.position);
+      return;
+    }
+
+    zoomRestoreRef.current = { zoom, position };
+    // Zoom onto the bead being prayed, not onto the tapped spot: the only
+    // empty place to double tap is the hollow middle of the rosary, and
+    // zooming there shows no beads at all.
+    const rect = el.getBoundingClientRect();
+    const point = activeBeadPoint() || {
+      x: (clientX - rect.left - rect.width / 2 - position.x) / zoom + rect.width / 2,
+      y: (clientY - rect.top - rect.height / 2 - position.y) / zoom + rect.height / 2,
+    };
+    setRosaryZoomValue(THUMB_ZOOM);
+    setRosaryPosition(positionCentredOn(point, THUMB_ZOOM));
+  }, [setRosaryZoomValue, setRosaryPosition, startZoomGlide, activeBeadPoint, positionCentredOn]);
+
+  // While zoomed in, follow the prayer: each new step glides its bead to the
+  // middle, so the next bead to touch is always under the thumb.
+  useEffect(() => {
+    const zoom = rosaryZoomRef.current;
+    if (zoom < THUMB_ZOOM_OUT_ABOVE) return;
+    const point = activeBeadPoint();
+    if (!point) return;
+    startZoomGlide();
+    setRosaryPosition(positionCentredOn(point, zoom));
+  }, [currentPrayerIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A tap is short, still, single-finger and off every bead: taps on beads
+  // belong to prayer selection and must never zoom.
+  const noteTapStart = (touches) => {
+    if (touches?.length !== 1) { tapStartRef.current = null; return; }
+    const t = touches[0];
+    tapStartRef.current = {
+      x: t.clientX, y: t.clientY, time: Date.now(),
+      onBead: isPointerOnBead(t.clientX, t.clientY),
+    };
+  };
+  const noteTapEnd = (changedTouches) => {
+    const start = tapStartRef.current;
+    tapStartRef.current = null;
+    const t = changedTouches?.[0];
+    const now = Date.now();
+    const isTap = start && t && !start.onBead && now - start.time < 300 &&
+      Math.hypot(t.clientX - start.x, t.clientY - start.y) < 12;
+    if (!isTap) { lastEmptyTapRef.current = { time: 0, x: 0, y: 0 }; return; }
+    const last = lastEmptyTapRef.current;
+    if (now - last.time < 350 && Math.hypot(t.clientX - last.x, t.clientY - last.y) < 40) {
+      lastEmptyTapRef.current = { time: 0, x: 0, y: 0 };
+      toggleThumbZoom(t.clientX, t.clientY);
+      return;
+    }
+    lastEmptyTapRef.current = { time: now, x: t.clientX, y: t.clientY };
+  };
+
   useEffect(() => {
     const el = sceneRef.current;
     if (!el) return undefined;
@@ -2311,7 +2446,7 @@ const InteractiveRosary = ({
   return (
     <div
       ref={sceneRef}
-      className={`interactive-rosary ${className}`}
+      className={`interactive-rosary ${zoomAnimating ? 'interactive-rosary--zooming' : ''} ${className}`}
       style={{
         width: "100%",
         height: "100%",
@@ -2327,7 +2462,11 @@ const InteractiveRosary = ({
       onMouseMove={handleRosaryMouseMove}
       onMouseUp={handleRosaryMouseUp}
       onMouseLeave={handleRosaryMouseUp}
+      onDoubleClick={(e) => {
+        if (!isPointerOnBead(e.clientX, e.clientY)) toggleThumbZoom(e.clientX, e.clientY);
+      }}
       onTouchStart={(e) => {
+        noteTapStart(e.touches);
         if (e.touches?.length === 2) {
           const t0 = e.touches[0];
           const t1 = e.touches[1];
@@ -2366,10 +2505,12 @@ const InteractiveRosary = ({
         handleRosaryTouchMove(e);
       }}
       onTouchEnd={(e) => {
+        if (!pinchZoomRef.current.active) noteTapEnd(e.changedTouches);
         pinchZoomRef.current.active = false;
         handleRosaryTouchEnd(e);
       }}
       onTouchCancel={(e) => {
+        tapStartRef.current = null;
         pinchZoomRef.current.active = false;
         handleRosaryTouchEnd(e);
       }}

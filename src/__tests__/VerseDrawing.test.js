@@ -1,7 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import VerseDrawing, { verseSegments } from '../components/Views/VerseDrawing';
-import { getSequenceData } from '../components/Views/roseViewHelpers';
+import { getSequenceData, resolveRoseSymbolKey } from '../components/Views/roseViewHelpers';
+import { readRoseSession, saveRoseSession, clearRoseSessions } from '../components/Views/roseSession';
+import { RDM_KEYS, divineMercyPrayers } from '../data/divineMercyData';
 import { SACRED_SYMBOLS, SYMBOL_MAP } from '../data/SacredSymbols';
 
 test('Breastplate supplies one shield contour per verse and retains prayer images', () => {
@@ -10,6 +12,45 @@ test('Breastplate supplies one shield contour per verse and retains prayer image
   expect(prayer.versos).toHaveLength(SACRED_SYMBOLS[SYMBOL_MAP.PATRICK].length);
   expect(prayer.img).toBeTruthy();
   expect(prayer.imgCandidates.length).toBeGreaterThan(0);
+});
+
+describe('Divine Mercy chaplet in the Rosa', () => {
+  const chaplet = getSequenceData('gozosos', 'misericordia');
+
+  test('walks the whole chaplet with source text preserved', () => {
+    expect(chaplet.map(s => s.id)).toEqual(RDM_KEYS);
+    expect(chaplet.filter(s => s.id === 'MP')).toHaveLength(50);
+    const mp = chaplet.find(s => s.id === 'MP');
+    expect(mp.versos.join(' ')).toBe(divineMercyPrayers.find(p => p.id === 'MP').text);
+    expect(mp.versos).toHaveLength(2);
+  });
+
+  test('every step has verses and images', () => {
+    chaplet.forEach(step => {
+      expect(step.versos.length).toBeGreaterThan(0);
+      expect(step.img).toBeTruthy();
+      expect(step.imgCandidates.length).toBeGreaterThan(0);
+    });
+  });
+
+  test('chaplet prayers draw their own symbols, never the fallback cross', () => {
+    ['MP', 'EF', 'HG', 'DMO1', 'DMO2'].forEach(id => {
+      const key = resolveRoseSymbolKey(id, 'gozosos');
+      expect(key).not.toBe('cross');
+      expect(SACRED_SYMBOLS[key].length).toBeGreaterThan(0);
+    });
+    expect(SYMBOL_MAP.MP).toBe('mercy_heart');
+  });
+
+  test('clearing a devotion session leaves other sessions alone', () => {
+    sessionStorage.clear();
+    saveRoseSession({ mystery: 'misericordia', prayerIndex: 7, versoIndex: 1 });
+    saveRoseSession({ mystery: 'gozosos', prayerIndex: 7, versoIndex: 1 });
+    clearRoseSessions('misericordia');
+    expect(readRoseSession('misericordia', 7)).toBeNull();
+    expect(readRoseSession('gozosos', 7)).not.toBeNull();
+    sessionStorage.clear();
+  });
 });
 
 describe('verse drawing fingerprints', () => {
@@ -48,5 +89,60 @@ describe('verse drawing fingerprints', () => {
       traits={{ warmth: [1], wiggle: [5] }} />);
     expect(container.querySelector('path').getAttribute('stroke-width')).not.toBe(width);
     expect(container.querySelector('[data-verse-stroke]').getAttribute('transform')).not.toBe(shape);
+  });
+
+  const roseContext = { source: 'libro', dwellMs: 120000, hour: 12, daylight: 'mediodia' };
+  test('prayer context tints rose ink, deterministically', () => {
+    const { container: plain } = render(
+      <VerseDrawing paths={paths} verseCount={2} progress={1} seed={123} rose
+        traits={{ warmth: [0.5], wiggle: [1] }} />
+    );
+    const { container:WithContext } = render(
+      <VerseDrawing paths={paths} verseCount={2} progress={1} seed={123} rose
+        traits={{ warmth: [0.5], wiggle: [1] }} context={roseContext} />
+    );
+    expect(WithContext.querySelector('path').getAttribute('stroke')).toBeTruthy();
+    const plainInk = plain.querySelector('path').getAttribute('stroke');
+    const contextInk = WithContext.querySelector('path').getAttribute('stroke');
+    expect(contextInk).not.toBe(plainInk);
+    // Same context twice → identical ink (no Math.random anywhere).
+    const { container: again } = render(
+      <VerseDrawing paths={paths} verseCount={2} progress={1} seed={123} rose
+        traits={{ warmth: [0.5], wiggle: [1] }} context={roseContext} />
+    );
+    expect(again.querySelector('path').getAttribute('stroke')).toBe(contextInk);
+  });
+
+  test('different hours of prayer grow differently tinted roses', () => {
+    const renderInk = (daylight) => {
+      const { container } = render(
+        <VerseDrawing paths={paths} verseCount={2} progress={1} seed={123} rose
+          traits={{ warmth: [0.5], wiggle: [1] }}
+          context={{ source: 'libro', dwellMs: 20000, daylight }} />
+      );
+      return container.querySelector('path').getAttribute('stroke');
+    };
+    expect(renderInk('noche')).not.toBe(renderInk('mediodia'));
+    expect(renderInk('atardecer')).not.toBe(renderInk('amanecer'));
+  });
+
+  test('dwell shapes stroke weight: a contemplative Ave draws heavier than a quick one', () => {
+    const widthFor = (dwellMs) => {
+      const { container } = render(
+        <VerseDrawing paths={paths} verseCount={2} progress={1} seed={123} rose
+          traits={{ warmth: [0.5], wiggle: [1] }}
+          context={{ source: 'libro', daylight: 'mediodia', dwellMs }} />
+      );
+      return Number(container.querySelector('path').getAttribute('stroke-width'));
+    };
+    expect(widthFor(180000)).toBeGreaterThan(widthFor(4000));
+  });
+
+  test('symbol drawings ignore prayer context entirely', () => {
+    const props = { paths, verseCount: 2, progress: 1, seed: 123,
+      traits: { warmth: [0.5], wiggle: [1] } };
+    const { container: plain } = render(<VerseDrawing {...props} />);
+    const { container: withContext } = render(<VerseDrawing {...props} context={roseContext} />);
+    expect(withContext.innerHTML).toBe(plain.innerHTML);
   });
 });

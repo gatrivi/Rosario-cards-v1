@@ -205,12 +205,14 @@ export default function SettingsOverlay({
             </label>
           </div>
 
-          {/* Per-verse images for Padre Nuestro / Ave María */}
+          {/* Per-verse images for Padre Nuestro / Ave María — Libro only.
+              The rosary keeps this off: there, advancing walks verses, so one
+              bead would cost nine taps. */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ color: '#fff', fontSize: '1rem' }}>Imagen por verso</div>
               <div style={{ color: '#666', fontSize: '0.75rem' }}>
-                Padre Nuestro y Ave María — un vitral por verso
+                Padre Nuestro y Ave María — un vitral por verso (Libro)
               </div>
             </div>
             <label className="switch">
@@ -221,6 +223,36 @@ export default function SettingsOverlay({
               />
               <span className="slider round"></span>
             </label>
+          </div>
+
+          {/* Rose mystery citations */}
+          <div>
+            <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '4px' }}>Citas en Rosa</div>
+            <div style={{ color: '#666', fontSize: '0.75rem', marginBottom: '10px' }}>
+              Anuncios de misterio: una cita, todas u ocultar
+            </div>
+            <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '5px', borderRadius: '12px' }}>
+              {[
+                { id: 'una', label: 'Una', desc: 'Con ‹ ›' },
+                { id: 'todas', label: 'Todas', desc: 'Lista' },
+                { id: 'ocultar', label: 'Sin citas', desc: 'Solo fruto' }
+              ].map(opcion => (
+                <button
+                  key={opcion.id}
+                  onClick={() => onUpdateSettings({ ...settings, roseCitationMode: opcion.id })}
+                  style={{
+                    flex: 1, padding: '10px 5px', borderRadius: '8px', border: 'none',
+                    background: (settings.roseCitationMode || 'una') === opcion.id ? '#D4AF37' : 'transparent',
+                    color: (settings.roseCitationMode || 'una') === opcion.id ? '#000' : '#888',
+                    cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', fontWeight: 'bold',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px'
+                  }}
+                >
+                  <span>{opcion.label}</span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>{opcion.desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Accesibilidad */}

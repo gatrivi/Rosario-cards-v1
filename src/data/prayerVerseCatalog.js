@@ -13,16 +13,23 @@ export const PADRE_NUESTRO_VERSES = [
   { text: 'Amén.', defaultImageId: 'byzantineArt' },
 ];
 
+/**
+ * `themes` name the scene each phrase speaks of, matched against image tags
+ * and reviewed subjects (`resolvePrayerVerseImage` walks that pool day by day):
+ * Gabriel's greeting (Lc 1,28), Elizabeth's blessing (Lc 1,42), the Child, the
+ * Theotokos, the intercession, the hour of death, and Mary's glory for the Amén.
+ * `defaultImageId` stays as the fallback when a theme has no art.
+ */
 export const AVE_MARIA_VERSES = [
-  { text: 'Dios te salve, María,', defaultImageId: 'theotokos' },
-  { text: 'llena eres de gracia,', defaultImageId: 'allMary17th' },
-  { text: 'el Señor es contigo.', defaultImageId: 'galleryMaterImmaculata' },
-  { text: 'Bendita tú eres entre todas las mujeres,', defaultImageId: 'allMary17th' },
-  { text: 'y bendito es el fruto de tu vientre, Jesús.', defaultImageId: 'byzantineArt' },
-  { text: 'Santa María, Madre de Dios,', defaultImageId: 'theotokos' },
-  { text: 'ruega por nosotros, pecadores,', defaultImageId: 'stainedGlass' },
-  { text: 'ahora y en la hora de nuestra muerte.', defaultImageId: 'vitreauxCruz' },
-  { text: 'Amén.', defaultImageId: 'galleryVirgoImmaculata' },
+  { text: 'Dios te salve, María,', defaultImageId: 'theotokos', themes: ['annunciation', 'gabriel'] },
+  { text: 'llena eres de gracia,', defaultImageId: 'allMary17th', themes: ['annunciation', 'gabriel'] },
+  { text: 'el Señor es contigo.', defaultImageId: 'galleryMaterImmaculata', themes: ['annunciation', 'gabriel'] },
+  { text: 'Bendita tú eres entre todas las mujeres,', defaultImageId: 'allMary17th', themes: ['visitation', 'elizabeth'] },
+  { text: 'y bendito es el fruto de tu vientre, Jesús.', defaultImageId: 'byzantineArt', themes: ['nativity', 'holy-family', 'mother-and-child'] },
+  { text: 'Santa María, Madre de Dios,', defaultImageId: 'theotokos', themes: ['theotokos', 'immaculate'] },
+  { text: 'ruega por nosotros, pecadores,', defaultImageId: 'stainedGlass', themes: ['immaculate-heart', 'seven-sorrows', 'sorrowful', 'magdalene'] },
+  { text: 'ahora y en la hora de nuestra muerte.', defaultImageId: 'vitreauxCruz', themes: ['pieta', 'deathbed', 'dormition', 'crucifixion'] },
+  { text: 'Amén.', defaultImageId: 'galleryVirgoImmaculata', themes: ['assumption', 'coronation'] },
 ];
 
 const CATALOG = {

@@ -5,23 +5,26 @@
 
 const REGISTRY_OVERRIDES_KEY = 'rosario_image_registry_overrides';
 const ASSIGNMENTS_KEY = 'rosario_image_assignments';
-const EXPORT_VERSION = 1;
+const REJECTED_KEY = 'rosario_rejected_images';
+const EXPORT_VERSION = 2;
+
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '') ?? fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
 
 export function exportArtConfig() {
-  let registryOverrides = {};
-  let verseAssignments = {};
-  try {
-    registryOverrides = JSON.parse(localStorage.getItem(REGISTRY_OVERRIDES_KEY) || '{}');
-  } catch (_) { /* ignore */ }
-  try {
-    verseAssignments = JSON.parse(localStorage.getItem(ASSIGNMENTS_KEY) || '{}');
-  } catch (_) { /* ignore */ }
   return {
     v: EXPORT_VERSION,
     app: 'rosario-cards',
     exportedAt: new Date().toISOString(),
-    registryOverrides,
-    verseAssignments,
+    registryOverrides: readJson(REGISTRY_OVERRIDES_KEY, {}),
+    verseAssignments: readJson(ASSIGNMENTS_KEY, {}),
+    // Pool images the owner rejected in /assets — removing art, not pinning it.
+    rejectedImages: readJson(REJECTED_KEY, []),
   };
 }
 
@@ -31,32 +34,29 @@ export function importArtConfig(payload, { merge = true } = {}) {
   }
   const registry = payload.registryOverrides || {};
   const assignments = payload.verseAssignments || {};
+  const incomingRejected = Array.isArray(payload.rejectedImages) ? payload.rejectedImages : [];
+  const rejected = new Set(merge ? readJson(REJECTED_KEY, []) : []);
+  incomingRejected.forEach((id) => rejected.add(id));
 
   if (merge) {
-    let prevRegistry = {};
-    let prevAssignments = {};
-    try {
-      prevRegistry = JSON.parse(localStorage.getItem(REGISTRY_OVERRIDES_KEY) || '{}');
-    } catch (_) { /* ignore */ }
-    try {
-      prevAssignments = JSON.parse(localStorage.getItem(ASSIGNMENTS_KEY) || '{}');
-    } catch (_) { /* ignore */ }
     localStorage.setItem(
       REGISTRY_OVERRIDES_KEY,
-      JSON.stringify({ ...prevRegistry, ...registry })
+      JSON.stringify({ ...readJson(REGISTRY_OVERRIDES_KEY, {}), ...registry })
     );
     localStorage.setItem(
       ASSIGNMENTS_KEY,
-      JSON.stringify({ ...prevAssignments, ...assignments })
+      JSON.stringify({ ...readJson(ASSIGNMENTS_KEY, {}), ...assignments })
     );
   } else {
     localStorage.setItem(REGISTRY_OVERRIDES_KEY, JSON.stringify(registry));
     localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(assignments));
   }
+  localStorage.setItem(REJECTED_KEY, JSON.stringify([...rejected]));
 
   return {
     registryCount: Object.keys(registry).length,
     assignmentCount: Object.keys(assignments).length,
+    rejectedCount: rejected.size,
   };
 }
 

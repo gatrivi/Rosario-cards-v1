@@ -71,7 +71,7 @@ export const litanyLauretanaVerses = [
     "response": "Cristo, escúchanos",
     "responseLatin": "Christe exaudi nos",
     "section": 1,
-    "img": "/gallery-images/litany/01-1-0.JPG",
+    "img": "/gallery-images/litany/modooscuro/cristo-escuchanos.jpg",
     "imgmo": "/gallery-images/litany/modooscuro/cristo-escuchanos.jpg"
   },
   {
@@ -107,7 +107,7 @@ export const litanyLauretanaVerses = [
     "response": "Ten piedad de nosotros",
     "responseLatin": "Miserere nobis",
     "section": 1,
-    "img": "/gallery-images/litany/01-2-0.JPG",
+    "img": "/gallery-images/litany/modooscuro/santisima-trinidad.jpg",
     "imgmo": "/gallery-images/litany/modooscuro/santisima-trinidad.jpg"
   },
   {
@@ -153,7 +153,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/01-1-1.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/mater-divinae-gratiae.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/mater-divina-gratiae.jpg"
   },
   {
     "invocation": "Madre purísima",
@@ -180,7 +180,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/01-1-3.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/mater-semper-virgo.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Mater semper virgo.jpg"
   },
   {
     "invocation": "Madre inmaculada",
@@ -189,7 +189,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/01-2-1.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/mater-immaculata.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Mater immaculata.jpg"
   },
   {
     "invocation": "Madre sin mancilla",
@@ -198,7 +198,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/01-2-1.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/mater-sine-macula.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Mater sine macula.jpg"
   },
   {
     "invocation": "Madre amable",
@@ -207,7 +207,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/01-2-2.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/mater-amabilis.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Mater amabilis.jpg"
   },
   {
     "invocation": "Madre admirable",
@@ -225,7 +225,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/01-3-0.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/mater-boni-consilii.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Mater boni consilii.jpg"
   },
   {
     "invocation": "Madre del Creador",
@@ -234,7 +234,7 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/01-3-1.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/mater-creatoris.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Mater Creatoris.jpg"
   },
   {
     "invocation": "Madre del Salvador",
@@ -268,7 +268,7 @@ export const litanyLauretanaVerses = [
     "response": "Ruega por nosotros",
     "section": 2,
     "img": "/gallery-images/litany/01-4-1.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/Virgo digna de alabanza.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/digna-de-alabanza.jpg"
   },
   {
     "invocation": "Virgen poderosa",
@@ -277,7 +277,7 @@ export const litanyLauretanaVerses = [
     "response": "Ruega por nosotros",
     "section": 2,
     "img": "/gallery-images/litany/01-4-2.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/Virgo potens.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Virgen poderosa.jpg"
   },
   {
     "invocation": "Virgen clemente",
@@ -286,7 +286,7 @@ export const litanyLauretanaVerses = [
     "response": "Ruega por nosotros",
     "section": 2,
     "img": "/gallery-images/litany/01-4-3.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/Virgo clemens.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Virgen clemente.jpg"
   },
   {
     "invocation": "Virgen fiel",
@@ -295,7 +295,7 @@ export const litanyLauretanaVerses = [
     "response": "Ruega por nosotros",
     "section": 2,
     "img": "/gallery-images/litany/01-5-0.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/Virgo fidelis.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/Virgen fiel.jpg"
   },
   {
     "invocation": "Espejo de justicia",
@@ -404,8 +404,8 @@ export const litanyLauretanaVerses = [
     "invocation": "Salud de los enfermos",
     "response": "Ruega por nosotros",
     "section": 2,
-    "img": "/gallery-images/litany/modooscuro/Salud de los enfermos.jpg",
-    "imgmo": "/gallery-images/litany/modooscuro/Salud de los enfermos.jpg"
+    "img": "/gallery-images/litany/modooscuro/lourdes.jpg",
+    "imgmo": "/gallery-images/litany/modooscuro/lourdes.jpg"
   },
   {
     "invocation": "Refugio de los pecadores",
@@ -483,8 +483,8 @@ export const litanyLauretanaVerses = [
     "invocation": "Reina de todos los Santos",
     "response": "Ruega por nosotros",
     "section": 2,
-    "img": "/gallery-images/litany/reina-santos.JPG",
-    "imgmo": "/gallery-images/litany/modooscuro/Oración de consagración al Sagrado Corazón de Jesús, de Santa Margarita María de Alacoque_.jpg"
+    "img": "/gallery-images/litany/modooscuro/reina-santos.jpg",
+    "imgmo": "/gallery-images/litany/modooscuro/reina-de-todos.jpg"
   },
   {
     "invocation": "Reina concebida sin pecado original",
@@ -507,14 +507,14 @@ export const litanyLauretanaVerses = [
     "responseLatin": "Ora pro nobis",
     "section": 2,
     "img": "/gallery-images/litany/lll_1-3-7.png",
-    "imgmo": "/gallery-images/litany/modooscuro/reina-rosario.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/virgen-rosario.jpg"
   },
   {
     "invocation": "Reina de la familia",
     "response": "Ruega por nosotros",
     "section": 2,
     "img": "/gallery-images/litany/lll_1-4-7.png",
-    "imgmo": "/gallery-images/litany/modooscuro/reina-santo.jpg"
+    "imgmo": "/gallery-images/litany/modooscuro/reina.jpg"
   },
   {
     "invocation": "Reina de la paz",

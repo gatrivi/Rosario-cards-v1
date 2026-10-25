@@ -1,0 +1,14 @@
+BANDEJA DE ENTRADA — imágenes nuevas / NEW IMAGES INBOX
+
+Arrastrá acá las imágenes descargadas, sin renombrar. Después pedile a Claude:
+  "revisá las imágenes nuevas"
+Claude mira cada una, la registra en scripts/image-visual-review.json
+(estilo + tema) y en el próximo `npm start` entran solas a los rezos.
+
+Drop downloaded images here, no renaming needed. Then ask Claude:
+  "review the new images"
+It looks at each one, records it in scripts/image-visual-review.json,
+and the next `npm start` files them into the prayers.
+
+No muevas ni renombres imágenes ya revisadas: el registro va por ruta.
+Don't move or rename already-reviewed images: the review is keyed by path.

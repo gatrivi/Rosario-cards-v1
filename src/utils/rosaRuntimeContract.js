@@ -1,4 +1,4 @@
-const DEFAULT_VERSION = '0.3.82';
+import { APP_VERSION as DEFAULT_VERSION } from '../data/releaseNotes';
 
 function isRosaPath(win) {
   return Boolean(win?.location?.pathname === '/rosa');

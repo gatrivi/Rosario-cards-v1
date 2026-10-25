@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAveMariaStats } from '../../hooks/useAveMariaStats';
 import RoseDrawing from './RoseDrawing';
+import { describeRoseContext } from '../../utils/roseFingerprint';
 import { NIVELES } from '../../data/LevelConfig';
 import TutorialOverlay from '../common/TutorialOverlay';
 import franciscoImg from '../../data/assets/img/francisco_de_asis_2.jpg';
@@ -128,7 +129,9 @@ export default function JardinDeRosasView() {
                   gridTemplateColumns: 'repeat(auto-fill, minmax(38px, 1fr))',
                 }}>
                   {displayRoses.map((rose, i) => (
-                    <div key={i} title={rose ? `Rosa ${i+1}` : "Espacio sagrado"} style={{
+                    <div key={i} title={rose
+                      ? `Rosa ${i + 1}${describeRoseContext(rose) ? ` — ${describeRoseContext(rose)}` : ''}`
+                      : 'Espacio sagrado'} style={{
                       aspectRatio: '1/1',
                       display: 'flex', justifyContent: 'center', alignItems: 'center',
                       background: rose ? 'rgba(15, 15, 15, 0.4)' : 'rgba(0, 0, 0, 0.2)',
@@ -143,6 +146,7 @@ export default function JardinDeRosasView() {
                           progress={1}
                           verseCount={rose.verseCount}
                           verseTraits={rose.verseTraits}
+                          context={rose.context}
                           warmthProfile={rose.warmthProfile || []}
                           wiggleProfile={rose.wiggleProfile || []}
                           enrichment={enrichment}

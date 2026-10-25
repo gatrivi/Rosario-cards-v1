@@ -7,6 +7,9 @@ import {
 import {
   getBundledCoverage,
   findSmallestDevotionLackingBundledVoice,
+  findUndeclaredVoiceDebt,
+  findStaleVoiceDebt,
+  AWAITING_BUNDLED_VOICE,
 } from '../utils/voiceCoverage';
 import { applyVariantToVoiceLang, getVoicePrefs, setVoicePrefs } from '../utils/voicePrefs';
 
@@ -78,8 +81,52 @@ describe('voiceCoverage', () => {
     expect(cov.rows[0].title).toBe('Señal de la Cruz');
   });
 
-  test('Liber ES has no devotion lacking guide clips', () => {
+  test('Liber ES has no undeclared devotion lacking guide clips', () => {
+    expect(findUndeclaredVoiceDebt()).toEqual([]);
+  });
+
+  test('declared voice debt is still real (prune AWAITING_BUNDLED_VOICE)', () => {
+    expect(findStaleVoiceDebt()).toEqual([]);
+  });
+
+  test('the bake work-queue points at the declared debt', () => {
     const next = findSmallestDevotionLackingBundledVoice([]);
-    expect(next).toBeNull();
+    expect(next).toEqual({ id: 'memorare', total: 1, missing: 1, uniqueMissing: 1 });
+
+    // Unwinding the queue walks the declared debts shortest-first.
+    const queue = [];
+    let skip = [];
+    for (;;) {
+      const step = findSmallestDevotionLackingBundledVoice(skip);
+      if (!step) break;
+      queue.push(step.id);
+      skip = [...skip, step.id];
+    }
+    expect(queue).toEqual([
+      'memorare',
+      'medalla_milagrosa',
+      'espiritu_santo_novena',
+      'inmaculado_corazon',
+    ]);
+    expect(findSmallestDevotionLackingBundledVoice(AWAITING_BUNDLED_VOICE.map((a) => a.id))).toBeNull();
+  });
+
+  test('every declared debt lists exactly the ids that are missing', () => {
+    AWAITING_BUNDLED_VOICE.forEach(({ id, missingIds }) => {
+      const cov = getBundledCoverage(id, { lang: 'es' });
+      expect({ id, missingIds: cov.uniqueMissingIds.slice().sort() }).toEqual({
+        id,
+        missingIds: missingIds.slice().sort(),
+      });
+    });
+  });
+
+  test('Memorare ES is declared, missing exactly MEM', () => {
+    const declared = AWAITING_BUNDLED_VOICE.filter((a) => a.id === 'memorare');
+    expect(declared).toHaveLength(1);
+    expect(declared[0].missingIds).toEqual(['MEM']);
+    const cov = getBundledCoverage('memorare', { lang: 'es' });
+    expect(cov.missing).toBe(1);
+    expect(cov.uniqueMissingIds).toEqual(['MEM']);
   });
 });

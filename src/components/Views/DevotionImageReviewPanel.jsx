@@ -4,7 +4,9 @@ import { getBookletDevotionLabel } from '../../utils/bookletShare';
 import {
   listImages,
   isTextHeavyImageEntry,
+  saveOverride,
 } from '../../data/imageRegistry';
+import { LITURGICAL_CATEGORIES, hasLiturgicalCategory } from '../../data/liturgicalCategories';
 import {
   clearPrayerAssignment,
   getPrayerAssignmentValue,
@@ -12,6 +14,29 @@ import {
   savePrayerAssignment,
 } from '../../utils/imageAssignments';
 import { getPrayerImageCandidates } from '../../utils/prayerImages';
+import {
+  loadRejectedImages,
+  rejectImage,
+  unrejectImage,
+  clearRejectedImages,
+} from '../../utils/rejectedImages';
+
+const POOL_QUARANTINE_KEY = 'rosario_image_pool_reviewed';
+
+function loadPoolReviewed() {
+  try {
+    const raw = localStorage.getItem(POOL_QUARANTINE_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (_) {
+    return new Set();
+  }
+}
+
+function persistPoolReviewed(set) {
+  try {
+    localStorage.setItem(POOL_QUARANTINE_KEY, JSON.stringify(Array.from(set)));
+  } catch (_) { /* quota */ }
+}
 
 const REVIEW_KEY = 'rosario_image_reviewed_steps';
 
@@ -42,8 +67,74 @@ export default function DevotionImageReviewPanel() {
   const [pickerFor, setPickerFor] = useState(null);
   const [pickerQuery, setPickerQuery] = useState('');
   const [reviewed, setReviewed] = useState(loadReviewed);
-  const [, refresh] = useState(0);
+  const [tab, setTab] = useState('steps');
+  const [poolReviewed, setPoolReviewed] = useState(loadPoolReviewed);
+  const [rejected, setRejected] = useState(loadRejectedImages);
+  const [poolFilter, setPoolFilter] = useState('unreviewed');
+  const [poolQuery, setPoolQuery] = useState('');
+  const [poolKind, setPoolKind] = useState('mary');
+  const [poolPage, setPoolPage] = useState(0);
+  const [tick, setTick] = useState(0);
   const images = listImages().filter((entry) => !isTextHeavyImageEntry(entry));
+
+  // The catalog ships pre-tagged; this reads it back out of the merged registry,
+  // so a rename or re-tag the owner makes in the db shows here immediately.
+  const pool = useMemo(() => {
+    void tick;
+    return listImages().filter((e) => e.pool === poolKind);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poolKind, tick]);
+  const rejectedSet = useMemo(() => new Set(rejected), [rejected]);
+
+  const POOL_PAGE = 60;
+
+  const visiblePool = useMemo(() => {
+    const needle = poolQuery.trim().toLowerCase();
+    return pool.filter((entry) => {
+      if (needle) {
+        const hay = `${entry.id} ${entry.name || ''} ${entry.theme || ''} ${(entry.tags || []).join(' ')}`.toLowerCase();
+        if (!hay.includes(needle)) return false;
+      }
+      if (poolFilter === 'rejected') return rejectedSet.has(entry.id);
+      if (poolFilter === 'low') return entry.confidence === 'low';
+      if (poolFilter === 'unclassified') return !hasLiturgicalCategory(entry.tags || []);
+      if (poolFilter === 'unreviewed') return !poolReviewed.has(entry.id);
+      return true;
+    });
+  }, [pool, poolFilter, poolQuery, poolReviewed, rejectedSet]);
+
+  const pagedPool = visiblePool.slice(poolPage * POOL_PAGE, (poolPage + 1) * POOL_PAGE);
+  const poolPages = Math.max(1, Math.ceil(visiblePool.length / POOL_PAGE));
+
+  const togglePoolReviewed = (id) => {
+    const next = new Set(poolReviewed);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setPoolReviewed(next);
+    persistPoolReviewed(next);
+  };
+
+  const toggleRejected = (id) => {
+    if (rejectedSet.has(id)) unrejectImage(id);
+    else rejectImage(id);
+    setRejected(loadRejectedImages());
+  };
+
+  /** Write a tag straight through to the db — this is the owner's edit, not ours. */
+  const toggleCategory = (entry, categoryId) => {
+    const tags = new Set(entry.tags || []);
+    if (tags.has(categoryId)) tags.delete(categoryId);
+    else tags.add(categoryId);
+    saveOverride(entry.id, { name: entry.name, tags: Array.from(tags) });
+    setTick((t) => t + 1);
+  };
+
+  const markPoolReviewed = (entries) => {
+    const next = new Set(poolReviewed);
+    entries.forEach((e) => next.add(e.id));
+    setPoolReviewed(next);
+    persistPoolReviewed(next);
+  };
 
   const sequence = useMemo(() => {
     try {
@@ -92,12 +183,12 @@ export default function DevotionImageReviewPanel() {
   const assign = (row, imageId) => {
     savePrayerAssignment(row.step.id, imageId);
     setPickerFor(null);
-    refresh((value) => value + 1);
+    setTick((value) => value + 1);
   };
 
   const clear = (row) => {
     clearPrayerAssignment(row.step.id);
-    refresh((value) => value + 1);
+    setTick((value) => value + 1);
   };
 
   const pickerImages = images.filter((entry) => {
@@ -108,6 +199,160 @@ export default function DevotionImageReviewPanel() {
 
   return (
     <div>
+      <div style={toolbarStyle}>
+        <button
+          type="button"
+          onClick={() => setTab('steps')}
+          style={{ ...smallButtonStyle, opacity: tab === 'steps' ? 1 : 0.6 }}
+        >
+          Pasos ({rows.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('pool')}
+          style={{ ...smallButtonStyle, opacity: tab === 'pool' ? 1 : 0.6 }}
+        >
+          Biblioteca de arte (287)
+        </button>
+      </div>
+
+      {tab === 'pool' ? (
+        <>
+          <p style={copyStyle}>
+            La biblioteca de arte se clasificó sola por su nombre de archivo, pero las
+            categorías y los descartes son tuyos: se guardan en la base y viajan a
+            todos tus dispositivos. Una categoría mal puesta o una imagen descartada
+            la saca de todos los rezos, para siempre.
+          </p>
+
+          <div style={toolbarStyle}>
+            <select value={poolKind} onChange={(e) => { setPoolKind(e.target.value); setPoolPage(0); }} style={inputStyle}>
+              <option value="mary">María (240)</option>
+              <option value="passion">Pasión (47)</option>
+            </select>
+            <input
+              value={poolQuery}
+              onChange={(event) => { setPoolQuery(event.target.value); setPoolPage(0); }}
+              placeholder="Buscar en la biblioteca..."
+              style={inputStyle}
+            />
+            <select
+              value={poolFilter}
+              onChange={(event) => { setPoolFilter(event.target.value); setPoolPage(0); }}
+              style={inputStyle}
+            >
+              <option value="unreviewed">Sin revisar</option>
+              <option value="unclassified">Sin categoría litúrgica</option>
+              <option value="low">Confianza baja</option>
+              <option value="rejected">Descartadas ({rejected.length})</option>
+              <option value="all">Todas ({pool.length})</option>
+            </select>
+            <button type="button" onClick={() => markPoolReviewed(visiblePool)} style={smallButtonStyle}>
+              Marcar esta página
+            </button>
+            <button
+              type="button"
+              onClick={() => { clearRejectedImages(); setRejected(loadRejectedImages()); }}
+              style={smallButtonStyle}
+            >
+              Restaurar descartadas
+            </button>
+          </div>
+
+          <div style={progressStyle}>
+            {poolReviewed.size} revisadas · {rejected.length} descartadas · página{' '}
+            {poolPage + 1}/{poolPages} · {visiblePool.length} coinciden
+          </div>
+
+          <div style={{ display: 'grid', gap: '6px' }}>
+            {pagedPool.map((entry) => (
+              <div
+                key={entry.id}
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'center',
+                  padding: '6px',
+                  border: '1px solid #333',
+                  borderRadius: '6px',
+                  opacity: rejectedSet.has(entry.id) ? 0.4 : 1,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={poolReviewed.has(entry.id)}
+                  onChange={() => togglePoolReviewed(entry.id)}
+                  aria-label={`Marcar revisada ${entry.name}`}
+                />
+                <img
+                  src={entry.path}
+                  alt=""
+                  style={{ width: 72, height: 54, objectFit: 'cover', borderRadius: '4px' }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: '#eee', fontSize: '0.85rem' }}>{entry.name}</div>
+                  <div style={{ color: '#777', fontSize: '0.7rem' }}>
+                    {entry.theme}
+                    {entry.confidence ? ` · confianza ${entry.confidence === 'high' ? 'alta' : 'baja'}` : ''}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', maxWidth: 220 }}>
+                  {LITURGICAL_CATEGORIES.map((c) => {
+                    const on = (entry.tags || []).includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => toggleCategory(entry, c.id)}
+                        title={c.label}
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '2px 5px',
+                          borderRadius: '6px',
+                          border: `1px solid ${on ? '#D4AF37' : '#333'}`,
+                          background: on ? 'rgba(212,175,55,0.2)' : 'transparent',
+                          color: on ? '#D4AF37' : '#666',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {c.emoji}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button type="button" onClick={() => toggleRejected(entry.id)} style={smallButtonStyle}>
+                  {rejectedSet.has(entry.id) ? 'Restaurar' : 'Descartar'}
+                </button>
+              </div>
+            ))}
+            {visiblePool.length === 0 ? (
+              <p style={copyStyle}>Nada que revisar aquí.</p>
+            ) : null}
+          </div>
+
+          {poolPages > 1 ? (
+            <div style={{ ...toolbarStyle, marginTop: '10px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                disabled={poolPage === 0}
+                onClick={() => setPoolPage((p) => Math.max(0, p - 1))}
+                style={smallButtonStyle}
+              >
+                ‹ Anterior
+              </button>
+              <button
+                type="button"
+                disabled={poolPage >= poolPages - 1}
+                onClick={() => setPoolPage((p) => Math.min(poolPages - 1, p + 1))}
+                style={smallButtonStyle}
+              >
+                Siguiente ›
+              </button>
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <>
       <p style={copyStyle}>
         Recorre cada devocion en orden. Guarda las asignaciones y el estado revisado en este dispositivo.
       </p>
@@ -183,6 +428,8 @@ export default function DevotionImageReviewPanel() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

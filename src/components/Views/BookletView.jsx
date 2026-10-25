@@ -14,13 +14,17 @@ import {
   getBookletStepContext,
   stepContextToVitralVars,
   makeBookletRoseFingerprint,
+  getOngoingMysteryDecade,
 } from '../../utils/bookletProgress';
 import { playBookletTransitionSound, playOfferingChime } from '../../utils/bookletSounds';
 import {
   pickPrayerImage,
+  occurrenceIndexAt,
+  dailyRotationOffset,
   getLitanyVerseImageCandidates,
   resolveLitanyVerseImage,
   getPrayerImageCandidates,
+  countPrayerPinnedSources,
 } from '../../utils/prayerImages';
 import { getLitanyVerse, isLitanyPrayer, formatLitanyLine } from '../../utils/litanyHelpers';
 import {
@@ -33,7 +37,7 @@ import { supportsPerVerseImages } from '../../data/prayerVerseCatalog';
 import LitanyEntrance from '../Litany/LitanyEntrance';
 import VitralBackground from '../common/VitralBackground';
 import BookletPrayerPanel from './BookletPrayerPanel';
-import { buildSequence, isDivineMercyMode, isStationsDevotion, isMarianDevotionMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery, getNextRosaryMystery } from '../../utils/bookletSequence';
+import { buildSequence, isDivineMercyMode, isSagradoCorazonAdoracionMode, isValidRosaryMystery, getNextRosaryMystery, hidesRosaryPills, getNovenaConfig, getNovenaDays } from '../../utils/bookletSequence';
 import { getDefaultMystery } from '../utils/getDefaultMystery';
 import { imagePath as registryImage, isTextHeavyImagePath } from '../../data/imageRegistry';
 import {
@@ -46,11 +50,27 @@ import {
   SAGRADO_CORAZON_ADORACION_ID,
   sagradoCorazonAdoracionThumbnail,
 } from '../../data/sagradoCorazonAdoracionData';
-import FaustinaMercyThumb from '../common/FaustinaMercyThumb';
+import { MEMORARE_ID, memorareThumbnail } from '../../data/memorareData';
+import { MILAGROSA_ID, milagrosaThumbnail } from '../../data/medallaMilagrosaData';
+import {
+  INMACULADO_CORAZON_ID,
+  inmaculadoCorazonThumbnail,
+} from '../../data/inmaculadoCorazonData';
+import {
+  ESPIRITU_SANTO_ID,
+  holySpiritNovenaThumbnail,
+} from '../../data/espirituSantoNovenaData';
+import {
+  DIVINE_MERCY_ID,
+  DIVINE_MERCY_NOVENA_ID,
+  chapletThumbnail,
+  novenaThumbnail,
+} from '../../data/divineMercyData';
 import StationsDevotionThumb from '../common/StationsDevotionThumb';
 import MercyWindowThumb from '../common/MercyWindowThumb';
 import DevotionsShelf, { ShelfItem } from '../common/DevotionsShelf';
 import { optionalPrayerThumbnail } from '../../data/optionalPrayers';
+import { upcomingDevotionThumbs } from '../../data/historicDevotionsCatalog';
 import { loadSavedVariantId, resolveDisplayText, resolveEnLiberDisplayText, resolveLiberTitle } from '../../utils/bookletDisplayText';
 import { getSpeakablePrayerText } from '../../utils/speakablePrayerText';
 import { isPlaylistActive, peekPendingAutoMystery, clearPendingAuto } from '../../utils/devotionPlaylistRunner';
@@ -124,7 +144,7 @@ const MYSTERY_OPTIONS = [
   },
 ];
 
-/** Recorridos del estante; 'stations' y 'faustina' tienen thumbs propios. */
+/** Recorridos del estante; 'stations' tiene thumb propio (menú Vía Crucis / Lucis). */
 const SHELF_RECORRIDOS = [
   { type: 'stations', label: 'Estaciones' },
   {
@@ -138,14 +158,14 @@ const SHELF_RECORRIDOS = [
     id: 'sangrepreciosa_chaplet',
     label: 'Corona Sangre',
     title: 'Corona de la Preciosísima Sangre',
-    img: registryImage('lamb'),
+    img: registryImage('vitralAgnusDei'),
     badge: 'C',
   },
   {
     id: 'sangrepreciosa_ofrendas',
     label: '7 Ofrendas',
     title: 'Siete Ofrendas de la Sangre de Cristo',
-    img: registryImage('lamb'),
+    img: registryImage('vitralCaliz'),
     badge: '7',
   },
   {
@@ -155,7 +175,20 @@ const SHELF_RECORRIDOS = [
     img: sagradoCorazonAdoracionThumbnail,
     badge: 'SC',
   },
-  { type: 'faustina', label: 'Sta. Faustina' },
+  {
+    id: DIVINE_MERCY_ID,
+    label: 'Corona Miseric.',
+    title: 'Corona de la Divina Misericordia — Santa Faustina',
+    img: chapletThumbnail,
+    badge: 'DM',
+  },
+  {
+    id: DIVINE_MERCY_NOVENA_ID,
+    label: 'Novena Miseric.',
+    title: 'Novena de la Divina Misericordia — Santa Faustina',
+    img: novenaThumbnail,
+    isNovena: true,
+  },
   {
     id: ANGELUS_ID,
     label: 'Ángelus',
@@ -170,11 +203,40 @@ const SHELF_RECORRIDOS = [
     img: magnificatThumbnail,
     badge: 'M',
   },
+  {
+    id: MEMORARE_ID,
+    label: 'Memorare',
+    title: 'Memorare — Virgen Madre',
+    img: memorareThumbnail,
+    badge: 'R',
+  },
+  {
+    id: MILAGROSA_ID,
+    label: 'Medalla',
+    title: 'Medalla Milagrosa — Inmaculada',
+    img: milagrosaThumbnail,
+    badge: 'MM',
+  },
+  {
+    id: INMACULADO_CORAZON_ID,
+    label: 'Inmaculado C.',
+    title: 'Inmaculado Corazón de María — Fátima',
+    img: inmaculadoCorazonThumbnail,
+    badge: 'IC',
+  },
+  {
+    id: ESPIRITU_SANTO_ID,
+    label: 'Espíritu Santo',
+    title: 'Novena al Espíritu Santo — Pentecostés',
+    img: holySpiritNovenaThumbnail,
+    isNovena: true,
+  },
 ];
 
 /** Oraciones breves del estante: abren la hoja opcional por id. */
 const SHELF_BREVES = [
   { prayerId: 'carmen', label: 'Virgen del Carmen', title: 'Virgen del Carmen — 16 de julio', badge: '16' },
+  { prayerId: 'escapulario', label: 'Escápulario', title: 'Escápulario del Carmen — la Promesa', badge: 'E' },
   { prayerId: 'guardian', label: 'Ángel Guarda', title: 'Ángel de la Guarda', badge: 'Á' },
   { prayerId: 'michael', label: 'San Miguel', title: 'San Miguel Arcángel', badge: 'SM' },
   { prayerId: 'expedito', label: 'San Expedito', title: 'San Expedito — causas urgentes (HODIE)', badge: 'H' },
@@ -196,16 +258,6 @@ function renderShelfRecorrido(item, { misterioActual, onShelfDevotionClick, onMy
       </ShelfItem>
     );
   }
-  if (item.type === 'faustina') {
-    return (
-      <ShelfItem key={item.label} label={item.label}>
-        <FaustinaMercyThumb
-          misterioActual={misterioActual}
-          onMysteryChange={onMysteryChange}
-        />
-      </ShelfItem>
-    );
-  }
   return (
     <ShelfItem key={item.id} label={item.label}>
       <MercyWindowThumb
@@ -214,6 +266,7 @@ function renderShelfRecorrido(item, { misterioActual, onShelfDevotionClick, onMy
         title={item.title}
         img={item.img}
         badge={item.badge}
+        isNovena={item.isNovena}
       />
     </ShelfItem>
   );
@@ -246,10 +299,10 @@ export default function BookletView({
   openOptionalId = null,
 }) {
   const isMercy = isDivineMercyMode(misterioActual);
-  const isStations = isStationsDevotion(misterioActual);
-  const isMarianDevotion = isMarianDevotionMode(misterioActual);
   const isSagradoCorazon = isSagradoCorazonAdoracionMode(misterioActual);
-  const showRosaryPills = !isMercy && !isStations && !isMarianDevotion && !isSagradoCorazon;
+  // Devotion chrome (pill row, header actions) is centralised in
+  // hidesRosaryPills so a new devotion cannot forget to opt out.
+  const showRosaryPills = !hidesRosaryPills(misterioActual);
   const pickDevotion = useCallback(
     (id, label) => {
       devLog('shelf-pick', { id, label, from: misterioActual });
@@ -285,12 +338,32 @@ export default function BookletView({
     Math.max(total - 1, 0)
   );
   const [displayIndex, setDisplayIndex] = useState(safeIndex);
+  // How long the current step has been on screen — feeds the rose fingerprint
+  // when an Ave María is completed by advancing past it.
+  const stepShownAtRef = useRef(Date.now());
+  useEffect(() => {
+    stepShownAtRef.current = Date.now();
+  }, [displayIndex]);
   const [transitionPhase, setTransitionPhase] = useState(TRANSITION_PHASE.READY);
   const transitionPhaseRef = useRef(TRANSITION_PHASE.READY);
   const transitionTimersRef = useRef([]);
   const imageReadyRef = useRef(true);
   const afterImageReadyRef = useRef(null);
   const activePrayer = secuencia[displayIndex];
+  /**
+   * Which repetition of `activePrayer` this is. A rosary has 50 Ave Marías and
+   * they all share one prayer object, so without this every one of them drew
+   * from the same tiny pool at the same phase.
+   */
+  const occurrence = useMemo(
+    () => occurrenceIndexAt(secuencia, displayIndex),
+    [secuencia, displayIndex]
+  );
+  // Today's start point in the pool, so tomorrow's rosary is not a replay.
+  const dayOffset = useMemo(
+    () => dailyRotationOffset(secuencia, displayIndex),
+    [secuencia, displayIndex]
+  );
   const isTransitioning = transitionPhase !== TRANSITION_PHASE.READY;
 
   const variants = activePrayer?.variants;
@@ -532,7 +605,12 @@ export default function BookletView({
         if (leaving?.id === 'A' && !isMercy) {
           const fp = makeBookletRoseFingerprint(
             getAveMariaRunInfo(secuencia, oldIndex),
-            getBookletStepContext(secuencia, oldIndex, total).mysteryDecade
+            getOngoingMysteryDecade(secuencia, oldIndex),
+            {
+              source: 'libro',
+              timestamp: Date.now(),
+              dwellMs: Math.max(0, Date.now() - stepShownAtRef.current),
+            }
           );
           onAveMariaComplete?.(fp);
         }
@@ -911,9 +989,10 @@ export default function BookletView({
   const showHeaderTitle = !(isAveMaria || isMercyPassion || isHolyGod || isLitany);
 
   // Breadcrumb suffixes after "N / total": only the runs that apply to this step.
+  const novena = getNovenaConfig(misterioActual);
   const progressSuffixes = [
-    misterioActual === 'divinamisericordia_novena' && activePrayer?.id === 'NOVENA_DAY_INTENTION'
-      && `Día ${novenaDay} de 9`,
+    novena && activePrayer?.id === novena.dayStepId
+      && `Día ${novenaDay} de ${novena.total}`,
     isLitany && litanyVerseTotal > 0 && `letanía ${litanyVerseIndex + 1} / ${litanyVerseTotal}`,
     isPerVersePrayer && prayerVerseTotal > 0 && `verso ${prayerVerseIndex + 1} / ${prayerVerseTotal}`,
     isAveMaria && `${aveRunInfo.position} de ${aveRunInfo.total}`,
@@ -956,21 +1035,22 @@ export default function BookletView({
           activePrayer.id,
           prayerVerseIndex,
           activePrayer,
-          misterioActual
+          misterioActual,
+          occurrence + dayOffset
         ),
       ])[0] || all[0];
       return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
     }
-    const raw = activePrayer.imgCandidates?.length
-      ? activePrayer.imgCandidates
-      : getPrayerImageCandidates(activePrayer, misterioActual);
-    const all = scrub(raw);
-    const safe = all.length ? all : getPrayerImageCandidates(activePrayer, misterioActual);
-    const picked = pickPrayerImage(safe, safeIndex);
-    return [picked, ...safe.filter((u) => u !== picked)].filter(Boolean);
+    const all = scrub(getPrayerImageCandidates(activePrayer, misterioActual));
+    // Occurrence, not raw position: `safeIndex` is the step being animated TOWARD
+    // while `activePrayer` is secuencia[displayIndex], so seeding by safeIndex
+    // meant the image belonged to a different step than the one on screen.
+    const picked = pickPrayerImage(all, occurrence, countPrayerPinnedSources(activePrayer), dayOffset);
+    return [picked, ...all.filter((u) => u !== picked)].filter(Boolean);
   }, [
     activePrayer,
-    safeIndex,
+    occurrence,
+    dayOffset,
     isLitany,
     litanyVerse,
     litanyVerseIndex,
@@ -1224,10 +1304,10 @@ export default function BookletView({
             </div>
           </div>
           )}
-          {misterioActual === 'divinamisericordia_novena' && (
+          {novena && (
             <div className="booklet-novena-selector">
               <span className="booklet-novena-selector__label">Día</span>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
+              {getNovenaDays(misterioActual).map((d) => (
                 <button
                   key={d}
                   type="button"
@@ -1420,7 +1500,15 @@ export default function BookletView({
             </ShelfItem>
           ))
         }
-        proximas={null}
+        proximas={upcomingDevotionThumbs().map((dev) => (
+          <ShelfItem key={dev.id} label={dev.label} soon>
+            <MercyWindowThumb
+              soon
+              title={`${dev.label} — ${dev.note}`}
+              img={dev.img}
+            />
+          </ShelfItem>
+        ))}
         onReturnToRosary={
           !isValidRosaryMystery(misterioActual)
             ? () => onMysteryChange?.(getDefaultMystery())

@@ -4,7 +4,7 @@ import { divineMercyNovenaDays } from './divineMercyNovenaData';
 export const DIVINE_MERCY_ID = 'divinamisericordia';
 export const DIVINE_MERCY_NOVENA_ID = 'divinamisericordia_novena';
 
-/** Single header thumb — Faustina vitral for both Corona and Novena. */
+/** Faustina vitral — Novena shelf thumb and fallback image; the Corona uses faustinaVitral. */
 export const faustinaThumb = imagePath('faustinaStainedGlass');
 
 export const faustinaVitral = imagePath('faustinaDivinoCorazon');

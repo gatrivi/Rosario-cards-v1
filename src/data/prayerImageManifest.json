@@ -1,0 +1,54 @@
+{
+  "generatedAt": "2026-10-25T22:19:37.287Z",
+  "note": "Auto-generated from public/prayers/ folders — do not edit by hand; npm start/build rescans.",
+  "prayers": {
+    "ANG_ANNUNCIATION": {
+      "base": [
+        "/prayers/ANG_ANNUNCIATION/vitral-anunciacion.jpg"
+      ],
+      "verses": {}
+    },
+    "ANG_AVE_1": {
+      "base": [
+        "/prayers/ANG_AVE_1/vitral-maria-chartres.jpg"
+      ],
+      "verses": {}
+    },
+    "ANG_AVE_2": {
+      "base": [
+        "/prayers/ANG_AVE_2/altar-maria-iglesia.jpg"
+      ],
+      "verses": {}
+    },
+    "ANG_AVE_3": {
+      "base": [
+        "/prayers/ANG_AVE_3/vitral-vierge-marie.jpg"
+      ],
+      "verses": {}
+    },
+    "ANG_FIAT": {
+      "base": [
+        "/prayers/ANG_FIAT/vitral-fiat-lirio.jpg"
+      ],
+      "verses": {}
+    },
+    "ANG_FINAL": {
+      "base": [
+        "/prayers/ANG_FINAL/vitral-crucifixion.jpg"
+      ],
+      "verses": {}
+    },
+    "ANG_INCARNATION": {
+      "base": [
+        "/prayers/ANG_INCARNATION/vitral-encarnacion.jpg"
+      ],
+      "verses": {}
+    },
+    "ANG_SC": {
+      "base": [
+        "/prayers/ANG_SC/interior-iglesia-gotica.jpg"
+      ],
+      "verses": {}
+    }
+  }
+}

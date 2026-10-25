@@ -4,8 +4,8 @@ export const ANGELUS_ID = 'angelus';
 export const MAGNIFICAT_ID = 'magnificat';
 export const MARIAN_DEVOTION_IDS = [ANGELUS_ID, MAGNIFICAT_ID];
 
-export const angelusThumbnail = imagePath('angAnnunciationArt') || imagePath('allMary17th');
-export const magnificatThumbnail = imagePath('magnificatVisitation');
+export const angelusThumbnail = imagePath('angelusMillet') || imagePath('allMary17th');
+export const magnificatThumbnail = imagePath('vitralVisitacion') || imagePath('magnificatVisitation');
 
 const SIGN_OF_CROSS_TEXT =
   'En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.';

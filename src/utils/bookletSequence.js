@@ -7,6 +7,7 @@ import {
 } from './prayerImages';
 import {
   DIVINE_MERCY_ID,
+  DIVINE_MERCY_NOVENA_ID,
   RDM_KEYS,
   resolveMercyStepImage,
 } from '../data/divineMercyData';
@@ -27,6 +28,23 @@ import {
   preciousBloodSevenOfferings,
 } from '../data/preciousBloodData';
 import { buildViaCrucisSequence, buildViaLucisSequence, buildViaCrucisRosarioSequence } from '../data/viaCrucisData';
+import { MEMORARE_ID, getMemorareSequence, isMemorareMode } from '../data/memorareData';
+import {
+  MILAGROSA_ID,
+  getMedallaMilagrosaSequence,
+  isMedallaMilagrosaMode,
+} from '../data/medallaMilagrosaData';
+import {
+  INMACULADO_CORAZON_ID,
+  getInmaculadoCorazonSequence,
+  isInmaculadoCorazonMode,
+} from '../data/inmaculadoCorazonData';
+import {
+  ESPIRITU_SANTO_ID,
+  getEspirituSantoSequence,
+  isEspirituSantoMode,
+} from '../data/espirituSantoNovenaData';
+import { SPIRIT_DAY_INTENTION } from '../data/holySpiritNovenaData';
 import {
   SAGRADO_CORAZON_ADORACION_ID,
   getSagradoCorazonAdoracionSequence,
@@ -34,6 +52,10 @@ import {
 } from '../data/sagradoCorazonAdoracionData';
 
 export { isSagradoCorazonAdoracionMode } from '../data/sagradoCorazonAdoracionData';
+export { MEMORARE_ID, isMemorareMode } from '../data/memorareData';
+export { MILAGROSA_ID, isMedallaMilagrosaMode } from '../data/medallaMilagrosaData';
+export { INMACULADO_CORAZON_ID, isInmaculadoCorazonMode } from '../data/inmaculadoCorazonData';
+export { ESPIRITU_SANTO_ID, isEspirituSantoMode } from '../data/espirituSantoNovenaData';
 
 export const PRECIOUS_BLOOD_MODES = new Set([
   'sangrepreciosa_litany',
@@ -131,6 +153,10 @@ export const BOOKLET_MYSTERY_IDS = [
   'viacrucis_rosario',
   'vialucis',
   SAGRADO_CORAZON_ADORACION_ID,
+  MEMORARE_ID,
+  MILAGROSA_ID,
+  INMACULADO_CORAZON_ID,
+  ESPIRITU_SANTO_ID,
 ];
 export const BOOKLET_MYSTERIES = new Set(BOOKLET_MYSTERY_IDS);
 
@@ -174,6 +200,65 @@ export function isStationsDevotion(misterioActual) {
 
 export function isMarianDevotionMode(misterioActual) {
   return isMarianDevotionDataMode(misterioActual);
+}
+
+/**
+ * Devotions whose "A" steps are not Rosary Ave Marías, so they must not plant
+ * roses. Adorations and novenas fold the rosary in as a template rather than
+ * being one, and the rosary route shares `misterioActual` with Libro — so the
+ * same guard has to apply on both sides.
+ */
+export const NON_ROSE_DEVOTIONS = new Set([
+  'divinamisericordia_novena',
+  SAGRADO_CORAZON_ADORACION_ID,
+]);
+
+/** True when finishing an Ave María in this devotion should earn a rose. */
+export function earnsRoseForDevotion(misterioActual) {
+  return !NON_ROSE_DEVOTIONS.has(misterioActual);
+}
+
+/**
+ * Devotions with a selectable day, so the header can offer a 1..N picker and
+ * the share card / deep link can carry `?dia=`. Register a new novena here
+ * instead of hardcoding its id in the chrome.
+ */
+export const NOVENA_DEVOTIONS = {
+  [DIVINE_MERCY_NOVENA_ID]: { total: 9, dayStepId: 'NOVENA_DAY_INTENTION' },
+  [ESPIRITU_SANTO_ID]: { total: 9, dayStepId: SPIRIT_DAY_INTENTION },
+};
+
+export function isNovenaMode(misterioActual) {
+  return Object.prototype.hasOwnProperty.call(NOVENA_DEVOTIONS, misterioActual);
+}
+
+/** @returns {{ total: number, dayStepId: string } | null} */
+export function getNovenaConfig(misterioActual) {
+  return isNovenaMode(misterioActual) ? NOVENA_DEVOTIONS[misterioActual] : null;
+}
+
+/** 1..total for the day picker. */
+export function getNovenaDays(misterioActual) {
+  const cfg = getNovenaConfig(misterioActual);
+  return cfg ? Array.from({ length: cfg.total }, (_, i) => i + 1) : [];
+}
+
+/**
+ * Devotions that replace the four mystery pills in the Libro header.
+ * Centralised so a new devotion cannot forget to opt out — the rosary vias
+ * are the only thing that keeps them.
+ */
+export function hidesRosaryPills(misterioActual) {
+  return (
+    isDivineMercyMode(misterioActual) ||
+    isStationsDevotion(misterioActual) ||
+    isMarianDevotionMode(misterioActual) ||
+    isSagradoCorazonAdoracionDataMode(misterioActual) ||
+    isMemorareMode(misterioActual) ||
+    isMedallaMilagrosaMode(misterioActual) ||
+    isInmaculadoCorazonMode(misterioActual) ||
+    isEspirituSantoMode(misterioActual)
+  );
 }
 
 /** Libro-only lookup — keeps chaplet data out of RoseView.getPrayerData. */
@@ -229,6 +314,18 @@ export function buildSequence(mysteryType, options = {}) {
   if (mysteryType === 'vialucis') return buildViaLucisSequence();
   if (isSagradoCorazonAdoracionDataMode(mysteryType)) {
     return getSagradoCorazonAdoracionSequence();
+  }
+  if (isMemorareMode(mysteryType)) {
+    return getMemorareSequence();
+  }
+  if (isMedallaMilagrosaMode(mysteryType)) {
+    return getMedallaMilagrosaSequence();
+  }
+  if (isInmaculadoCorazonMode(mysteryType)) {
+    return getInmaculadoCorazonSequence();
+  }
+  if (isEspirituSantoMode(mysteryType)) {
+    return getEspirituSantoSequence(options.novenaDay ?? 1);
   }
 
   const keys = getSequenceKeys(mysteryType, includeMercyOpening);

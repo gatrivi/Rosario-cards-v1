@@ -1,117 +1,92 @@
-# Historic Christian devoutions (Libro shelf)
+# Historic Christian devotions (Libro shelf)
 
-**v0.3.59+** · Source of truth: `src/data/historicDevotionsCatalog.js`  
-UI: Libro → Devociones (`DevotionsShelf`) · rows **Devociones** / **Oraciones breves** / **Próximas**
+**v0.3.88** (Consolidated) · Source of truth: `src/data/historicDevotionsCatalog.js`  
+UI: Libro → Devociones (`DevotionsShelf`) · rows **Devociones** / **Oraciones breves** / **Próximas**  
+Handoff reference: [.docs/handoff-2026-09-26-el-estante.md](../handoff-2026-09-26-el-estante.md)
 
 Prefer **modooscuro / stained-glass** thumbs (`imageRegistry` ids).
 
-## Status legend
+## Surface Architecture (v0.3.86+)
 
-| `status` | Meaning |
-|----------|---------|
-| `have` | Live in Libro (mystery, recorrido, breve, or rosary close) |
-| `soon` | Shelf **Próximas** — B/N greyscale, `disabled` / `soon` thumb |
-| `add` | Temporary while shipping; then flip to `have` |
+The catalog uses explicit surfaces rather than a vague boolean `status`:
 
-## Month & season calendar (special prayers)
+| `surface` | Meaning | App Location |
+|-----------|---------|--------------|
+| `vias` | The four classic rosary mysteries (Gozosos, Dolorosos, Gloriosos, Luminosos) | Main Rosary navigation |
+| `recorrido` | A full Libro sequence (`targetId` in `BOOKLET_MYSTERY_IDS`) | Recorridos row on Devotions shelf |
+| `breve` | An optional prayer sheet entry (`targetId` in `OPTIONAL_PRAYERS`) | Oraciones breves row |
+| `embedded` | Folded into another surface (e.g. adoration or rosary closing) | Embedded within parent view |
+| `soon` | Planned / not yet available (`targetId: null`), shown in greyscale | Próximas row |
 
-Popular piety (not dogma). **App** = wired in Libro; **próx.** = B/N shelf; **—** = not in catalog yet.
+Every `targetId` is verified in automated CI tests (`src/__tests__/historicDevotionsCatalog.test.js`) to ensure registries never drift.
 
-| When | Traditional focus | Special prayers / practice | App |
-|------|-------------------|----------------------------|-----|
+---
+
+## Month & Season Calendar (Popular Piety)
+
+| When | Traditional focus | Special prayers / practice | App status |
+|------|-------------------|----------------------------|------------|
 | **Jan** | Holy Name / Childhood of Jesus | Litany of the Holy Name; Infant Jesus | — |
 | **Feb** | Holy Family / Purification | Presentation; Holy Family prayers | — |
-| **Mar** | St Joseph · Passion | St Joseph (19); Via Crucis (Lent) | Joseph **próx.** · Via Crucis **have** |
-| **Apr** | Eucharist · Resurrection · Holy Spirit | Adoration; Via Lucis (Easter); Pentecost novena | SC/Eucharist **have** · Via Lucis **have** · Espíritu Santo **próx.** |
-| **May** | Blessed Virgin Mary | Rosary; Loreto; May crowning; Ángelus | Rosario / Loreto / Ángelus / Magnificat **have** |
+| **Mar** | St Joseph · Passion | St Joseph (19); Via Crucis (Lent) | Joseph **próx.** (waiting on art) · Via Crucis **have** |
+| **Apr** | Eucharist · Resurrection · Holy Spirit | Adoration; Via Lucis (Easter); Pentecost novena | SC/Eucharist **have** · Via Lucis **have** · Espíritu Santo **have** (v0.3.86) |
+| **May** | Blessed Virgin Mary | Rosary; Loreto; May crowning; Ángelus | Rosario / Loreto / Ángelus / Magnificat / Memorare **have** |
 | **Jun** | Sacred Heart | Litany SC; First Fridays; consecration | Sagrado Corazón **have** |
 | **Jul** | Precious Blood | Litany / corona / 7 ofrendas | Sangre (3 modes) **have** · `PRECIOUS_BLOOD_MONTH = 6` |
-| **Aug** | Immaculate Heart · Assumption | Consecration to Inmaculado Corazón; Assumption (15) | Inmaculado Corazón **próx.** |
-| **Sep** | Seven Sorrows · Holy Cross | Dolores (15); Exaltation of the Cross (14) | — (Via Crucis covers Passion) |
-| **Oct** | Holy Rosary · Holy Angels | Daily Rosary; Our Lady of the Rosary (7); St Michael | Rosario **have** · San Miguel **have** |
-| **Nov** | Holy Souls | All Saints (1); All Souls (2); office for dead | — |
-| **Dec** | Immaculate Conception · Nativity | IC (8); Advent; Nativity; Memorare | Memorare **próx.** · IC art via Mater Immaculata |
+| **Aug** | Immaculate Heart · Assumption | Consecration to Inmaculado Corazón; Assumption (15) | Inmaculado Corazón **have** (v0.3.86) |
+| **Sep** | Seven Sorrows · Holy Cross | Dolores (15); Exaltation of the Cross (14) | Via Crucis covers Passion |
+| **Oct** | Holy Rosary · Holy Angels | Daily Rosary; Our Lady of the Rosary (7); St Michael | Rosario **have** · San Miguel **have** · Ángel Guarda **have** |
+| **Nov** | Holy Souls | All Saints (1); All Souls (2); office for dead | — (planned) |
+| **Dec** | Immaculate Conception · Nativity | IC (8); Advent; Nativity; Memorare | Memorare **have** · IC art via Mater Immaculata |
 
-### Movable / dated (not month-fixed)
+### Movable / Dated
 
-| Window | Prayer / devotion | App |
-|--------|-------------------|-----|
-| Good Friday → Divine Mercy Sunday | **Novena de la Divina Misericordia** (9 days) | **have** (`divinamisericordia_novena` + day auto-advance) |
+| Window | Prayer / devotion | App status |
+|--------|-------------------|------------|
+| Good Friday → Divine Mercy Sunday | **Novena de la Divina Misericordia** (9 days) | **have** (`divinamisericordia_novena`) |
+| Anytime | **Coronilla de la Divina Misericordia** | **have** (Libro + Rosa `/rosa?devocion=misericordia`, v0.3.88) |
 | Eastertide | Via Lucis | **have** |
 | Lent | Via Crucis | **have** |
-| First Fridays | Sacred Heart | covered by SC recorrido |
-| First Saturdays | Immaculate Heart / Fatima | needs Inmaculado Corazón (**próx.**) |
-| Sep 29 | St Michael (feast) | San Miguel breve **have** |
-| Oct 2 | Holy Guardian Angels | Ángel Guarda **have** |
-| Corpus Christi / Sacred Heart Friday | Eucharist / SC | **have** |
+| First Fridays | Sacred Heart | **have** (`sagrado_corazon_adoracion`) |
+| First Saturdays | Immaculate Heart / Fatima | **have** (`inmaculado_corazon`) |
+| Sep 29 | St Michael (feast) | **have** (`michael` breve) |
+| Oct 2 | Holy Guardian Angels | **have** (`guardian` breve) |
 
-### Near-term for this repo (from mid‑2026)
+---
 
-- **Jul (now):** emphasize Preciosísima Sangre shelf items.
-- **Aug next:** promote **Inmaculado Corazón** from Próximas when ready.
-- **Oct:** already covered (Rosario + San Miguel); optional angel emphasis.
-- **Nov:** Holy Souls still missing — candidate for Próximas later.
-- **Mercy week:** Novena Misericordia (see `novenaAutoProgress.js`).
+## Devotions Catalog (Current Implementation)
 
-No auto month-switch in UI yet — shelf copy / titles mention Julio for Sangre; seasonal promote is manual / agent checklist.
+| Id | Label | Surface | Target ID | Note | Art (`imgId`) | Status |
+|----|-------|---------|-----------|------|---------------|--------|
+| `rosary` | Rosario | `vias` | — | s. XIII–XV · popularísimo | `magnificatVisitation` | **have** |
+| `stations` | Vía Crucis | `recorrido` | `viacrucis` | estaciones · pasión | `vitreauxCruz` | **have** |
+| `eucharist` | Eucaristía | `embedded` | `sagrado_corazon_adoracion` | adoración / Corpus | `gallerySagradoCorazon` | **have** |
+| `sacred_heart` | Sagrado Corazón | `recorrido` | `sagrado_corazon_adoracion` | s. XVII · Alacoque | `gallerySagradoCorazon` | **have** |
+| `angelus` | Ángelus | `recorrido` | `angelus` | oración del día | `allMary17th` | **have** |
+| `divine_mercy` | Divina Misericordia | `recorrido` | `divinamisericordia` | Faustina · s. XX (Libro + Rosa) | `faustinaStainedGlass` | **have** |
+| `precious_blood` | Preciosísima Sangre | `recorrido` | `sangrepreciosa_litany` | julio · Juan XXIII | `lamb` | **have** |
+| `loreto` | Letanía de Loreto | `embedded` | `sangrepreciosa_litany` | en cierres del Rosario | `galleryMaterImmaculata` | **have** |
+| `st_michael` | San Miguel | `breve` | `michael` | León XIII · 1886 | `galleryStMichael` | **have** |
+| `st_expeditus` | San Expedito | `breve` | `expedito` | causas urgentes · HODIE | `gallerySanExpedito` | **have** |
+| `immaculate_heart` | Inmaculado Corazón | `recorrido` | `inmaculado_corazon` | Fátima · 7 pasos | `galleryMaterImmaculata` | **have** (v0.3.86) |
+| `holy_spirit` | Espíritu Santo | `recorrido` | `espiritu_santo_novena` | Pentecostés · 9 días | `galleryPentecost` | **have** (v0.3.86) |
+| `scapular` | Escapulario | `breve` | `escapulario` | Carmen · s. XIII | `maryCarmen` | **have** (v0.3.86) |
+| `miraculous_medal` | Medalla Milagrosa | `recorrido` | `medalla_milagrosa` | Catalina Labouré · 3 pasos | `allMary17th` | **have** (v0.3.86) |
+| `memorare` | Memorare | `recorrido` | `memorare` | San Bernardo · ES/EN/LA | `reginaCaeli` | **have** (v0.3.86) |
+| `st_joseph` | San José | `soon` | *null* | patrono universal | `earlyChristian` | **soon** (blocked on art) |
 
-## Catalog
+---
 
-| Id | Label | Note | Art (`imgId`) | Status |
-|----|-------|------|---------------|--------|
-| `rosary` | Rosario | s. XIII–XV | `magnificatVisitation` | have |
-| `stations` | Vía Crucis | estaciones | `vitreauxCruz` | have |
-| `eucharist` | Eucaristía | adoración / Corpus | `gallerySagradoCorazon` | have |
-| `sacred_heart` | Sagrado Corazón | Alacoque | `gallerySagradoCorazon` | have |
-| `angelus` | Ángelus | oración del día | `latinAngelus` | have |
-| `divine_mercy` | Divina Misericordia | Faustina | `faustinaStainedGlass` | have |
-| `precious_blood` | Preciosísima Sangre | julio | `lamb` | have |
-| `loreto` | Letanía de Loreto | cierres del Rosario | `galleryMaterImmaculata` | have |
-| `st_michael` | San Miguel | León XIII · 1886 | `galleryStMichael` | **have** (v0.3.59 breve) |
-| `st_expeditus` | San Expedito | causas urgentes · HODIE | `gallerySanExpedito` | **have** (v0.3.64 breve) |
-| `immaculate_heart` | Inmaculado Corazón | Fátima | `galleryMaterImmaculata` | soon |
-| `holy_spirit` | Espíritu Santo | Pentecostés | `galleryPentecost` | soon |
-| `scapular` | Escápulario | Carmen | `theotokos` | soon |
-| `miraculous_medal` | Medalla Milagrosa | Labouré | `allMary17th` | soon |
-| `st_joseph` | San José | patrono | `earlyChristian` | soon |
-| `memorare` | Memorare | S. Bernardo | `reginaCaeli` | soon |
-
-Also on shelf but outside this table: Magnificat, Ángel Guarda, San Benito, Sangre (litany/corona/ofrendas), Via Lucis, Novena Misericordia.
-
-## San Expedito (shipped v0.3.64)
-
-- **Data:** `optionalPrayers.js` → `id: 'expedito'` (ES / EN / LA · *hodie, non cras*).
-- **Thumb / bg:** `gallerySanExpedito` (Wellcome CC BY · Palermo s. XIX) + alts `galleryCruzVsRoma`, `vitreauxCruz`.
-- **UI:** Oraciones breves → San Expedito (badge `H`); deep link https://rosario.gatrivi.com/libro?oracion=expedito
-- **Dates:** popular devotion for urgent causes (feast traditionally 19 Apr in some places).
-
-## San Miguel (shipped)
-
-- **Why first among missing:** canonical protection prayer; dedicated vitral already in gallery.
-- **Data:** `optionalPrayers.js` → `id: 'michael'` (ES / EN / LA).
-- **Thumb:** `galleryStMichael` → `public/gallery-images/litany/modooscuro/Stained glass of St_ Michael the Archangel.jpg`
-- **UI:** Oraciones breves → San Miguel (badge `SM`); opens `OptionalPrayerSheet`.
-- **Dates:** feast **29 Sep**; traditional with Holy Angels in **October**.
-
-## Próximas (B/N)
-
-- Built by `upcomingDevotionThumbs()` (`status === 'soon'`).
-- `MercyWindowThumb` + `soon` → greyscale CSS (`.mercy-window-thumb--soon`).
-- Promoting one: implement sequence/optional entry → set catalog `status: 'have'` → remove from Próximas automatically.
-- Prefer promoting by **month** (Aug → Inmaculado Corazón; Mar → San José; etc.).
-
-## Wire points
+## Wire Points & Code Verification
 
 | Concern | Path |
 |---------|------|
-| Catalog | `src/data/historicDevotionsCatalog.js` |
-| Optional texts | `src/data/optionalPrayers.js` |
-| Registry art | `src/data/imageRegistry.js` (`galleryStMichael`, `galleryMaterImmaculata`, `galleryPentecost`, …) |
-| Shelf | `BookletView.jsx` + `DevotionsShelf.jsx` |
-| July month constant | `preciousBloodData.js` → `PRECIOUS_BLOOD_MONTH` |
-| Mercy novena day | `novenaAutoProgress.js` |
-| Tests | `src/__tests__/historicDevotionsCatalog.test.js` |
+| Catalog definition | `src/data/historicDevotionsCatalog.js` |
+| Optional prayers (breves) | `src/data/optionalPrayers.js` |
+| Sequence builder | `src/utils/bookletSequence.js` |
+| Shelf UI components | `src/components/Views/BookletView.jsx` + `src/components/Views/DevotionsShelf.jsx` |
+| Devotion registry & rose guards | `src/data/historicDevotionsCatalog.js` (`earnsRoseForDevotion`, `hidesRosaryPills`, `NOVENA_DEVOTIONS`) |
+| Mandatory tests | `src/__tests__/historicDevotionsCatalog.test.js` |
 
-## Prayer images rule
-
-New live devoutions still need `img` + non-empty `imgCandidates` on every step (see `.cursor/rules/prayer-images.mdc`).
+> [!IMPORTANT]
+> **Prayer images mandatory:** Every new devotion step must include `img` and non-empty `imgCandidates` (see `.cursor/rules/prayer-images.mdc`). San José is currently held in `soon` specifically because own curated art has not yet been placed in `public/prayers/SJO_*/`.

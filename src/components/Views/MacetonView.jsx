@@ -61,6 +61,9 @@ export default function MacetonView({ onSelectMaceton, onViewGarden }) {
         <a href="/rosa?devocion=patrick" style={{ display: 'block', color: '#79cba5', padding: 12 }}>
           Dibujar la Coraza de San Patricio
         </a>
+        <a href="/rosa?devocion=misericordia" style={{ display: 'block', color: '#e08a8a', padding: 12 }}>
+          Rezar la Coronilla de la Divina Misericordia
+        </a>
         {onViewGarden && (
           <button
             type="button"
@@ -135,6 +138,7 @@ export default function MacetonView({ onSelectMaceton, onViewGarden }) {
                       seed={rose.timestamp}
                       verseCount={rose.verseCount}
                       verseTraits={rose.verseTraits}
+                      context={rose.context}
                       size={24} 
                       compact={true} 
                       warmthProfile={rose.warmthProfile} 

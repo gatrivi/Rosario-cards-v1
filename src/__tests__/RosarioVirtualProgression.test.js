@@ -3,12 +3,14 @@ import { act, render, cleanup } from '@testing-library/react';
 import RosarioVirtualView from '../components/Views/RosarioVirtualView';
 import { buildSequence } from '../utils/bookletSequence';
 import RosaryAdapter from '../components/RosarioNube/RosaryAdapter';
+import { playBookletTransitionSound } from '../utils/bookletSounds';
 
 jest.mock('../components/RosarioNube/RosaryAdapter', () => jest.fn(() => null));
 jest.mock('../components/common/SacredDust', () => () => null);
 jest.mock('../components/common/VitralBackground', () => () => null);
 jest.mock('../components/Views/BookletPrayerPanel', () => () => null);
 jest.mock('../hooks/usePrayerVoiceAutoplay', () => ({ usePrayerVoiceAutoplay: () => {} }));
+jest.mock('../utils/bookletSounds', () => ({ playBookletTransitionSound: jest.fn() }));
 
 test('repeat touches advance Ave Maria, Gloria, Fatima exactly once and count only the Ave Maria', () => {
   const sequence = buildSequence('gozosos');
@@ -49,4 +51,17 @@ test('empty tap after a completed prayer does not advance; one hold completes on
   expect(update).toHaveBeenCalledTimes(1);
   cleanup();
   jest.useRealTimers();
+});
+
+test('entering a prayer rings the step chime once; mounting and re-rendering do not', () => {
+  playBookletTransitionSound.mockClear();
+  const props = { misterioActual: 'gozosos', soundEnabled: true, onUpdateProgreso: jest.fn() };
+  const view = render(<RosarioVirtualView {...props} currentPrayerIndex={3} />);
+  view.rerender(<RosarioVirtualView {...props} currentPrayerIndex={3} />);
+  expect(playBookletTransitionSound).not.toHaveBeenCalled();
+  view.rerender(<RosarioVirtualView {...props} currentPrayerIndex={4} />);
+  expect(playBookletTransitionSound).toHaveBeenCalledTimes(1);
+  const sequence = buildSequence('gozosos');
+  expect(playBookletTransitionSound.mock.calls[0][0]).toMatchObject({ prayerId: sequence[4].id, soundEnabled: true });
+  cleanup();
 });

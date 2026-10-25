@@ -2,7 +2,7 @@
  * SACRED PERFORMANCE LICENSE - Edition v1.2
  * Copyright (c) 2026 gatrivi. All Rights Reserved.
  */
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 
 /**
  * SacredText — Renders text with procedural hand-scribed variability (jitter, rotation, etc.)
@@ -66,6 +66,17 @@ const SacredText = forwardRef(({
 
   void warmthTick;
 
+  // The letter under the finger warms up over time. That animation lives
+  // here so it repaints only these letters; driving it from RoseView
+  // re-rendered the whole screen 20 times a second and starved the drag.
+  const [, setLocalTick] = useState(0);
+  const warming = charProgressIndex >= 0 && !isVersoComplete && !isPrayerComplete;
+  useEffect(() => {
+    if (!warming) return undefined;
+    const timer = setInterval(() => setLocalTick(t => t + 1), 60);
+    return () => clearInterval(timer);
+  }, [warming]);
+
   return (
     <div ref={ref} style={{ textAlign: 'center', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
       {words.map((word, wordIdx) => {
@@ -75,19 +86,8 @@ const SacredText = forwardRef(({
         const renderedLetters = letters.map((letter, letterIdx) => {
           const gi = baseGlobal + letterIdx; 
 
-          if (notStarted && gi === 0) {
-            return (
-              <span key={letterIdx} style={{
-                animation: 'pulse-first-letter 2s ease-in-out infinite',
-                display: 'inline-block'
-              }}>{letter}</span>
-            );
-          }
-
-          if (notStarted) {
-            return <span key={letterIdx} style={{ color: toRGB(UNREAD), display: 'inline-block' }}>{letter}</span>;
-          }
-
+          // Same metrics before and after the first touch: if unread letters
+          // were lighter/tighter, the line would reflow under the finger.
           const seed = gi * 13 + wordIdx * 7;
           const fontVariation = {
             fontWeight: simpleMode ? 700 : (700 + (seed % 3 === 0 ? 100 : 0)),
@@ -97,6 +97,19 @@ const SacredText = forwardRef(({
             display: 'inline-block',
             transform: simpleMode ? 'none' : `rotate(${(seed % 7 - 3.5) * 0.1}deg) translateY(${(seed % 13 - 6.5) * 0.1}px)`
           };
+
+          if (notStarted && gi === 0) {
+            return (
+              <span key={letterIdx} style={{
+                ...fontVariation,
+                animation: 'pulse-first-letter 2s steps(8) infinite', // stepped: a per-frame text-shadow animation keeps the main thread painting
+              }}>{letter}</span>
+            );
+          }
+
+          if (notStarted) {
+            return <span key={letterIdx} style={{ ...fontVariation, color: toRGB(UNREAD) }}>{letter}</span>;
+          }
 
           if (isPrayerComplete || isVersoComplete) {
             const dwells = charDwellRef.current.filter(d => d !== undefined && d !== null);

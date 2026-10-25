@@ -21,6 +21,14 @@ export const SACRED_SYMBOLS = {
     'M18 29 L21 32 L18 35 L15 32 Z M82 29 L85 32 L82 35 L79 32 Z M22 84 L25 87 L22 90 L19 87 Z M78 84 L81 87 L78 90 L75 87 Z',
     'M50 20 L52 23 L50 26 L48 23 Z M50 46 L53 57 L50 71 L47 57 Z M43 79 Q50 84 57 79 M43 86 Q50 91 57 86',
   ],
+  // Divine Mercy (Faustina): the Heart, its halo and cross, and the two rays.
+  mercy_heart: [
+    'M50 50 C50 38 34 34 30 46 C26 58 40 68 50 78 C60 68 74 58 70 46 C66 34 50 38 50 50 Z',
+    'M50 30 A26 26 0 1 1 49.99 30',
+    'M50 8 L50 26 M44 14 L56 14',
+    'M44 74 L20 130 M48 78 L36 132',
+    'M56 74 L80 130 M52 78 L64 132',
+  ],
   // --- CORE PRAYERS ---
   'cross': [
     'M 50,20 L 50,110', // Vertical stem
@@ -157,6 +165,11 @@ export const SACRED_SYMBOLS = {
 // Maps prayer IDs to symbol keys (Base mapping, refined in views)
 export const SYMBOL_MAP = {
   'PATRICK': 'patrick_shield',
+  'MP': 'mercy_heart',
+  'DMO1': 'mercy_heart',
+  'DMO2': 'mercy_heart',
+  'EF': 'luminoso_5',
+  'HG': 'crown',
   'SC': 'cross',
   'P':  'bread',
   'AC': 'praying_hands',

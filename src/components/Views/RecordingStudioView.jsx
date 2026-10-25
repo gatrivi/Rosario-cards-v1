@@ -3,6 +3,7 @@ import { BOOKLET_MYSTERY_IDS, buildSequence } from '../../utils/bookletSequence'
 import {
   blobToObjectUrl,
   deleteRecording,
+  listAllRecordings,
   listRecordingsForSlot,
   saveRecording,
 } from '../../utils/prayerRecordingStore';
@@ -447,6 +448,57 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
     setVoicePrefsState(next);
   };
 
+  // Bridge to baking: takes live only in IndexedDB until downloaded to disk.
+  const downloadClip = (clip) => {
+    if (!clip?.blob) return;
+    const slot =
+      clip.mystery != null && clip.sequenceIndex != null
+        ? `${clip.mystery}-${clip.sequenceIndex + 1}`
+        : 'libre';
+    const safeId = String(clip.prayerId || 'toma').replace(/[^\w.-]+/g, '_');
+    const m = String(clip.mimeType || '').toLowerCase();
+    const ext = m.includes('wav')
+      ? 'wav'
+      : m.includes('m4a') || m.includes('mp4')
+        ? 'm4a'
+        : m.includes('mpeg') || m.includes('mp3')
+          ? 'mp3'
+          : m.includes('ogg')
+            ? 'ogg'
+            : 'webm';
+    const url = URL.createObjectURL(clip.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${safeId}_${slot}_${clip.voiceLang || 'es'}_${clip.id}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const exportAllTakes = async () => {
+    if (busy) return;
+    try {
+      const all = await listAllRecordings();
+      if (all.length === 0) {
+        showToast('No hay tomas guardadas todavía.');
+        return;
+      }
+      showToast(`Exportando ${all.length} tomas…`);
+      all
+        .sort(
+          (a, b) =>
+            String(a.prayerId).localeCompare(String(b.prayerId)) || a.createdAt - b.createdAt
+        )
+        .forEach((clip, i) => {
+          setTimeout(() => downloadClip(clip), i * 250);
+        });
+    } catch (err) {
+      setError('No se pudieron exportar las tomas.');
+      console.warn('[RecordingStudio] export', err);
+    }
+  };
+
   const mysteryLabel = devotionVoiceLabel(mysteryType);
 
   useEffect(() => {
@@ -569,7 +621,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
           <div className="rs-progress-fill" style={{ width: `${stats.pct}%` }} />
         </div>
         <p className="rs-stat-meta">
-          {stats.missing} sin tu voz · {stats.t3Only} solo T3 · {stats.empty} sin audio Â· {stats.reviewed} revisados
+          {stats.missing} sin tu voz · {stats.t3Only} solo T3 · {stats.empty} sin audio · {stats.reviewed} revisados
         </p>
       </div>
 
@@ -717,7 +769,7 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
               disabled={busy || loading || !!coverageError || stats.missing === 0}
               onClick={() => startSession(true)}
             >
-              Grabar faltantes ({stats.missing}) Â· {stats.reviewed} revisados
+              Grabar faltantes ({stats.missing}) · {stats.reviewed} revisados
             </button>
             <button
               type="button"
@@ -726,6 +778,15 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
               onClick={() => startSession(false)}
             >
               Grabar todo
+            </button>
+            <button
+              type="button"
+              className="rs-secondary"
+              disabled={busy}
+              onClick={exportAllTakes}
+              title="Descargar todas las tomas (IndexedDB → disco)"
+            >
+              Exportar tomas
             </button>
           </div>
         </section>
@@ -805,6 +866,15 @@ export default function RecordingStudioView({ mysteryType, onMysteryChange }) {
                       <li key={clip.id}>
                         <button type="button" disabled={busy} onClick={() => playClip(clip)}>
                           ▶ {clip.label || 'toma'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => downloadClip(clip)}
+                          title="Descargar toma"
+                          aria-label={'Descargar ' + (clip.label || 'toma')}
+                        >
+                          ↓
                         </button>
                         <button type="button" disabled={busy || deletingClipId === clip.id} onClick={() => handleDeleteClip(clip.id)}>
                           ×

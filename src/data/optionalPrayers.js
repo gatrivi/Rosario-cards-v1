@@ -4,7 +4,8 @@ const angelImg = imagePath('angelDeLaGuarda');
 const benedictImg = imagePath('sanctusBenedictus');
 const benedictLatinImg = imagePath('latinSanBenito');
 const michaelImg = imagePath('galleryStMichael');
-const carmenImg = imagePath('maryCarmen');
+// maryCarmen is a Dolorosa (it serves Siete Dolores in reliquiasData); Carmen gets her own image.
+const carmenImg = imagePath('carmenStatue');
 const carmenImgAlt = imagePath('nun04');
 const carmenImgAlt2 = imagePath('nun05');
 const carmenCandidates = [carmenImg, carmenImgAlt, carmenImgAlt2].filter(Boolean);
@@ -102,6 +103,42 @@ export const OPTIONAL_PRAYERS = [
         label: 'ES breve',
         text:
           'Señora del Carmen: cubrenos con tu manto sagrado, presérvanos del mal y preséntanos al Altísimo como hijos fieles. Amén.',
+      },
+    ],
+  },
+  {
+    id: 'escapulario',
+    title: 'Escápulario del Carmen',
+    img: carmenImgAlt,
+    imgCandidates: [carmenImgAlt2, carmenImgAlt].filter(Boolean),
+    variants: [
+      {
+        id: 'es',
+        label: 'ES',
+        text:
+          'La Promesa del Escapulario:\n' +
+          'Quienquiera que se vista de este Escapulario y muera en penitencia, en fe y en caridad, será preservado del fuego eterno.\n\n' +
+          'Nuestra Señora del Monte Carmelo, cúbrenos con tu manto sagrado. Que la gracia de tu amor ' +
+          'nos alcance, y que el pasto de los justos no nos desfallezca.\n\n' +
+          'Ruega por nosotros, Madre del Monte Carmelo. Amén.',
+      },
+      {
+        id: 'en',
+        label: 'EN',
+        text:
+          'The Promise of the Scapular:\n' +
+          'Whoever shall be invested with this Scapular and shall die in penitence, in faith and in charity, shall be preserved from eternal fire.\n\n' +
+          'Our Lady of Mount Carmel, cover us with your sacred mantle. May we share in your grace, and may we never fail to reach the pasture of the blessed.\n\n' +
+          'Pray for us, Mother of Mount Carmel. Amen.',
+      },
+      {
+        id: 'la',
+        label: 'LA',
+        text:
+          'Promissio Scapularis:\n' +
+          'Quicquid hunc Scapulare gestet, et in poenitentia, fide et caritate defunctus fuerit, ab igne aeterno servabitur.\n\n' +
+          'Domina Montis Carmeli, sacro tuo velamine nos protege. Ut tua gratia nos attingat, et ad pascua beatorum pervenire mereamur.\n\n' +
+          'Ora pro nobis, Mater Montis Carmeli. Amen.',
       },
     ],
   },
